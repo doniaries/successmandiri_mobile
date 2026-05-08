@@ -19,7 +19,7 @@ import '../auth/login_screen.dart';
 import '../tambah_saldo/tambah_saldo_list_screen.dart';
 import '../transaksi_do/transaksi_do_detail_screen.dart';
 import '../transaksi_do/transaksi_do_screen.dart';
-import 'package:successmandirimobile/screens/profile/profile_screen.dart';
+import 'package:sawitappmobile/screens/profile/profile_screen.dart';
 import '../../core/utils/currency_formatter.dart';
 import '../../widgets/skeleton_loader.dart';
 import '../../widgets/custom_loading_logo.dart';
