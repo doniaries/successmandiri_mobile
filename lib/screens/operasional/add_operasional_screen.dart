@@ -1,0 +1,367 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../../providers/resource_provider.dart';
+import '../../providers/dashboard_provider.dart';
+import '../../widgets/success_dialog.dart';
+import '../../core/utils/currency_formatter.dart';
+import '../../widgets/app_loading_indicator.dart';
+import '../penjual/add_penjual_screen.dart';
+import '../supir/add_supir_screen.dart';
+import '../pekerja/add_pekerja_screen.dart';
+
+class AddOperasionalScreen extends StatefulWidget {
+  const AddOperasionalScreen({super.key});
+
+  @override
+  State<AddOperasionalScreen> createState() => _AddOperasionalScreenState();
+}
+
+class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _nominalController = TextEditingController();
+  final _keteranganController = TextEditingController();
+  
+  DateTime _selectedDate = DateTime.now();
+  String _selectedOperasional = 'Pengeluaran';
+  String? _selectedKategori;
+  int? _selectedPihakId;
+  String? _selectedPihakType;
+  dynamic _selectedPihak; // Added to store full object for debt info
+
+  final List<String> _kategoriOptions = [
+    'Pinjaman', 'Pijak Gas', 'Uang Jalan', 
+    'Bahan Bakar', 'Perawatan', 'Lain-lain', 'Tambah Saldo'
+  ];
+
+  String _getOperasionalType(String kategori) {
+    if (kategori == 'Tambah Saldo') return 'Pemasukan';
+    return 'Pengeluaran';
+  }
+
+  @override
+  void dispose() {
+    _nominalController.dispose();
+    _keteranganController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null) setState(() => _selectedDate = picked);
+  }
+
+  void _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final provider = context.read<ResourceProvider>();
+    final cleanNominal =
+        _nominalController.text.replaceAll(RegExp(r'[^0-9]'), '');
+    final nominalValue = double.tryParse(cleanNominal) ?? 0;
+
+    // Validasi Saldo Perusahaan
+    if (_selectedOperasional == 'Pengeluaran') {
+      final double saldoPerusahaan =
+          context.read<DashboardProvider>().summary?.saldo ?? 0;
+      if (nominalValue > saldoPerusahaan) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Saldo perusahaan tidak mencukupi (Saldo: ${CurrencyFormatter.formatRupiah(saldoPerusahaan)})',
+            ),
+            backgroundColor: Colors.orangeAccent,
+          ),
+        );
+        return;
+      }
+    }
+
+    final success = await provider.addOperasional({
+      'tanggal': DateFormat('yyyy-MM-dd').format(_selectedDate),
+      'operasional': _selectedOperasional,
+      'kategori': _selectedKategori,
+      'nominal': nominalValue,
+      'keterangan': _keteranganController.text,
+      'pihak_id': _selectedPihakId,
+      'pihak_type': _selectedPihakType,
+    });
+
+    if (mounted) {
+      if (success) {
+        SuccessDialog.show(
+          context,
+          title: 'Simpan Berhasil!',
+          message: 'Transaksi operasional $_selectedOperasional sebesar ${CurrencyFormatter.formatRupiah(nominalValue)} telah disimpan.',
+          onConfirm: () => Navigator.pop(context),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gagal menyimpan transaksi operasional')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<ResourceProvider>();
+
+    return AppLoadingOverlay(
+      isLoading: provider.isLoading,
+      message: 'Menyimpan transaksi...',
+      child: Scaffold(
+      appBar: AppBar(
+        title: const Text('Tambah Operasional', style: TextStyle(fontWeight: FontWeight.bold)),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Tanggal
+              InkWell(
+                onTap: () => _selectDate(context),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey[300]!),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_today_rounded, color: const Color(0xFF01579B), size: 20),
+                      const SizedBox(width: 15),
+                      Text(DateFormat('dd MMMM yyyy', 'id_ID').format(_selectedDate), style: const TextStyle(fontSize: 15)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Kategori
+              DropdownButtonFormField<String>(
+                initialValue: _selectedKategori,
+                decoration: _inputDecoration('Kategori', Icons.category_rounded),
+                items: _kategoriOptions.map((cat) => DropdownMenuItem(value: cat, child: Text(cat))).toList(),
+                onChanged: (val) {
+                  if (val != null) {
+                    setState(() {
+                      _selectedKategori = val;
+                      _selectedOperasional = _getOperasionalType(val);
+                      // Reset pihak selection when category changes as it might affect debtor list
+                      _selectedPihak = null;
+                      _selectedPihakId = null;
+                    });
+                  }
+                },
+                validator: (val) => val == null ? 'Pilih kategori' : null,
+              ),
+              const SizedBox(height: 20),
+
+              // Operasional (Type)
+              TextFormField(
+                initialValue: _selectedOperasional,
+                key: ValueKey(_selectedOperasional),
+                readOnly: true,
+                decoration: _inputDecoration('Tipe Operasional', Icons.swap_vert_rounded).copyWith(
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Pihak Type
+              DropdownButtonFormField<String>(
+                initialValue: _selectedPihakType,
+                decoration: _inputDecoration('Tipe Pihak (Opsional)', Icons.group_rounded),
+                items: const [
+                  DropdownMenuItem(value: null, child: Text('Tidak Ada')),
+                  DropdownMenuItem(value: 'App\\Models\\Penjual', child: Text('Penjual')),
+                  DropdownMenuItem(value: 'App\\Models\\Supir', child: Text('Supir')),
+                  DropdownMenuItem(value: 'App\\Models\\Pekerja', child: Text('Pekerja')),
+                ],
+                onChanged: (val) {
+                  setState(() {
+                    _selectedPihakType = val;
+                    _selectedPihak = null;
+                    _selectedPihakId = null;
+                  });
+                },
+              ),
+              const SizedBox(height: 20),
+
+              // Pihak Id
+              if (_selectedPihakType != null) ...[
+                Consumer<ResourceProvider>(
+                  builder: (context, provider, child) {
+                    List<dynamic> parties = [];
+                    
+                    if (_selectedPihakType == 'App\\Models\\Penjual') {
+                      parties = provider.penjuals;
+                    } else if (_selectedPihakType == 'App\\Models\\Supir') {
+                      parties = provider.supirs;
+                    } else if (_selectedPihakType == 'App\\Models\\Pekerja') {
+                      parties = provider.pekerjas;
+                    }
+
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<dynamic>(
+                            key: ValueKey(' pihak_${_selectedPihakType}_${_selectedKategori}_${_selectedPihak?.id}'),
+                            isExpanded: true,
+                            initialValue: _selectedPihak,
+                            decoration: _inputDecoration('Pilih Pihak', Icons.person_rounded),
+                            items: parties.map((e) {
+                              final double sisaHutang = double.tryParse(e.sisaHutang?.toString() ?? '0') ?? 0;
+                              return DropdownMenuItem<dynamic>(
+                                value: e,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(e.nama.toString().toUpperCase(), 
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                                    if (sisaHutang > 0)
+                                      Text('Hutang: ${CurrencyFormatter.formatRupiah(sisaHutang)}',
+                                        style: TextStyle(fontSize: 9, color: Colors.red[700], fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                            selectedItemBuilder: (BuildContext context) {
+                              return parties.map<Widget>((e) {
+                                return Text(
+                                  e.nama.toString().toUpperCase(),
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                );
+                              }).toList();
+                            },
+                            onChanged: (val) {
+                              setState(() {
+                                _selectedPihak = val;
+                                _selectedPihakId = val?.id;
+                              });
+                            },
+                            validator: (val) => _selectedPihakType != null && val == null ? 'Pilih pihak' : null,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          margin: const EdgeInsets.only(top: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF01579B).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.add, color: Color(0xFF01579B)),
+                            onPressed: () async {
+                              Widget? screen;
+                              if (_selectedPihakType == 'App\\Models\\Penjual') {
+                                screen = const AddPenjualScreen();
+                              } else if (_selectedPihakType == 'App\\Models\\Supir') {
+                                screen = const AddSupirScreen();
+                              } else if (_selectedPihakType == 'App\\Models\\Pekerja') {
+                                screen = const AddPekerjaScreen();
+                              }
+                              
+                              if (screen != null) {
+                                await Navigator.push(
+                                  context, 
+                                  MaterialPageRoute(builder: (context) => screen!)
+                                );
+                                // Refresh data
+                                if (mounted) {
+                                  provider.fetchAllResources(); // Refresh resources
+                                }
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+                const SizedBox(height: 20),
+              ],
+
+
+
+              // Nominal
+              TextFormField(
+                controller: _nominalController,
+                keyboardType: TextInputType.text,
+                inputFormatters: [CurrencyInputFormatter()],
+                decoration: _inputDecoration('Nominal', Icons.payments_rounded).copyWith(
+                  prefixText: 'Rp ',
+                  hintText: '0',
+                ),
+                validator: (val) {
+                  if (val == null || val.isEmpty) return 'Nominal wajib diisi';
+                  final cleanVal = val.replaceAll(RegExp(r'[^0-9]'), '');
+                  final nominal = double.tryParse(cleanVal) ?? 0;
+                  if (nominal <= 0) return 'Nominal harus lebih dari 0';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 20),
+
+              // Keterangan
+              TextFormField(
+                controller: _keteranganController,
+                maxLines: 3,
+                decoration: _inputDecoration('Keterangan', Icons.note_rounded),
+              ),
+              const SizedBox(height: 40),
+
+              ElevatedButton(
+                onPressed: _submit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF01579B),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+                child: const Text('SIMPAN TRANSAKSI', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+  InputDecoration _inputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon, color: const Color(0xFF01579B), size: 20),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey[300]!),
+      ),
+      filled: true,
+      fillColor: Colors.grey[50],
+    );
+  }
+}
+

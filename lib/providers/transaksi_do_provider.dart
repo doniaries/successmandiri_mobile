@@ -1,0 +1,195 @@
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import '../models/transaksi_do_model.dart';
+import '../repositories/transaksi_do_repository.dart';
+import '../services/seen_state_service.dart';
+
+class TransaksiDoProvider with ChangeNotifier {
+  final TransaksiDoRepository _repository;
+  List<TransaksiDo> _transactions = [];
+  List<dynamic> _penjuals = [];
+  List<dynamic> _supirs = [];
+  List<dynamic> _kendaraans = [];
+  bool _isLoading = false;
+  String? _errorMessage;
+  bool _hasNewData = false;
+  int _currentPage = 1;
+  bool _hasMore = true;
+  bool _isFetchingMore = false;
+  bool _isSaving = false;
+
+  TransaksiDoProvider(this._repository);
+
+  List<TransaksiDo> get transactions => _transactions;
+  List<dynamic> get penjuals => _penjuals;
+  List<dynamic> get supirs => _supirs;
+  List<dynamic> get kendaraans => _kendaraans;
+  bool get isLoading => _isLoading;
+  bool get isFetchingMore => _isFetchingMore;
+  bool get isSaving => _isSaving;
+  bool get hasMore => _hasMore;
+  String? get errorMessage => _errorMessage;
+  bool get hasNewData => _hasNewData;
+  int get totalTransactions => _transactions.length;
+
+  void clearData() {
+    _transactions.clear();
+    _penjuals.clear();
+    _supirs.clear();
+    _kendaraans.clear();
+    _errorMessage = null;
+    _hasNewData = false;
+    _currentPage = 1;
+    _hasMore = true;
+    notifyListeners();
+  }
+
+  Future<void> fetchTransactions({String? tanggal}) async {
+    if (_transactions.isEmpty) _isLoading = true;
+    _errorMessage = null;
+    _currentPage = 1;
+    _hasMore = true;
+    notifyListeners();
+
+    try {
+      final dynamic response = await _repository
+          .getTransaksiDo(tanggal: tanggal, page: _currentPage)
+          .timeout(const Duration(seconds: 15));
+      
+      List<dynamic> rawData = [];
+      if (response is Map) {
+        rawData = response['data'] ?? [];
+        _hasMore = response['next_page_url'] != null;
+      } else if (response is List) {
+        rawData = response;
+        _hasMore = false;
+      }
+      
+      _transactions = rawData.map((json) => TransaksiDo.fromJson(json)).toList();
+      _isLoading = false;
+      
+      if (_transactions.isNotEmpty) {
+        _hasNewData = !await SeenStateService.isSeen('transaksi_do', _transactions.first.id.toString());
+      }
+      
+      notifyListeners();
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = 'Gagal memuat data transaksi: $e';
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchMoreTransactions({String? tanggal}) async {
+    if (_isFetchingMore || !_hasMore) return;
+
+    _isFetchingMore = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _currentPage++;
+      final dynamic response = await _repository
+          .getTransaksiDo(tanggal: tanggal, page: _currentPage)
+          .timeout(const Duration(seconds: 15));
+      
+      List<dynamic> rawData = [];
+      if (response is Map) {
+        rawData = response['data'] ?? [];
+        _hasMore = response['next_page_url'] != null;
+      } else if (response is List) {
+        rawData = response;
+        _hasMore = false;
+      }
+      
+      final newItems = rawData.map((json) => TransaksiDo.fromJson(json)).toList();
+      
+      _transactions.addAll(newItems);
+      _isFetchingMore = false;
+      notifyListeners();
+    } catch (e) {
+      _isFetchingMore = false;
+      _currentPage--; // Rollback page on error
+      notifyListeners();
+    }
+  }
+
+  Future<void> markAsSeen() async {
+    if (_transactions.isNotEmpty) {
+      await SeenStateService.markAsSeen('transaksi_do', _transactions.first.id.toString());
+      _hasNewData = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchFormData() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      // Assuming repository has these methods, if not I will add them
+      _penjuals = await _repository.getPenjuals();
+      _supirs = await _repository.getSupirs();
+      _kendaraans = await _repository.getKendaraans();
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = 'Gagal memuat data formulir.';
+      notifyListeners();
+    }
+  }
+
+  Future<bool> createTransaction({
+    required String tanggal,
+    required int penjualId,
+    required int supirId,
+    String? noPolisi,
+    required double tonase,
+    required double hargaSatuan,
+    double? upahBongkar,
+    double? biayaLain,
+    double? pembayaranHutang,
+    String? keteranganBiayaLain,
+    required String caraBayar,
+    XFile? buktiTransfer,
+    String? keteranganPembayaran,
+    double? nominalTunai,
+    bool isMismatch = false,
+    XFile? buktiRekap,
+  }) async {
+    _isSaving = true;
+    _errorMessage = null;
+    notifyListeners();
+ 
+    try {
+      await _repository.createTransaksiDo(
+        tanggal: tanggal,
+        penjualId: penjualId,
+        supirId: supirId,
+        noPolisi: noPolisi,
+        tonase: tonase,
+        hargaSatuan: hargaSatuan,
+        upahBongkar: upahBongkar,
+        biayaLain: biayaLain,
+        pembayaranHutang: pembayaranHutang,
+        keteranganBiayaLain: keteranganBiayaLain,
+        caraBayar: caraBayar,
+        buktiTransfer: buktiTransfer,
+        keteranganPembayaran: keteranganPembayaran,
+        nominalTunai: nominalTunai,
+        isMismatch: isMismatch,
+        buktiRekap: buktiRekap,
+      );
+      await fetchTransactions(); // Refresh list
+      _isSaving = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isSaving = false;
+      _errorMessage = 'Gagal membuat transaksi.';
+      notifyListeners();
+      return false;
+    }
+  }
+}
+
