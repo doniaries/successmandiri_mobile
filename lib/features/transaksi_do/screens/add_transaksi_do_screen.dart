@@ -500,8 +500,6 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                         ),
                         style: const TextStyle(fontWeight: FontWeight.w600),
                         textCapitalization: TextCapitalization.characters,
-                        validator: (val) =>
-                            val == null || val.isEmpty ? 'Isi no polisi' : null,
                       ),
                       const SizedBox(height: 16),
 
@@ -847,7 +845,10 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
             title: 'Transaksi Berhasil!',
             message:
                 'Data Transaksi DO dengan nomor ${_nomorDoController.text} berhasil disimpan.',
-            onConfirm: () => Navigator.pop(context),
+            onConfirm: () {
+              Navigator.pop(context); // Tutup Dialog
+              Navigator.pop(context); // Kembali ke Halaman List
+            },
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -860,6 +861,22 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
           );
         }
       }
+    } else {
+      // Android-style modal for validation errors
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Data Belum Lengkap'),
+          content: const Text(
+              'Silakan lengkapi semua data yang wajib diisi sebelum menyimpan transaksi.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('PAHAM'),
+            ),
+          ],
+        ),
+      );
     }
   }
 }
