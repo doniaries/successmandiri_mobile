@@ -33,9 +33,6 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
   final _nominalTransferController = TextEditingController();
   final _nomorDoController = TextEditingController(text: 'OTOMATIS (SISTEM)');
 
-  bool _isMismatch = false;
-  XFile? _buktiRekap;
-  XFile? _buktiTransfer;
   DateTime _selectedDate = DateTime.now();
   int? _selectedPenjualId;
   int? _selectedSupirId;
@@ -159,20 +156,6 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
     _sisaBayarController.dispose();
     _nomorDoController.dispose();
     super.dispose();
-  }
-
-  Future<void> _pickImage(bool isTransfer) async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        if (isTransfer) {
-          _buktiTransfer = image;
-        } else {
-          _buktiRekap = image;
-        }
-      });
-    }
   }
 
   double get _subTotal =>
@@ -704,9 +687,10 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                       Text(
                                         CurrencyFormatter.formatRupiah(currentSaldo),
                                         style: TextStyle(
-                                          fontSize: 14,
+                                          fontSize: 24,
                                           fontWeight: FontWeight.w900,
                                           color: isLow ? Colors.red[900] : Colors.black,
+                                          letterSpacing: -0.5,
                                         ),
                                       ),
                                     ],
@@ -755,7 +739,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      ],
+
 
                       // Keterangan Pembayaran (Untuk Selain Tunai/Transfer?)
                       // User minta: Cair di luar (tambah keterangan), belum dibayar (tambah keterangan)
@@ -854,9 +838,6 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
             caraBayar: _selectedCaraBayar,
             buktiTransfer: null,
             keteranganPembayaran: _keteranganPembayaranController.text,
-
-            isMismatch: false,
-            buktiRekap: null,
           );
 
       if (mounted) {

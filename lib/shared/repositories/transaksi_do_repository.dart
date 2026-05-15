@@ -91,8 +91,6 @@ class TransaksiDoRepository {
     XFile? buktiTransfer,
     String? keteranganPembayaran,
     String? nomorDo,
-    bool isMismatch = false,
-    XFile? buktiRekap,
   }) async {
     final Map<String, dynamic> data = {
       'tanggal': tanggal,
@@ -108,8 +106,6 @@ class TransaksiDoRepository {
       'keterangan_biaya_lain': keteranganBiayaLain,
       'cara_bayar': caraBayar,
       'keterangan_pembayaran': keteranganPembayaran,
-
-      'is_mismatch': isMismatch ? 1 : 0,
     };
 
     try {
@@ -126,12 +122,7 @@ class TransaksiDoRepository {
         );
       }
 
-      if (buktiRekap != null) {
-        data['bukti_rekap'] = await MultipartFile.fromFile(
-          buktiRekap.path,
-          filename: buktiRekap.name,
-        );
-      }
+
 
       final formData = FormData.fromMap(data);
 

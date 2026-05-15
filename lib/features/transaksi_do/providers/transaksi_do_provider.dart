@@ -158,8 +158,6 @@ class TransaksiDoProvider with ChangeNotifier {
     XFile? buktiTransfer,
     String? keteranganPembayaran,
     String? nomorDo,
-    bool isMismatch = false,
-    XFile? buktiRekap,
   }) async {
     _isSaving = true;
     _errorMessage = null;
@@ -182,8 +180,6 @@ class TransaksiDoProvider with ChangeNotifier {
         keteranganPembayaran: keteranganPembayaran,
 
         nomorDo: nomorDo,
-        isMismatch: isMismatch,
-        buktiRekap: buktiRekap,
       );
       await fetchTransactions(); // Refresh list
       _isSaving = false;
