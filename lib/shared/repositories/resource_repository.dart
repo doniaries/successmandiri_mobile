@@ -53,16 +53,18 @@ class ResourceRepository {
     }
   }
 
-  Future<void> storePenjual(Map<String, dynamic> data) async {
+  Future<Penjual?> storePenjual(Map<String, dynamic> data) async {
     try {
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
         await syncService.addToQueue(ApiConstants.penjual, 'POST', data);
-        return;
+        return null;
       }
-      await _apiClient.dio.post(ApiConstants.penjual, data: data);
+      final response = await _apiClient.dio.post(ApiConstants.penjual, data: data);
+      return Penjual.fromJson(response.data);
     } catch (e) {
       await syncService.addToQueue(ApiConstants.penjual, 'POST', data);
+      return null;
     }
   }
 
@@ -108,16 +110,18 @@ class ResourceRepository {
     }
   }
 
-  Future<void> storeSupir(Map<String, dynamic> data) async {
+  Future<Supir?> storeSupir(Map<String, dynamic> data) async {
     try {
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
         await syncService.addToQueue(ApiConstants.supir, 'POST', data);
-        return;
+        return null;
       }
-      await _apiClient.dio.post(ApiConstants.supir, data: data);
+      final response = await _apiClient.dio.post(ApiConstants.supir, data: data);
+      return Supir.fromJson(response.data);
     } catch (e) {
-     await syncService.addToQueue(ApiConstants.supir, 'POST', data);
+      await syncService.addToQueue(ApiConstants.supir, 'POST', data);
+      return null;
     }
   }
 

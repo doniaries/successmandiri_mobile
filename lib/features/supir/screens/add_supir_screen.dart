@@ -31,19 +31,19 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
     
     try {
       final provider = context.read<ResourceProvider>();
-      final success = await provider.addSupir({
+      final supir = await provider.addSupir({
         'nama': _namaController.text,
         'keterangan': _keteranganController.text,
         'status': 'Aktif', // Default status
       });
 
       if (mounted) {
-        if (success) {
+        if (supir != null) {
           SuccessDialog.show(
             context,
             title: 'Supir Ditambahkan!',
             message: 'Data supir ${_namaController.text} telah berhasil didaftarkan ke sistem.',
-            onConfirm: () => Navigator.pop(context),
+            onConfirm: () => Navigator.pop(context, supir),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(

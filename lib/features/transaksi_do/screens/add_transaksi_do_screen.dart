@@ -54,7 +54,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
     if (_sisaBayar > saldoPerusahaan) {
       return ['cair di luar', 'belum dibayar'];
     }
-    return ['tunai', 'transfer', 'tunai & transfer', 'cair di luar', 'belum dibayar'];
+    return ['tunai', 'transfer', 'cair di luar', 'belum dibayar'];
   }
 
   @override
@@ -393,8 +393,11 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                             child: IconButton(
                               icon: const Icon(Icons.add, color: Color(0xFF01579B)),
                               onPressed: () async {
-                                await Navigator.push(context, MaterialPageRoute(builder: (context) => const AddPenjualScreen()));
-                                if (mounted) provider.fetchFormData();
+                                final newPenjual = await Navigator.push(context, MaterialPageRoute(builder: (context) => const AddPenjualScreen()));
+                                if (mounted && newPenjual != null) {
+                                  await provider.fetchFormData();
+                                  _onPenjualChanged(newPenjual['id'], provider);
+                                }
                               },
                             ),
                           ),
@@ -757,88 +760,6 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Field Tambahan untuk Tunai & Transfer
-                      if (_selectedCaraBayar == 'tunai & transfer') ...[
-                        TextFormField(
-                          controller: _nominalTunaiController,
-                          decoration: _getInputDecoration(
-                            label: 'Nominal Tunai',
-                            icon: Icons.money_rounded,
-                            hint: 'Masukkan jumlah tunai',
-                          ).copyWith(prefixText: 'Rp '),
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                          keyboardType: TextInputType.text,
-                          inputFormatters: [CurrencyInputFormatter()],
-                          validator: (val) {
-                            if (val == null || val.isEmpty) return 'Isi nominal tunai';
-                            final amount = CurrencyInputFormatter.parse(val);
-                            if (amount > _sisaBayar) return 'Melebihi total bayar';
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _nominalTransferController,
-                          readOnly: true,
-                          decoration: _getInputDecoration(
-                            label: 'Nominal Transfer (Otomatis)',
-                            icon: Icons.account_balance_rounded,
-                            fillColor: Colors.blue[50],
-                          ),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF0D47A1),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-                      const SizedBox(height: 16),
-
-                      // Bukti Transfer (Hanya jika Transfer atau Tunai & Transfer)
-                      if (_selectedCaraBayar == 'transfer' || _selectedCaraBayar == 'tunai & transfer') ...[
-                        InkWell(
-                          onTap: () => _pickImage(true),
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[50],
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.grey[200]!),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.cloud_upload_outlined,
-                                  color: _buktiTransfer != null
-                                      ? Colors.green
-                                      : const Color(0xFF01579B),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    _buktiTransfer != null
-                                        ? 'Bukti Terpilih: ${_buktiTransfer!.name}'
-                                        : 'Upload Bukti Transfer (Screenshot)',
-                                    style: TextStyle(
-                                      color: _buktiTransfer != null
-                                          ? Colors.green[700]
-                                          : Colors.grey[700],
-                                      fontWeight: _buktiTransfer != null
-                                          ? FontWeight.bold
-                                          : FontWeight.normal,
-                                    ),
-                                  ),
-                                ),
-                                if (_buktiTransfer != null)
-                                  const Icon(
-                                    Icons.check_circle,
-                                    color: Colors.green,
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
                       ],
 
                       // Keterangan Pembayaran (Untuk Selain Tunai/Transfer?)
@@ -861,97 +782,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                         const SizedBox(height: 16),
                       ],
 
-                      const Divider(height: 32),
-                      
-                      // Section Validasi & Lampiran (Match Filament)
-                      const Text(
-                        'Validasi & Lampiran',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF01579B),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      
-                      // is_mismatch toggle
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: _isMismatch ? Colors.red[50] : Colors.grey[50],
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: _isMismatch ? Colors.red[200]! : Colors.grey[200]!,
-                          ),
-                        ),
-                        child: SwitchListTile(
-                          title: const Text(
-                            'Hitungan Meragukan',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                          subtitle: const Text(
-                            'Tandai jika data pembukuan tidak sesuai sistem',
-                            style: TextStyle(fontSize: 12),
-                          ),
-                          value: _isMismatch,
-                          onChanged: (val) => setState(() => _isMismatch = val),
-                          activeThumbColor: Colors.red,
-                          secondary: Icon(
-                            _isMismatch 
-                              ? Icons.report_problem_rounded 
-                              : Icons.check_circle_outline_rounded,
-                            color: _isMismatch ? Colors.red : Colors.green,
-                          ),
-                        ),
-                      ),
                       const SizedBox(height: 16),
-                      
-                      // bukti_rekap file upload
-                      InkWell(
-                        onTap: () => _pickImage(false),
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[50],
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.grey[200]!),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.receipt_long_rounded,
-                                color: _buktiRekap != null
-                                    ? Colors.green
-                                    : const Color(0xFF01579B),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  _buktiRekap != null
-                                      ? 'Bukti Rekap: ${_buktiRekap!.name}'
-                                      : 'Unggah Bukti Pedoman Rekap Kasir',
-                                  style: TextStyle(
-                                    color: _buktiRekap != null
-                                        ? Colors.green[700]
-                                        : Colors.grey[700],
-                                    fontWeight: _buktiRekap != null
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
-                                  ),
-                                ),
-                              ),
-                              if (_buktiRekap != null)
-                                const Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green,
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
 
                       const SizedBox(height: 24),
 
@@ -996,12 +827,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
       double totalTunaiDibutuhkan = 0;
       if (_selectedCaraBayar == 'tunai') {
         totalTunaiDibutuhkan = _sisaBayar;
-      } else if (_selectedCaraBayar == 'tunai & transfer') {
-        totalTunaiDibutuhkan = CurrencyInputFormatter.parse(_nominalTunaiController.text);
       } else if (_selectedCaraBayar == 'transfer') {
-        // Asumsi transfer tetap cek saldo jika ingin ketat, 
-        // tapi di Laravel JurnalObserver: transfer tidak mempengaruhi_kas (false).
-        // Maka kita biarkan 0 jika transfer murni agar sesuai logika Laravel terbaru.
         totalTunaiDibutuhkan = 0; 
       }
 
@@ -1038,13 +864,11 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
             ),
             keteranganBiayaLain: _keteranganBiayaLainController.text,
             caraBayar: _selectedCaraBayar,
-            buktiTransfer: _buktiTransfer,
+            buktiTransfer: null,
             keteranganPembayaran: _keteranganPembayaranController.text,
-            nominalTunai: _selectedCaraBayar == 'tunai & transfer' 
-                ? CurrencyInputFormatter.parse(_nominalTunaiController.text) 
-                : null,
-            isMismatch: _isMismatch,
-            buktiRekap: _buktiRekap,
+            nominalTunai: null,
+            isMismatch: false,
+            buktiRekap: null,
           );
 
       if (mounted) {

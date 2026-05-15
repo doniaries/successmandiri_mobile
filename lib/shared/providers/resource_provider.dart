@@ -339,25 +339,25 @@ class ResourceProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> addPenjual(Map<String, dynamic> data) async {
+  Future<Penjual?> addPenjual(Map<String, dynamic> data) async {
     try {
-      await _repository.storePenjual(data);
+      final penjual = await _repository.storePenjual(data);
       await fetchResources('penjual', refresh: true);
-      return true;
+      return penjual;
     } catch (e) {
       debugPrint('Error adding penjual: $e');
-      return false;
+      return null;
     }
   }
 
-  Future<bool> addSupir(Map<String, dynamic> data) async {
+  Future<Supir?> addSupir(Map<String, dynamic> data) async {
     try {
-      await _repository.storeSupir(data);
+      final supir = await _repository.storeSupir(data);
       await fetchResources('supir', refresh: true);
-      return true;
+      return supir;
     } catch (e) {
       debugPrint('Error adding supir: $e');
-      return false;
+      return null;
     }
   }
 

@@ -35,7 +35,7 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
     
     try {
       final provider = context.read<ResourceProvider>();
-      final success = await provider.addPenjual({
+      final penjual = await provider.addPenjual({
         'nama': _namaController.text,
         'telepon': _teleponController.text,
         'alamat': _alamatController.text,
@@ -43,12 +43,12 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
       });
 
       if (mounted) {
-        if (success) {
+        if (penjual != null) {
           SuccessDialog.show(
             context,
             title: 'Penjual Ditambahkan!',
             message: 'Data penjual ${_namaController.text} telah berhasil didaftarkan ke sistem.',
-            onConfirm: () => Navigator.pop(context),
+            onConfirm: () => Navigator.pop(context, penjual),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
