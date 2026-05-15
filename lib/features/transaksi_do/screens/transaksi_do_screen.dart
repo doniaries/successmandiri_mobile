@@ -6,6 +6,7 @@ import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.d
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/add_transaksi_do_screen.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_detail_screen.dart';
+import 'package:sawitappmobile/core/services/sync_service.dart';
 
 class TransaksiDoScreen extends StatefulWidget {
   const TransaksiDoScreen({super.key});
@@ -50,6 +51,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
           final txProvider = context.read<TransaksiDoProvider>();
           final dashboardProvider = context.read<DashboardProvider>();
           
+          await SyncService().syncNow();
           await txProvider.fetchTransactions();
           await dashboardProvider.fetchSummary();
         },
@@ -60,6 +62,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
             SliverToBoxAdapter(
               child: _buildSummaryHeader(),
             ),
+            _buildPendingSyncBanner(),
             SliverToBoxAdapter(
               child: _buildCategoryFilter(),
             ),
@@ -336,6 +339,51 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                     : const SizedBox.shrink();
               },
               childCount: filteredTransactions.length + (provider.hasMore ? 1 : 0),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPendingSyncBanner() {
+    return ValueListenableBuilder<int>(
+      valueListenable: SyncService().pendingSyncCount,
+      builder: (context, count, _) {
+        if (count == 0) return const SliverToBoxAdapter(child: SizedBox.shrink());
+        
+        return SliverToBoxAdapter(
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.orange[50],
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.orange[200]!),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.sync_problem_rounded, color: Colors.orange, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    '$count transaksi menunggu sinkronisasi',
+                    style: TextStyle(
+                      color: Colors.orange[900],
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => SyncService().syncNow(),
+                  style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    foregroundColor: Colors.orange[900],
+                  ),
+                  child: const Text('Sinkron Sekarang'),
+                ),
+              ],
             ),
           ),
         );
