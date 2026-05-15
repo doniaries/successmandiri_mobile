@@ -32,7 +32,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
   final _nominalTunaiController = TextEditingController();
   final _nominalTransferController = TextEditingController();
 
-  bool _isMismatch = false;
+  final bool _isMismatch = false;
   XFile? _buktiRekap;
   XFile? _buktiTransfer;
   DateTime _selectedDate = DateTime.now();
@@ -40,6 +40,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
   int? _selectedSupirId;
   String _selectedCaraBayar = 'tunai';
   double _currentSellerDebt = 0;
+  bool _penjualSebagaiSupir = false;
 
   // Controller tambahan untuk field read-only
   final _subTotalController = TextEditingController();
@@ -117,6 +118,19 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
     }
 
     setState(() {});
+  }
+
+  void _onPenjualChanged(int? val, TransaksiDoProvider provider) {
+    setState(() {
+      _selectedPenjualId = val;
+      if (val != null) {
+        final penjual = provider.penjuals.firstWhere((p) => p['id'] == val);
+        _currentSellerDebt = double.tryParse(penjual['sisa_hutang']?.toString() ?? '0') ?? 0;
+      } else {
+        _currentSellerDebt = 0;
+      }
+    });
+    _onFieldChanged();
   }
 
   @override
@@ -312,208 +326,101 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                       const SizedBox(height: 16),
 
                       // Penjual Dropdown
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: DropdownButtonFormField<int>(
-                              initialValue: _selectedPenjualId,
-                              isExpanded: true,
-                              decoration: _getInputDecoration(
-                                label: 'Penjual',
-                                icon: Icons.person_outline_rounded,
-                                helperText: _selectedPenjualId != null
-                                    ? 'Hutang: ${currencyFormat.format(_currentSellerDebt)}'
-                                    : null,
-                              ),
-                              items: provider.penjuals.map<DropdownMenuItem<int>>((
-                                p,
-                              ) {
-                                final double hutang =
-                                    double.tryParse(
-                                      p['sisa_hutang']?.toString() ?? '0',
-                                    ) ??
-                                    0;
-                                return DropdownMenuItem<int>(
-                                  value: p['id'],
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        p['nama'].toString().toUpperCase(),
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      if (hutang > 0)
-                                        Text(
-                                          'Hutang: ${currencyFormat.format(hutang)}',
-                                          style: TextStyle(
-                                            fontSize: 9,
-                                            color: Colors.red[700],
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                );
-                              }).toList(),
-                              selectedItemBuilder: (BuildContext context) {
-                                return provider.penjuals.map<Widget>((p) {
-                                  return Text(
-                                    p['nama'].toString().toUpperCase(),
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  );
-                                }).toList();
-                              },
-                              onChanged: (val) {
-                                setState(() {
-                                  _selectedPenjualId = val;
-                                  final penjual = provider.penjuals.firstWhere(
-                                    (p) => p['id'] == val,
-                                  );
-                                  _currentSellerDebt =
-                                      double.tryParse(
-                                        penjual['sisa_hutang']?.toString() ??
-                                            '0',
-                                      ) ??
-                                      0;
-                                });
-                                _onFieldChanged();
-                              },
-                              validator: (val) =>
-                                  val == null ? 'Pilih penjual' : null,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            margin: const EdgeInsets.only(top: 4),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF01579B).withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: IconButton(
-                              icon: const Icon(
-                                Icons.add,
-                                color: Color(0xFF01579B),
-                              ),
-                              onPressed: () async {
-                                await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const AddPenjualScreen(),
-                                  ),
-                                );
-                                if (mounted) provider.fetchFormData();
-                              },
-                            ),
-                          ),
                         ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Penjual sebagai Supir Checkbox
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              height: 24, width: 24,
+                              child: Checkbox(
+                                value: _penjualSebagaiSupir,
+                                activeColor: const Color(0xFF01579B),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                onChanged: (val) {
+                                  setState(() {
+                                    _penjualSebagaiSupir = val ?? false;
+                                    if (_penjualSebagaiSupir) _selectedSupirId = null;
+                                  });
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Penjual sekaligus Supir?',
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF455A64)),
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 16),
 
-                      // Supir Dropdown
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: DropdownButtonFormField<int>(
-                              initialValue: _selectedSupirId,
-                              isExpanded: true,
-                              decoration: _getInputDecoration(
-                                label: 'Supir',
-                                icon: Icons.local_shipping_outlined,
-                              ),
-                              items: provider.supirs.map<DropdownMenuItem<int>>((
-                                s,
-                              ) {
-                                final double hutang =
-                                    double.tryParse(
-                                      s['sisa_hutang']?.toString() ?? '0',
-                                    ) ??
-                                    0;
-                                return DropdownMenuItem<int>(
-                                  value: s['id'],
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        s['nama'].toString().toUpperCase(),
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      if (hutang > 0)
-                                        Text(
-                                          'Hutang: ${currencyFormat.format(hutang)}',
-                                          style: TextStyle(
-                                            fontSize: 9,
-                                            color: Colors.red[700],
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                );
-                              }).toList(),
-                              selectedItemBuilder: (BuildContext context) {
-                                return provider.supirs.map<Widget>((s) {
-                                  return Text(
-                                    s['nama'].toString().toUpperCase(),
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
+                      // Supir Dropdown (Hidden if penjual_sebagai_supir)
+                      if (!_penjualSebagaiSupir) ...[
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: DropdownButtonFormField<int>(
+                                initialValue: _selectedSupirId,
+                                isExpanded: true,
+                                decoration: _getInputDecoration(
+                                  label: 'Supir',
+                                  icon: Icons.local_shipping_outlined,
+                                ),
+                                items: provider.supirs.map<DropdownMenuItem<int>>((s) {
+                                  final double hutang = double.tryParse(s['sisa_hutang']?.toString() ?? '0') ?? 0;
+                                  return DropdownMenuItem<int>(
+                                    value: s['id'],
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(s['nama'].toString().toUpperCase(), 
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                                        if (hutang > 0)
+                                          Text('Hutang: ${currencyFormat.format(hutang)}',
+                                            style: TextStyle(fontSize: 9, color: Colors.red[700], fontWeight: FontWeight.bold)),
+                                      ],
                                     ),
-                                    overflow: TextOverflow.ellipsis,
                                   );
-                                }).toList();
-                              },
-                              onChanged: (val) =>
-                                  setState(() => _selectedSupirId = val),
-                              validator: (val) =>
-                                  val == null ? 'Pilih supir' : null,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            margin: const EdgeInsets.only(top: 4),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF01579B).withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: IconButton(
-                              icon: const Icon(
-                                Icons.add,
-                                color: Color(0xFF01579B),
+                                }).toList(),
+                                selectedItemBuilder: (BuildContext context) {
+                                  return provider.supirs.map<Widget>((s) {
+                                    return Text(s['nama'].toString().toUpperCase(),
+                                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                                      overflow: TextOverflow.ellipsis,
+                                    );
+                                  }).toList();
+                                },
+                                onChanged: (val) => setState(() => _selectedSupirId = val),
+                                validator: (val) => val == null ? 'Pilih supir' : null,
                               ),
-                              onPressed: () async {
-                                await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const AddSupirScreen(),
-                                  ),
-                                );
-                                if (mounted) provider.fetchFormData();
-                              },
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
+                            const SizedBox(width: 8),
+                            Container(
+                              margin: const EdgeInsets.only(top: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF01579B).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: IconButton(
+                                icon: const Icon(Icons.add, color: Color(0xFF01579B)),
+                                onPressed: () async {
+                                  await Navigator.push(context, MaterialPageRoute(builder: (context) => const AddSupirScreen()));
+                                  if (mounted) provider.fetchFormData();
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                      ],
 
                       // Kendaraan Dropdown (No Polisi)
                       TextFormField(
@@ -671,6 +578,37 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                           color: Color(0xFF01579B),
                           fontSize: 18,
                         ),
+                      ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Indikator Saldo Perusahaan (Match Filament Placeholder)
+                      Builder(
+                        builder: (context) {
+                          final double currentSaldo = context.select<DashboardProvider, double>((p) => p.summary?.saldo ?? 0);
+                          final bool isLow = currentSaldo < 500000; // Contoh threshold warning
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: isLow ? const Color(0xFFFFEBEE) : const Color(0xFFE8F5E9),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: isLow ? Colors.red.shade100 : Colors.green.shade100),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.account_balance_rounded, size: 18, color: isLow ? Colors.red : Colors.green),
+                                const SizedBox(width: 10),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('SALDO PERUSAHAAN SAAT INI', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: isLow ? Colors.red : Colors.green, letterSpacing: 0.5)),
+                                    Text(CurrencyFormatter.formatRupiah(currentSaldo), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: isLow ? Colors.red.shade900 : Colors.green.shade900)),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(height: 16),
 
@@ -937,7 +875,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                 ),
               ),
       ),
-    );
+    )
   }
 
   void _submitForm() async {

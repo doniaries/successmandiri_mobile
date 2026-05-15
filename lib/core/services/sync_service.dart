@@ -172,7 +172,7 @@ class SyncService {
 
     try {
       // Sync Penjual
-      final penjuals = await repository.getPenjuals();
+      await repository.getPenjuals();
       // getPenjuals already calls cacheData, but we can be explicit if needed
       
       // Sync Supir

@@ -17,7 +17,7 @@ class NotificationService {
       android: initializationSettingsAndroid,
     );
 
-    await _notificationsPlugin.initialize(initializationSettings);
+    await _notificationsPlugin.initialize(settings: initializationSettings);
   }
   
   Future<void> showNotification({
@@ -50,4 +50,3 @@ class NotificationService {
     await NavigationService.popToHome();
   }
 }
-

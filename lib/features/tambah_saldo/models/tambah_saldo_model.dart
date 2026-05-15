@@ -4,11 +4,7 @@ class TambahSaldoModel {
   final int userId;
   final DateTime tanggal;
   final double nominal;
-  final String keperluan;
-  String status;
-  DateTime? tanggalProses;
-  final int? prosesBy;
-  final String? catatanPimpinan;
+  final String keterangan;
   final String? buktiTransfer;
   final String? userName;
 
@@ -18,11 +14,7 @@ class TambahSaldoModel {
     required this.userId,
     required this.tanggal,
     required this.nominal,
-    required this.keperluan,
-    required this.status,
-    this.tanggalProses,
-    this.prosesBy,
-    this.catatanPimpinan,
+    required this.keterangan,
     this.buktiTransfer,
     this.userName,
   });
@@ -32,18 +24,23 @@ class TambahSaldoModel {
       id: json['id'],
       perusahaanId: json['perusahaan_id'],
       userId: json['user_id'],
-      tanggal: DateTime.parse(json['tanggal_pengajuan']),
+      tanggal: DateTime.parse(json['tanggal']),
       nominal: double.parse(json['nominal'].toString()),
-      keperluan: json['keperluan'],
-      status: json['status'],
-      tanggalProses: json['tanggal_proses'] != null 
-          ? DateTime.parse(json['tanggal_proses']) 
-          : null,
-      prosesBy: json['proses_by'],
-      catatanPimpinan: json['catatan_pimpinan'],
+      keterangan: json['keterangan'] ?? '',
       buktiTransfer: json['bukti_transfer'],
       userName: json['user'] != null ? json['user']['name'] : null,
     );
   }
-}
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'perusahaan_id': perusahaanId,
+      'user_id': userId,
+      'tanggal': tanggal.toIso8601String(),
+      'nominal': nominal,
+      'keterangan': keterangan,
+      'bukti_transfer': buktiTransfer,
+    };
+  }
+}

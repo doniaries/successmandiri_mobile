@@ -15,14 +15,11 @@ class TambahSaldoListScreen extends StatefulWidget {
 }
 
 class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
-  String? _selectedStatus;
-
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<TambahSaldoProvider>().fetchRequests(status: _selectedStatus);
+      context.read<TambahSaldoProvider>().fetchRequests();
     });
   }
 
@@ -30,22 +27,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Daftar Tambah Saldo'),
-        actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.filter_list),
-            onSelected: (status) {
-              setState(() => _selectedStatus = status == 'all' ? null : status);
-              context.read<TambahSaldoProvider>().fetchRequests(status: _selectedStatus);
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(value: 'all', child: Text('Semua')),
-              const PopupMenuItem(value: 'pending', child: Text('Pending')),
-              const PopupMenuItem(value: 'disetujui', child: Text('Disetujui')),
-              const PopupMenuItem(value: 'ditolak', child: Text('Ditolak')),
-            ],
-          ),
-        ],
+        title: const Text('Riwayat Tambah Saldo'),
       ),
       body: Consumer<TambahSaldoProvider>(
         builder: (context, provider, child) {
@@ -55,7 +37,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
               itemCount: 5,
               itemBuilder: (context, index) => const Padding(
                 padding: EdgeInsets.symmetric(vertical: 8),
-                child: SkeletonLoader(height: 120, width: double.infinity, borderRadius: 12),
+                child: SkeletonLoader(height: 100, width: double.infinity, borderRadius: 12),
               ),
             );
           }
@@ -65,11 +47,11 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
           }
 
           if (provider.requests.isEmpty) {
-            return const Center(child: Text('Tidak ada data tambah saldo.'));
+            return const Center(child: Text('Belum ada transaksi tambah saldo.'));
           }
 
           return RefreshIndicator(
-            onRefresh: () => provider.fetchRequests(status: _selectedStatus),
+            onRefresh: () => provider.fetchRequests(),
             child: ListView.builder(
               padding: const EdgeInsets.all(10),
               itemCount: provider.requests.length,
@@ -91,21 +73,15 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                     },
                     child: ListTile(
                       contentPadding: const EdgeInsets.all(16),
-                      title: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            CurrencyFormatter.formatRupiah(request.nominal),
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                          ),
-                          _buildStatusChip(request.status),
-                        ],
+                      title: Text(
+                        CurrencyFormatter.formatRupiah(request.nominal),
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                       ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 8),
-                          Text(request.keperluan, style: TextStyle(color: Colors.grey[700])),
+                          Text(request.keterangan, style: TextStyle(color: Colors.grey[700])),
                           const SizedBox(height: 4),
                           Row(
                             children: [
@@ -143,32 +119,4 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
       ),
     );
   }
-
-  Widget _buildStatusChip(String status) {
-    Color color;
-    switch (status.toLowerCase()) {
-      case 'disetujui':
-        color = Colors.green;
-        break;
-      case 'ditolak':
-        color = const Color(0xFF455A64);
-        break;
-      default:
-        color = Colors.orange;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color),
-      ),
-      child: Text(
-        status.toUpperCase(),
-        style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
 }
-

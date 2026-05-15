@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/features/tambah_saldo/providers/tambah_saldo_provider.dart';
-import 'package:sawitappmobile/features/auth/providers/auth_provider.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 
@@ -42,15 +41,9 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.watch<AuthProvider>().user;
-    final role = user?.role?.toLowerCase();
-    final isDirect = ['admin', 'pimpinan', 'super_admin'].contains(role);
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          isDirect ? 'Tambah Saldo Langsung' : 'Pengajuan Tambah Saldo',
-        ),
+        title: const Text('Tambah Saldo'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -67,7 +60,7 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
                     prefixText: 'Rp ',
                     border: OutlineInputBorder(),
                   ),
-                  keyboardType: TextInputType.text,
+                  keyboardType: TextInputType.number,
                   inputFormatters: [CurrencyInputFormatter()],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -80,11 +73,9 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
                 InkWell(
                   onTap: () => _selectDate(context),
                   child: InputDecorator(
-                    decoration: InputDecoration(
-                      labelText: isDirect
-                          ? 'Tanggal Transaksi'
-                          : 'Tanggal Pengajuan',
-                      border: const OutlineInputBorder(),
+                    decoration: const InputDecoration(
+                      labelText: 'Tanggal Transaksi',
+                      border: OutlineInputBorder(),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -104,13 +95,13 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
                 TextFormField(
                   controller: _keteranganController,
                   decoration: const InputDecoration(
-                    labelText: 'Keperluan / Keterangan',
+                    labelText: 'Keterangan',
                     border: OutlineInputBorder(),
                   ),
                   maxLines: 3,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Mohon masukkan keperluan top up';
+                      return 'Mohon masukkan keterangan';
                     }
                     return null;
                   },
@@ -119,32 +110,21 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
                 ElevatedButton(
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      // Bersihkan format titik ribuan sebelum dikirim
-                      final nominalClean = _nominalController.text.replaceAll(
-                        '.',
-                        '',
+                      final nominalClean = _nominalController.text.replaceAll('.', '');
+                      
+                      final success = await context.read<TambahSaldoProvider>().createRequest(
+                        nominal: double.parse(nominalClean),
+                        tanggal: DateFormat('yyyy-MM-dd').format(_selectedDate),
+                        keterangan: _keteranganController.text,
                       );
-                      final success = await context
-                          .read<TambahSaldoProvider>()
-                          .createRequest(
-                            nominal: double.parse(nominalClean),
-                            tanggal: DateFormat(
-                              'yyyy-MM-dd',
-                            ).format(_selectedDate),
-                            keterangan: _keteranganController.text,
-                          );
 
                       if (!context.mounted) return;
 
                       if (success) {
                         SuccessDialog.show(
                           context,
-                          title: isDirect
-                              ? 'Saldo Bertambah!'
-                              : 'Permintaan Terkirim!',
-                          message: isDirect
-                              ? 'Berhasil menambah saldo sebesar ${CurrencyFormatter.formatRupiah(double.parse(nominalClean))}.'
-                              : 'Permintaan tambah saldo sebesar ${CurrencyFormatter.formatRupiah(double.parse(nominalClean))} berhasil dikirim.',
+                          title: 'Saldo Bertambah!',
+                          message: 'Berhasil menambah saldo sebesar ${CurrencyFormatter.formatRupiah(double.parse(nominalClean))}.',
                           onConfirm: () {
                             Navigator.pop(context); // Tutup dialog
                             if (mounted) {
@@ -156,10 +136,7 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              context
-                                      .read<TambahSaldoProvider>()
-                                      .errorMessage ??
-                                  'Gagal membuat permintaan',
+                              context.read<TambahSaldoProvider>().errorMessage ?? 'Gagal menambah saldo',
                             ),
                           ),
                         );
@@ -173,11 +150,7 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
                   ),
                   child: context.watch<TambahSaldoProvider>().isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : Text(
-                          isDirect
-                              ? 'Tambah Saldo Sekarang'
-                              : 'Kirim Permintaan',
-                        ),
+                      : const Text('Simpan Transaksi'),
                 ),
               ],
             ),
@@ -187,4 +160,3 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
     );
   }
 }
-

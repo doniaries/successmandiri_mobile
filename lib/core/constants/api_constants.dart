@@ -1,10 +1,11 @@
 class ApiConstants {
   static String get baseUrl {
     // 1. IP Lokal (Gunakan port 8000 untuk Laravel Serve)
-    return 'http://192.168.100.246:8000/api';
+    // return 'http://192.168.100.246:8000/api';
+    return 'http://localhost:8000/api';
 
     // 2. Produksi (Hapus komentar rute di bawah jika sudah online)
-    // return 'https://sawitapp.com/api';
+    //return 'https://sawit.successmandiri.com/api';
   }
 
   static String get storageUrl {

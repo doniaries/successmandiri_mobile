@@ -3,8 +3,6 @@ import 'package:sawitappmobile/core/network/api_client.dart';
 import 'package:sawitappmobile/features/tambah_saldo/models/tambah_saldo_model.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:dio/dio.dart';
-import 'package:image_picker/image_picker.dart';
 
 class TambahSaldoRepository {
   final ApiClient _apiClient;
@@ -25,7 +23,6 @@ class TambahSaldoRepository {
     try {
       final response = await _apiClient.dio.get(
         ApiConstants.tambahSaldo,
-        queryParameters: status != null ? {'status': status} : null,
       );
 
       final List<dynamic> data = _extractListData(response.data);
@@ -38,12 +35,12 @@ class TambahSaldoRepository {
   Future<dynamic> createTambahSaldo({
     required double nominal,
     required String tanggal,
-    String? keperluan,
+    String? keterangan,
   }) async {
     final Map<String, dynamic> data = {
       'nominal': nominal,
-      'tanggal_pengajuan': tanggal,
-      'keperluan': keperluan,
+      'tanggal': tanggal,
+      'keterangan': keterangan,
     };
 
     try {
@@ -64,70 +61,4 @@ class TambahSaldoRepository {
       return {'offline': true};
     }
   }
-
-  Future<dynamic> approveTambahSaldo(int id, {XFile? buktiTransfer, String? catatan}) async {
-    dynamic uploadData;
-    
-    if (buktiTransfer != null) {
-      uploadData = FormData.fromMap({
-        'bukti_transfer': await MultipartFile.fromFile(
-          buktiTransfer.path,
-          filename: buktiTransfer.name,
-        ),
-        'catatan_pimpinan': catatan,
-      });
-    } else {
-      uploadData = {
-        'catatan_pimpinan': catatan,
-      };
-    }
-
-    try {
-      final connectivity = await Connectivity().checkConnectivity();
-      if (connectivity.contains(ConnectivityResult.none)) {
-        await _syncService.addToQueue('${ApiConstants.tambahSaldo}/$id/approve', 'POST', {
-          'catatan_pimpinan': catatan,
-          'offline_file': buktiTransfer?.path,
-        });
-        return {'offline': true};
-      }
-
-      final response = await _apiClient.dio.post(
-        '${ApiConstants.tambahSaldo}/$id/approve',
-        data: uploadData,
-      );
-
-      return TambahSaldoModel.fromJson(response.data);
-    } catch (e) {
-      await _syncService.addToQueue('${ApiConstants.tambahSaldo}/$id/approve', 'POST', {
-        'catatan_pimpinan': catatan,
-      });
-      return {'offline': true};
-    }
-  }
-
-  Future<dynamic> rejectTambahSaldo(int id, {required String catatan}) async {
-    final Map<String, dynamic> data = {
-      'catatan_pimpinan': catatan,
-    };
-
-    try {
-      final connectivity = await Connectivity().checkConnectivity();
-      if (connectivity.contains(ConnectivityResult.none)) {
-        await _syncService.addToQueue('${ApiConstants.tambahSaldo}/$id/reject', 'POST', data);
-        return {'offline': true};
-      }
-
-      final response = await _apiClient.dio.post(
-        '${ApiConstants.tambahSaldo}/$id/reject',
-        data: data,
-      );
-
-      return TambahSaldoModel.fromJson(response.data);
-    } catch (e) {
-      await _syncService.addToQueue('${ApiConstants.tambahSaldo}/$id/reject', 'POST', data);
-      return {'offline': true};
-    }
-  }
 }
-

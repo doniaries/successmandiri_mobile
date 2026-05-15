@@ -664,9 +664,9 @@ class _NotificationButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Selector4<TransaksiDoProvider, TambahSaldoProvider, ResourceProvider, DashboardProvider, Map<String, dynamic>>(
       selector: (_, p1, p2, p3, p4) {
-        int total = (p1.hasNewData ? 1 : 0) + (p2.hasNewData ? p2.pendingCount : 0) + 
-                    (p3.hasNewDataFor('penjual') ? 1 : 0) + (p3.hasNewDataFor('supir') ? 1 : 0) + 
-                    (p3.hasNewDataFor('pekerja') ? 1 : 0) + (p3.hasNewDataFor('jurnal_keuangan') ? 1 : 0);
+        bool hasDo = p1.hasNewData;
+        bool hasResource = p3.hasNewDataFor('penjual') || p3.hasNewDataFor('supir') || p3.hasNewDataFor('pekerja') || p3.hasNewDataFor('jurnal_keuangan');
+        int total = (hasDo ? 1 : 0) + (hasResource ? 1 : 0);
         return {'total': total, 'pulsing': total > 0};
       },
       builder: (context, data, _) => Stack(
@@ -845,7 +845,7 @@ class _MenuGrid extends StatelessWidget {
       crossAxisCount: 3, padding: EdgeInsets.zero, crossAxisSpacing: 8, mainAxisSpacing: 8,
       children: [
         _MenuItem(label: 'Transaksi DO', icon: Icons.local_shipping_rounded, color: const Color(0xFF01579B), onTap: () { context.read<TransaksiDoProvider>().markAsSeen(); Navigator.push(context, MaterialPageRoute(builder: (_) => const TransaksiDoScreen())); }, badgeSelector: (c) => c.select<DashboardProvider, int>((p) => p.summary?.stats.transaksi.today.count ?? 0), hasNewDataSelector: (c) => c.select<TransaksiDoProvider, bool>((p) => p.hasNewData)),
-        _MenuItem(label: 'Tambah Saldo', icon: Icons.add_to_photos_rounded, color: const Color(0xFFF39C12), onTap: () { context.read<TambahSaldoProvider>().markAsSeen(); Navigator.push(context, MaterialPageRoute(builder: (_) => const TambahSaldoListScreen())); }, badgeSelector: (c) => c.select<TambahSaldoProvider, int>((p) => p.pendingCount), hasNewDataSelector: (c) => c.select<TambahSaldoProvider, bool>((p) => p.hasNewData)),
+        _MenuItem(label: 'Tambah Saldo', icon: Icons.add_to_photos_rounded, color: const Color(0xFFF39C12), onTap: () { Navigator.push(context, MaterialPageRoute(builder: (_) => const TambahSaldoListScreen())); }, badgeSelector: (c) => 0, hasNewDataSelector: (c) => false),
         _MenuItem(label: 'Penjual', icon: Icons.storefront_rounded, color: const Color(0xFF27AE60), onTap: () { context.read<ResourceProvider>().markAsSeen('penjual'); Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceListScreen(title: 'Penjual', resourceType: 'penjual'))); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.penjualCount), hasNewDataSelector: (c) => c.select<ResourceProvider, bool>((p) => p.hasNewDataFor('penjual'))),
         _MenuItem(label: 'Supir', icon: Icons.person_rounded, color: const Color(0xFFE67E22), onTap: () { context.read<ResourceProvider>().markAsSeen('supir'); Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceListScreen(title: 'Supir', resourceType: 'supir'))); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.supirCount), hasNewDataSelector: (c) => c.select<ResourceProvider, bool>((p) => p.hasNewDataFor('supir'))),
         _MenuItem(label: 'Pekerja', icon: Icons.engineering_rounded, color: const Color(0xFF8E44AD), onTap: () { context.read<ResourceProvider>().markAsSeen('pekerja'); Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceListScreen(title: 'Pekerja', resourceType: 'pekerja'))); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.pekerjaCount), hasNewDataSelector: (c) => c.select<ResourceProvider, bool>((p) => p.hasNewDataFor('pekerja'))),
