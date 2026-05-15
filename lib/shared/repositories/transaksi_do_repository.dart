@@ -90,7 +90,6 @@ class TransaksiDoRepository {
     required String caraBayar,
     XFile? buktiTransfer,
     String? keteranganPembayaran,
-    double? nominalTunai,
     String? nomorDo,
     bool isMismatch = false,
     XFile? buktiRekap,
@@ -109,7 +108,7 @@ class TransaksiDoRepository {
       'keterangan_biaya_lain': keteranganBiayaLain,
       'cara_bayar': caraBayar,
       'keterangan_pembayaran': keteranganPembayaran,
-      'nominal_tunai': nominalTunai,
+
       'is_mismatch': isMismatch ? 1 : 0,
     };
 

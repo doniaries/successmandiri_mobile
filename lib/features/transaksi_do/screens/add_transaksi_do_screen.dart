@@ -51,7 +51,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
   List<String> get _currentCaraBayarOptions {
     final double saldoPerusahaan = context.read<DashboardProvider>().summary?.saldo ?? 0;
     if (_sisaBayar > saldoPerusahaan) {
-      return ['cair di luar', 'belum dibayar'];
+      return ['transfer', 'cair di luar', 'belum dibayar'];
     }
     return ['tunai', 'transfer', 'cair di luar', 'belum dibayar'];
   }
@@ -854,7 +854,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
             caraBayar: _selectedCaraBayar,
             buktiTransfer: null,
             keteranganPembayaran: _keteranganPembayaranController.text,
-            nominalTunai: null,
+
             isMismatch: false,
             buktiRekap: null,
           );

@@ -157,7 +157,6 @@ class TransaksiDoProvider with ChangeNotifier {
     required String caraBayar,
     XFile? buktiTransfer,
     String? keteranganPembayaran,
-    double? nominalTunai,
     String? nomorDo,
     bool isMismatch = false,
     XFile? buktiRekap,
@@ -181,7 +180,7 @@ class TransaksiDoProvider with ChangeNotifier {
         caraBayar: caraBayar,
         buktiTransfer: buktiTransfer,
         keteranganPembayaran: keteranganPembayaran,
-        nominalTunai: nominalTunai,
+
         nomorDo: nomorDo,
         isMismatch: isMismatch,
         buktiRekap: buktiRekap,

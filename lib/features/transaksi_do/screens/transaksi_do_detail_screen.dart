@@ -92,11 +92,6 @@ class TransaksiDoDetailScreen extends StatelessWidget {
                 isBold: true,
                 color: const Color(0xFF01579B),
               ),
-              if (transaction.nominalTunai != null && transaction.nominalTunai! > 0) ...[
-                const SizedBox(height: 4),
-                _buildInfoRow(Icons.money, 'Porsi Tunai', CurrencyFormatter.formatRupiah(transaction.nominalTunai!)),
-                _buildInfoRow(Icons.account_balance, 'Porsi Transfer', CurrencyFormatter.formatRupiah(transaction.sisaBayar - transaction.nominalTunai!)),
-              ],
             ]),
             
             const SizedBox(height: 20),

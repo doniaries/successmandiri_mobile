@@ -20,7 +20,7 @@ class TransaksiDo {
   final double sisaHutangPenjual;
   final String? buktiTransfer;
   final String? keteranganPembayaran;
-  final double? nominalTunai;
+
 
   final bool isMismatch;
   final String? buktiRekap;
@@ -47,7 +47,7 @@ class TransaksiDo {
     required this.sisaHutangPenjual,
     this.buktiTransfer,
     this.keteranganPembayaran,
-    this.nominalTunai,
+
     this.isMismatch = false,
     this.buktiRekap,
   });
@@ -82,7 +82,7 @@ class TransaksiDo {
       sisaHutangPenjual: double.tryParse(json['sisa_hutang_penjual']?.toString() ?? '0') ?? 0,
       buktiTransfer: json['bukti_transfer'],
       keteranganPembayaran: json['keterangan_pembayaran'],
-      nominalTunai: double.tryParse(json['nominal_tunai']?.toString() ?? ''),
+
       isMismatch: json['is_mismatch'] == 1 || json['is_mismatch'] == true,
       buktiRekap: json['bukti_rekap'],
     );
