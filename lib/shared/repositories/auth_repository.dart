@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../core/constants/api_constants.dart';
-import '../core/network/api_client.dart';
+import 'package:sawitappmobile/core/constants/api_constants.dart';
+import 'package:sawitappmobile/core/network/api_client.dart';
 import 'package:sawitappmobile/features/auth/models/user_model.dart';
 
 class AuthRepository {

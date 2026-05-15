@@ -5,10 +5,10 @@ import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/features/auth/providers/auth_provider.dart';
 import 'package:sawitappmobile/features/jurnal_keuangan/models/jurnal_keuangan_model.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
-import '../jurnal_keuangan/jurnal_keuangan_detail_screen.dart';
+import 'package:sawitappmobile/features/jurnal_keuangan/screens/jurnal_keuangan_detail_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shimmer/shimmer.dart';
-import '../../core/constants/api_constants.dart';
+import 'package:sawitappmobile/core/constants/api_constants.dart';
 
 class FinanceJournalScreen extends StatefulWidget {
   const FinanceJournalScreen({super.key});

@@ -5,9 +5,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:sawitappmobile/features/auth/providers/auth_provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/shared/widgets/custom_loading_logo.dart';
-import '../auth/login_screen.dart';
-import './role_menu_settings_screen.dart';
-import './app_version_setting_screen.dart';
+import 'package:sawitappmobile/features/auth/screens/login_screen.dart';
+import 'package:sawitappmobile/features/profile/screens/role_menu_settings_screen.dart';
+import 'package:sawitappmobile/features/profile/screens/app_version_setting_screen.dart';
 import 'package:sawitappmobile/shared/widgets/change_password_dialog.dart';
 
 class ProfileScreen extends StatefulWidget {

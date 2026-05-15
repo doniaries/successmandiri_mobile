@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:sawitappmobile/features/auth/providers/auth_provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
-import '../main_navigation_screen.dart';
+import 'package:sawitappmobile/shared/screens/main_navigation_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

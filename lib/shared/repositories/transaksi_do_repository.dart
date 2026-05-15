@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
-import '../core/constants/api_constants.dart';
-import '../core/network/api_client.dart';
+import 'package:sawitappmobile/core/constants/api_constants.dart';
+import 'package:sawitappmobile/core/network/api_client.dart';
 import 'package:sawitappmobile/features/transaksi_do/models/transaksi_do_model.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';

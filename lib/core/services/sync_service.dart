@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
-import '../core/network/api_client.dart';
-import 'database_service.dart';
-import 'notification_service.dart';
+import 'package:sawitappmobile/core/network/api_client.dart';
+import 'package:sawitappmobile/core/services/database_service.dart';
+import 'package:sawitappmobile/core/services/notification_service.dart';
 
 class SyncService {
   static final SyncService _instance = SyncService._internal();
@@ -117,6 +117,7 @@ class SyncService {
               'nama': item['nama'],
               'telepon': item['telepon'],
               'sisa_hutang': double.tryParse(item['sisa_hutang']?.toString() ?? '0'),
+              'perusahaan_id': item['perusahaan_id'],
             };
           } else if (table == 'kendaraan') {
             mappedData = {

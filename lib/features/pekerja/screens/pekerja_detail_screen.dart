@@ -7,7 +7,7 @@ import 'package:sawitappmobile/shared/models/mutasi_hutang_model.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/features/operasional/screens/pay_debt_screen.dart';
-import 'edit_pekerja_screen.dart';
+import 'package:sawitappmobile/features/pekerja/screens/edit_pekerja_screen.dart';
 
 class PekerjaDetailScreen extends StatefulWidget {
   final Pekerja pekerja;

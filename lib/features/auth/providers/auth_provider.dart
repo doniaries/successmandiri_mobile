@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sawitappmobile/features/auth/models/user_model.dart';
 import 'package:sawitappmobile/shared/repositories/auth_repository.dart';
 import 'package:sawitappmobile/core/services/session_service.dart';
-import '../core/navigation/navigation_service.dart';
+import 'package:sawitappmobile/core/navigation/navigation_service.dart';
 import 'package:sawitappmobile/features/auth/screens/login_screen.dart';
 
 class AuthProvider with ChangeNotifier {

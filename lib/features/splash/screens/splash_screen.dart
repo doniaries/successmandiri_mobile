@@ -8,9 +8,9 @@ import 'dart:io';
 import 'package:sawitappmobile/features/auth/providers/auth_provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 
-import '../auth/login_screen.dart';
-import '../main_navigation_screen.dart';
-import '../permission_wizard_screen.dart';
+import 'package:sawitappmobile/features/auth/screens/login_screen.dart';
+import 'package:sawitappmobile/shared/screens/main_navigation_screen.dart';
+import 'package:sawitappmobile/shared/screens/permission_wizard_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

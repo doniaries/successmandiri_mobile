@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
-import 'dashboard/dashboard_screen.dart';
-import 'profile/profile_screen.dart';
-import 'finance/finance_journal_screen.dart';
-import 'operasional/operasional_screen.dart';
-import 'transaksi_do/transaksi_do_screen.dart';
+import 'package:sawitappmobile/features/dashboard/screens/dashboard_screen.dart';
+import 'package:sawitappmobile/features/profile/screens/profile_screen.dart';
+import 'package:sawitappmobile/features/operasional/screens/finance_journal_screen.dart';
+import 'package:sawitappmobile/features/operasional/screens/operasional_screen.dart';
+import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});

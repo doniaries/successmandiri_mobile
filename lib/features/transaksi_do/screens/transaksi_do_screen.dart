@@ -4,8 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_provider.dart';
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
-import 'add_transaksi_do_screen.dart';
-import 'transaksi_do_detail_screen.dart';
+import 'package:sawitappmobile/features/transaksi_do/screens/add_transaksi_do_screen.dart';
+import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_detail_screen.dart';
 
 class TransaksiDoScreen extends StatefulWidget {
   const TransaksiDoScreen({super.key});

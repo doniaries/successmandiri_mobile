@@ -1,5 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import '../core/navigation/navigation_service.dart';
+import 'package:sawitappmobile/core/navigation/navigation_service.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -19,7 +19,7 @@ class NotificationService {
 
     await _notificationsPlugin.initialize(initializationSettings);
   }
-
+  
   Future<void> showNotification({
     required int id,
     required String title,
@@ -40,10 +40,10 @@ class NotificationService {
     );
 
     await _notificationsPlugin.show(
-      id,
-      title,
-      body,
-      platformChannelSpecifics,
+      id: id,
+      title: title,
+      body: body,
+      notificationDetails: platformChannelSpecifics,
     );
 
     // Auto return to index on notification

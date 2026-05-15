@@ -7,7 +7,7 @@ import 'package:sawitappmobile/shared/models/mutasi_hutang_model.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/features/operasional/screens/pay_debt_screen.dart';
-import 'edit_supir_screen.dart';
+import 'package:sawitappmobile/features/supir/screens/edit_supir_screen.dart';
 
 class SupirDetailScreen extends StatefulWidget {
   final Supir supir;

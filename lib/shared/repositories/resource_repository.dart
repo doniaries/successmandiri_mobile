@@ -1,5 +1,5 @@
-import '../core/network/api_client.dart';
-import '../core/constants/api_constants.dart';
+import 'package:sawitappmobile/core/network/api_client.dart';
+import 'package:sawitappmobile/core/constants/api_constants.dart';
 import 'package:sawitappmobile/features/penjual/models/penjual_model.dart';
 import 'package:sawitappmobile/features/supir/models/supir_model.dart';
 import 'package:sawitappmobile/features/pekerja/models/pekerja_model.dart';

@@ -6,8 +6,8 @@ import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.d
 import 'package:sawitappmobile/features/operasional/models/operasional_model.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/widgets/skeleton_loader.dart';
-import 'add_operasional_screen.dart';
-import 'operasional_detail_screen.dart';
+import 'package:sawitappmobile/features/operasional/screens/add_operasional_screen.dart';
+import 'package:sawitappmobile/features/operasional/screens/operasional_detail_screen.dart';
 
 class OperasionalScreen extends StatefulWidget {
   const OperasionalScreen({super.key});

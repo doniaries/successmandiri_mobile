@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
-import '../../core/constants/api_constants.dart';
+import 'package:sawitappmobile/core/constants/api_constants.dart';
 import 'package:sawitappmobile/features/transaksi_do/models/transaksi_do_model.dart';
 
 class TransaksiDoDetailScreen extends StatelessWidget {

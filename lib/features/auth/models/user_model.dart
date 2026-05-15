@@ -1,4 +1,4 @@
-import '../core/constants/api_constants.dart';
+import 'package:sawitappmobile/core/constants/api_constants.dart';
 
 class User {
   final int id;

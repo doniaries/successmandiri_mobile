@@ -118,12 +118,13 @@ class ResourceProvider with ChangeNotifier {
 
   Future<void> syncMasterData() async {
     await _repository.syncService.performFullSync(_repository);
+    notifyListeners();
   }
 
   // Debtors (only those with sisa_hutang > 0)
   List<Supir> get supirDebtors => _supirs.where((e) => (e.sisaHutang ?? 0) > 0).toList();
   List<Penjual> get penjualDebtors => _penjuals.where((e) => (e.sisaHutang ?? 0) > 0).toList();
-  List<Pekerja> get pekerjaDebtors => _pekerjas.where((e) => e.sisaHutang > 0).toList();
+  List<Pekerja> get pekerjaDebtors => _pekerjas.where((e) => (e.sisaHutang ?? 0) > 0).toList();
 
   // Financial Summaries (Use server totals if available, otherwise fallback to local calculation)
   double get totalPemasukan {

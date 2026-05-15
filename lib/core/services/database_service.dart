@@ -40,7 +40,7 @@ class DatabaseService {
       CREATE TABLE supir (id INTEGER PRIMARY KEY, nama TEXT, telepon TEXT, sim TEXT, sisa_hutang REAL DEFAULT 0)
     ''');
     await db.execute('''
-      CREATE TABLE pekerja (id INTEGER PRIMARY KEY, nama TEXT, telepon TEXT, sisa_hutang REAL DEFAULT 0)
+      CREATE TABLE pekerja (id INTEGER PRIMARY KEY, nama TEXT, telepon TEXT, sisa_hutang REAL DEFAULT 0, perusahaan_id INTEGER)
     ''');
     await db.execute('''
       CREATE TABLE kendaraan (id INTEGER PRIMARY KEY, no_polisi TEXT, merk TEXT, tipe TEXT)

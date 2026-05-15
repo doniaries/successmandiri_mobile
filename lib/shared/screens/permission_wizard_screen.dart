@@ -3,7 +3,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'dart:io';
-import 'auth/login_screen.dart';
+import 'package:sawitappmobile/features/auth/screens/login_screen.dart';
 
 class PermissionWizardScreen extends StatefulWidget {
   const PermissionWizardScreen({super.key});

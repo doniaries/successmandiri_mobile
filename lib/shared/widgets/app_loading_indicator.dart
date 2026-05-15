@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'custom_loading_logo.dart';
+import 'package:sawitappmobile/shared/widgets/custom_loading_logo.dart';
 
 class AppLoadingIndicator extends StatelessWidget {
   final double size;

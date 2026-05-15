@@ -1,5 +1,5 @@
-import '../core/network/api_client.dart';
-import '../core/constants/api_constants.dart';
+import 'package:sawitappmobile/core/network/api_client.dart';
+import 'package:sawitappmobile/core/constants/api_constants.dart';
 import 'package:sawitappmobile/features/dashboard/models/dashboard_summary_model.dart';
 
 class DashboardRepository {

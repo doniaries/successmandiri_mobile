@@ -6,9 +6,9 @@ import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.d
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
-import '../penjual/add_penjual_screen.dart';
-import '../supir/add_supir_screen.dart';
-import '../pekerja/add_pekerja_screen.dart';
+import 'package:sawitappmobile/features/penjual/screens/add_penjual_screen.dart';
+import 'package:sawitappmobile/features/supir/screens/add_supir_screen.dart';
+import 'package:sawitappmobile/features/pekerja/screens/add_pekerja_screen.dart';
 
 class AddOperasionalScreen extends StatefulWidget {
   const AddOperasionalScreen({super.key});

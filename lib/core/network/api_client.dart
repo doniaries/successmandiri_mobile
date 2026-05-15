@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../constants/api_constants.dart';
-import '../navigation/navigation_service.dart';
+import 'package:sawitappmobile/core/constants/api_constants.dart';
+import 'package:sawitappmobile/core/navigation/navigation_service.dart';
 import 'package:sawitappmobile/features/auth/screens/login_screen.dart';
 
 class ApiClient {
