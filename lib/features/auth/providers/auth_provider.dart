@@ -35,7 +35,7 @@ class AuthProvider with ChangeNotifier {
       _user = result['user'];
       
       if (_user != null) {
-        SessionService().start(onTimeout: handleAutoLogout);
+        // SessionService().start(onTimeout: handleAutoLogout); // REMOVED: Session restriction
       }
       
       // Simpan user ke cache
@@ -83,7 +83,7 @@ class AuthProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('cached_user');
     _user = null;
-    SessionService().stop();
+    // SessionService().stop(); // REMOVED: Session restriction
     notifyListeners();
   }
 
@@ -106,7 +106,7 @@ class AuthProvider with ChangeNotifier {
           if (freshUser != null) {
             _user = freshUser;
             await _authRepository.saveUser(freshUser);
-            SessionService().start(onTimeout: handleAutoLogout);
+            // SessionService().start(onTimeout: handleAutoLogout); // REMOVED: Session restriction
           }
         } catch (e) {
           debugPrint('Silent refresh failed: $e. Using cached user.');
@@ -193,29 +193,6 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<void> handleAutoLogout() async {
-    // Ambil context sebelum logout (sebelum async gap)
-    final context = NavigationService.navigatorKey.currentContext;
-    if (context == null) return;
-    
-    final navigator = Navigator.of(context);
-    final messenger = ScaffoldMessenger.of(context);
-
-    await logout();
-    
-    // Gunakan navigator dan messenger yang sudah diambil
-    navigator.pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-      (route) => false,
-    );
-    
-    messenger.showSnackBar(
-      const SnackBar(
-        content: Text('Sesi telah berakhir karena tidak ada aktivitas selama 5 menit.'),
-        backgroundColor: Color(0xFF01579B),
-        duration: Duration(seconds: 5),
-      ),
-    );
-  }
+  // handleAutoLogout REMOVED: Session restriction
 }
 

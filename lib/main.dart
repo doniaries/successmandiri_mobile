@@ -89,21 +89,18 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ResourceProvider(resourceRepository)),
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
       ],
-      child: Listener(
-        onPointerDown: (_) => SessionService().reset(),
-        child: MaterialApp(
-          navigatorKey: NavigationService.navigatorKey,
-          title: 'Sawit App',
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFF01579B), // Deep Bank Blue
-              primary: const Color(0xFF01579B),
-            ),
-            useMaterial3: true,
+      child: MaterialApp(
+        navigatorKey: NavigationService.navigatorKey,
+        title: 'Sawit App',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF01579B), // Deep Bank Blue
+            primary: const Color(0xFF01579B),
           ),
-          home: initialScreen,
+          useMaterial3: true,
         ),
+        home: initialScreen,
       ),
     );
   }
