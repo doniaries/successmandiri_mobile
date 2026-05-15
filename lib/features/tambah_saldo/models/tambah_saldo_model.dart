@@ -8,6 +8,8 @@ class TambahSaldoModel {
   final String? buktiTransfer;
   final String? userName;
 
+  final String status;
+
   TambahSaldoModel({
     required this.id,
     required this.perusahaanId,
@@ -15,6 +17,7 @@ class TambahSaldoModel {
     required this.tanggal,
     required this.nominal,
     required this.keterangan,
+    required this.status,
     this.buktiTransfer,
     this.userName,
   });
@@ -27,6 +30,7 @@ class TambahSaldoModel {
       tanggal: DateTime.parse(json['tanggal']),
       nominal: double.parse(json['nominal'].toString()),
       keterangan: json['keterangan'] ?? '',
+      status: json['status'] ?? 'pending',
       buktiTransfer: json['bukti_transfer'],
       userName: json['user'] != null ? json['user']['name'] : null,
     );
@@ -40,6 +44,7 @@ class TambahSaldoModel {
       'tanggal': tanggal.toIso8601String(),
       'nominal': nominal,
       'keterangan': keterangan,
+      'status': status,
       'bukti_transfer': buktiTransfer,
     };
   }

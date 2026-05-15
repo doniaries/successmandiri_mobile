@@ -16,6 +16,7 @@ class ApiConstants {
   static const String logout = '/logout';
   static const String user = '/user';
   static const String transaksiDo = '/transaksi-do';
+  static const String generateDoNumber = '/transaksi-do/generate-number';
   static const String tambahSaldo = '/tambah-saldo';
   static const String penjual = '/penjual';
   static const String supir = '/supir';

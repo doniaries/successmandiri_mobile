@@ -31,8 +31,9 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
   final _keteranganPembayaranController = TextEditingController();
   final _nominalTunaiController = TextEditingController();
   final _nominalTransferController = TextEditingController();
+  final _nomorDoController = TextEditingController(text: 'OTOMATIS (SISTEM)');
 
-  final bool _isMismatch = false;
+  bool _isMismatch = false;
   XFile? _buktiRekap;
   XFile? _buktiTransfer;
   DateTime _selectedDate = DateTime.now();
@@ -67,7 +68,19 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<TransaksiDoProvider>().fetchFormData();
+      _updateNomorDo();
     });
+  }
+
+  Future<void> _updateNomorDo() async {
+    final provider = context.read<TransaksiDoProvider>();
+    final dateStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
+    final nextNumber = await provider.getNextDoNumber(tanggal: dateStr);
+    if (mounted) {
+      setState(() {
+        _nomorDoController.text = nextNumber;
+      });
+    }
   }
 
   void _onFieldChanged() {
@@ -133,6 +146,87 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
     _onFieldChanged();
   }
 
+  void _showSearchableModal({
+    required String title,
+    required List<dynamic> items,
+    required Function(int?) onSelected,
+    int? selectedId,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.9,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (_, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: StatefulBuilder(
+            builder: (context, setModalState) {
+              final searchController = TextEditingController();
+              List<dynamic> filteredItems = items;
+
+              return Column(
+                children: [
+                  Container(
+                    width: 40, height: 4,
+                    decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF01579B))),
+                  const SizedBox(height: 16),
+                  TextField(
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      hintText: 'Cari nama...',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                    ),
+                    onChanged: (val) {
+                      setModalState(() {
+                        filteredItems = items.where((i) => 
+                          i['nama'].toString().toLowerCase().contains(val.toLowerCase())
+                        ).toList();
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: ListView.builder(
+                      controller: scrollController,
+                      itemCount: filteredItems.length,
+                      itemBuilder: (context, index) {
+                        final item = filteredItems[index];
+                        final bool isSelected = item['id'] == selectedId;
+                        final double hutang = double.tryParse(item['sisa_hutang']?.toString() ?? '0') ?? 0;
+                        
+                        return ListTile(
+                          title: Text(item['nama'].toString().toUpperCase(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: hutang > 0 ? Text('Hutang: ${CurrencyFormatter.formatRupiah(hutang)}', style: const TextStyle(color: Colors.red, fontSize: 11)) : null,
+                          trailing: isSelected ? const Icon(Icons.check_circle, color: Colors.green) : null,
+                          onTap: () {
+                            onSelected(item['id']);
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _noPolisiController.dispose();
@@ -148,6 +242,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
     _subTotalController.dispose();
     _sisaHutangController.dispose();
     _sisaBayarController.dispose();
+    _nomorDoController.dispose();
     super.dispose();
   }
 
@@ -193,6 +288,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
       setState(() {
         _selectedDate = picked;
       });
+      _updateNomorDo();
     }
   }
 
@@ -293,7 +389,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                     children: [
                       // Nomor DO (Read Only - Match Filament)
                       TextFormField(
-                        initialValue: 'OTOMATIS (SISTEM)',
+                        controller: _nomorDoController,
                         readOnly: true,
                         decoration: _getInputDecoration(
                           label: 'Nomor DO',
@@ -301,7 +397,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                         ),
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Colors.grey,
+                          color: Color(0xFF01579B),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -325,7 +421,50 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Penjual Dropdown
+                      // Penjual Search Field
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              onTap: () => _showSearchableModal(
+                                title: 'Cari Penjual',
+                                items: provider.penjuals,
+                                selectedId: _selectedPenjualId,
+                                onSelected: (val) => _onPenjualChanged(val, provider),
+                              ),
+                              child: IgnorePointer(
+                                child: TextFormField(
+                                  key: ValueKey('penjual_$_selectedPenjualId'),
+                                  initialValue: _selectedPenjualId != null 
+                                    ? provider.penjuals.firstWhere((p) => p['id'] == _selectedPenjualId)['nama'].toString().toUpperCase()
+                                    : null,
+                                  decoration: _getInputDecoration(
+                                    label: 'Penjual',
+                                    icon: Icons.person_rounded,
+                                    hint: 'Klik untuk mencari penjual',
+                                  ),
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  validator: (val) => _selectedPenjualId == null ? 'Pilih penjual' : null,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            margin: const EdgeInsets.only(top: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF01579B).withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: IconButton(
+                              icon: const Icon(Icons.add, color: Color(0xFF01579B)),
+                              onPressed: () async {
+                                await Navigator.push(context, MaterialPageRoute(builder: (context) => const AddPenjualScreen()));
+                                if (mounted) provider.fetchFormData();
+                              },
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -359,47 +498,34 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Supir Dropdown (Hidden if penjual_sebagai_supir)
+                      // Supir Search Field (Hidden if penjual_sebagai_supir)
                       if (!_penjualSebagaiSupir) ...[
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
-                              child: DropdownButtonFormField<int>(
-                                initialValue: _selectedSupirId,
-                                isExpanded: true,
-                                decoration: _getInputDecoration(
-                                  label: 'Supir',
-                                  icon: Icons.local_shipping_outlined,
+                              child: InkWell(
+                                onTap: () => _showSearchableModal(
+                                  title: 'Cari Supir',
+                                  items: provider.supirs,
+                                  selectedId: _selectedSupirId,
+                                  onSelected: (val) => setState(() => _selectedSupirId = val),
                                 ),
-                                items: provider.supirs.map<DropdownMenuItem<int>>((s) {
-                                  final double hutang = double.tryParse(s['sisa_hutang']?.toString() ?? '0') ?? 0;
-                                  return DropdownMenuItem<int>(
-                                    value: s['id'],
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(s['nama'].toString().toUpperCase(), 
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                                        if (hutang > 0)
-                                          Text('Hutang: ${currencyFormat.format(hutang)}',
-                                            style: TextStyle(fontSize: 9, color: Colors.red[700], fontWeight: FontWeight.bold)),
-                                      ],
+                                child: IgnorePointer(
+                                  child: TextFormField(
+                                    key: ValueKey('supir_$_selectedSupirId'),
+                                    initialValue: _selectedSupirId != null 
+                                      ? provider.supirs.firstWhere((s) => s['id'] == _selectedSupirId)['nama'].toString().toUpperCase()
+                                      : null,
+                                    decoration: _getInputDecoration(
+                                      label: 'Supir',
+                                      icon: Icons.local_shipping_outlined,
+                                      hint: 'Klik untuk mencari supir',
                                     ),
-                                  );
-                                }).toList(),
-                                selectedItemBuilder: (BuildContext context) {
-                                  return provider.supirs.map<Widget>((s) {
-                                    return Text(s['nama'].toString().toUpperCase(),
-                                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                                      overflow: TextOverflow.ellipsis,
-                                    );
-                                  }).toList();
-                                },
-                                onChanged: (val) => setState(() => _selectedSupirId = val),
-                                validator: (val) => val == null ? 'Pilih supir' : null,
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                    validator: (val) => _selectedSupirId == null ? 'Pilih supir' : null,
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -552,7 +678,6 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                           },
                         ),
                         const SizedBox(height: 16),
-
                         TextFormField(
                           controller: _sisaHutangController,
                           readOnly: true,
@@ -563,24 +688,23 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                           style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
                         const SizedBox(height: 16),
-                      ],
 
-                      TextFormField(
-                        controller: _sisaBayarController,
-                        readOnly: true,
-                        decoration: _getInputDecoration(
-                          label: 'Sisa Yang Dibayar',
-                          icon: Icons.account_balance_wallet_rounded,
-                          fillColor: const Color(0xFFE3F2FD), // Light blue tint
+                        TextFormField(
+                          controller: _sisaBayarController,
+                          readOnly: true,
+                          decoration: _getInputDecoration(
+                            label: 'Sisa Yang Dibayar',
+                            icon: Icons.account_balance_wallet_rounded,
+                            fillColor: const Color(0xFFE3F2FD), // Light blue tint
+                          ),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFF01579B),
+                            fontSize: 18,
+                          ),
                         ),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w900,
-                          color: Color(0xFF01579B),
-                          fontSize: 18,
-                        ),
-                      ),
-                      ),
-                      const SizedBox(height: 16),
+                        const SizedBox(height: 16),
+                      ],
 
                       // Indikator Saldo Perusahaan (Match Filament Placeholder)
                       Builder(
@@ -875,7 +999,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                 ),
               ),
       ),
-    )
+    );
   }
 
   void _submitForm() async {
@@ -943,7 +1067,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
             context,
             title: 'Transaksi Berhasil!',
             message:
-                'Data Transaksi DO dengan nomor ${_noPolisiController.text} berhasil disimpan.',
+                'Data Transaksi DO dengan nomor ${_nomorDoController.text} berhasil disimpan.',
             onConfirm: () => Navigator.pop(context),
           );
         } else {

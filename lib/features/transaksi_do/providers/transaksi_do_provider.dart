@@ -122,6 +122,10 @@ class TransaksiDoProvider with ChangeNotifier {
     }
   }
 
+  Future<String> getNextDoNumber({String? tanggal}) async {
+    return await _repository.getNextDoNumber(tanggal: tanggal);
+  }
+
   Future<void> fetchFormData() async {
     _isLoading = true;
     notifyListeners();

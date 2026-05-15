@@ -146,5 +146,21 @@ class TransaksiDoRepository {
       return {'offline': true};
     }
   }
+
+  Future<String> getNextDoNumber({String? tanggal}) async {
+    try {
+      final queryParams = <String, dynamic>{};
+      if (tanggal != null) queryParams['tanggal'] = tanggal;
+
+      final response = await _apiClient.dio.get(
+        ApiConstants.generateDoNumber,
+        queryParameters: queryParams,
+      );
+
+      return response.data['data'] ?? 'OTOMATIS (SISTEM)';
+    } catch (e) {
+      return 'OTOMATIS (SISTEM)';
+    }
+  }
 }
 

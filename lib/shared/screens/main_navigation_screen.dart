@@ -7,6 +7,7 @@ import 'package:sawitappmobile/features/profile/screens/profile_screen.dart';
 import 'package:sawitappmobile/features/operasional/screens/finance_journal_screen.dart';
 import 'package:sawitappmobile/features/operasional/screens/operasional_screen.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_screen.dart';
+import 'package:sawitappmobile/features/transaksi_do/screens/add_transaksi_do_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -102,7 +103,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           Positioned(
             top: -15,
             child: GestureDetector(
-              onTap: () => _onItemTapped(2),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AddTransaksiDoScreen(),
+                ),
+              ),
               child: Container(
                 width: 75,
                 height: 75,
