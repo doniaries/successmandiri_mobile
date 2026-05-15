@@ -158,6 +158,7 @@ class TransaksiDoProvider with ChangeNotifier {
     XFile? buktiTransfer,
     String? keteranganPembayaran,
     double? nominalTunai,
+    String? nomorDo,
     bool isMismatch = false,
     XFile? buktiRekap,
   }) async {
@@ -181,6 +182,7 @@ class TransaksiDoProvider with ChangeNotifier {
         buktiTransfer: buktiTransfer,
         keteranganPembayaran: keteranganPembayaran,
         nominalTunai: nominalTunai,
+        nomorDo: nomorDo,
         isMismatch: isMismatch,
         buktiRekap: buktiRekap,
       );

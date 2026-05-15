@@ -91,11 +91,13 @@ class TransaksiDoRepository {
     XFile? buktiTransfer,
     String? keteranganPembayaran,
     double? nominalTunai,
+    String? nomorDo,
     bool isMismatch = false,
     XFile? buktiRekap,
   }) async {
     final Map<String, dynamic> data = {
       'tanggal': tanggal,
+      'nomor_do': nomorDo,
       'penjual_id': penjualId,
       'supir_id': supirId,
       'no_polisi': noPolisi,
