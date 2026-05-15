@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'core/navigation/navigation_service.dart';
-import 'core/network/api_client.dart';
-import 'providers/auth_provider.dart';
-import 'providers/transaksi_do_provider.dart';
-import 'providers/tambah_saldo_provider.dart';
-import 'providers/resource_provider.dart';
-import 'providers/dashboard_provider.dart';
-import 'repositories/auth_repository.dart';
-import 'repositories/transaksi_do_repository.dart';
-import 'repositories/tambah_saldo_repository.dart';
-import 'repositories/resource_repository.dart';
-import 'screens/splash/splash_screen.dart';
-import 'services/sync_service.dart';
-import 'services/notification_service.dart';
-import 'services/session_service.dart';
+import 'package:sawitappmobile/core/navigation/navigation_service.dart';
+import 'package:sawitappmobile/core/network/api_client.dart';
+import 'package:sawitappmobile/features/auth/providers/auth_provider.dart';
+import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_provider.dart';
+import 'package:sawitappmobile/features/tambah_saldo/providers/tambah_saldo_provider.dart';
+import 'package:sawitappmobile/shared/providers/resource_provider.dart';
+import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
+import 'package:sawitappmobile/shared/repositories/auth_repository.dart';
+import 'package:sawitappmobile/shared/repositories/transaksi_do_repository.dart';
+import 'package:sawitappmobile/shared/repositories/tambah_saldo_repository.dart';
+import 'package:sawitappmobile/shared/repositories/resource_repository.dart';
+import 'package:sawitappmobile/features/splash/screens/splash_screen.dart';
+import 'package:sawitappmobile/core/services/sync_service.dart';
+import 'package:sawitappmobile/core/services/notification_service.dart';
+import 'package:sawitappmobile/core/services/session_service.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
-import 'screens/auth/login_screen.dart';
-import 'screens/main_navigation_screen.dart';
+import 'package:sawitappmobile/features/auth/screens/login_screen.dart';
+import 'package:sawitappmobile/shared/screens/main_navigation_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

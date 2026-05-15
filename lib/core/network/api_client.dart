@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/api_constants.dart';
 import '../navigation/navigation_service.dart';
-import '../../screens/auth/login_screen.dart';
+import 'package:sawitappmobile/features/auth/screens/login_screen.dart';
 
 class ApiClient {
   late Dio _dio;
