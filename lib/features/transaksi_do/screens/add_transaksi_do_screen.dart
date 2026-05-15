@@ -30,7 +30,6 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
   final _pembayaranHutangController = TextEditingController();
   final _keteranganBiayaLainController = TextEditingController();
   final _keteranganPembayaranController = TextEditingController();
-  final _nominalTunaiController = TextEditingController();
   final _nominalTransferController = TextEditingController();
   final _nomorDoController = TextEditingController(text: 'OTOMATIS (SISTEM)');
 
@@ -65,7 +64,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
     _upahBongkarController.addListener(_onFieldChanged);
     _biayaLainController.addListener(_onFieldChanged);
     _pembayaranHutangController.addListener(_onFieldChanged);
-    _nominalTunaiController.addListener(_onFieldChanged);
+
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<TransaksiDoProvider>().fetchFormData();
@@ -104,11 +103,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
     _sisaHutangController.text = currencyFormat.format(sisaHutang).trim();
     _sisaBayarController.text = currencyFormat.format(sisaBayar).trim();
 
-    if (_selectedCaraBayar == 'tunai & transfer') {
-      final nominalTunai = CurrencyInputFormatter.parse(_nominalTunaiController.text);
-      final nominalTransfer = max(0.0, sisaBayar - nominalTunai);
-      _nominalTransferController.text = currencyFormat.format(nominalTransfer).trim();
-    }
+
 
     // Validasi saldo otomatis
     final options = _currentCaraBayarOptions;
@@ -157,7 +152,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
     _pembayaranHutangController.dispose();
     _keteranganBiayaLainController.dispose();
     _keteranganPembayaranController.dispose();
-    _nominalTunaiController.dispose();
+
     _nominalTransferController.dispose();
     _subTotalController.dispose();
     _sisaHutangController.dispose();
@@ -824,14 +819,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
       final double saldoPerusahaan =
           context.read<DashboardProvider>().summary?.saldo ?? 0;
       
-      double totalTunaiDibutuhkan = 0;
-      if (_selectedCaraBayar == 'tunai') {
-        totalTunaiDibutuhkan = _sisaBayar;
-      } else if (_selectedCaraBayar == 'transfer') {
-        totalTunaiDibutuhkan = 0; 
-      }
-
-      if (totalTunaiDibutuhkan > saldoPerusahaan) {
+      if (_selectedCaraBayar == 'tunai' && _sisaBayar > saldoPerusahaan) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(

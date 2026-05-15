@@ -109,7 +109,7 @@ class TransaksiDoDetailScreen extends StatelessWidget {
                 isBold: true,
                 color: (transaction.caraBayar?.toLowerCase() == 'tunai' ? Colors.green[700] :
                         transaction.caraBayar?.toLowerCase() == 'transfer' ? Colors.blue[700] :
-                        transaction.caraBayar?.toLowerCase() == 'tunai & transfer' ? Colors.teal[700] :
+
                         transaction.caraBayar?.toLowerCase() == 'cair di luar' ? Colors.amber[800] :
                         transaction.caraBayar?.toLowerCase() == 'belum dibayar' ? Colors.red[700] :
                         const Color(0xFF01579B)),
