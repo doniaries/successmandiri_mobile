@@ -338,7 +338,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                 builder: (context) => PenjualDetailScreen(penjual: item),
               ),
             ).then((deleted) {
-              if (deleted == true) {
+              if (deleted == true && mounted) {
                 context.read<ResourceProvider>().fetchResources('penjual', refresh: true);
               }
             });
@@ -349,7 +349,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                 builder: (context) => SupirDetailScreen(supir: item),
               ),
             ).then((deleted) {
-              if (deleted == true) {
+              if (deleted == true && mounted) {
                 context.read<ResourceProvider>().fetchResources('supir', refresh: true);
               }
             });
@@ -360,7 +360,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                 builder: (context) => PekerjaDetailScreen(pekerja: item),
               ),
             ).then((deleted) {
-              if (deleted == true) {
+              if (deleted == true && mounted) {
                 context.read<ResourceProvider>().fetchResources('pekerja', refresh: true);
               }
             });
@@ -418,9 +418,11 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
             );
           }
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('$name berhasil dihapus')),
-          );
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('$name berhasil dihapus')),
+            );
+          }
         }
       },
       background: Container(

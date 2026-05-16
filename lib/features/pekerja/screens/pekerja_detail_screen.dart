@@ -96,7 +96,7 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
         if (success) {
-          await SuccessDialog.show(
+          SuccessDialog.show(
             context,
             title: 'Berhasil',
             message: 'Data pekerja berhasil dihapus.',
@@ -134,6 +134,7 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
               );
               _fetchDetail();
             },
+          ),
           IconButton(
             icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
             onPressed: _isLoading ? null : _handleDelete,

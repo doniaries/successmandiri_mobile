@@ -95,52 +95,50 @@ class _AnimatedPulsingLogoState extends State<AnimatedPulsingLogo>
                   ),
                 ),
                 // Main Logo Container
-                Container(
-                  child: ShaderMask(
-                    shaderCallback: (rect) {
-                      return LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        stops: [
-                          _shimmerAnimation.value - 0.3,
-                          _shimmerAnimation.value,
-                          _shimmerAnimation.value + 0.3,
-                        ],
-                        colors: [
-                          Colors.transparent,
-                          Colors.white.withValues(alpha: 0.8),
-                          Colors.transparent,
-                        ],
-                      ).createShader(rect);
-                    },
-                    blendMode: BlendMode.srcATop,
-                    child: ColorFiltered(
-                      colorFilter: ColorFilter.matrix(matrix),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: logoUrl != null && logoUrl.isNotEmpty
-                            ? CachedNetworkImage(
-                                imageUrl: logoUrl,
-                                width: widget.size,
-                                height: widget.size,
-                                fit: BoxFit.contain,
-                                placeholder: (context, url) => Image.asset(
-                                  'assets/images/logo.png',
-                                  width: widget.size,
-                                  height: widget.size,
-                                ),
-                                errorWidget: (context, url, error) => Image.asset(
-                                  'assets/images/logo.png',
-                                  width: widget.size,
-                                  height: widget.size,
-                                ),
-                              )
-                            : Image.asset(
+                ShaderMask(
+                  shaderCallback: (rect) {
+                    return LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      stops: [
+                        _shimmerAnimation.value - 0.3,
+                        _shimmerAnimation.value,
+                        _shimmerAnimation.value + 0.3,
+                      ],
+                      colors: [
+                        Colors.transparent,
+                        Colors.white.withValues(alpha: 0.8),
+                        Colors.transparent,
+                      ],
+                    ).createShader(rect);
+                  },
+                  blendMode: BlendMode.srcATop,
+                  child: ColorFiltered(
+                    colorFilter: ColorFilter.matrix(matrix),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: logoUrl != null && logoUrl.isNotEmpty
+                          ? CachedNetworkImage(
+                              imageUrl: logoUrl,
+                              width: widget.size,
+                              height: widget.size,
+                              fit: BoxFit.contain,
+                              placeholder: (context, url) => Image.asset(
                                 'assets/images/logo.png',
                                 width: widget.size,
                                 height: widget.size,
                               ),
-                      ),
+                              errorWidget: (context, url, error) => Image.asset(
+                                'assets/images/logo.png',
+                                width: widget.size,
+                                height: widget.size,
+                              ),
+                            )
+                          : Image.asset(
+                              'assets/images/logo.png',
+                              width: widget.size,
+                              height: widget.size,
+                            ),
                     ),
                   ),
                 ),

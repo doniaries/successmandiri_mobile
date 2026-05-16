@@ -96,7 +96,7 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
         if (success) {
-          await SuccessDialog.show(
+          SuccessDialog.show(
             context,
             title: 'Berhasil',
             message: 'Data supir berhasil dihapus.',
@@ -134,6 +134,7 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
               );
               _fetchDetail();
             },
+          ),
           IconButton(
             icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
             onPressed: _isLoading ? null : _handleDelete,
