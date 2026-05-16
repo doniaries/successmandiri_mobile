@@ -40,27 +40,34 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 
   void _onItemTapped(int index) {
-    context.read<MainNavigationProvider>().setIndex(index);
-
-    // Trigger auto-fetch if data is empty
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (index == 1) {
-        // Operasional
-        context.read<ResourceProvider>().fetchResources('operasional');
-      } else if (index == 2) {
-        // Transaksi DO
-        context.read<TransaksiDoProvider>().fetchTransactions();
-      } else if (index == 3) {
-        // Laporan Keuangan
-        context.read<ResourceProvider>().fetchJurnalByDateRange(
-          DateTime.now()
-              .subtract(const Duration(days: 30))
-              .toString()
-              .split(' ')[0],
-          DateTime.now().toString().split(' ')[0],
-        );
-      }
-    });
+    final navProvider = context.read<MainNavigationProvider>();
+    
+    if (navProvider.selectedIndex == index) {
+      // Jika tab yang sama diketuk, kembali ke halaman awal navigator tersebut (pop to root)
+      _navigatorKeys[index].currentState?.popUntil((route) => route.isFirst);
+    } else {
+      navProvider.setIndex(index);
+      
+      // Trigger auto-fetch if data is empty
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (index == 1) {
+          // Operasional
+          context.read<ResourceProvider>().fetchResources('operasional');
+        } else if (index == 2) {
+          // Transaksi DO
+          context.read<TransaksiDoProvider>().fetchTransactions();
+        } else if (index == 3) {
+          // Laporan Keuangan
+          context.read<ResourceProvider>().fetchJurnalByDateRange(
+            DateTime.now()
+                .subtract(const Duration(days: 30))
+                .toString()
+                .split(' ')[0],
+            DateTime.now().toString().split(' ')[0],
+          );
+        }
+      });
+    }
   }
 
   @override
