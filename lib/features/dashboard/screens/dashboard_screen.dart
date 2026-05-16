@@ -1003,7 +1003,7 @@ class _MenuItem extends StatelessWidget {
               ),
             ),
           ),
-          if (count > 0) Positioned(top: 8, right: 8, child: _CountBadge(count: count, color: Colors.red)),
+          if (count > 0) Positioned(top: 8, right: 8, child: _CountBadge(count: count, color: color)),
           if (hasNew) const Positioned(top: 5, right: 5, child: RepaintBoundary(child: AnimatedPulsingDot())),
         ],
       ),

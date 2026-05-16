@@ -252,10 +252,20 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
 
 
   Widget _buildSummaryHeader() {
-    return Consumer<DashboardProvider>(
-      builder: (context, provider, _) {
-        final stats = provider.summary?.stats.transaksi.month;
+    return Consumer2<DashboardProvider, TransaksiDoProvider>(
+      builder: (context, dashboardProvider, txProvider, _) {
+        final transactions = txProvider.transactions;
+        final now = DateTime.now();
         
+        // Hitung transaksi hari ini secara manual dari list transaksi yang ada
+        final todayCount = transactions.where((t) => DateUtils.isSameDay(t.tanggal.toLocal(), now)).length;
+        
+        final totalCount = transactions.length;
+        
+        // Tentukan apa yang ditampilkan di card berdasarkan tab aktif
+        final String displayLabel = _selectedCategory == 'Hari Ini' ? 'Transaksi Hari Ini' : 'Total Transaksi';
+        final String displayValue = _selectedCategory == 'Hari Ini' ? '$todayCount' : '$totalCount';
+
         return Container(
           margin: const EdgeInsets.all(16),
           padding: const EdgeInsets.all(24),
@@ -284,7 +294,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Ringkasan Bulan Ini',
+                        'Ringkasan Transaksi',
                         style: TextStyle(
                           color: Colors.white70,
                           fontSize: 14,
@@ -317,8 +327,8 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                 children: [
                   Expanded(
                     child: _buildMetricItem(
-                      label: 'Total Transaksi',
-                      value: '${stats?.count ?? 0}',
+                      label: displayLabel,
+                      value: displayValue,
                       icon: Icons.confirmation_number_rounded,
                     ),
                   ),
@@ -330,7 +340,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                   Expanded(
                     child: _buildMetricItem(
                       label: 'Saldo Saat Ini',
-                      value: CurrencyFormatter.formatRupiah(provider.summary?.saldo ?? 0),
+                      value: CurrencyFormatter.formatRupiah(dashboardProvider.summary?.saldo ?? 0),
                       icon: Icons.account_balance_wallet_rounded,
                     ),
                   ),
@@ -429,10 +439,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
 
           // 2. Category/Date Filter
           if (_selectedCategory == 'Hari Ini') {
-            final now = DateTime.now();
-            return t.tanggal.year == now.year &&
-                t.tanggal.month == now.month &&
-                t.tanggal.day == now.day;
+            return DateUtils.isSameDay(t.tanggal.toLocal(), DateTime.now());
           }
           
           if (_selectedCategory == 'Semua') return true;
