@@ -20,14 +20,13 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
-  final List<GlobalKey<NavigatorState>> _navigatorKeys = List.generate(5, (_) => GlobalKey<NavigatorState>());
+  final List<GlobalKey<NavigatorState>> _navigatorKeys = List.generate(4, (_) => GlobalKey<NavigatorState>());
 
   late final List<Widget> _screens = [
     _buildTabNavigator(0, const DashboardScreen()),
     _buildTabNavigator(1, const TransaksiDoScreen()),
     _buildTabNavigator(2, const OperasionalScreen()),
     _buildTabNavigator(3, const FinanceJournalScreen()),
-    _buildTabNavigator(4, const ProfileScreen()),
   ];
 
   Widget _buildTabNavigator(int index, Widget rootPage) {
@@ -129,19 +128,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             bottom: 0,
             top: 20,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildNavItem(
-                    0, Icons.grid_view_rounded, 'Beranda', selectedIndex),
-                _buildNavItem(1, Icons.local_shipping_rounded, 'Transaksi DO',
-                    selectedIndex),
-                const SizedBox(width: 80), // Space for centered large button
-                _buildNavItem(2, Icons.receipt_long_rounded, 'Operasional',
-                    selectedIndex),
-                _buildNavItem(3, Icons.account_balance_wallet_rounded,
-                    'Laporan', selectedIndex),
-                _buildNavItem(
-                    4, Icons.account_circle_rounded, 'Profil', selectedIndex),
+                _buildNavItem(0, Icons.grid_view_rounded, 'Beranda', selectedIndex),
+                _buildNavItem(1, Icons.local_shipping_rounded, 'Transaksi DO', selectedIndex),
+                const SizedBox(width: 80), // Ruang seimbang untuk tombol tengah
+                _buildNavItem(2, Icons.receipt_long_rounded, 'Operasional', selectedIndex),
+                _buildNavItem(3, Icons.account_balance_wallet_rounded, 'Laporan', selectedIndex),
               ],
             ),
           ),
@@ -159,12 +152,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 );
               },
               child: Container(
-                width: 75,
-                height: 75,
+                width: 70,
+                height: 70,
                 decoration: BoxDecoration(
                   color: const Color(0xFF01579B),
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 5),
+                  border: Border.all(color: Colors.white, width: 4),
                   boxShadow: [
                     BoxShadow(
                       color: const Color(0xFF01579B).withValues(alpha: 0.3),
@@ -173,29 +166,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                     ),
                   ],
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      'assets/images/logo.png',
-                      height: 35,
-                      width: 35,
-                      color: Colors.white,
-                      errorBuilder: (context, error, stackTrace) => const Icon(
-                        Icons.local_shipping_rounded,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                    ),
-                    const Text(
-                      'DO',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ],
+                child: const Icon(
+                  Icons.add_rounded,
+                  color: Colors.white,
+                  size: 40,
                 ),
               ),
             ),
@@ -222,11 +196,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                   ? const Color(0xFF01579B)
                   : const Color(0xFF95A5A6),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 9,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                 color: isSelected
                     ? const Color(0xFF01579B)

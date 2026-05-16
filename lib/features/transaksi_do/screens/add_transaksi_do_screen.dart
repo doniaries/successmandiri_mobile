@@ -270,18 +270,16 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
       message: 'Menyimpan transaksi...',
       child: Scaffold(
         appBar: AppBar(
-          title: Row(
-            children: [
-              const Text('Tambah Transaksi DO'),
-              const SizedBox(width: 8),
-              const Expanded(
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: LiveDateTimeWidget(),
-                ),
-              ),
-            ],
+          title: const Text(
+            'Tambah Transaksi DO',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
+          actions: const [
+            Padding(
+              padding: EdgeInsets.only(right: 12),
+              child: LiveDateTimeWidget(),
+            ),
+          ],
           backgroundColor: const Color(0xFF01579B),
           foregroundColor: Colors.white,
         ),

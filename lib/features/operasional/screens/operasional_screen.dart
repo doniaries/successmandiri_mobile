@@ -85,26 +85,17 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
       backgroundColor: Colors.white,
       foregroundColor: const Color(0xFF2C3E50),
       centerTitle: false,
-      title: Row(
-        children: [
-          const Text(
-            'Operasional',
-            style: TextStyle(
-              fontWeight: FontWeight.w900,
-              fontSize: 22,
-              color: Color(0xFF2C3E50),
-            ),
-          ),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: LiveDateTimeWidget(),
-            ),
-          ),
-        ],
+      title: const Text(
+        'Operasional',
+        style: TextStyle(
+          fontWeight: FontWeight.w900,
+          fontSize: 22,
+          color: Color(0xFF2C3E50),
+        ),
       ),
       actions: [
+        const Center(child: LiveDateTimeWidget()),
+        const SizedBox(width: 8),
         IconButton(
           onPressed: _refreshData,
           icon: const Icon(Icons.refresh_rounded),

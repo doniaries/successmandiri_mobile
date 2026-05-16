@@ -120,30 +120,27 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   Widget _buildAppBar() {
     return SliverAppBar(
       backgroundColor: Colors.white,
+      foregroundColor: const Color(0xFF1E293B),
       elevation: 0,
       pinned: true,
       centerTitle: false,
-      title: Row(
-        children: [
-          const Text(
-            'Transaksi DO',
-            style: TextStyle(
-              color: Color(0xFF1E293B),
-              fontWeight: FontWeight.w800,
-              fontSize: 20,
-            ),
-          ),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: LiveDateTimeWidget(),
-            ),
-          ),
-        ],
+      title: const Text(
+        'Transaksi DO',
+        style: TextStyle(
+          color: Color(0xFF1E293B),
+          fontWeight: FontWeight.w800,
+          fontSize: 20,
+        ),
       ),
-      iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
       actions: [
+        const Center(child: LiveDateTimeWidget()),
+        const SizedBox(width: 8),
+        IconButton(
+          icon: const Icon(Icons.search_rounded),
+          onPressed: () {
+            // TODO: Implement search
+          },
+        ),
         IconButton(
           onPressed: _isManualSyncing ? null : _manualSync,
           icon: _isManualSyncing
