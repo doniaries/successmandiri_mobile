@@ -70,6 +70,7 @@ class SyncService {
           await _db.deleteQueue(id);
           successCount++;
         } catch (e) {
+          dev.log('Sync failed for item ${item['id']}: $e');
           continue;
         }
       }

@@ -115,43 +115,59 @@ class TransaksiDoRepository {
     try {
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
-        dev.log('Offline: Adding TransaksiDo to queue with UUID: $clientUuid');
+        dev.log('Offline: Adding TransaksiDo to queue...');
+        final clientUuid = const Uuid().v4();
+        data['client_uuid'] = clientUuid;
         await _syncService.addToQueue(ApiConstants.transaksiDo, 'POST', data);
         return {'offline': true, 'client_uuid': clientUuid};
       }
 
       final Map<String, dynamic> postData = Map.from(data);
       if (buktiTransfer != null) {
-        postData['bukti_transfer'] = await MultipartFile.fromFile(
-          buktiTransfer.path,
-          filename: buktiTransfer.name,
+        if (kIsWeb) {
+          postData['bukti_transfer'] = MultipartFile.fromBytes(
+            await buktiTransfer.readAsBytes(),
+            filename: buktiTransfer.name,
+          );
+        } else {
+          postData['bukti_transfer'] = await MultipartFile.fromFile(
+            buktiTransfer.path,
+            filename: buktiTransfer.name,
+          );
+        }
+        
+        final formData = FormData.fromMap(postData);
+        final response = await _apiClient.dio.post(
+          ApiConstants.transaksiDo,
+          data: formData,
         );
+        return response.data;
+      } else {
+        // Jika tidak ada file, kirim sebagai JSON biasa (Map)
+        // Ini lebih stabil di Web dan konsisten dengan ResourceRepository
+        final response = await _apiClient.dio.post(
+          ApiConstants.transaksiDo,
+          data: postData,
+        );
+        return response.data;
       }
-
-      final formData = FormData.fromMap(postData);
-
-      final response = await _apiClient.dio.post(
-        ApiConstants.transaksiDo,
-        data: formData,
-      );
-
-      dev.log('TransaksiDo successfully created on server');
-      return TransaksiDo.fromJson(response.data['data'] ?? response.data);
     } on DioException catch (e) {
-      dev.log('Server Error on createTransaksiDo: ${e.response?.data}');
-      // Jika error 422 (validasi), jangan masukkan antrean, lempar error agar user tahu
-      if (e.response?.statusCode == 422) {
-        rethrow;
-      }
+      dev.log('DioError creating TransaksiDo: ${e.response?.statusCode} - ${e.message}');
       
-      // Selain itu (500, timeout, dll), coba masukkan antrean offline
-      dev.log('Connection error, adding to offline queue: $e');
+      // Jika error validasi (422) atau error client (400-499), JANGAN diantrekan.
+      // Lempar kembali agar UI bisa menampilkan pesan error yang jelas.
+      if (e.response != null && e.response!.statusCode != null) {
+        if (e.response!.statusCode! >= 400 && e.response!.statusCode! < 500) {
+          rethrow;
+        }
+      }
+
+      // Jika error koneksi atau server error (500+), baru diantrekan ke offline queue.
       await _syncService.addToQueue(ApiConstants.transaksiDo, 'POST', data);
       return {'offline': true, 'client_uuid': clientUuid};
     } catch (e) {
-      dev.log('Unexpected error: $e');
-      await _syncService.addToQueue(ApiConstants.transaksiDo, 'POST', data);
-      return {'offline': true, 'client_uuid': clientUuid};
+      dev.log('Unexpected Error creating TransaksiDo: $e');
+      rethrow;
     }
   }
 

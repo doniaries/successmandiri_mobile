@@ -165,7 +165,7 @@ class TransaksiDoProvider with ChangeNotifier {
     notifyListeners();
  
     try {
-      await _repository.createTransaksiDo(
+      final result = await _repository.createTransaksiDo(
         tanggal: tanggal,
         penjualId: penjualId,
         supirId: supirId,
@@ -179,10 +179,16 @@ class TransaksiDoProvider with ChangeNotifier {
         caraBayar: caraBayar,
         buktiTransfer: buktiTransfer,
         keteranganPembayaran: keteranganPembayaran,
-
         nomorDo: nomorDo,
       );
-      await fetchTransactions(); // Refresh list
+
+      if (result is Map && result['offline'] == true) {
+        _errorMessage = 'Koneksi bermasalah. Transaksi disimpan di antrean offline.';
+        // Tetap return true karena dianggap "berhasil disimpan" di lokal
+      } else {
+        await fetchTransactions(); // Refresh list hanya jika online berhasil
+      }
+
       _isSaving = false;
       notifyListeners();
       return true;
