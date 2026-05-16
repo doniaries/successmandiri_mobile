@@ -15,6 +15,9 @@ class TambahSaldoListScreen extends StatefulWidget {
 }
 
 class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
+  String _selectedTab = 'Hari Ini';
+  final List<String> _tabs = ['Hari Ini', 'Semua'];
+
   @override
   void initState() {
     super.initState();
@@ -31,7 +34,15 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
       ),
       body: Consumer<TambahSaldoProvider>(
         builder: (context, provider, child) {
-          if (provider.isLoading) {
+          final now = DateTime.now();
+          final filteredRequests = provider.requests.where((r) {
+            if (_selectedTab == 'Hari Ini') {
+              return DateUtils.isSameDay(r.tanggal.toLocal(), now);
+            }
+            return true;
+          }).toList();
+
+          if (provider.isLoading && provider.requests.isEmpty) {
             return ListView.builder(
               padding: const EdgeInsets.all(10),
               itemCount: 5,
@@ -42,68 +53,26 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
             );
           }
 
-          if (provider.errorMessage != null) {
-            return Center(child: Text(provider.errorMessage!));
-          }
-
-          if (provider.requests.isEmpty) {
-            return const Center(child: Text('Belum ada transaksi tambah saldo.'));
-          }
-
-          return RefreshIndicator(
-            onRefresh: () => provider.fetchRequests(),
-            child: ListView.builder(
-              padding: const EdgeInsets.all(10),
-              itemCount: provider.requests.length,
-              itemBuilder: (context, index) {
-                final request = provider.requests[index];
-                return Card(
-                  elevation: 2,
-                  margin: const EdgeInsets.symmetric(vertical: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => TambahSaldoDetailScreen(request: request),
+          return Column(
+            children: [
+              _buildSummaryHeader(provider, filteredRequests),
+              _buildDateTabs(),
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () => provider.fetchRequests(),
+                  child: filteredRequests.isEmpty
+                      ? Center(child: Text(_selectedTab == 'Hari Ini' ? 'Tidak ada transaksi hari ini.' : 'Belum ada transaksi tambah saldo.'))
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(10),
+                          itemCount: filteredRequests.length,
+                          itemBuilder: (context, index) {
+                            final request = filteredRequests[index];
+                            return _buildRequestItem(request);
+                          },
                         ),
-                      );
-                    },
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.all(16),
-                      title: Text(
-                        CurrencyFormatter.formatRupiah(request.nominal),
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 8),
-                          Text(request.keterangan, style: TextStyle(color: Colors.grey[700])),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Icon(Icons.person, size: 14, color: Colors.grey[600]),
-                              const SizedBox(width: 4),
-                              Text(request.userName ?? 'N/A', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-                              const Spacer(),
-                              Icon(Icons.calendar_today, size: 14, color: Colors.grey[600]),
-                              const SizedBox(width: 4),
-                              Text(
-                                DateFormat('dd MMM yyyy', 'id_ID').format(request.tanggal),
-                                style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
+                ),
+              ),
+            ],
           );
         },
       ),
@@ -118,5 +87,126 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
         child: const Icon(Icons.add),
       ),
     );
+  }
+
+  Widget _buildSummaryHeader(TambahSaldoProvider provider, List<TambahSaldoModel> filtered) {
+    double totalNominal = 0;
+    for (var r in filtered) {
+      totalNominal += r.nominal;
+    }
+
+    final String label = _selectedTab == 'Hari Ini' ? 'Nominal Tambah Saldo Hari Ini' : 'Total Nominal Tambah Saldo';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFE67E22), Color(0xFFF39C12)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFE67E22).withValues(alpha: 0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+          const SizedBox(height: 8),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              CurrencyFormatter.formatRupiah(totalNominal),
+              style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDateTabs() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: _tabs.map((tab) {
+          final isSelected = _selectedTab == tab;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ChoiceChip(
+              label: Text(tab),
+              selected: isSelected,
+              onSelected: (val) {
+                if (val) setState(() => _selectedTab = tab);
+              },
+              selectedColor: const Color(0xFFE67E22),
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.white : Colors.grey[600],
+                fontWeight: FontWeight.bold,
+              ),
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              showCheckmark: false,
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildRequestItem(TambahSaldoModel request) {
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => TambahSaldoDetailScreen(request: request),
+            ),
+          );
+        },
+        child: ListTile(
+          contentPadding: const EdgeInsets.all(16),
+          title: Text(
+            CurrencyFormatter.formatRupiah(request.nominal),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 8),
+              Text(request.keterangan, style: TextStyle(color: Colors.grey[700])),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(Icons.person, size: 14, color: Colors.grey[600]),
+                  const SizedBox(width: 4),
+                  Text(request.userName ?? 'N/A', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                  const Spacer(),
+                  Icon(Icons.calendar_today, size: 14, color: Colors.grey[600]),
+                  const SizedBox(width: 4),
+                  Text(
+                    DateFormat('dd MMM yyyy', 'id_ID').format(request.tanggal),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
   }
 }

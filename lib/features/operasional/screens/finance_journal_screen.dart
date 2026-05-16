@@ -20,7 +20,9 @@ class FinanceJournalScreen extends StatefulWidget {
 
 class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
   String _selectedFilter = 'Semua';
+  String _selectedDateFilter = 'Hari Ini';
   final List<String> _filters = ['Semua', 'Pemasukan', 'Pengeluaran'];
+  final List<String> _dateFilters = ['Hari Ini', 'Semua'];
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -100,31 +102,33 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
           final bool isInitialLoading = provider.isLoading && provider.jurnalKeuangans.isEmpty;
 
           final items = provider.jurnalKeuangans;
+          final filteredItems = _getFilteredItems(items);
 
           return Column(
             children: [
               isInitialLoading ? _buildSkeletonHeader() : _buildSummaryHeader(provider),
+              _buildDateTabs(),
               _buildFilterChips(),
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () async => _refreshData(),
                   child: isInitialLoading
                       ? _buildSkeletonList()
-                      : items.isEmpty
+                      : filteredItems.isEmpty
                           ? _buildEmptyState()
                           : ListView.separated(
                               controller: _scrollController,
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              itemCount: items.length + (provider.hasMore('jurnal_keuangan') ? 1 : 0),
+                              itemCount: filteredItems.length + (provider.hasMore('jurnal_keuangan') ? 1 : 0),
                               separatorBuilder: (context, index) => const SizedBox(height: 12),
                               itemBuilder: (context, index) {
-                                if (index == items.length) {
+                                if (index == filteredItems.length) {
                                   return const Center(child: Padding(
                                     padding: EdgeInsets.all(16.0),
                                     child: CircularProgressIndicator(),
                                   ));
                                 }
-                                return _buildJournalItem(items[index]);
+                                return _buildJournalItem(filteredItems[index]);
                               },
                             ),
                 ),
@@ -137,6 +141,23 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
   }
 
   Widget _buildSummaryHeader(ResourceProvider provider) {
+    final items = provider.jurnalKeuangans;
+    final now = DateTime.now();
+
+    // Hitung statistik hari ini
+    double todayIn = 0;
+    double todayOut = 0;
+    for (var item in items) {
+      if (DateUtils.isSameDay(item.tanggal.toLocal(), now)) {
+        if (item.jenisTransaksi == 'Pemasukan') todayIn += item.nominal;
+        else todayOut += item.nominal;
+      }
+    }
+
+    final double displayIn = _selectedDateFilter == 'Hari Ini' ? todayIn : provider.totalPemasukan;
+    final double displayOut = _selectedDateFilter == 'Hari Ini' ? todayOut : provider.totalPengeluaran;
+    final String labelSuffix = _selectedDateFilter == 'Hari Ini' ? 'Hari Ini' : 'Bulan Ini';
+
     return Container(
       padding: const EdgeInsets.all(20),
       margin: const EdgeInsets.all(16),
@@ -168,8 +189,8 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
             children: [
               Expanded(
                 child: _buildSummaryItem(
-                  'Pemasukan',
-                  provider.totalPemasukan,
+                  'Masuk $labelSuffix',
+                  displayIn,
                   Icons.arrow_downward_rounded,
                   Colors.greenAccent,
                 ),
@@ -177,8 +198,8 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
               Container(width: 1, height: 40, color: Colors.white24),
               Expanded(
                 child: _buildSummaryItem(
-                  'Pengeluaran',
-                  provider.totalPengeluaran,
+                  'Keluar $labelSuffix',
+                  displayOut,
                   Icons.arrow_upward_rounded,
                   Colors.orangeAccent,
                 ),
@@ -207,6 +228,35 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
         ),
       ],
+    );
+  }
+
+  Widget _buildDateTabs() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: _dateFilters.map((tab) {
+          final isSelected = _selectedDateFilter == tab;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ChoiceChip(
+              label: Text(tab),
+              selected: isSelected,
+              onSelected: (val) {
+                if (val) setState(() => _selectedDateFilter = tab);
+              },
+              selectedColor: const Color(0xFF01579B),
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.white : Colors.grey[600],
+                fontWeight: FontWeight.bold,
+              ),
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              showCheckmark: false,
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -311,6 +361,15 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
         ),
       ),
     );
+  }
+
+  List<JurnalKeuangan> _getFilteredItems(List<JurnalKeuangan> items) {
+    return items.where((item) {
+      if (_selectedDateFilter == 'Hari Ini') {
+        return DateUtils.isSameDay(item.tanggal.toLocal(), DateTime.now());
+      }
+      return true;
+    }).toList();
   }
 
   Future<void> _handlePrint() async {
