@@ -18,6 +18,7 @@ class TransaksiDoScreen extends StatefulWidget {
 class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   final ScrollController _scrollController = ScrollController();
   String _selectedCategory = 'Semua';
+  bool _isManualSyncing = false;
 
   @override
   void initState() {
@@ -39,6 +40,34 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+
+  Future<void> _manualSync() async {
+    if (_isManualSyncing) return;
+    
+    setState(() => _isManualSyncing = true);
+    try {
+      await SyncService().syncNow();
+      if (mounted) {
+        await context.read<TransaksiDoProvider>().fetchTransactions();
+        await context.read<DashboardProvider>().fetchSummary();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Sinkronisasi selesai'),
+            backgroundColor: Color(0xFF0D47A1),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal sinkron: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isManualSyncing = false);
+    }
   }
 
   @override
@@ -84,12 +113,12 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   }
 
   Widget _buildAppBar() {
-    return const SliverAppBar(
+    return SliverAppBar(
       backgroundColor: Colors.white,
       elevation: 0,
       pinned: true,
       centerTitle: false,
-      title: Text(
+      title: const Text(
         'Transaksi DO',
         style: TextStyle(
           color: Color(0xFF1E293B),
@@ -97,7 +126,21 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
           fontSize: 20,
         ),
       ),
-      iconTheme: IconThemeData(color: Color(0xFF1E293B)),
+      iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
+      actions: [
+        IconButton(
+          onPressed: _isManualSyncing ? null : _manualSync,
+          icon: _isManualSyncing
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.sync_rounded),
+          tooltip: 'Sinkron Manual',
+        ),
+        const SizedBox(width: 8),
+      ],
     );
   }
 
