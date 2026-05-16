@@ -23,6 +23,7 @@ import 'package:sawitappmobile/features/pekerja/screens/pekerja_detail_screen.da
 import 'package:sawitappmobile/features/user/screens/user_detail_screen.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
 import 'package:sawitappmobile/shared/widgets/skeleton_loader.dart';
+import 'package:sawitappmobile/shared/widgets/error_dialog.dart';
 
 
 class ResourceListScreen extends StatefulWidget {
@@ -246,14 +247,16 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
       iconColor = const Color(0xFF673AB7);
     }
 
-    return Container(
+    final bool isDeletable = (item is Penjual || item is Supir || item is Pekerja);
+
+    Widget tile = Container(
       margin: const EdgeInsets.only(bottom: 4),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-              color: Colors.white.withValues(alpha: 0.1),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -334,21 +337,33 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
               MaterialPageRoute(
                 builder: (context) => PenjualDetailScreen(penjual: item),
               ),
-            );
+            ).then((deleted) {
+              if (deleted == true) {
+                context.read<ResourceProvider>().fetchResources('penjual', refresh: true);
+              }
+            });
           } else if (item is Supir) {
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => SupirDetailScreen(supir: item),
               ),
-            );
+            ).then((deleted) {
+              if (deleted == true) {
+                context.read<ResourceProvider>().fetchResources('supir', refresh: true);
+              }
+            });
           } else if (item is Pekerja) {
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => PekerjaDetailScreen(pekerja: item),
               ),
-            );
+            ).then((deleted) {
+              if (deleted == true) {
+                context.read<ResourceProvider>().fetchResources('pekerja', refresh: true);
+              }
+            });
           } else if (item is User) {
             Navigator.push(
               context,
@@ -359,6 +374,65 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
           }
         },
       ),
+    );
+
+    if (!isDeletable) return tile;
+
+    return Dismissible(
+      key: Key('delete_${widget.resourceType}_${item.id}'),
+      direction: DismissDirection.endToStart,
+      confirmDismiss: (direction) async {
+        return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Text('Konfirmasi Hapus', style: TextStyle(fontWeight: FontWeight.bold)),
+            content: Text('Apakah Anda yakin ingin menghapus $name dari daftar ${widget.title}?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text('BATAL', style: TextStyle(color: Colors.grey[600])),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('HAPUS', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        );
+      },
+      onDismissed: (direction) async {
+        final provider = context.read<ResourceProvider>();
+        final success = await provider.deleteResource(widget.resourceType, item.id);
+        
+        if (!mounted) return;
+        
+        if (!success) {
+          // Refresh list to restore the item since delete failed
+          await provider.fetchResources(widget.resourceType, refresh: true);
+          if (mounted) {
+            ErrorDialog.show(
+              context,
+              title: 'Gagal Menghapus',
+              message: provider.errorMessage ?? 'Data tidak dapat dihapus karena mungkin masih terkait dengan transaksi lain.',
+            );
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('$name berhasil dihapus')),
+          );
+        }
+      },
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        decoration: BoxDecoration(
+          color: Colors.red[100],
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: const Icon(Icons.delete_sweep_rounded, color: Colors.red, size: 30),
+      ),
+      child: tile,
     );
   }
 

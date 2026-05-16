@@ -8,6 +8,8 @@ import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/features/operasional/screens/pay_debt_screen.dart';
 import 'package:sawitappmobile/features/supir/screens/edit_supir_screen.dart';
+import 'package:sawitappmobile/shared/widgets/error_dialog.dart';
+import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 
 class SupirDetailScreen extends StatefulWidget {
   final Supir supir;
@@ -55,6 +57,64 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
     }
   }
 
+  Future<void> _handleDelete() async {
+    final history = _currentSupir.mutasiHutang ?? [];
+    if (history.isNotEmpty || (_currentSupir.hutang ?? 0) > 0) {
+      if (mounted) {
+        ErrorDialog.show(
+          context,
+          title: 'Gagal Menghapus',
+          message: 'Data supir tidak dapat dihapus karena sudah memiliki riwayat hutang atau masih memiliki sisa hutang.',
+        );
+      }
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus Supir'),
+        content: Text('Apakah Anda yakin ingin menghapus supir ${_currentSupir.nama}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      setState(() => _isLoading = true);
+      final success = await context.read<ResourceProvider>().deleteResource('supir', _currentSupir.id);
+      
+      if (mounted) {
+        setState(() => _isLoading = false);
+        if (success) {
+          await SuccessDialog.show(
+            context,
+            title: 'Berhasil',
+            message: 'Data supir berhasil dihapus.',
+          );
+          if (mounted) {
+            Navigator.pop(context, true);
+          }
+        } else {
+          ErrorDialog.show(
+            context,
+            title: 'Gagal Menghapus',
+            message: context.read<ResourceProvider>().errorMessage ?? 'Terjadi kesalahan saat menghapus data.',
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,6 +134,9 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
               );
               _fetchDetail();
             },
+          IconButton(
+            icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
+            onPressed: _isLoading ? null : _handleDelete,
           ),
           const SizedBox(width: 8),
         ],

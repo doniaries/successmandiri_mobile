@@ -538,5 +538,34 @@ class ResourceProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<bool> deleteResource(String type, int id) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      switch (type) {
+        case 'penjual':
+          await _repository.deletePenjual(id);
+          break;
+        case 'supir':
+          await _repository.deleteSupir(id);
+          break;
+        case 'pekerja':
+          await _repository.deletePekerja(id);
+          break;
+        default:
+          return false;
+      }
+      await fetchResources(type, refresh: true);
+      return true;
+    } catch (e) {
+      debugPrint('Error deleting $type: $e');
+      _errorMessage = e.toString();
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }
 

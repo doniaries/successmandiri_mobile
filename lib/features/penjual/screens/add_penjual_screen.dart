@@ -5,6 +5,7 @@ import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
 import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
+import 'package:sawitappmobile/shared/widgets/error_dialog.dart';
 
 class AddPenjualScreen extends StatefulWidget {
   const AddPenjualScreen({super.key});
@@ -37,6 +38,24 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
     
     try {
       final provider = context.read<ResourceProvider>();
+      
+      // Client-side uniqueness validation
+      final isDuplicate = provider.penjuals.any(
+        (p) => p.nama.toLowerCase().trim() == _namaController.text.toLowerCase().trim()
+      );
+
+      if (isDuplicate) {
+        if (mounted) {
+          ErrorDialog.show(
+            context,
+            title: 'Nama Sudah Ada',
+            message: 'Penjual dengan nama "${_namaController.text}" sudah terdaftar dalam sistem. Silakan gunakan nama lain atau periksa daftar penjual.',
+          );
+        }
+        setState(() => _isLoading = false);
+        return;
+      }
+
       final penjual = await provider.addPenjual({
         'nama': _namaController.text,
         'telepon': _teleponController.text,

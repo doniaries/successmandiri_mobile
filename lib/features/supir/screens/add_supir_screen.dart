@@ -5,6 +5,7 @@ import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
 import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
+import 'package:sawitappmobile/shared/widgets/error_dialog.dart';
 
 class AddSupirScreen extends StatefulWidget {
   const AddSupirScreen({super.key});
@@ -29,6 +30,23 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final provider = context.read<ResourceProvider>();
+    
+    // Client-side uniqueness validation
+    final isDuplicate = provider.supirs.any(
+      (s) => s.nama.toLowerCase().trim() == _namaController.text.toLowerCase().trim()
+    );
+
+    if (isDuplicate) {
+      if (mounted) {
+        ErrorDialog.show(
+          context,
+          title: 'Nama Sudah Ada',
+          message: 'Supir dengan nama "${_namaController.text}" sudah terdaftar dalam sistem. Silakan gunakan nama lain atau periksa daftar supir.',
+        );
+      }
+      return;
+    }
+
     final result = await provider.addSupir({
       'nama': _namaController.text,
       'keterangan': _keteranganController.text,

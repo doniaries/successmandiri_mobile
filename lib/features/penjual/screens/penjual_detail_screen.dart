@@ -8,6 +8,8 @@ import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/features/operasional/screens/pay_debt_screen.dart';
 import 'package:sawitappmobile/features/penjual/screens/edit_penjual_screen.dart';
+import 'package:sawitappmobile/shared/widgets/error_dialog.dart';
+import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 
 class PenjualDetailScreen extends StatefulWidget {
   final Penjual penjual;
@@ -55,6 +57,64 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
     }
   }
 
+  Future<void> _handleDelete() async {
+    final history = _currentPenjual.mutasiHutang ?? [];
+    if (history.isNotEmpty || (_currentPenjual.hutang ?? 0) > 0) {
+      if (mounted) {
+        ErrorDialog.show(
+          context,
+          title: 'Gagal Menghapus',
+          message: 'Data penjual tidak dapat dihapus karena sudah memiliki riwayat hutang atau masih memiliki sisa hutang.',
+        );
+      }
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus Penjual'),
+        content: Text('Apakah Anda yakin ingin menghapus penjual ${_currentPenjual.nama}?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      setState(() => _isLoading = true);
+      final success = await context.read<ResourceProvider>().deleteResource('penjual', _currentPenjual.id);
+      
+      if (mounted) {
+        setState(() => _isLoading = false);
+        if (success) {
+          await SuccessDialog.show(
+            context,
+            title: 'Berhasil',
+            message: 'Data penjual berhasil dihapus.',
+          );
+          if (mounted) {
+            Navigator.pop(context, true); // Return true to indicate deletion to list
+          }
+        } else {
+          ErrorDialog.show(
+            context,
+            title: 'Gagal Menghapus',
+            message: context.read<ResourceProvider>().errorMessage ?? 'Terjadi kesalahan saat menghapus data.',
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,6 +134,9 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
               );
               _fetchDetail();
             },
+          IconButton(
+            icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
+            onPressed: _isLoading ? null : _handleDelete,
           ),
           const SizedBox(width: 8),
         ],

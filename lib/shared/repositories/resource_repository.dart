@@ -83,6 +83,11 @@ class ResourceRepository {
     }
   }
 
+  Future<void> deletePenjual(int id) async {
+    final url = '${ApiConstants.penjual}/$id';
+    await _apiClient.dio.delete(url);
+  }
+
   Future<dynamic> getSupirPaginated({int page = 1}) async {
     final response = await _apiClient.dio.get(
       ApiConstants.supir,
@@ -140,6 +145,11 @@ class ResourceRepository {
     }
   }
 
+  Future<void> deleteSupir(int id) async {
+    final url = '${ApiConstants.supir}/$id';
+    await _apiClient.dio.delete(url);
+  }
+
   Future<dynamic> getPekerjaPaginated({int page = 1}) async {
     final response = await _apiClient.dio.get(
       ApiConstants.pekerja,
@@ -195,6 +205,11 @@ class ResourceRepository {
       final url = '${ApiConstants.pekerja}/$id';
       await syncService.addToQueue(url, 'PUT', data);
     }
+  }
+
+  Future<void> deletePekerja(int id) async {
+    final url = '${ApiConstants.pekerja}/$id';
+    await _apiClient.dio.delete(url);
   }
 
   Future<dynamic> getKendaraanPaginated({int page = 1}) async {
