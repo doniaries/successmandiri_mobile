@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:sawitappmobile/features/penjual/models/penjual_model.dart';
 import 'package:sawitappmobile/features/supir/models/supir_model.dart';
 import 'package:sawitappmobile/features/pekerja/models/pekerja_model.dart';
@@ -560,7 +561,11 @@ class ResourceProvider with ChangeNotifier {
       return true;
     } catch (e) {
       debugPrint('Error deleting $type: $e');
-      _errorMessage = e.toString();
+      if (e is DioException) {
+        _errorMessage = e.response?.data?['message'] ?? e.message;
+      } else {
+        _errorMessage = e.toString();
+      }
       return false;
     } finally {
       _isLoading = false;
