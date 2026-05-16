@@ -200,7 +200,11 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
       child: Column(
         children: [
           const Text('Total Saldo Kas', style: TextStyle(color: Colors.white70, fontSize: 14)),
-          const SizedBox(height: 4),
+          Text(
+            DateFormat('d MMMM yyyy', 'id_ID').format(DateTime.now()),
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
           Text(
             CurrencyFormatter.formatRupiah(provider.saldoKas),
             style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),

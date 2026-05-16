@@ -572,5 +572,45 @@ class ResourceProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<bool> updateResourceStatus(String type, int id, bool isActive) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      String endpoint;
+      switch (type) {
+        case 'penjual':
+          endpoint = 'penjual/$id';
+          break;
+        case 'supir':
+          endpoint = 'logistik/supir/$id';
+          break;
+        case 'pekerja':
+          endpoint = 'pekerja/$id';
+          break;
+        default:
+          throw Exception('Tipe resource tidak dikenal');
+      }
+
+      await _apiService.put(endpoint, data: {'is_active': isActive});
+      
+      // Refresh list
+      await fetchResources(type, refresh: true);
+      return true;
+    } catch (e) {
+      debugPrint('Error updating $type status: $e');
+      if (e is DioException) {
+        _errorMessage = e.response?.data?['message'] ?? e.message;
+      } else {
+        _errorMessage = e.toString();
+      }
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }
 

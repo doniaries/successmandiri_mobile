@@ -57,24 +57,16 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
     }
   }
 
-  Future<void> _handleDelete() async {
-    final history = _currentSupir.mutasiHutang ?? [];
-    if (history.isNotEmpty || (_currentSupir.hutang ?? 0) > 0) {
-      if (mounted) {
-        ErrorDialog.show(
-          context,
-          title: 'Gagal Menghapus',
-          message: 'Data supir tidak dapat dihapus karena sudah memiliki riwayat hutang atau masih memiliki sisa hutang.',
-        );
-      }
-      return;
-    }
+  Future<void> _handleToggleStatus() async {
+    final bool isCurrentlyActive = _currentSupir.isActive;
+    final String actionText = isCurrentlyActive ? 'menonaktifkan' : 'mengaktifkan';
+    final String titleText = isCurrentlyActive ? 'Nonaktifkan Supir' : 'Aktifkan Supir';
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Hapus Supir'),
-        content: Text('Apakah Anda yakin ingin menghapus supir ${_currentSupir.nama}?'),
+        title: Text(titleText),
+        content: Text('Apakah Anda yakin ingin $actionText supir ${_currentSupir.nama}?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -82,8 +74,10 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Hapus'),
+            style: TextButton.styleFrom(
+              foregroundColor: isCurrentlyActive ? Colors.red : Colors.green,
+            ),
+            child: Text(isCurrentlyActive ? 'Nonaktifkan' : 'Aktifkan'),
           ),
         ],
       ),
@@ -91,24 +85,37 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
 
     if (confirmed == true && mounted) {
       setState(() => _isLoading = true);
-      final success = await context.read<ResourceProvider>().deleteResource('supir', _currentSupir.id);
-      
-      if (mounted) {
-        setState(() => _isLoading = false);
-        if (success) {
-          SuccessDialog.show(
-            context,
-            title: 'Berhasil',
-            message: 'Data supir berhasil dihapus.',
-          );
-          if (mounted) {
-            Navigator.pop(context, true);
+      try {
+        final success = await context.read<ResourceProvider>().updateResourceStatus(
+              'supir',
+              _currentSupir.id,
+              !isCurrentlyActive,
+            );
+
+        if (mounted) {
+          setState(() => _isLoading = false);
+          if (success) {
+            SuccessDialog.show(
+              context,
+              title: 'Berhasil',
+              message: 'Status supir berhasil diperbarui.',
+            );
+            _fetchDetail(); // Refresh data
+          } else {
+            ErrorDialog.show(
+              context,
+              title: 'Gagal',
+              message: context.read<ResourceProvider>().errorMessage ?? 'Gagal memperbarui status.',
+            );
           }
-        } else {
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isLoading = false);
           ErrorDialog.show(
             context,
-            title: 'Gagal Menghapus',
-            message: context.read<ResourceProvider>().errorMessage ?? 'Terjadi kesalahan saat menghapus data.',
+            title: 'Error',
+            message: e.toString(),
           );
         }
       }
@@ -136,8 +143,12 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
-            onPressed: _isLoading ? null : _handleDelete,
+            icon: Icon(
+              _currentSupir.isActive ? Icons.power_settings_new_rounded : Icons.power_rounded,
+              color: _currentSupir.isActive ? Colors.red : Colors.green,
+            ),
+            tooltip: _currentSupir.isActive ? 'Nonaktifkan' : 'Aktifkan',
+            onPressed: _isLoading ? null : _handleToggleStatus,
           ),
           const SizedBox(width: 8),
         ],
@@ -190,9 +201,37 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
                       color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Text(
-                      _currentSupir.status?.toUpperCase() ?? 'AKTIF',
-                      style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: _currentSupir.isActive ? Colors.greenAccent : Colors.redAccent,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          _currentSupir.isActive ? 'AKTIF' : 'NONAKTIF',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'SUPIR LOGISTIK',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 9,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 1,
                     ),
                   ),
                   if (_currentSupir.hutang != null && _currentSupir.hutang! > 0) ...[

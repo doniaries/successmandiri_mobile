@@ -247,7 +247,6 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
       iconColor = const Color(0xFF673AB7);
     }
 
-    final bool isDeletable = (item is Penjual || item is Supir || item is Pekerja);
 
     Widget tile = Container(
       margin: const EdgeInsets.only(bottom: 4),
@@ -376,66 +375,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
       ),
     );
 
-    if (!isDeletable) return tile;
-
-    return Dismissible(
-      key: Key('delete_${widget.resourceType}_${item.id}'),
-      direction: DismissDirection.endToStart,
-      confirmDismiss: (direction) async {
-        return await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: const Text('Konfirmasi Hapus', style: TextStyle(fontWeight: FontWeight.bold)),
-            content: Text('Apakah Anda yakin ingin menghapus $name dari daftar ${widget.title}?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text('BATAL', style: TextStyle(color: Colors.grey[600])),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('HAPUS', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-              ),
-            ],
-          ),
-        );
-      },
-      onDismissed: (direction) async {
-        final provider = context.read<ResourceProvider>();
-        final success = await provider.deleteResource(widget.resourceType, item.id);
-        
-        if (!mounted) return;
-        
-        if (!success) {
-          // Refresh list to restore the item since delete failed
-          await provider.fetchResources(widget.resourceType, refresh: true);
-          if (context.mounted) {
-            ErrorDialog.show(
-              context,
-              title: 'Gagal Menghapus',
-              message: provider.errorMessage ?? 'Data tidak dapat dihapus karena mungkin masih terkait dengan transaksi lain.',
-            );
-          }
-        } else {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('$name berhasil dihapus')),
-            );
-          }
-        }
-      },
-      background: Container(
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
-        decoration: BoxDecoration(
-          color: Colors.red[100],
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: const Icon(Icons.delete_sweep_rounded, color: Colors.red, size: 30),
-      ),
-      child: tile,
-    );
+    return tile;
   }
 
   Widget _buildSkeletons() {
