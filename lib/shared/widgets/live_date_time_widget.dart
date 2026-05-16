@@ -49,10 +49,10 @@ class _LiveDateTimeWidgetState extends State<LiveDateTimeWidget> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: (widget.color ?? const Color(0xFF01579B)).withOpacity(0.05),
+        color: (widget.color ?? const Color(0xFF01579B)).withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: (widget.color ?? const Color(0xFF01579B)).withOpacity(0.1),
+          color: (widget.color ?? const Color(0xFF01579B)).withValues(alpha: 0.1),
           width: 1,
         ),
       ),

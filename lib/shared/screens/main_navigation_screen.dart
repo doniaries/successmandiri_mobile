@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/features/dashboard/screens/dashboard_screen.dart';
-import 'package:sawitappmobile/features/profile/screens/profile_screen.dart';
 import 'package:sawitappmobile/features/operasional/screens/finance_journal_screen.dart';
 import 'package:sawitappmobile/features/operasional/screens/operasional_screen.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_screen.dart';

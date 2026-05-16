@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:sawitappmobile/features/tambah_saldo/providers/tambah_saldo_provider.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/widgets/skeleton_loader.dart';
+import 'package:sawitappmobile/features/tambah_saldo/models/tambah_saldo_model.dart';
 import 'package:sawitappmobile/features/tambah_saldo/screens/add_tambah_saldo_screen.dart';
 import 'package:sawitappmobile/features/tambah_saldo/screens/tambah_saldo_detail_screen.dart';
 
@@ -316,10 +317,8 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                 ],
               ),
             ],
-          ),
         ),
       ),
     );
-  }
   }
 }

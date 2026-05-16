@@ -162,8 +162,11 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     } else if (_selectedDateFilter == 'Hari Ini') {
       for (var item in items) {
         if (DateUtils.isSameDay(item.tanggal.toLocal(), now)) {
-          if (item.jenisTransaksi == 'Pemasukan') displayIn += item.nominal;
-          else displayOut += item.nominal;
+          if (item.jenisTransaksi == 'Pemasukan') {
+            displayIn += item.nominal;
+          } else {
+            displayOut += item.nominal;
+          }
         }
       }
       labelSuffix = 'Hari Ini';

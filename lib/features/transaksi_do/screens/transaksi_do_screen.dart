@@ -262,9 +262,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                 padding: const EdgeInsets.only(right: 8),
                 child: ChoiceChip(
                   label: Text(
-                    DateFormat('dd/MM/yy').format(_selectedDateRange!.start) + 
-                    ' - ' + 
-                    DateFormat('dd/MM/yy').format(_selectedDateRange!.end)
+                    '${DateFormat('dd/MM/yy').format(_selectedDateRange!.start)} - ${DateFormat('dd/MM/yy').format(_selectedDateRange!.end)}'
                   ),
                   selected: true,
                   onSelected: (_) => setState(() => _selectedDateRange = null),

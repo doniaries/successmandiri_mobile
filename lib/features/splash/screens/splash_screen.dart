@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -90,7 +91,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
       setState(() => _statusMessage = 'Memeriksa izin perangkat...');
       bool storageGranted = false;
-      if (Platform.isAndroid) {
+      if (!kIsWeb && Platform.isAndroid) {
         try {
           final deviceInfo = DeviceInfoPlugin();
           final androidInfo = await deviceInfo.androidInfo;
@@ -104,7 +105,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         }
       }
 
-      if (!wizardCompleted || !storageGranted) {
+      if (!kIsWeb && (!wizardCompleted || !storageGranted)) {
         setState(() => _statusMessage = 'Mengarahkan ke Wizard Izin...');
         await prefs.setBool('permission_wizard_completed', false);
         _navigateTo(const PermissionWizardScreen());
@@ -127,6 +128,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         _navigateTo(authProvider.isAuthenticated ? const MainNavigationScreen() : const LoginScreen());
       }
     } catch (e) {
+      debugPrint('SplashScreen Error: $e');
       if (mounted) {
         setState(() => _statusMessage = 'Terjadi kendala, membuka login...');
         await Future.delayed(const Duration(seconds: 1));

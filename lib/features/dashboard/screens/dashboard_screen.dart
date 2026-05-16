@@ -155,8 +155,8 @@ class DashboardScreenState extends State<DashboardScreen> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF1A1A1A), letterSpacing: -0.5)),
-            Text(subtitle, style: TextStyle(fontSize: 11, color: Colors.grey[600], fontWeight: FontWeight.w500)),
+            Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF1A1A1A), letterSpacing: -0.5)),
+            Text(subtitle, style: TextStyle(fontSize: 12, color: Colors.grey[600], fontWeight: FontWeight.w500)),
           ],
         ),
       ],
@@ -639,7 +639,7 @@ class _BalanceCard extends StatelessWidget {
                     CurrencyFormatter.formatRupiah(saldo),
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 28,
+                      fontSize: 32,
                       fontWeight: FontWeight.w900,
                       letterSpacing: -1,
                     ),
@@ -709,14 +709,22 @@ class _UserAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final photoUrl = context.select<AuthProvider, String?>((a) => a.user?.fullPhotoUrl);
     return Container(
-      width: 50, height: 50,
+      width: 48,
+      height: 48,
       decoration: BoxDecoration(
-        shape: BoxShape.circle, border: Border.all(color: Colors.white24, width: 2),
-        image: photoUrl != null 
-            ? DecorationImage(image: NetworkImage(photoUrl), fit: BoxFit.cover)
-            : const DecorationImage(image: AssetImage('assets/images/placeholder_avatar.png'), fit: BoxFit.cover),
+        color: Colors.white.withValues(alpha: 0.2),
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 2),
       ),
-      child: photoUrl == null ? const Icon(Icons.person_rounded, color: Colors.white70, size: 30) : null,
+      child: photoUrl != null
+          ? ClipOval(
+              child: Image.network(
+                photoUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const Icon(Icons.person_rounded, color: Colors.white, size: 30),
+              ),
+            )
+          : const Icon(Icons.person_rounded, color: Colors.white, size: 30),
     );
   }
 }
@@ -828,15 +836,15 @@ class _CountBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: color, 
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 4, offset: const Offset(0, 2))],
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 6, offset: const Offset(0, 3))],
       ),
       child: Text(
-        count > 9 ? '9+' : '$count', 
-        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900, height: 1.1),
+        count > 99 ? '99+' : '$count', 
+        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900, height: 1.1),
       ),
     );
   }
@@ -894,22 +902,110 @@ class _StatCardsSection extends StatelessWidget {
 }
 
 
-class _StatCards extends StatelessWidget {
+class _StatCards extends StatefulWidget {
   const _StatCards();
+
+  @override
+  State<_StatCards> createState() => _StatCardsState();
+}
+
+class _StatCardsState extends State<_StatCards> {
+  int _periodFilter = 0; // 0: Hari Ini, 1: Bulan Ini
+
   @override
   Widget build(BuildContext context) {
     final summary = context.select<DashboardProvider, DashboardSummary?>((p) => p.summary);
     if (summary == null) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(top: 10),
+
+    final isToday = _periodFilter == 0;
+    final stats = summary.stats;
+
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            _buildPeriodToggle(),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: _StatCard(
+                label: 'Transaksi DO', 
+                value: isToday ? '${stats.transaksi.today.count}' : '${stats.transaksi.month.count}', 
+                icon: Icons.local_shipping_rounded, 
+                color: const Color(0xFF01579B), 
+                subtitle: isToday ? 'Hari ini' : 'Bulan ini', 
+                onTap: () => context.read<MainNavigationProvider>().setIndex(1)
+              )
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _StatCard(
+                label: 'Pemasukan', 
+                value: CurrencyFormatter.formatRupiah(isToday ? stats.pemasukan.today.total : stats.pemasukan.month.total), 
+                icon: Icons.trending_up_rounded, 
+                color: const Color(0xFF2E7D32), 
+                subtitle: isToday ? 'Hari ini' : 'Bulan ini', 
+                isCurrency: true, 
+                onTap: () => context.read<MainNavigationProvider>().setIndex(3)
+              )
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _StatCard(
+                label: 'Pengeluaran', 
+                value: CurrencyFormatter.formatRupiah(isToday ? stats.pengeluaran.today.total : stats.pengeluaran.month.total), 
+                icon: Icons.trending_down_rounded, 
+                color: const Color(0xFFC62828), 
+                subtitle: isToday ? 'Hari ini' : 'Bulan ini', 
+                isCurrency: true, 
+                onTap: () => context.read<MainNavigationProvider>().setIndex(3)
+              )
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPeriodToggle() {
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(10),
+      ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Expanded(child: _StatCard(label: 'Transaksi DO', value: '${summary.stats.transaksi.today.count}', icon: Icons.local_shipping_rounded, color: const Color(0xFF01579B), subtitle: 'Hari ini', onTap: () => context.read<MainNavigationProvider>().setIndex(1))),
-          const SizedBox(width: 8),
-          Expanded(child: _StatCard(label: 'Pemasukan', value: CurrencyFormatter.formatRupiah(summary.stats.pemasukan.today.total), icon: Icons.trending_up_rounded, color: const Color(0xFF2E7D32), subtitle: 'Hari ini', isCurrency: true, onTap: () => context.read<MainNavigationProvider>().setIndex(3))),
-          const SizedBox(width: 8),
-          Expanded(child: _StatCard(label: 'Pengeluaran', value: CurrencyFormatter.formatRupiah(summary.stats.pengeluaran.today.total), icon: Icons.trending_down_rounded, color: const Color(0xFFC62828), subtitle: 'Hari ini', isCurrency: true, onTap: () => context.read<MainNavigationProvider>().setIndex(3))),
+          _toggleItem(0, 'Hari Ini'),
+          _toggleItem(1, 'Bulan Ini'),
         ],
+      ),
+    );
+  }
+
+  Widget _toggleItem(int index, String label) {
+    final bool active = _periodFilter == index;
+    return GestureDetector(
+      onTap: () => setState(() => _periodFilter = index),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: active ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: active ? const Color(0xFF01579B) : Colors.white70,
+            fontSize: 10,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
       ),
     );
   }
@@ -944,10 +1040,10 @@ class _StatCard extends StatelessWidget {
               FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
-                child: Text(value, style: TextStyle(fontSize: isCurrency ? 13 : 18, fontWeight: FontWeight.w900, color: const Color(0xFF1A1A1A)), maxLines: 1),
+                child: Text(value, style: TextStyle(fontSize: isCurrency ? 14 : 22, fontWeight: FontWeight.w900, color: const Color(0xFF1A1A1A)), maxLines: 1),
               ),
               const SizedBox(height: 2),
-              Text(label, style: TextStyle(fontSize: 11, color: Colors.grey[600], fontWeight: FontWeight.w700), maxLines: 1, overflow: TextOverflow.ellipsis),
+              Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600], fontWeight: FontWeight.w700), maxLines: 1, overflow: TextOverflow.ellipsis),
             ],
           ),
         ),
