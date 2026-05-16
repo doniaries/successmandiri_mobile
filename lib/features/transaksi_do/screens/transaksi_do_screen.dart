@@ -277,7 +277,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                   Expanded(
                     child: _buildMetricItem(
                       label: 'Total Nominal',
-                      value: CurrencyFormatter.formatCompactRupiah(stats?.total ?? 0),
+                      value: CurrencyFormatter.formatRupiah(stats?.total ?? 0),
                       icon: Icons.account_balance_wallet_rounded,
                     ),
                   ),
@@ -297,13 +297,16 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   }) {
     return Column(
       children: [
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -0.5,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.5,
+            ),
           ),
         ),
         const SizedBox(height: 4),

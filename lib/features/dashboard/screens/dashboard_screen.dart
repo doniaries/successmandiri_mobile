@@ -550,13 +550,104 @@ class _DashboardHeader extends StatelessWidget {
               children: [
                 _HeaderTopRow(),
                 LiveDateTimeWidget(),
-                SizedBox(height: 8),
+                SizedBox(height: 12),
                 _CompanySelector(),
-                SizedBox(height: 10),
+                SizedBox(height: 12),
+                _BalanceCard(),
+                SizedBox(height: 12),
                 _StatCardsSection(),
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BalanceCard extends StatelessWidget {
+  const _BalanceCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final double saldo = context.select<DashboardProvider, double>((p) => p.summary?.saldo ?? 0);
+    final bool isLow = saldo < 500000;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isLow ? Colors.redAccent.withValues(alpha: 0.2) : Colors.amberAccent.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              isLow ? Icons.warning_amber_rounded : Icons.account_balance_wallet_rounded,
+              color: isLow ? Colors.redAccent : Colors.amberAccent,
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Saldo Perusahaan',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.7),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    CurrencyFormatter.formatRupiah(saldo),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -1,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (isLow)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.redAccent,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                'RENDAH',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
         ],
       ),
     );
