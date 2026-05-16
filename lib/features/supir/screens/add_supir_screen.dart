@@ -38,7 +38,6 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
       });
 
       if (mounted) {
-      if (mounted) {
         if (supir != null) {
           final bool isOffline = provider.errorMessage == 'offline';
           SuccessDialog.show(
@@ -49,8 +48,7 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
                 : 'Data supir ${_namaController.text} telah berhasil didaftarkan ke sistem.',
             isOffline: isOffline,
             onConfirm: () {
-              Navigator.pop(context); // Tutup Dialog
-              Navigator.pop(context, supir); // Kembali dengan data baru
+              Navigator.of(context).popUntil((route) => route.isFirst);
             },
           );
         } else {

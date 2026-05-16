@@ -43,7 +43,6 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
       });
 
       if (mounted) {
-      if (mounted) {
         if (penjual != null) {
           final bool isOffline = provider.errorMessage == 'offline';
           SuccessDialog.show(
@@ -54,8 +53,7 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
                 : 'Data penjual ${_namaController.text} telah berhasil didaftarkan ke sistem.',
             isOffline: isOffline,
             onConfirm: () {
-              Navigator.pop(context); // Tutup Dialog
-              Navigator.pop(context, penjual); // Kembali dengan data baru
+              Navigator.of(context).popUntil((route) => route.isFirst);
             },
           );
         } else {

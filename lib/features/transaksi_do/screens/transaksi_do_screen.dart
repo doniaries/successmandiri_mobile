@@ -7,6 +7,7 @@ import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/add_transaksi_do_screen.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_detail_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
+import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 
 class TransaksiDoScreen extends StatefulWidget {
   const TransaksiDoScreen({super.key});
@@ -122,13 +123,24 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
       elevation: 0,
       pinned: true,
       centerTitle: false,
-      title: const Text(
-        'Transaksi DO',
-        style: TextStyle(
-          color: Color(0xFF1E293B),
-          fontWeight: FontWeight.w800,
-          fontSize: 20,
-        ),
+      title: Row(
+        children: [
+          const Text(
+            'Transaksi DO',
+            style: TextStyle(
+              color: Color(0xFF1E293B),
+              fontWeight: FontWeight.w800,
+              fontSize: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: LiveDateTimeWidget(),
+            ),
+          ),
+        ],
       ),
       iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
       actions: [

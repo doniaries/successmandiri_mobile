@@ -9,6 +9,7 @@ import 'package:sawitappmobile/features/jurnal_keuangan/screens/jurnal_keuangan_
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:sawitappmobile/core/constants/api_constants.dart';
+import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 
 class FinanceJournalScreen extends StatefulWidget {
   const FinanceJournalScreen({super.key});
@@ -65,7 +66,18 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Laporan Keuangan', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Row(
+          children: [
+            const Text('Laporan Keuangan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            const SizedBox(width: 8),
+            const Expanded(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: LiveDateTimeWidget(),
+              ),
+            ),
+          ],
+        ),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,

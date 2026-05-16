@@ -11,6 +11,7 @@ import 'package:sawitappmobile/shared/widgets/searchable_selection_modal.dart';
 import 'package:sawitappmobile/features/penjual/screens/add_penjual_screen.dart';
 import 'package:sawitappmobile/features/supir/screens/add_supir_screen.dart';
 import 'package:sawitappmobile/shared/widgets/balance_validation_modal.dart';
+import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 
 class AddTransaksiDoScreen extends StatefulWidget {
   const AddTransaksiDoScreen({super.key});
@@ -271,7 +272,18 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
       message: 'Menyimpan transaksi...',
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Tambah Transaksi DO'),
+          title: Row(
+            children: [
+              const Text('Tambah Transaksi DO'),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: LiveDateTimeWidget(),
+                ),
+              ),
+            ],
+          ),
           backgroundColor: const Color(0xFF01579B),
           foregroundColor: Colors.white,
         ),

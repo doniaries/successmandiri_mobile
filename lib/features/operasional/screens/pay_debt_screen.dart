@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
+import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 
 class PayDebtScreen extends StatefulWidget {
   final String? pihakType;
@@ -100,7 +101,8 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
           context,
           title: 'Pembayaran Berhasil!',
           message: 'Pembayaran hutang dari ${_selectedPihak.nama} sebesar ${CurrencyFormatter.formatRupiah(nominalValue)} telah berhasil dicatat.',
-          onConfirm: () => Navigator.pop(context),
+          onConfirm: () =>
+              Navigator.of(context).popUntil((route) => route.isFirst),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -115,7 +117,18 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Bayar Hutang', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Row(
+          children: [
+            const Text('Bayar Hutang',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            const Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: LiveDateTimeWidget(),
+              ),
+            ),
+          ],
+        ),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,

@@ -8,6 +8,7 @@ import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/widgets/skeleton_loader.dart';
 import 'package:sawitappmobile/features/operasional/screens/add_operasional_screen.dart';
 import 'package:sawitappmobile/features/operasional/screens/operasional_detail_screen.dart';
+import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 
 class OperasionalScreen extends StatefulWidget {
   const OperasionalScreen({super.key});
@@ -84,13 +85,24 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
       backgroundColor: Colors.white,
       foregroundColor: const Color(0xFF2C3E50),
       centerTitle: false,
-      title: const Text(
-        'Operasional',
-        style: TextStyle(
-          fontWeight: FontWeight.w900,
-          fontSize: 22,
-          color: Color(0xFF2C3E50),
-        ),
+      title: Row(
+        children: [
+          const Text(
+            'Operasional',
+            style: TextStyle(
+              fontWeight: FontWeight.w900,
+              fontSize: 22,
+              color: Color(0xFF2C3E50),
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: LiveDateTimeWidget(),
+            ),
+          ),
+        ],
       ),
       actions: [
         IconButton(

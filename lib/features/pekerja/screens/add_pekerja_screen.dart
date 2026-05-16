@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
+import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 
 class AddPekerjaScreen extends StatefulWidget {
   const AddPekerjaScreen({super.key});
@@ -47,10 +48,8 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
                 ? 'Sinyal tidak stabil. Data pekerja ${_namaController.text} telah disimpan di antrean perangkat dan akan otomatis dikirim saat ada sinyal.'
                 : 'Data pekerja ${_namaController.text} telah berhasil didaftarkan ke sistem.',
             isOffline: isOffline,
-            onConfirm: () {
-              Navigator.pop(context); // Tutup Dialog
-              Navigator.pop(context, result); // Kembali dengan data/status
-            },
+            onConfirm: () =>
+                Navigator.of(context).popUntil((route) => route.isFirst),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -73,7 +72,18 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tambah Pekerja', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Row(
+          children: [
+            const Text('Tambah Pekerja',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            const Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: LiveDateTimeWidget(),
+              ),
+            ),
+          ],
+        ),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,

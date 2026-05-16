@@ -28,7 +28,7 @@ import 'package:sawitappmobile/features/operasional/screens/finance_journal_scre
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/features/operasional/models/operasional_model.dart';
 import 'package:sawitappmobile/shared/providers/navigation_provider.dart';
-import 'package:sawitappmobile/features/dashboard/screens/widgets/digital_clock.dart';
+import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 
 class DashboardScreen extends StatefulWidget {
   final VoidCallback? onAddBalance;
@@ -549,7 +549,7 @@ class _DashboardHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _HeaderTopRow(),
-                DigitalClock(),
+                LiveDateTimeWidget(),
                 SizedBox(height: 8),
                 _CompanySelector(),
                 SizedBox(height: 10),

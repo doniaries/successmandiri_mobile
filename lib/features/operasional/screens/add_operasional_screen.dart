@@ -9,6 +9,7 @@ import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
 import 'package:sawitappmobile/features/penjual/screens/add_penjual_screen.dart';
 import 'package:sawitappmobile/features/supir/screens/add_supir_screen.dart';
 import 'package:sawitappmobile/features/pekerja/screens/add_pekerja_screen.dart';
+import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 
 class AddOperasionalScreen extends StatefulWidget {
   const AddOperasionalScreen({super.key});
@@ -122,7 +123,18 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
       message: 'Menyimpan transaksi...',
       child: Scaffold(
       appBar: AppBar(
-        title: const Text('Tambah Operasional', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Row(
+          children: [
+            const Text('Tambah Operasional',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            const Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: LiveDateTimeWidget(),
+              ),
+            ),
+          ],
+        ),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
