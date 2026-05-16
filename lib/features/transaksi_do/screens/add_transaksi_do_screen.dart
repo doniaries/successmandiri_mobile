@@ -28,7 +28,6 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
   final _upahBongkarController = TextEditingController();
   final _biayaLainController = TextEditingController();
   final _pembayaranHutangController = TextEditingController();
-  final _keteranganBiayaLainController = TextEditingController();
   final _keteranganPembayaranController = TextEditingController();
   final _nominalTransferController = TextEditingController();
   final _nomorDoController = TextEditingController(text: 'OTOMATIS (SISTEM)');
@@ -147,7 +146,6 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
     _upahBongkarController.dispose();
     _biayaLainController.dispose();
     _pembayaranHutangController.dispose();
-    _keteranganBiayaLainController.dispose();
     _keteranganPembayaranController.dispose();
 
     _nominalTransferController.dispose();
@@ -712,15 +710,6 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      TextFormField(
-                        controller: _keteranganBiayaLainController,
-                        decoration: _getInputDecoration(
-                          label: 'Keterangan Biaya Lain',
-                          icon: Icons.description_outlined,
-                        ),
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                      const SizedBox(height: 16),
 
                       // Cara Bayar
                       DropdownButtonFormField<String>(
@@ -843,7 +832,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
             pembayaranHutang: CurrencyInputFormatter.parse(
               _pembayaranHutangController.text,
             ),
-            keteranganBiayaLain: _keteranganBiayaLainController.text,
+            keteranganBiayaLain: '',
             caraBayar: _selectedCaraBayar,
             buktiTransfer: null,
             keteranganPembayaran: _keteranganPembayaranController.text,

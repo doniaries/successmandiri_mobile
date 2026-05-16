@@ -24,8 +24,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   late final List<Widget> _screens = [
     _buildTabNavigator(0, const DashboardScreen()),
-    _buildTabNavigator(1, const OperasionalScreen()),
-    _buildTabNavigator(2, const TransaksiDoScreen()),
+    _buildTabNavigator(1, const TransaksiDoScreen()),
+    _buildTabNavigator(2, const OperasionalScreen()),
     _buildTabNavigator(3, const FinanceJournalScreen()),
     _buildTabNavigator(4, const ProfileScreen()),
   ];
@@ -52,11 +52,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       // Trigger auto-fetch if data is empty
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (index == 1) {
-          // Operasional
-          context.read<ResourceProvider>().fetchResources('operasional');
-        } else if (index == 2) {
           // Transaksi DO
           context.read<TransaksiDoProvider>().fetchTransactions();
+        } else if (index == 2) {
+          // Operasional
+          context.read<ResourceProvider>().fetchResources('operasional');
         } else if (index == 3) {
           // Laporan Keuangan
           context.read<ResourceProvider>().fetchJurnalByDateRange(
@@ -131,16 +131,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildNavItem(0, Icons.grid_view_rounded, 'Beranda', selectedIndex),
-                _buildNavItem(1, Icons.receipt_long_rounded, 'Operasional', selectedIndex),
-                const SizedBox(width: 80), // Space for centered large button
                 _buildNavItem(
-                  3,
-                  Icons.account_balance_wallet_rounded,
-                  'Laporan',
-                  selectedIndex,
-                ),
-                _buildNavItem(4, Icons.account_circle_rounded, 'Profil', selectedIndex),
+                    0, Icons.grid_view_rounded, 'Beranda', selectedIndex),
+                _buildNavItem(1, Icons.local_shipping_rounded, 'Transaksi DO',
+                    selectedIndex),
+                const SizedBox(width: 80), // Space for centered large button
+                _buildNavItem(2, Icons.receipt_long_rounded, 'Operasional',
+                    selectedIndex),
+                _buildNavItem(3, Icons.account_balance_wallet_rounded,
+                    'Laporan', selectedIndex),
+                _buildNavItem(
+                    4, Icons.account_circle_rounded, 'Profil', selectedIndex),
               ],
             ),
           ),
@@ -150,10 +151,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             top: -15,
             child: GestureDetector(
               onTap: () {
-                _onItemTapped(2); // Go to DO List
+                _onItemTapped(1); // Go to DO List
                 // Push Add screen on the nested navigator
-                _navigatorKeys[2].currentState?.push(
-                  MaterialPageRoute(builder: (context) => const AddTransaksiDoScreen()),
+                _navigatorKeys[1].currentState?.push(
+                  MaterialPageRoute(
+                      builder: (context) => const AddTransaksiDoScreen()),
                 );
               },
               child: Container(

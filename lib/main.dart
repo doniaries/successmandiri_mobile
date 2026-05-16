@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:ui';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:sawitappmobile/core/navigation/navigation_service.dart';
 import 'package:sawitappmobile/core/network/api_client.dart';
@@ -100,6 +101,14 @@ class MyApp extends StatelessWidget {
             primary: const Color(0xFF01579B),
           ),
           useMaterial3: true,
+        ),
+        scrollBehavior: const MaterialScrollBehavior().copyWith(
+          dragDevices: {
+            PointerDeviceKind.mouse,
+            PointerDeviceKind.touch,
+            PointerDeviceKind.trackpad,
+            PointerDeviceKind.stylus,
+          },
         ),
         home: initialScreen,
       ),
