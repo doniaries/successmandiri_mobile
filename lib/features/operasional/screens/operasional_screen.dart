@@ -50,13 +50,18 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      body: CustomScrollView(
-        controller: _scrollController,
-        slivers: [
-          _buildAppBar(),
-          _buildSummaryHeader(),
-          _buildListSection(),
-        ],
+      body: RefreshIndicator(
+        onRefresh: _refreshData,
+        color: const Color(0xFF01579B),
+        child: CustomScrollView(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            _buildAppBar(),
+            _buildSummaryHeader(),
+            _buildListSection(),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'fab_operasional',

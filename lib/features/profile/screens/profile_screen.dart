@@ -9,6 +9,7 @@ import 'package:sawitappmobile/features/auth/screens/login_screen.dart';
 import 'package:sawitappmobile/features/profile/screens/role_menu_settings_screen.dart';
 import 'package:sawitappmobile/features/profile/screens/app_version_setting_screen.dart';
 import 'package:sawitappmobile/shared/widgets/change_password_dialog.dart';
+import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -121,8 +122,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       body: authProvider.isLoading 
         ? const Center(child: CircularProgressIndicator())
-        : SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+        : RefreshIndicator(
+            onRefresh: () async {
+              await context.read<AuthProvider>().getUser();
+              if (mounted) {
+                // Refresh other summary data as well if needed
+                await context.read<DashboardProvider>().fetchSummary();
+              }
+            },
+            color: const Color(0xFF01579B),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(20),
             child: Column(
               children: [
                 const SizedBox(height: 10),
