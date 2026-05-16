@@ -42,7 +42,10 @@ class _AddKendaraanScreenState extends State<AddKendaraanScreen> {
             context,
             title: 'Kendaraan Ditambahkan!',
             message: 'Data kendaraan ${_nopolController.text} telah berhasil didaftarkan.',
-            onConfirm: () => Navigator.pop(context),
+            onConfirm: () {
+              Navigator.pop(context); // Tutup Dialog
+              Navigator.pop(context, success); // Kembali dengan status berhasil
+            },
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(

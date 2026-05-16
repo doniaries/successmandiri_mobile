@@ -845,8 +845,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
             message:
                 'Data Transaksi DO dengan nomor ${_nomorDoController.text} berhasil disimpan.',
             onConfirm: () {
-              Navigator.pop(context); // Tutup Dialog
-              Navigator.pop(context); // Kembali ke Halaman List
+              Navigator.of(context).popUntil((route) => route.isFirst);
             },
           );
         } else {

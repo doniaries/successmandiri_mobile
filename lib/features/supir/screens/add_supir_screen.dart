@@ -43,7 +43,10 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
             context,
             title: 'Supir Ditambahkan!',
             message: 'Data supir ${_namaController.text} telah berhasil didaftarkan ke sistem.',
-            onConfirm: () => Navigator.pop(context, supir),
+            onConfirm: () {
+              Navigator.pop(context); // Tutup Dialog
+              Navigator.pop(context, supir); // Kembali dengan data baru
+            },
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(

@@ -48,7 +48,10 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
             context,
             title: 'Penjual Ditambahkan!',
             message: 'Data penjual ${_namaController.text} telah berhasil didaftarkan ke sistem.',
-            onConfirm: () => Navigator.pop(context, penjual),
+            onConfirm: () {
+              Navigator.pop(context); // Tutup Dialog
+              Navigator.pop(context, penjual); // Kembali dengan data baru
+            },
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(

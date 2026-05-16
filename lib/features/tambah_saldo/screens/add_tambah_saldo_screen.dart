@@ -125,12 +125,7 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
                           context,
                           title: 'Saldo Bertambah!',
                           message: 'Berhasil menambah saldo sebesar ${CurrencyFormatter.formatRupiah(double.parse(nominalClean))}.',
-                          onConfirm: () {
-                            Navigator.pop(context); // Tutup dialog
-                            if (mounted) {
-                              Navigator.pop(context); // Tutup halaman
-                            }
-                          },
+                          onConfirm: () => Navigator.of(context).popUntil((route) => route.isFirst),
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(

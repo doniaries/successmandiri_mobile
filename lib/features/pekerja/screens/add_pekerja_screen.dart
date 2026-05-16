@@ -43,7 +43,10 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
             context,
             title: 'Pekerja Ditambahkan!',
             message: 'Data Pekerja ${_namaController.text} telah berhasil didaftarkan ke sistem.',
-            onConfirm: () => Navigator.pop(context),
+            onConfirm: () {
+              Navigator.pop(context); // Tutup Dialog
+              Navigator.pop(context, success); // Kembali dengan status berhasil
+            },
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
