@@ -48,17 +48,21 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
     setState(() => _isManualSyncing = true);
     try {
       await SyncService().syncNow();
-      if (mounted) {
-        await context.read<TransaksiDoProvider>().fetchTransactions();
-        await context.read<DashboardProvider>().fetchSummary();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Sinkronisasi selesai'),
-            backgroundColor: Color(0xFF0D47A1),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+      if (!mounted) return;
+      
+      await context.read<TransaksiDoProvider>().fetchTransactions();
+      if (!mounted) return;
+      
+      await context.read<DashboardProvider>().fetchSummary();
+      if (!mounted) return;
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sinkronisasi selesai'),
+          backgroundColor: Color(0xFF0D47A1),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

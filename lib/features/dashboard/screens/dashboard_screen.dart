@@ -24,7 +24,6 @@ import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/widgets/skeleton_loader.dart';
 import 'package:sawitappmobile/shared/widgets/custom_loading_logo.dart';
 import 'package:sawitappmobile/features/operasional/screens/operasional_detail_screen.dart';
-import 'package:sawitappmobile/features/operasional/screens/operasional_screen.dart';
 import 'package:sawitappmobile/features/operasional/screens/finance_journal_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/features/operasional/models/operasional_model.dart';
@@ -384,12 +383,14 @@ class DashboardScreenState extends State<DashboardScreen> {
                         onTap: () async {
                           Navigator.pop(context);
                           final success = await authProvider.switchCompany(company['id']);
-                          if (success && context.mounted) {
-                            context.read<DashboardProvider>().fetchSummary();
-                            context.read<TransaksiDoProvider>().fetchTransactions();
-                            context.read<TambahSaldoProvider>().fetchRequests();
-                            context.read<ResourceProvider>().fetchAllResources();
-                          }
+                          if (!success || !mounted) return;
+                          
+                          await context.read<DashboardProvider>().fetchSummary();
+                          if (!mounted) return;
+                          
+                          context.read<TransaksiDoProvider>().fetchTransactions();
+                          context.read<TambahSaldoProvider>().fetchRequests();
+                          context.read<ResourceProvider>().fetchAllResources();
                         },
                       );
                     },

@@ -124,9 +124,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ? const Center(child: CircularProgressIndicator())
         : RefreshIndicator(
             onRefresh: () async {
-              await context.read<AuthProvider>().getUser();
-              if (mounted) {
-                // Refresh other summary data as well if needed
+              await context.read<AuthProvider>().checkAuthStatus();
+              if (context.mounted) {
                 await context.read<DashboardProvider>().fetchSummary();
               }
             },
@@ -301,6 +300,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
           ),
+        ),
     );
   }
 
