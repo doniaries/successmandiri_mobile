@@ -317,6 +317,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                 ],
               ),
             ],
+          ),
         ),
       ),
     );

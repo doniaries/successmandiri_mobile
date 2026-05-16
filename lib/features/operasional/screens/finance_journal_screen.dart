@@ -154,8 +154,11 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
         final d = item.tanggal.toLocal();
         if (d.isAfter(_selectedDateRange!.start.subtract(const Duration(seconds: 1))) && 
             d.isBefore(_selectedDateRange!.end.add(const Duration(days: 1)))) {
-          if (item.jenisTransaksi == 'Pemasukan') displayIn += item.nominal;
-          else displayOut += item.nominal;
+          if (item.jenisTransaksi == 'Pemasukan') {
+            displayIn += item.nominal;
+          } else {
+            displayOut += item.nominal;
+          }
         }
       }
       labelSuffix = 'Filtered';

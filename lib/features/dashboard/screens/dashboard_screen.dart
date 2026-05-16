@@ -721,7 +721,7 @@ class _UserAvatar extends StatelessWidget {
               child: Image.network(
                 photoUrl,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(Icons.person_rounded, color: Colors.white, size: 30),
+                errorBuilder: (context, error, stackTrace) => const Icon(Icons.person_rounded, color: Colors.white, size: 30),
               ),
             )
           : const Icon(Icons.person_rounded, color: Colors.white, size: 30),
