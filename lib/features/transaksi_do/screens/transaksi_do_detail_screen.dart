@@ -63,7 +63,7 @@ class TransaksiDoDetailScreen extends StatelessWidget {
             // Details
             _buildInfoSection('Pihak Terkait', [
               _buildInfoRow(Icons.store, 'Penjual', transaction.penjualNama ?? 'N/A'),
-              _buildInfoRow(Icons.person, 'Supir', transaction.supirNama ?? 'N/A'),
+              _buildInfoRow(Icons.person, 'Supir', transaction.displaySupirNama),
               _buildInfoRow(Icons.directions_car, 'No. Polisi', transaction.noPolisi ?? 'N/A'),
             ]),
             

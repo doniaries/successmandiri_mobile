@@ -147,7 +147,7 @@ class TransaksiDoProvider with ChangeNotifier {
   Future<bool> createTransaction({
     required String tanggal,
     required int penjualId,
-    required int supirId,
+    int? supirId,
     String? noPolisi,
     required double tonase,
     required double hargaSatuan,

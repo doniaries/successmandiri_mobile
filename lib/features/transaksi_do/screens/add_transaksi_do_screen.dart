@@ -801,7 +801,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
             tanggal: DateFormat('yyyy-MM-dd').format(_selectedDate),
             nomorDo: _nomorDoController.text,
             penjualId: _selectedPenjualId!,
-            supirId: _penjualSebagaiSupir ? _selectedPenjualId! : _selectedSupirId!,
+            supirId: _penjualSebagaiSupir ? null : _selectedSupirId,
             noPolisi: _noPolisiController.text,
             tonase: CurrencyInputFormatter.parse(_tonaseController.text),
             hargaSatuan: CurrencyInputFormatter.parse(

@@ -21,6 +21,8 @@ class TransaksiDo {
   final String? buktiTransfer;
   final String? keteranganPembayaran;
 
+  String get displaySupirNama => supirNama ?? penjualNama ?? 'Tanpa Supir';
+
 
   final bool isMismatch;
   final String? buktiRekap;

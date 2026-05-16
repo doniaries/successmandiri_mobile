@@ -96,19 +96,6 @@ class _AnimatedPulsingLogoState extends State<AnimatedPulsingLogo>
                 ),
                 // Main Logo Container
                 Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.rectangle,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF01579B).withValues(alpha: 0.15),
-                        blurRadius: 20,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
                   child: ShaderMask(
                     shaderCallback: (rect) {
                       return LinearGradient(

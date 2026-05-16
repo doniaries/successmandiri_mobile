@@ -469,7 +469,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
             final query = _searchQuery.toLowerCase();
             final matchesSearch = t.nomor.toLowerCase().contains(query) ||
                 (t.penjualNama?.toLowerCase().contains(query) ?? false) ||
-                (t.supirNama?.toLowerCase().contains(query) ?? false);
+                (t.displaySupirNama.toLowerCase().contains(query));
             if (!matchesSearch) return false;
           }
 
@@ -698,7 +698,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${tx.penjualNama} • ${tx.supirNama}',
+                        '${tx.penjualNama} • ${tx.displaySupirNama}',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey[600],
