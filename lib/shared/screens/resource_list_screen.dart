@@ -158,7 +158,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                     itemBuilder: (context, index) {
                       if (index < items.length) {
                         final item = items[index];
-                        return _buildItemTile(context, item);
+                        return _buildItemTile(item);
                       } else {
                         return const Padding(
                           padding: EdgeInsets.symmetric(vertical: 20),
@@ -200,7 +200,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
     );
   }
 
-  Widget _buildItemTile(BuildContext context, dynamic item) {
+  Widget _buildItemTile(dynamic item) {
     String name = '';
     String? subtitle;
     double? hutang;
@@ -338,7 +338,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                 builder: (context) => PenjualDetailScreen(penjual: item),
               ),
             ).then((deleted) {
-              if (deleted == true && mounted) {
+              if (deleted == true && mounted && context.mounted) {
                 context.read<ResourceProvider>().fetchResources('penjual', refresh: true);
               }
             });
@@ -349,7 +349,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                 builder: (context) => SupirDetailScreen(supir: item),
               ),
             ).then((deleted) {
-              if (deleted == true && mounted) {
+              if (deleted == true && mounted && context.mounted) {
                 context.read<ResourceProvider>().fetchResources('supir', refresh: true);
               }
             });
@@ -360,7 +360,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                 builder: (context) => PekerjaDetailScreen(pekerja: item),
               ),
             ).then((deleted) {
-              if (deleted == true && mounted) {
+              if (deleted == true && mounted && context.mounted) {
                 context.read<ResourceProvider>().fetchResources('pekerja', refresh: true);
               }
             });
@@ -410,7 +410,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
         if (!success) {
           // Refresh list to restore the item since delete failed
           await provider.fetchResources(widget.resourceType, refresh: true);
-          if (mounted) {
+          if (context.mounted) {
             ErrorDialog.show(
               context,
               title: 'Gagal Menghapus',
@@ -418,7 +418,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
             );
           }
         } else {
-          if (mounted) {
+          if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('$name berhasil dihapus')),
             );
