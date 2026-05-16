@@ -160,7 +160,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                 if (_selectedPihakType != null) ...[
                   DropdownButtonFormField<dynamic>(
                     isExpanded: true,
-                    value: _selectedPihak,
+                    initialValue: _selectedPihak,
                     decoration: _inputDecoration('Pilih Nama Pembayar', Icons.person_rounded),
                     items: (_selectedPihakType == 'App\\Models\\Penjual'
                             ? provider.penjualDebtors
