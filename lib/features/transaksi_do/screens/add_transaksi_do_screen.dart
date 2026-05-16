@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_provider.dart';
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
+import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
@@ -763,27 +764,10 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
 
                       const SizedBox(height: 24),
 
-                      ElevatedButton(
-                        onPressed: (provider.isLoading || provider.isSaving)
-                            ? null
-                            : _submitForm,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 18),
-                          backgroundColor: const Color(0xFF01579B),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 4,
-                          shadowColor: const Color(0xFF01579B).withValues(alpha: 0.4),
-                        ),
-                        child: const Text(
-                          'SIMPAN TRANSAKSI',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1.5,
-                          ),
-                        ),
+                      AppPrimaryButton(
+                        text: 'SIMPAN TRANSAKSI',
+                        onPressed: _submitForm,
+                        isLoading: provider.isLoading || provider.isSaving,
                       ),
                     ],
                   ),

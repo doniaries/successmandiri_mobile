@@ -275,7 +275,7 @@ class DashboardScreenState extends State<DashboardScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(CurrencyFormatter.formatRupiah(tx.subTotal), style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF2980B9), fontSize: 14)),
+                  Text(CurrencyFormatter.formatRupiah(tx.subTotal), style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF2980B9), fontSize: 16)),
                   const SizedBox(height: 4),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -329,7 +329,7 @@ class DashboardScreenState extends State<DashboardScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(CurrencyFormatter.formatRupiah(item.nominal), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: color)),
+                  Text(CurrencyFormatter.formatRupiah(item.nominal), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: color)),
                   const SizedBox(height: 4),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -929,43 +929,46 @@ class _StatCardsState extends State<_StatCards> {
           ],
         ),
         const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: _StatCard(
-                label: 'Transaksi DO', 
-                value: isToday ? '${stats.transaksi.today.count}' : '${stats.transaksi.month.count}', 
-                icon: Icons.local_shipping_rounded, 
-                color: const Color(0xFF01579B), 
-                subtitle: isToday ? 'Hari ini' : 'Bulan ini', 
-                onTap: () => context.read<MainNavigationProvider>().setIndex(1)
-              )
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _StatCard(
-                label: 'Pemasukan', 
-                value: CurrencyFormatter.formatRupiah(isToday ? stats.pemasukan.today.total : stats.pemasukan.month.total), 
-                icon: Icons.trending_up_rounded, 
-                color: const Color(0xFF2E7D32), 
-                subtitle: isToday ? 'Hari ini' : 'Bulan ini', 
-                isCurrency: true, 
-                onTap: () => context.read<MainNavigationProvider>().setIndex(3)
-              )
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _StatCard(
-                label: 'Pengeluaran', 
-                value: CurrencyFormatter.formatRupiah(isToday ? stats.pengeluaran.today.total : stats.pengeluaran.month.total), 
-                icon: Icons.trending_down_rounded, 
-                color: const Color(0xFFC62828), 
-                subtitle: isToday ? 'Hari ini' : 'Bulan ini', 
-                isCurrency: true, 
-                onTap: () => context.read<MainNavigationProvider>().setIndex(3)
-              )
-            ),
-          ],
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: _StatCard(
+                  label: 'Transaksi DO', 
+                  value: isToday ? '${stats.transaksi.today.count}' : '${stats.transaksi.month.count}', 
+                  icon: Icons.local_shipping_rounded, 
+                  color: const Color(0xFF01579B), 
+                  subtitle: isToday ? 'Hari ini' : 'Bulan ini', 
+                  onTap: () => context.read<MainNavigationProvider>().setIndex(1)
+                )
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _StatCard(
+                  label: 'Pemasukan', 
+                  value: CurrencyFormatter.formatRupiah(isToday ? stats.pemasukan.today.total : stats.pemasukan.month.total), 
+                  icon: Icons.trending_up_rounded, 
+                  color: const Color(0xFF2E7D32), 
+                  subtitle: isToday ? 'Hari ini' : 'Bulan ini', 
+                  isCurrency: true, 
+                  onTap: () => context.read<MainNavigationProvider>().setIndex(3)
+                )
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _StatCard(
+                  label: 'Pengeluaran', 
+                  value: CurrencyFormatter.formatRupiah(isToday ? stats.pengeluaran.today.total : stats.pengeluaran.month.total), 
+                  icon: Icons.trending_down_rounded, 
+                  color: const Color(0xFFC62828), 
+                  subtitle: isToday ? 'Hari ini' : 'Bulan ini', 
+                  isCurrency: true, 
+                  onTap: () => context.read<MainNavigationProvider>().setIndex(3)
+                )
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -1021,29 +1024,83 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(14),
+      color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
         child: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle), child: Icon(icon, size: 16, color: color)),
-              const SizedBox(height: 8),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(value, style: TextStyle(fontSize: isCurrency ? 14 : 22, fontWeight: FontWeight.w900, color: const Color(0xFF1A1A1A)), maxLines: 1),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: color.withValues(alpha: 0.1), width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
-              const SizedBox(height: 2),
-              Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600], fontWeight: FontWeight.w700), maxLines: 1, overflow: TextOverflow.ellipsis),
+            ],
+          ),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // Large Background Icon
+              Positioned(
+                right: -12,
+                bottom: -12,
+                child: Icon(
+                  icon,
+                  size: 56,
+                  color: color.withValues(alpha: 0.06),
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(icon, size: 20, color: color),
+                      ),
+                      const SizedBox(height: 12),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          value, 
+                          style: TextStyle(
+                            fontSize: isCurrency ? 20 : 34, 
+                            fontWeight: FontWeight.w900, 
+                            color: color.withValues(alpha: 0.95),
+                            letterSpacing: -0.8,
+                          ), 
+                          maxLines: 1
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    label, 
+                    style: TextStyle(
+                      fontSize: 11, 
+                      color: Colors.grey[700], 
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.2,
+                    ), 
+                    maxLines: 1, 
+                    overflow: TextOverflow.ellipsis
+                  ),
+                ],
+              ),
             ],
           ),
         ),

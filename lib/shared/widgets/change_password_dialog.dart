@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
+import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
 
 class ChangePasswordDialog extends StatefulWidget {
   const ChangePasswordDialog({super.key});
@@ -112,15 +113,13 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
           onPressed: _isLoading ? null : () => Navigator.pop(context),
           child: const Text('Batal'),
         ),
-        ElevatedButton(
-          onPressed: _isLoading ? null : _submit,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF01579B),
-            foregroundColor: Colors.white,
-          ),
-          child: _isLoading 
-            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-            : const Text('Simpan'),
+        AppPrimaryButton(
+          text: 'Simpan',
+          onPressed: _submit,
+          isLoading: _isLoading,
+          isFullWidth: false,
+          borderRadius: 8,
+          verticalPadding: 8,
         ),
       ],
     );

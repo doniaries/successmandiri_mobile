@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
+import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
@@ -358,16 +359,10 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
               ),
               const SizedBox(height: 40),
 
-              ElevatedButton(
+              AppPrimaryButton(
+                text: 'SIMPAN TRANSAKSI',
                 onPressed: _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF01579B),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 0,
-                ),
-                child: const Text('SIMPAN TRANSAKSI', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
+                isLoading: provider.isLoading,
               ),
             ],
           ),
@@ -385,6 +380,10 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: Colors.grey[300]!),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF01579B), width: 2),
       ),
       filled: true,
       fillColor: Colors.grey[50],

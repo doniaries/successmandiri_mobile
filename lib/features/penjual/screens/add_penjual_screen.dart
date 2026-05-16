@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
+import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
 import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 
@@ -94,55 +95,51 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildTextField(
-                controller: _namaController,
-                label: 'Nama Penjual',
-                icon: Icons.person_outline,
-                validator: (val) => val == null || val.isEmpty ? 'Nama wajib diisi' : null,
-              ),
-              const SizedBox(height: 20),
-              _buildTextField(
-                controller: _teleponController,
-                label: 'Nomor Telepon',
-                icon: Icons.phone_outlined,
-                keyboardType: TextInputType.phone,
-              ),
-              const SizedBox(height: 20),
-              _buildTextField(
-                controller: _alamatController,
-                label: 'Alamat',
-                icon: Icons.location_on_outlined,
-                maxLines: 3,
-              ),
-              const SizedBox(height: 20),
-              _buildTextField(
-                controller: _keteranganController,
-                label: 'Keterangan',
-                icon: Icons.note_outlined,
-                maxLines: 2,
-              ),
-              const SizedBox(height: 40),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF01579B),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 0,
+      body: AppLoadingOverlay(
+        isLoading: _isLoading,
+        message: 'Menyimpan data penjual...',
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildTextField(
+                  controller: _namaController,
+                  label: 'Nama Penjual',
+                  icon: Icons.person_outline,
+                  validator: (val) => val == null || val.isEmpty ? 'Nama wajib diisi' : null,
                 ),
-                child: _isLoading 
-                  ? const AppLoadingIndicator(size: 20)
-                  : const Text('SIMPAN PENJUAL', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
-              ),
-            ],
+                const SizedBox(height: 20),
+                _buildTextField(
+                  controller: _teleponController,
+                  label: 'Nomor Telepon',
+                  icon: Icons.phone_outlined,
+                  keyboardType: TextInputType.phone,
+                ),
+                const SizedBox(height: 20),
+                _buildTextField(
+                  controller: _alamatController,
+                  label: 'Alamat',
+                  icon: Icons.location_on_outlined,
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 20),
+                _buildTextField(
+                  controller: _keteranganController,
+                  label: 'Keterangan',
+                  icon: Icons.note_outlined,
+                  maxLines: 2,
+                ),
+                const SizedBox(height: 40),
+                AppPrimaryButton(
+                  text: 'SIMPAN PENJUAL',
+                  onPressed: _submit,
+                  isLoading: _isLoading,
+                ),
+              ],
+            ),
           ),
         ),
       ),

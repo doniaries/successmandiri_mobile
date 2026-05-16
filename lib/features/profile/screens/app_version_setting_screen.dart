@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
+import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
 import 'package:sawitappmobile/shared/widgets/custom_loading_logo.dart';
 
 class AppVersionSettingScreen extends StatefulWidget {
@@ -125,27 +126,9 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
               
               const SizedBox(height: 48),
               
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: _saveSettings,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF01579B),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 4,
-                  ),
-                  child: const Text(
-                    'Simpan Perubahan',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
+              AppPrimaryButton(
+                text: 'Simpan Perubahan',
+                onPressed: _saveSettings,
               ),
             ],
           ),

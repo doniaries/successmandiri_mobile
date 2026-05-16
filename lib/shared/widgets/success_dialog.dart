@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
 
 class SuccessDialog extends StatefulWidget {
   final String title;
@@ -59,11 +60,11 @@ class _SuccessDialogState extends State<SuccessDialog> {
   }
 
   void _handleConfirm() {
+    if (!mounted) return;
     _timer?.cancel();
+    Navigator.of(context).pop();
     if (widget.onConfirm != null) {
       widget.onConfirm!();
-    } else {
-      Navigator.of(context).pop();
     }
   }
 
@@ -124,26 +125,12 @@ class _SuccessDialogState extends State<SuccessDialog> {
               ),
             ),
             const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _handleConfirm,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: widget.isOffline ? Colors.orange[800] : const Color(0xFF01579B),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                  elevation: 5,
-                  shadowColor: (widget.isOffline ? Colors.orange : const Color(0xFF01579B)).withValues(alpha: 0.3),
-                ),
-                child: const Text(
-                  'OK',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+            AppPrimaryButton(
+              text: 'OK',
+              onPressed: _handleConfirm,
+              backgroundColor: widget.isOffline ? Colors.orange[800] : const Color(0xFF01579B),
+              borderRadius: 30,
+              verticalPadding: 15,
             ),
           ],
         ),

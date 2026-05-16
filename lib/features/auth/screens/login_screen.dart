@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/features/auth/providers/auth_provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
+import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
 import 'package:sawitappmobile/shared/screens/main_navigation_screen.dart';
 
@@ -82,14 +83,17 @@ class _LoginScreenState extends State<LoginScreen> {
             ],
           ),
         ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Column(
-                children: [
-                  const SizedBox(height: 10),
+        child: AppLoadingOverlay(
+          isLoading: authProvider.isLoading,
+          message: 'Autentikasi sedang diproses...',
+          child: SafeArea(
+            child: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 10),
               // Logo Section
               Column(
                 children: [
@@ -323,113 +327,80 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 12),
 
+                    const SizedBox(height: 12),
+
                     // Login Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF01579B), Color(0xFF0288D1)],
+                    AppPrimaryButton(
+                      text: "MASUK SEKARANG",
+                      onPressed: () async {
+                        final success = await authProvider.login(
+                          _emailController.text.trim(),
+                          _passwordController.text,
+                          isRememberMe: _isRememberMe,
+                        );
+                        if (!context.mounted) return;
+                        if (!success) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(authProvider.errorMessage ??
+                                  'Gagal login. Silakan coba lagi.'),
+                              backgroundColor: Colors.red,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                          return;
+                        }
+
+                        // Beri tahu OS untuk menyimpan credentials ke Autofill
+                        TextInput.finishAutofillContext();
+
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (context) => const MainNavigationScreen(),
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF01579B).withValues(alpha: 0.3),
-                              blurRadius: 15,
-                              offset: const Offset(0, 8),
+                        );
+                      },
+                      isLoading: authProvider.isLoading,
+                    ),
+                    const SizedBox(height: 24),
+                    Consumer<ResourceProvider>(
+                      builder: (context, provider, child) {
+                        return Column(
+                          children: [
+                            Text(
+                              "Versi ${provider.appVersion}",
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.7),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "DIKEMBANGKAN OLEH ${provider.appCreator.toUpperCase()}",
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.4),
+                                fontSize: 8,
+                                letterSpacing: 2,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
-                        ),
-                        child: ElevatedButton(
-                          onPressed: authProvider.isLoading
-                              ? null
-                              : () async {
-                                  final success = await authProvider.login(
-                                    _emailController.text.trim(),
-                                    _passwordController.text,
-                                    isRememberMe: _isRememberMe,
-                                  );
-                                  if (!context.mounted) return;
-                                  if (!success) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(authProvider.errorMessage ?? 'Gagal login. Silakan coba lagi.'),
-                                        backgroundColor: Colors.red,
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
-                                    return;
-                                  }
-                                  
-                                  // Beri tahu OS untuk menyimpan credentials ke Autofill
-                                  TextInput.finishAutofillContext();
-
-                                  Navigator.of(context).pushReplacement(
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const MainNavigationScreen(),
-                                    ),
-                                  );
-                                },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          child: authProvider.isLoading
-                              ? const AppLoadingIndicator(size: 24)
-                              : const Text(
-                                  "MASUK SEKARANG",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
-                    ],
-                  ),
+                    const SizedBox(height: 20),
+                  ],
                 ),
               ),
-              Consumer<ResourceProvider>(
-                builder: (context, provider, child) {
-                  return Column(
-                    children: [
-                      Text(
-                        "Versi ${provider.appVersion}",
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.7),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        "DIKEMBANGKAN OLEH ${provider.appCreator.toUpperCase()}",
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.4),
-                          fontSize: 8,
-                          letterSpacing: 2,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-              const SizedBox(height: 10),
-              ],
             ),
-          ),
+          ],
         ),
       ),
     ),
-  );
+  ),
+),
+),
+);
 }
 }
-
