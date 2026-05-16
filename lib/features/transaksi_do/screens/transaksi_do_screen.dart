@@ -18,8 +18,11 @@ class TransaksiDoScreen extends StatefulWidget {
 
 class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   final ScrollController _scrollController = ScrollController();
-  String _selectedCategory = 'Semua';
+  String _selectedCategory = 'Hari Ini';
   bool _isManualSyncing = false;
+  bool _isSearching = false;
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -40,6 +43,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -118,6 +122,53 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   }
 
   Widget _buildAppBar() {
+    if (_isSearching) {
+      return SliverAppBar(
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
+        elevation: 0,
+        pinned: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          onPressed: () {
+            setState(() {
+              _isSearching = false;
+              _searchQuery = '';
+              _searchController.clear();
+            });
+          },
+        ),
+        title: TextField(
+          controller: _searchController,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'Cari nomor DO, penjual, atau supir...',
+            border: InputBorder.none,
+            hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
+          ),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          onChanged: (value) {
+            setState(() {
+              _searchQuery = value;
+            });
+          },
+        ),
+        actions: [
+          if (_searchQuery.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.close_rounded),
+              onPressed: () {
+                setState(() {
+                  _searchQuery = '';
+                  _searchController.clear();
+                });
+              },
+            ),
+          const SizedBox(width: 8),
+        ],
+      );
+    }
+
     return SliverAppBar(
       backgroundColor: Colors.white,
       foregroundColor: const Color(0xFF1E293B),
@@ -138,7 +189,9 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
         IconButton(
           icon: const Icon(Icons.search_rounded),
           onPressed: () {
-            // TODO: Implement search
+            setState(() {
+              _isSearching = true;
+            });
           },
         ),
         IconButton(
@@ -158,7 +211,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   }
 
   Widget _buildCategoryFilter() {
-    final categories = ['Semua', 'Tunai', 'Transfer'];
+    final categories = ['Hari Ini', 'Semua', 'Tunai', 'Transfer'];
     return Container(
       color: const Color(0xFFF8FAFC),
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -276,8 +329,8 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                   ),
                   Expanded(
                     child: _buildMetricItem(
-                      label: 'Total Nominal',
-                      value: CurrencyFormatter.formatRupiah(stats?.total ?? 0),
+                      label: 'Saldo Saat Ini',
+                      value: CurrencyFormatter.formatRupiah(provider.summary?.saldo ?? 0),
                       icon: Icons.account_balance_wallet_rounded,
                     ),
                   ),
@@ -365,7 +418,25 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
         }
 
         final filteredTransactions = provider.transactions.where((t) {
+          // 1. Search Filter
+          if (_searchQuery.isNotEmpty) {
+            final query = _searchQuery.toLowerCase();
+            final matchesSearch = t.nomor.toLowerCase().contains(query) ||
+                (t.penjualNama?.toLowerCase().contains(query) ?? false) ||
+                (t.supirNama?.toLowerCase().contains(query) ?? false);
+            if (!matchesSearch) return false;
+          }
+
+          // 2. Category/Date Filter
+          if (_selectedCategory == 'Hari Ini') {
+            final now = DateTime.now();
+            return t.tanggal.year == now.year &&
+                t.tanggal.month == now.month &&
+                t.tanggal.day == now.day;
+          }
+          
           if (_selectedCategory == 'Semua') return true;
+          
           return t.caraBayar?.toLowerCase() == _selectedCategory.toLowerCase();
         }).toList();
 
@@ -521,7 +592,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      CurrencyFormatter.formatCompactRupiah(tx.subTotal),
+                      CurrencyFormatter.formatRupiah(tx.subTotal),
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,

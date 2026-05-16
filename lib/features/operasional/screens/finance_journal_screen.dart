@@ -68,11 +68,11 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            const Text('Laporan Keuangan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-            const SizedBox(width: 8),
-            const Expanded(
-              child: Align(
-                alignment: Alignment.centerLeft,
+            const Text('Laporan Keuangan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(width: 4),
+            const Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
                 child: LiveDateTimeWidget(),
               ),
             ),

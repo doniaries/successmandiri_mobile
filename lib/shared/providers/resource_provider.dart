@@ -330,6 +330,26 @@ class ResourceProvider with ChangeNotifier {
     }
   }
 
+  Future<void> markAllAsSeen() async {
+    for (var type in _hasNewData.keys) {
+      String latestId = "";
+      switch (type) {
+        case 'penjual': latestId = _penjuals.isNotEmpty ? _penjuals.first.id.toString() : ""; break;
+        case 'supir': latestId = _supirs.isNotEmpty ? _supirs.first.id.toString() : ""; break;
+        case 'pekerja': latestId = _pekerjas.isNotEmpty ? _pekerjas.first.id.toString() : ""; break;
+        case 'kendaraan': latestId = _kendaraans.isNotEmpty ? _kendaraans.first.id.toString() : ""; break;
+        case 'operasional': latestId = _operasionals.isNotEmpty ? _operasionals.first.id.toString() : ""; break;
+        case 'jurnal_keuangan': latestId = _jurnalKeuangans.isNotEmpty ? _jurnalKeuangans.first.id.toString() : ""; break;
+        case 'user': latestId = _users.isNotEmpty ? _users.first.id.toString() : ""; break;
+      }
+      if (latestId.isNotEmpty) {
+        await SeenStateService.markAsSeen(type, latestId);
+        _hasNewData[type] = false;
+      }
+    }
+    notifyListeners();
+  }
+
   void clearData() {
     _penjuals.clear();
     _supirs.clear();

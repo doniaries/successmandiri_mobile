@@ -436,7 +436,23 @@ class DashboardScreenState extends State<DashboardScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('Informasi Terbaru', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF2C3E50))),
-                  if (allNotifications.isNotEmpty) TextButton.icon(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.clear_all_rounded, size: 18), label: const Text('Tutup')),
+                  if (allNotifications.isNotEmpty) 
+                    TextButton.icon(
+                      onPressed: () {
+                        context.read<TransaksiDoProvider>().markAsSeen();
+                        context.read<ResourceProvider>().markAllAsSeen();
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Notifikasi telah dibersihkan'),
+                            behavior: SnackBarBehavior.floating,
+                            backgroundColor: Color(0xFF01579B),
+                          ),
+                        );
+                      }, 
+                      icon: const Icon(Icons.done_all_rounded, size: 18, color: Colors.redAccent), 
+                      label: const Text('Bersihkan', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                    ),
                 ],
               ),
             ),
@@ -771,8 +787,8 @@ class _NotificationButton extends StatelessWidget {
             icon: Icons.notifications_none_rounded,
             onTap: () => context.findAncestorStateOfType<DashboardScreenState>()?._showNotifications(context),
           ),
-          if (data['total'] > 0) Positioned(top: -4, right: -4, child: _CountBadge(count: data['total'], color: const Color(0xFF01579B))),
-          if (data['pulsing']) const Positioned(top: -2, right: -2, child: RepaintBoundary(child: AnimatedPulsingDot())),
+          if (data['total'] > 0) Positioned(top: -6, right: -6, child: _CountBadge(count: data['total'], color: Colors.red)),
+          if (data['pulsing']) const Positioned(top: -3, right: -3, child: RepaintBoundary(child: AnimatedPulsingDot())),
         ],
       ),
     );
@@ -812,9 +828,16 @@ class _CountBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      child: Text(count > 9 ? '9+' : '$count', style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: color, 
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 4, offset: const Offset(0, 2))],
+      ),
+      child: Text(
+        count > 9 ? '9+' : '$count', 
+        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900, height: 1.1),
+      ),
     );
   }
 }
@@ -918,9 +941,13 @@ class _StatCard extends StatelessWidget {
             children: [
               Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle), child: Icon(icon, size: 16, color: color)),
               const SizedBox(height: 8),
-              Text(value, style: TextStyle(fontSize: isCurrency ? 11 : 16, fontWeight: FontWeight.w900, color: const Color(0xFF1A1A1A)), maxLines: 1, overflow: TextOverflow.ellipsis),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(value, style: TextStyle(fontSize: isCurrency ? 13 : 18, fontWeight: FontWeight.w900, color: const Color(0xFF1A1A1A)), maxLines: 1),
+              ),
               const SizedBox(height: 2),
-              Text(label, style: TextStyle(fontSize: 9, color: Colors.grey[600], fontWeight: FontWeight.w600), maxLines: 1, overflow: TextOverflow.ellipsis),
+              Text(label, style: TextStyle(fontSize: 11, color: Colors.grey[600], fontWeight: FontWeight.w700), maxLines: 1, overflow: TextOverflow.ellipsis),
             ],
           ),
         ),
@@ -976,7 +1003,7 @@ class _MenuItem extends StatelessWidget {
               ),
             ),
           ),
-          if (count > 0) Positioned(top: 8, right: 8, child: Container(padding: const EdgeInsets.all(4), decoration: BoxDecoration(color: const Color(0xFF01579B), shape: BoxShape.circle), child: Text(count > 9 ? '9+' : '$count', style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)))),
+          if (count > 0) Positioned(top: 8, right: 8, child: _CountBadge(count: count, color: Colors.red)),
           if (hasNew) const Positioned(top: 5, right: 5, child: RepaintBoundary(child: AnimatedPulsingDot())),
         ],
       ),

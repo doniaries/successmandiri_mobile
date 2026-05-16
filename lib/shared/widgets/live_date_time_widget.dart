@@ -43,7 +43,7 @@ class _LiveDateTimeWidgetState extends State<LiveDateTimeWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat('EEEE, d MMMM yyyy', 'id_ID');
+    final dateFormat = DateFormat('E, d MMM yyyy', 'id_ID');
     final timeFormat = DateFormat(widget.showSeconds ? 'HH:mm:ss' : 'HH:mm', 'id_ID');
 
     return Container(
