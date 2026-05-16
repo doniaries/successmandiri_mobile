@@ -8,6 +8,7 @@ import 'package:sawitappmobile/features/operasional/screens/finance_journal_scre
 import 'package:sawitappmobile/features/operasional/screens/operasional_screen.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_screen.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/add_transaksi_do_screen.dart';
+import 'package:sawitappmobile/shared/providers/navigation_provider.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -19,17 +20,28 @@ class MainNavigationScreen extends StatefulWidget {
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _selectedIndex = 0;
 
+  final List<GlobalKey<NavigatorState>> _navigatorKeys = List.generate(5, (_) => GlobalKey<NavigatorState>());
+
   late final List<Widget> _screens = [
-    const DashboardScreen(),
-    const OperasionalScreen(),
-    const TransaksiDoScreen(),
-    const FinanceJournalScreen(),
-    const ProfileScreen(),
+    _buildTabNavigator(0, const DashboardScreen()),
+    _buildTabNavigator(1, const OperasionalScreen()),
+    _buildTabNavigator(2, const TransaksiDoScreen()),
+    _buildTabNavigator(3, const FinanceJournalScreen()),
+    _buildTabNavigator(4, const ProfileScreen()),
   ];
 
+  Widget _buildTabNavigator(int index, Widget rootPage) {
+    return Navigator(
+      key: _navigatorKeys[index],
+      onGenerateRoute: (settings) => MaterialPageRoute(
+        builder: (context) => rootPage,
+        settings: settings,
+      ),
+    );
+  }
+
   void _onItemTapped(int index) {
-    if (_selectedIndex == index) return;
-    setState(() => _selectedIndex = index);
+    context.read<MainNavigationProvider>().setIndex(index);
 
     // Trigger auto-fetch if data is empty
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -54,13 +66,32 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(index: _selectedIndex, children: _screens),
-      bottomNavigationBar: _buildBottomBar(),
+    final selectedIndex = context.watch<MainNavigationProvider>().selectedIndex;
+    
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final navigator = _navigatorKeys[selectedIndex].currentState;
+        if (navigator != null && navigator.canPop()) {
+          navigator.pop();
+        } else if (selectedIndex != 0) {
+          _onItemTapped(0);
+        } else {
+          // If at dashboard root, allow app to close
+          if (mounted) {
+            // Navigator.of(context).pop(); // This might close the app
+          }
+        }
+      },
+      child: Scaffold(
+        body: IndexedStack(index: selectedIndex, children: _screens),
+        bottomNavigationBar: _buildBottomBar(selectedIndex),
+      ),
     );
   }
 
-  Widget _buildBottomBar() {
+  Widget _buildBottomBar(int selectedIndex) {
     return Container(
       height: 80,
       decoration: BoxDecoration(
@@ -86,15 +117,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildNavItem(0, Icons.grid_view_rounded, 'Beranda'),
-                _buildNavItem(1, Icons.receipt_long_rounded, 'Operasional'),
+                _buildNavItem(0, Icons.grid_view_rounded, 'Beranda', selectedIndex),
+                _buildNavItem(1, Icons.receipt_long_rounded, 'Operasional', selectedIndex),
                 const SizedBox(width: 80), // Space for centered large button
                 _buildNavItem(
                   3,
                   Icons.account_balance_wallet_rounded,
                   'Laporan',
+                  selectedIndex,
                 ),
-                _buildNavItem(4, Icons.account_circle_rounded, 'Profil'),
+                _buildNavItem(4, Icons.account_circle_rounded, 'Profil', selectedIndex),
               ],
             ),
           ),
@@ -103,12 +135,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           Positioned(
             top: -15,
             child: GestureDetector(
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AddTransaksiDoScreen(),
-                ),
-              ),
+              onTap: () {
+                _onItemTapped(2); // Go to DO List
+                // Push Add screen on the nested navigator
+                _navigatorKeys[2].currentState?.push(
+                  MaterialPageRoute(builder: (context) => const AddTransaksiDoScreen()),
+                );
+              },
               child: Container(
                 width: 75,
                 height: 75,
@@ -156,8 +189,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 
-  Widget _buildNavItem(int index, IconData icon, String label) {
-    final isSelected = _selectedIndex == index;
+  Widget _buildNavItem(int index, IconData icon, String label, int selectedIndex) {
+    final isSelected = selectedIndex == index;
     return Expanded(
       child: InkWell(
         onTap: () => _onItemTapped(index),

@@ -8,6 +8,7 @@ import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_prov
 import 'package:sawitappmobile/features/tambah_saldo/providers/tambah_saldo_provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
+import 'package:sawitappmobile/shared/providers/navigation_provider.dart';
 import 'package:sawitappmobile/shared/repositories/auth_repository.dart';
 import 'package:sawitappmobile/shared/repositories/transaksi_do_repository.dart';
 import 'package:sawitappmobile/shared/repositories/tambah_saldo_repository.dart';
@@ -87,6 +88,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => TambahSaldoProvider(tambahSaldoRepository)),
         ChangeNotifierProvider(create: (_) => ResourceProvider(resourceRepository)),
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
+        ChangeNotifierProvider(create: (_) => MainNavigationProvider()),
       ],
       child: MaterialApp(
         navigatorKey: NavigationService.navigatorKey,

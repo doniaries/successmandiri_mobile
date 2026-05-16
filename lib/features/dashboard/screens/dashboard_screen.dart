@@ -28,6 +28,7 @@ import 'package:sawitappmobile/features/operasional/screens/operasional_screen.d
 import 'package:sawitappmobile/features/operasional/screens/finance_journal_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/features/operasional/models/operasional_model.dart';
+import 'package:sawitappmobile/shared/providers/navigation_provider.dart';
 import 'package:sawitappmobile/features/dashboard/screens/widgets/digital_clock.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -170,9 +171,7 @@ class DashboardScreenState extends State<DashboardScreen> {
         const Text('Transaksi Terkini', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.black87)),
         TextButton(
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(
-              builder: (context) => _selectedTransactionTab == 0 ? const TransaksiDoScreen() : const OperasionalScreen(),
-            ));
+            context.read<MainNavigationProvider>().setIndex(_selectedTransactionTab == 0 ? 2 : 1);
           },
           child: const Text('Lihat Semua', style: TextStyle(color: Color(0xFF01579B), fontWeight: FontWeight.w600)),
         ),
@@ -282,7 +281,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(6)),
-                    child: Text(DateFormat('dd MMM', 'id_ID').format(tx.tanggal), style: TextStyle(fontSize: 10, color: Colors.grey[600], fontWeight: FontWeight.w700)),
+                    child: Text(DateFormat('dd MMM, HH:mm', 'id_ID').format(tx.tanggal), style: TextStyle(fontSize: 10, color: Colors.grey[600], fontWeight: FontWeight.w700)),
                   ),
                 ],
               ),
@@ -324,7 +323,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                     const SizedBox(height: 4),
                     Text(item.keterangan ?? '-', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
                     const SizedBox(height: 2),
-                    Text(DateFormat('dd MMM yyyy, HH:mm').format(item.tanggal), style: TextStyle(fontSize: 10, color: Colors.grey[400])),
+                    Text(DateFormat('dd MMM yyyy • HH:mm', 'id_ID').format(item.tanggal), style: TextStyle(fontSize: 10, color: Colors.grey[400])),
                   ],
                 ),
               ),
@@ -491,7 +490,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   Text(CurrencyFormatter.formatRupiah(isDo ? data.subTotal : data.nominal), style: TextStyle(fontWeight: FontWeight.w900, color: isDo ? const Color(0xFF01579B) : Colors.amber[900], fontSize: 13)),
                   const SizedBox(height: 4),
-                  Text(DateFormat('dd MMM', 'id_ID').format(data.tanggal), style: TextStyle(color: Colors.grey[400], fontSize: 10, fontWeight: FontWeight.bold)),
+                  Text(DateFormat('dd MMM, HH:mm', 'id_ID').format(data.tanggal), style: TextStyle(color: Colors.grey[400], fontSize: 10, fontWeight: FontWeight.bold)),
                 ],
               ),
             ],
@@ -786,11 +785,11 @@ class _StatCards extends StatelessWidget {
       padding: const EdgeInsets.only(top: 10),
       child: Row(
         children: [
-          Expanded(child: _StatCard(label: 'Transaksi DO', value: '${summary.stats.transaksi.today.count}', icon: Icons.local_shipping_rounded, color: const Color(0xFF01579B), subtitle: 'Hari ini', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TransaksiDoScreen())))),
+          Expanded(child: _StatCard(label: 'Transaksi DO', value: '${summary.stats.transaksi.today.count}', icon: Icons.local_shipping_rounded, color: const Color(0xFF01579B), subtitle: 'Hari ini', onTap: () => context.read<MainNavigationProvider>().setIndex(2))),
           const SizedBox(width: 8),
-          Expanded(child: _StatCard(label: 'Pemasukan', value: CurrencyFormatter.formatRupiah(summary.stats.pemasukan.today.total), icon: Icons.trending_up_rounded, color: const Color(0xFF2E7D32), subtitle: 'Hari ini', isCurrency: true, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FinanceJournalScreen())))),
+          Expanded(child: _StatCard(label: 'Pemasukan', value: CurrencyFormatter.formatRupiah(summary.stats.pemasukan.today.total), icon: Icons.trending_up_rounded, color: const Color(0xFF2E7D32), subtitle: 'Hari ini', isCurrency: true, onTap: () => context.read<MainNavigationProvider>().setIndex(3))),
           const SizedBox(width: 8),
-          Expanded(child: _StatCard(label: 'Pengeluaran', value: CurrencyFormatter.formatRupiah(summary.stats.pengeluaran.today.total), icon: Icons.trending_down_rounded, color: const Color(0xFFC62828), subtitle: 'Hari ini', isCurrency: true, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FinanceJournalScreen())))),
+          Expanded(child: _StatCard(label: 'Pengeluaran', value: CurrencyFormatter.formatRupiah(summary.stats.pengeluaran.today.total), icon: Icons.trending_down_rounded, color: const Color(0xFFC62828), subtitle: 'Hari ini', isCurrency: true, onTap: () => context.read<MainNavigationProvider>().setIndex(3))),
         ],
       ),
     );

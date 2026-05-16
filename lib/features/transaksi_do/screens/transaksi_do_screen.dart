@@ -514,7 +514,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      DateFormat('dd MMM yyyy', 'id_ID').format(tx.tanggal),
+                      DateFormat('dd MMM yyyy • HH:mm', 'id_ID').format(tx.tanggal),
                       style: TextStyle(
                         fontSize: 11,
                         color: Colors.grey[500],
