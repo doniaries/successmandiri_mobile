@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sawitappmobile/features/transaksi_do/models/transaksi_do_model.dart';
 import 'package:sawitappmobile/shared/repositories/transaksi_do_repository.dart';
@@ -187,7 +188,12 @@ class TransaksiDoProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _isSaving = false;
-      _errorMessage = 'Gagal membuat transaksi.';
+      if (e is DioException) {
+        final serverMessage = e.response?.data['message'];
+        _errorMessage = serverMessage ?? 'Gagal menghubungi server.';
+      } else {
+        _errorMessage = 'Gagal menyimpan transaksi: $e';
+      }
       notifyListeners();
       return false;
     }

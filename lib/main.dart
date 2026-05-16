@@ -15,7 +15,6 @@ import 'package:sawitappmobile/shared/repositories/resource_repository.dart';
 import 'package:sawitappmobile/features/splash/screens/splash_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/core/services/notification_service.dart';
-import 'package:sawitappmobile/core/services/session_service.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sawitappmobile/features/auth/screens/login_screen.dart';

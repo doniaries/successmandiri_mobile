@@ -5,6 +5,8 @@ import 'package:sawitappmobile/core/network/api_client.dart';
 import 'package:sawitappmobile/features/transaksi_do/models/transaksi_do_model.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:uuid/uuid.dart';
+import 'dart:developer' as dev;
 
 class TransaksiDoRepository {
   final ApiClient _apiClient;
@@ -92,6 +94,7 @@ class TransaksiDoRepository {
     String? keteranganPembayaran,
     String? nomorDo,
   }) async {
+    final String clientUuid = const Uuid().v4();
     final Map<String, dynamic> data = {
       'tanggal': tanggal,
       'nomor_do': nomorDo,
@@ -106,36 +109,49 @@ class TransaksiDoRepository {
       'keterangan_biaya_lain': keteranganBiayaLain,
       'cara_bayar': caraBayar,
       'keterangan_pembayaran': keteranganPembayaran,
+      'client_uuid': clientUuid,
     };
 
     try {
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
+        dev.log('Offline: Adding TransaksiDo to queue with UUID: $clientUuid');
         await _syncService.addToQueue(ApiConstants.transaksiDo, 'POST', data);
-        return {'offline': true};
+        return {'offline': true, 'client_uuid': clientUuid};
       }
 
+      final Map<String, dynamic> postData = Map.from(data);
       if (buktiTransfer != null) {
-        data['bukti_transfer'] = await MultipartFile.fromFile(
+        postData['bukti_transfer'] = await MultipartFile.fromFile(
           buktiTransfer.path,
           filename: buktiTransfer.name,
         );
       }
 
-
-
-      final formData = FormData.fromMap(data);
+      final formData = FormData.fromMap(postData);
 
       final response = await _apiClient.dio.post(
         ApiConstants.transaksiDo,
         data: formData,
       );
 
-      return TransaksiDo.fromJson(response.data);
-    } catch (e) {
-      // Offline queue doesn't easily support files, fallback to normal data for queue
+      dev.log('TransaksiDo successfully created on server');
+      return TransaksiDo.fromJson(response.data['data'] ?? response.data);
+    } on DioException catch (e) {
+      dev.log('Server Error on createTransaksiDo: ${e.response?.data}');
+      // Jika error 422 (validasi), jangan masukkan antrean, lempar error agar user tahu
+      if (e.response?.statusCode == 422) {
+        rethrow;
+      }
+      
+      // Selain itu (500, timeout, dll), coba masukkan antrean offline
+      dev.log('Connection error, adding to offline queue: $e');
       await _syncService.addToQueue(ApiConstants.transaksiDo, 'POST', data);
-      return {'offline': true};
+      return {'offline': true, 'client_uuid': clientUuid};
+    } catch (e) {
+      dev.log('Unexpected error: $e');
+      await _syncService.addToQueue(ApiConstants.transaksiDo, 'POST', data);
+      return {'offline': true, 'client_uuid': clientUuid};
     }
   }
 
