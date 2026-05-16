@@ -170,7 +170,7 @@ class DashboardScreenState extends State<DashboardScreen> {
         const Text('Transaksi Terkini', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.black87)),
         TextButton(
           onPressed: () {
-            context.read<MainNavigationProvider>().setIndex(_selectedTransactionTab == 0 ? 2 : 1);
+            context.read<MainNavigationProvider>().setIndex(_selectedTransactionTab == 0 ? 1 : 2);
           },
           child: const Text('Lihat Semua', style: TextStyle(color: Color(0xFF01579B), fontWeight: FontWeight.w600)),
         ),
@@ -904,7 +904,7 @@ class _StatCards extends StatelessWidget {
       padding: const EdgeInsets.only(top: 10),
       child: Row(
         children: [
-          Expanded(child: _StatCard(label: 'Transaksi DO', value: '${summary.stats.transaksi.today.count}', icon: Icons.local_shipping_rounded, color: const Color(0xFF01579B), subtitle: 'Hari ini', onTap: () => context.read<MainNavigationProvider>().setIndex(2))),
+          Expanded(child: _StatCard(label: 'Transaksi DO', value: '${summary.stats.transaksi.today.count}', icon: Icons.local_shipping_rounded, color: const Color(0xFF01579B), subtitle: 'Hari ini', onTap: () => context.read<MainNavigationProvider>().setIndex(1))),
           const SizedBox(width: 8),
           Expanded(child: _StatCard(label: 'Pemasukan', value: CurrencyFormatter.formatRupiah(summary.stats.pemasukan.today.total), icon: Icons.trending_up_rounded, color: const Color(0xFF2E7D32), subtitle: 'Hari ini', isCurrency: true, onTap: () => context.read<MainNavigationProvider>().setIndex(3))),
           const SizedBox(width: 8),

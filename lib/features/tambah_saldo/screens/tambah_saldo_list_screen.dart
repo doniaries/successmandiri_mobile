@@ -17,6 +17,7 @@ class TambahSaldoListScreen extends StatefulWidget {
 class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
   String _selectedTab = 'Hari Ini';
   final List<String> _tabs = ['Hari Ini', 'Semua'];
+  DateTimeRange? _selectedDateRange;
 
   @override
   void initState() {
@@ -31,11 +32,24 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Riwayat Tambah Saldo'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.calendar_month_rounded),
+            onPressed: _showFilterSheet,
+            tooltip: 'Filter Tanggal',
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Consumer<TambahSaldoProvider>(
         builder: (context, provider, child) {
           final now = DateTime.now();
           final filteredRequests = provider.requests.where((r) {
+            if (_selectedDateRange != null) {
+              final d = r.tanggal.toLocal();
+              return d.isAfter(_selectedDateRange!.start.subtract(const Duration(seconds: 1))) && 
+                     d.isBefore(_selectedDateRange!.end.add(const Duration(days: 1)));
+            }
             if (_selectedTab == 'Hari Ini') {
               return DateUtils.isSameDay(r.tanggal.toLocal(), now);
             }
@@ -95,7 +109,12 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
       totalNominal += r.nominal;
     }
 
-    final String label = _selectedTab == 'Hari Ini' ? 'Nominal Tambah Saldo Hari Ini' : 'Total Nominal Tambah Saldo';
+    String label = 'Total Nominal Tambah Saldo';
+    if (_selectedDateRange != null) {
+      label = 'Nominal Terfilter';
+    } else if (_selectedTab == 'Hari Ini') {
+      label = 'Nominal Tambah Saldo Hari Ini';
+    }
 
     return Container(
       width: double.infinity,
@@ -133,31 +152,125 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
   }
 
   Widget _buildDateTabs() {
-    return Padding(
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
-        children: _tabs.map((tab) {
-          final isSelected = _selectedTab == tab;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: ChoiceChip(
-              label: Text(tab),
-              selected: isSelected,
-              onSelected: (val) {
-                if (val) setState(() => _selectedTab = tab);
-              },
-              selectedColor: const Color(0xFFE67E22),
-              labelStyle: TextStyle(
-                color: isSelected ? Colors.white : Colors.grey[600],
-                fontWeight: FontWeight.bold,
+        children: [
+          ..._tabs.map((tab) {
+            final isSelected = _selectedTab == tab && _selectedDateRange == null;
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: ChoiceChip(
+                label: Text(tab),
+                selected: isSelected,
+                onSelected: (val) {
+                  if (val) {
+                    setState(() {
+                      _selectedTab = tab;
+                      _selectedDateRange = null;
+                    });
+                  }
+                },
+                selectedColor: const Color(0xFFE67E22),
+                labelStyle: TextStyle(
+                  color: isSelected ? Colors.white : Colors.grey[600],
+                  fontWeight: FontWeight.bold,
+                ),
+                backgroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                showCheckmark: false,
               ),
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              showCheckmark: false,
+            );
+          }),
+          if (_selectedDateRange != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: ChoiceChip(
+                label: Text(
+                  '${DateFormat('dd/MM').format(_selectedDateRange!.start)} - ${DateFormat('dd/MM').format(_selectedDateRange!.end)}'
+                ),
+                selected: true,
+                onSelected: (_) => setState(() => _selectedDateRange = null),
+                selectedColor: Colors.orange[800],
+                labelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                showCheckmark: true,
+              ),
             ),
-          );
-        }).toList(),
+        ],
       ),
+    );
+  }
+
+  void _showFilterSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Filter Riwayat', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 20),
+              ListTile(
+                leading: const Icon(Icons.date_range_rounded, color: Color(0xFFE67E22)),
+                title: const Text('Pilih Rentang Tanggal'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final picked = await showDateRangePicker(
+                    context: this.context,
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime.now(),
+                    initialDateRange: _selectedDateRange,
+                  );
+                  if (picked != null) {
+                    setState(() {
+                      _selectedDateRange = picked;
+                      _selectedTab = 'Semua';
+                    });
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.calendar_view_month_rounded, color: Color(0xFFE67E22)),
+                title: const Text('Pilih Bulan Ini'),
+                onTap: () {
+                  Navigator.pop(context);
+                  final now = DateTime.now();
+                  setState(() {
+                    _selectedDateRange = DateTimeRange(
+                      start: DateTime(now.year, now.month, 1),
+                      end: now,
+                    );
+                    _selectedTab = 'Semua';
+                  });
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.calendar_month_rounded, color: Color(0xFFE67E22)),
+                title: const Text('Pilih Bulan Lalu'),
+                onTap: () {
+                  Navigator.pop(context);
+                  final now = DateTime.now();
+                  final lastMonth = DateTime(now.year, now.month - 1, 1);
+                  final lastDayOfLastMonth = DateTime(now.year, now.month, 0);
+                  setState(() {
+                    _selectedDateRange = DateTimeRange(
+                      start: lastMonth,
+                      end: lastDayOfLastMonth,
+                    );
+                    _selectedTab = 'Semua';
+                  });
+                },
+              ),
+              const SizedBox(height: 10),
+            ],
+          ),
+        );
+      },
     );
   }
 

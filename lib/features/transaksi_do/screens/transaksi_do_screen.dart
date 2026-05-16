@@ -23,6 +23,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   bool _isSearching = false;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  DateTimeRange? _selectedDateRange;
 
   @override
   void initState() {
@@ -195,6 +196,11 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
           },
         ),
         IconButton(
+          icon: const Icon(Icons.calendar_month_rounded),
+          onPressed: _showFilterSheet,
+          tooltip: 'Filter Tanggal',
+        ),
+        IconButton(
           onPressed: _isManualSyncing ? null : _manualSync,
           icon: _isManualSyncing
               ? const SizedBox(
@@ -219,32 +225,56 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
-          children: categories.map((cat) {
-            final isSelected = _selectedCategory == cat;
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: ChoiceChip(
-                label: Text(cat),
-                selected: isSelected,
-                onSelected: (_) => setState(() => _selectedCategory = cat),
-                backgroundColor: Colors.white,
-                selectedColor: const Color(0xFF0D47A1),
-                labelStyle: TextStyle(
-                  color: isSelected ? Colors.white : const Color(0xFF64748B),
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(
-                    color: isSelected ? Colors.transparent : Colors.grey[300]!,
+          children: [
+            ...categories.map((cat) {
+              final isSelected = _selectedCategory == cat && _selectedDateRange == null;
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: ChoiceChip(
+                  label: Text(cat),
+                  selected: isSelected,
+                  onSelected: (_) {
+                    setState(() {
+                      _selectedCategory = cat;
+                      _selectedDateRange = null;
+                    });
+                  },
+                  backgroundColor: Colors.white,
+                  selectedColor: const Color(0xFF0D47A1),
+                  labelStyle: TextStyle(
+                    color: isSelected ? Colors.white : const Color(0xFF64748B),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
                   ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: isSelected ? Colors.transparent : Colors.grey[300]!,
+                    ),
+                  ),
+                  showCheckmark: false,
+                  elevation: isSelected ? 4 : 0,
                 ),
-                showCheckmark: false,
-                elevation: isSelected ? 4 : 0,
+              );
+            }),
+            if (_selectedDateRange != null)
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: ChoiceChip(
+                  label: Text(
+                    DateFormat('dd/MM/yy').format(_selectedDateRange!.start) + 
+                    ' - ' + 
+                    DateFormat('dd/MM/yy').format(_selectedDateRange!.end)
+                  ),
+                  selected: true,
+                  onSelected: (_) => setState(() => _selectedDateRange = null),
+                  selectedColor: Colors.orange[800],
+                  labelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  showCheckmark: true,
+                ),
               ),
-            );
-          }).toList(),
+          ],
         ),
       ),
     );
@@ -257,14 +287,22 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
         final transactions = txProvider.transactions;
         final now = DateTime.now();
         
-        // Hitung transaksi hari ini secara manual dari list transaksi yang ada
         final todayCount = transactions.where((t) => DateUtils.isSameDay(t.tanggal.toLocal(), now)).length;
         
-        final totalCount = transactions.length;
-        
-        // Tentukan apa yang ditampilkan di card berdasarkan tab aktif
-        final String displayLabel = _selectedCategory == 'Hari Ini' ? 'Transaksi Hari Ini' : 'Total Transaksi';
-        final String displayValue = _selectedCategory == 'Hari Ini' ? '$todayCount' : '$totalCount';
+        int activeCount = transactions.length;
+        String label = 'Total Transaksi';
+
+        if (_selectedDateRange != null) {
+          activeCount = transactions.where((t) {
+            final d = t.tanggal.toLocal();
+            return d.isAfter(_selectedDateRange!.start.subtract(const Duration(seconds: 1))) && 
+                   d.isBefore(_selectedDateRange!.end.add(const Duration(days: 1)));
+          }).length;
+          label = 'Transaksi Filtered';
+        } else if (_selectedCategory == 'Hari Ini') {
+          activeCount = todayCount;
+          label = 'Transaksi Hari Ini';
+        }
 
         return Container(
           margin: const EdgeInsets.all(16),
@@ -327,8 +365,8 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                 children: [
                   Expanded(
                     child: _buildMetricItem(
-                      label: displayLabel,
-                      value: displayValue,
+                      label: label,
+                      value: '$activeCount',
                       icon: Icons.confirmation_number_rounded,
                     ),
                   ),
@@ -437,7 +475,13 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
             if (!matchesSearch) return false;
           }
 
-          // 2. Category/Date Filter
+          // 2. Date/Category Filter
+          if (_selectedDateRange != null) {
+            final d = t.tanggal.toLocal();
+            return d.isAfter(_selectedDateRange!.start.subtract(const Duration(seconds: 1))) && 
+                   d.isBefore(_selectedDateRange!.end.add(const Duration(days: 1)));
+          }
+
           if (_selectedCategory == 'Hari Ini') {
             return DateUtils.isSameDay(t.tanggal.toLocal(), DateTime.now());
           }
@@ -477,6 +521,77 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
               },
               childCount: filteredTransactions.length + (provider.hasMore ? 1 : 0),
             ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showFilterSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Filter Transaksi', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 20),
+              ListTile(
+                leading: const Icon(Icons.date_range_rounded, color: Color(0xFF0D47A1)),
+                title: const Text('Pilih Rentang Tanggal'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final picked = await showDateRangePicker(
+                    context: this.context,
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime.now(),
+                    initialDateRange: _selectedDateRange,
+                  );
+                  if (picked != null) {
+                    setState(() {
+                      _selectedDateRange = picked;
+                      _selectedCategory = 'Semua';
+                    });
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.calendar_view_month_rounded, color: Color(0xFF0D47A1)),
+                title: const Text('Pilih Bulan Ini'),
+                onTap: () {
+                  Navigator.pop(context);
+                  final now = DateTime.now();
+                  setState(() {
+                    _selectedDateRange = DateTimeRange(
+                      start: DateTime(now.year, now.month, 1),
+                      end: now,
+                    );
+                    _selectedCategory = 'Semua';
+                  });
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.calendar_month_rounded, color: Color(0xFF0D47A1)),
+                title: const Text('Pilih Bulan Lalu'),
+                onTap: () {
+                  Navigator.pop(context);
+                  final now = DateTime.now();
+                  final lastMonth = DateTime(now.year, now.month - 1, 1);
+                  final lastDayOfLastMonth = DateTime(now.year, now.month, 0);
+                  setState(() {
+                    _selectedDateRange = DateTimeRange(
+                      start: lastMonth,
+                      end: lastDayOfLastMonth,
+                    );
+                    _selectedCategory = 'Semua';
+                  });
+                },
+              ),
+              const SizedBox(height: 10),
+            ],
           ),
         );
       },
