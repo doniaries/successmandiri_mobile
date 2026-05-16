@@ -46,12 +46,20 @@ class TambahSaldoProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      await _repository.createTambahSaldo(
+      final result = await _repository.createTambahSaldo(
         nominal: nominal,
         tanggal: tanggal,
         keterangan: keterangan,
       );
-      await fetchRequests(); // Refresh list
+      
+      if (result is Map && result['offline'] == true) {
+        _errorMessage = 'Koneksi bermasalah. Permintaan saldo disimpan di antrean offline.';
+      } else {
+        await fetchRequests(); // Refresh list
+      }
+      
+      _isLoading = false;
+      notifyListeners();
       return true;
     } catch (e) {
       _isLoading = false;

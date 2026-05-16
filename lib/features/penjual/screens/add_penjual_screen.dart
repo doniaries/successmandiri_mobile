@@ -43,11 +43,16 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
       });
 
       if (mounted) {
+      if (mounted) {
         if (penjual != null) {
+          final bool isOffline = provider.errorMessage == 'offline';
           SuccessDialog.show(
             context,
             title: 'Penjual Ditambahkan!',
-            message: 'Data penjual ${_namaController.text} telah berhasil didaftarkan ke sistem.',
+            message: isOffline 
+                ? 'Sinyal tidak stabil. Data penjual ${_namaController.text} telah disimpan di antrean perangkat dan akan otomatis dikirim saat ada sinyal.'
+                : 'Data penjual ${_namaController.text} telah berhasil didaftarkan ke sistem.',
+            isOffline: isOffline,
             onConfirm: () {
               Navigator.pop(context); // Tutup Dialog
               Navigator.pop(context, penjual); // Kembali dengan data baru

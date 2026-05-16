@@ -38,11 +38,16 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
       });
 
       if (mounted) {
+      if (mounted) {
         if (supir != null) {
+          final bool isOffline = provider.errorMessage == 'offline';
           SuccessDialog.show(
             context,
             title: 'Supir Ditambahkan!',
-            message: 'Data supir ${_namaController.text} telah berhasil didaftarkan ke sistem.',
+            message: isOffline 
+                ? 'Sinyal tidak stabil. Data supir ${_namaController.text} telah disimpan di antrean perangkat dan akan otomatis dikirim saat ada sinyal.'
+                : 'Data supir ${_namaController.text} telah berhasil didaftarkan ke sistem.',
+            isOffline: isOffline,
             onConfirm: () {
               Navigator.pop(context); // Tutup Dialog
               Navigator.pop(context, supir); // Kembali dengan data baru

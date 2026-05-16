@@ -18,19 +18,37 @@ class SyncService {
 
   factory SyncService() => _instance;
 
+  final StreamController<bool> _connectivityController = StreamController<bool>.broadcast();
+  Stream<bool> get connectivityStream => _connectivityController.stream;
+  bool _isOffline = false;
+  bool get isOffline => _isOffline;
+
   SyncService._internal() {
     updatePendingCount();
     // Listen for connectivity changes
     Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) {
-      if (results.any((r) => r != ConnectivityResult.none)) {
+      _isOffline = results.any((r) => r == ConnectivityResult.none);
+      _connectivityController.add(!_isOffline);
+      
+      if (!_isOffline) {
         syncNow();
       }
+    });
+
+    // Initial check
+    Connectivity().checkConnectivity().then((results) {
+      _isOffline = results.any((r) => r == ConnectivityResult.none);
+      _connectivityController.add(!_isOffline);
     });
   }
 
   Future<void> updatePendingCount() async {
-    final queue = await _db.query('offline_queue');
-    pendingSyncCount.value = queue.length;
+    try {
+      final queue = await _db.query('offline_queue');
+      pendingSyncCount.value = queue.length;
+    } catch (e) {
+      debugPrint('Error updating pending count: $e');
+    }
   }
 
   Future<void> addToQueue(String endpoint, String method, Map<String, dynamic> data) async {

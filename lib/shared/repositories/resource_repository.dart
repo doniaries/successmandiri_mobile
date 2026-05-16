@@ -53,18 +53,18 @@ class ResourceRepository {
     }
   }
 
-  Future<Penjual?> storePenjual(Map<String, dynamic> data) async {
+  Future<dynamic> storePenjual(Map<String, dynamic> data) async {
     try {
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
         await syncService.addToQueue(ApiConstants.penjual, 'POST', data);
-        return null;
+        return {'offline': true};
       }
       final response = await _apiClient.dio.post(ApiConstants.penjual, data: data);
       return Penjual.fromJson(response.data);
     } catch (e) {
       await syncService.addToQueue(ApiConstants.penjual, 'POST', data);
-      return null;
+      return {'offline': true};
     }
   }
 
@@ -110,18 +110,18 @@ class ResourceRepository {
     }
   }
 
-  Future<Supir?> storeSupir(Map<String, dynamic> data) async {
+  Future<dynamic> storeSupir(Map<String, dynamic> data) async {
     try {
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
         await syncService.addToQueue(ApiConstants.supir, 'POST', data);
-        return null;
+        return {'offline': true};
       }
       final response = await _apiClient.dio.post(ApiConstants.supir, data: data);
       return Supir.fromJson(response.data);
     } catch (e) {
       await syncService.addToQueue(ApiConstants.supir, 'POST', data);
-      return null;
+      return {'offline': true};
     }
   }
 
@@ -167,16 +167,18 @@ class ResourceRepository {
     }
   }
 
-  Future<void> storePekerja(Map<String, dynamic> data) async {
+  Future<dynamic> storePekerja(Map<String, dynamic> data) async {
     try {
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
         await syncService.addToQueue(ApiConstants.pekerja, 'POST', data);
-        return;
+        return {'offline': true};
       }
-      await _apiClient.dio.post(ApiConstants.pekerja, data: data);
+      final response = await _apiClient.dio.post(ApiConstants.pekerja, data: data);
+      return Pekerja.fromJson(response.data);
     } catch (e) {
       await syncService.addToQueue(ApiConstants.pekerja, 'POST', data);
+      return {'offline': true};
     }
   }
 
@@ -222,16 +224,18 @@ class ResourceRepository {
     }
   }
 
-  Future<void> storeKendaraan(Map<String, dynamic> data) async {
+  Future<dynamic> storeKendaraan(Map<String, dynamic> data) async {
     try {
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
         await syncService.addToQueue(ApiConstants.kendaraan, 'POST', data);
-        return;
+        return {'offline': true};
       }
-      await _apiClient.dio.post(ApiConstants.kendaraan, data: data);
+      final response = await _apiClient.dio.post(ApiConstants.kendaraan, data: data);
+      return Kendaraan.fromJson(response.data);
     } catch (e) {
       await syncService.addToQueue(ApiConstants.kendaraan, 'POST', data);
+      return {'offline': true};
     }
   }
 
@@ -300,16 +304,18 @@ class ResourceRepository {
     return Pekerja.fromJson(response.data);
   }
 
-  Future<void> storeOperasional(Map<String, dynamic> data) async {
+  Future<dynamic> storeOperasional(Map<String, dynamic> data) async {
     try {
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
         await syncService.addToQueue(ApiConstants.operasional, 'POST', data);
-        return;
+        return {'offline': true};
       }
-      await _apiClient.dio.post(ApiConstants.operasional, data: data);
+      final response = await _apiClient.dio.post(ApiConstants.operasional, data: data);
+      return Operasional.fromJson(response.data);
     } catch (e) {
       await syncService.addToQueue(ApiConstants.operasional, 'POST', data);
+      return {'offline': true};
     }
   }
 

@@ -121,10 +121,14 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
                       if (!context.mounted) return;
 
                       if (success) {
+                        final bool isOffline = context.read<TambahSaldoProvider>().errorMessage?.contains('offline') ?? false;
                         SuccessDialog.show(
                           context,
                           title: 'Saldo Bertambah!',
-                          message: 'Berhasil menambah saldo sebesar ${CurrencyFormatter.formatRupiah(double.parse(nominalClean))}.',
+                          message: isOffline
+                              ? 'Sinyal tidak stabil. Permintaan saldo sebesar ${CurrencyFormatter.formatRupiah(double.parse(nominalClean))} telah disimpan di antrean perangkat dan akan otomatis dikirim saat ada sinyal.'
+                              : 'Berhasil menambah saldo sebesar ${CurrencyFormatter.formatRupiah(double.parse(nominalClean))}.',
+                          isOffline: isOffline,
                           onConfirm: () => Navigator.of(context).popUntil((route) => route.isFirst),
                         );
                       } else {

@@ -31,20 +31,24 @@ class _AddKendaraanScreenState extends State<AddKendaraanScreen> {
     
     try {
       final provider = context.read<ResourceProvider>();
-      final success = await provider.addKendaraan({
+      final result = await provider.addKendaraan({
         'no_polisi': _nopolController.text.toUpperCase(),
         'jenis_kendaraan': _jenisController.text,
       });
 
       if (mounted) {
-        if (success) {
+        if (result != null) {
+          final bool isOffline = provider.errorMessage == 'offline';
           SuccessDialog.show(
             context,
             title: 'Kendaraan Ditambahkan!',
-            message: 'Data kendaraan ${_nopolController.text} telah berhasil didaftarkan.',
+            message: isOffline 
+                ? 'Sinyal tidak stabil. Data kendaraan ${_nopolController.text} telah disimpan di antrean perangkat dan akan otomatis dikirim saat ada sinyal.'
+                : 'Data kendaraan ${_nopolController.text} telah berhasil didaftarkan.',
+            isOffline: isOffline,
             onConfirm: () {
               Navigator.pop(context); // Tutup Dialog
-              Navigator.pop(context, success); // Kembali dengan status berhasil
+              Navigator.pop(context, result); // Kembali dengan data/status
             },
           );
         } else {

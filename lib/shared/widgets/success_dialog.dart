@@ -4,12 +4,14 @@ class SuccessDialog extends StatelessWidget {
   final String title;
   final String message;
   final VoidCallback? onConfirm;
+  final bool isOffline;
 
   const SuccessDialog({
     super.key,
     this.title = 'Berhasil!',
     this.message = 'Data Anda telah berhasil disimpan ke sistem.',
     this.onConfirm,
+    this.isOffline = false,
   });
 
   @override
@@ -39,18 +41,19 @@ class SuccessDialog extends StatelessWidget {
               height: 80,
               width: 80,
               decoration: BoxDecoration(
-                color: Colors.blue[50], // Changed from red
+                color: isOffline ? Colors.orange[50] : Colors.blue[50],
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.check_circle_rounded,
-                color: Colors.blue[900], // Changed from blue
-                size: 80,
+                isOffline ? Icons.cloud_off_rounded : Icons.check_circle_rounded,
+                color: isOffline ? Colors.orange[800] : Colors.blue[900],
+                size: 60,
               ),
             ),
             const SizedBox(height: 20),
             Text(
-              title,
+              isOffline ? 'Tersimpan Offline' : title,
+              textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w900,
@@ -73,15 +76,15 @@ class SuccessDialog extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: onConfirm,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF01579B), // Changed from red
+                  backgroundColor: isOffline ? Colors.orange[800] : const Color(0xFF01579B),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                   elevation: 5,
-                  shadowColor: const Color(0xFF01579B).withValues(alpha: 0.3), // Changed from blue
+                  shadowColor: (isOffline ? Colors.orange : const Color(0xFF01579B)).withValues(alpha: 0.3),
                 ),
                 child: const Text(
-                  'OK',
+                  'SIAP!',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -100,6 +103,7 @@ class SuccessDialog extends StatelessWidget {
     String title = 'Berhasil!',
     String message = 'Data Anda telah berhasil disimpan ke sistem.',
     VoidCallback? onConfirm,
+    bool isOffline = false,
   }) {
     showDialog(
       context: context,
@@ -108,6 +112,7 @@ class SuccessDialog extends StatelessWidget {
         title: title,
         message: message,
         onConfirm: onConfirm,
+        isOffline: isOffline,
       ),
     );
   }

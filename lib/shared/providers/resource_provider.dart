@@ -13,6 +13,8 @@ class ResourceProvider with ChangeNotifier {
   final ResourceRepository _repository;
 
   bool _isLoading = false;
+  String? _errorMessage;
+  String? get errorMessage => _errorMessage;
   final List<Penjual> _penjuals = [];
   final List<Supir> _supirs = [];
   final List<Pekerja> _pekerjas = [];
@@ -339,24 +341,36 @@ class ResourceProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<Penjual?> addPenjual(Map<String, dynamic> data) async {
+  Future<dynamic> addPenjual(Map<String, dynamic> data) async {
+    _errorMessage = null;
     try {
-      final penjual = await _repository.storePenjual(data);
-      await fetchResources('penjual', refresh: true);
-      return penjual;
+      final result = await _repository.storePenjual(data);
+      if (result is Map && result['offline'] == true) {
+        _errorMessage = 'offline';
+      } else {
+        await fetchResources('penjual', refresh: true);
+      }
+      return result;
     } catch (e) {
       debugPrint('Error adding penjual: $e');
+      _errorMessage = e.toString();
       return null;
     }
   }
 
-  Future<Supir?> addSupir(Map<String, dynamic> data) async {
+  Future<dynamic> addSupir(Map<String, dynamic> data) async {
+    _errorMessage = null;
     try {
-      final supir = await _repository.storeSupir(data);
-      await fetchResources('supir', refresh: true);
-      return supir;
+      final result = await _repository.storeSupir(data);
+      if (result is Map && result['offline'] == true) {
+        _errorMessage = 'offline';
+      } else {
+        await fetchResources('supir', refresh: true);
+      }
+      return result;
     } catch (e) {
       debugPrint('Error adding supir: $e');
+      _errorMessage = e.toString();
       return null;
     }
   }
@@ -383,14 +397,20 @@ class ResourceProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> addPekerja(Map<String, dynamic> data) async {
+  Future<dynamic> addPekerja(Map<String, dynamic> data) async {
+    _errorMessage = null;
     try {
-      await _repository.storePekerja(data);
-      await fetchResources('pekerja', refresh: true);
-      return true;
+      final result = await _repository.storePekerja(data);
+      if (result is Map && result['offline'] == true) {
+        _errorMessage = 'offline';
+      } else {
+        await fetchResources('pekerja', refresh: true);
+      }
+      return result;
     } catch (e) {
       debugPrint('Error adding pekerja: $e');
-      return false;
+      _errorMessage = e.toString();
+      return null;
     }
   }
 
@@ -405,25 +425,37 @@ class ResourceProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> addKendaraan(Map<String, dynamic> data) async {
+  Future<dynamic> addKendaraan(Map<String, dynamic> data) async {
+    _errorMessage = null;
     try {
-      await _repository.storeKendaraan(data);
-      await fetchAllResources();
-      return true;
+      final result = await _repository.storeKendaraan(data);
+      if (result is Map && result['offline'] == true) {
+        _errorMessage = 'offline';
+      } else {
+        await fetchAllResources();
+      }
+      return result;
     } catch (e) {
       debugPrint('Error adding kendaraan: $e');
-      return false;
+      _errorMessage = e.toString();
+      return null;
     }
   }
 
-  Future<bool> addOperasional(Map<String, dynamic> data) async {
+  Future<dynamic> addOperasional(Map<String, dynamic> data) async {
+    _errorMessage = null;
     try {
-      await _repository.storeOperasional(data);
-      await fetchAllResources();
-      return true;
+      final result = await _repository.storeOperasional(data);
+      if (result is Map && result['offline'] == true) {
+        _errorMessage = 'offline';
+      } else {
+        await fetchAllResources();
+      }
+      return result;
     } catch (e) {
       debugPrint('Error adding operasional: $e');
-      return false;
+      _errorMessage = e.toString();
+      return null;
     }
   }
 

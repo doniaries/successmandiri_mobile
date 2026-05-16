@@ -839,11 +839,14 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
 
       if (mounted) {
         if (success) {
+          final bool isOffline = context.read<TransaksiDoProvider>().errorMessage?.contains('offline') ?? false;
           SuccessDialog.show(
             context,
             title: 'Transaksi Berhasil!',
-            message:
-                'Data Transaksi DO dengan nomor ${_nomorDoController.text} berhasil disimpan.',
+            message: isOffline 
+                ? 'Koneksi internet tidak stabil. Data transaksi DO nomor ${_nomorDoController.text} telah disimpan di antrean perangkat dan akan otomatis dikirim saat sinyal pulih.'
+                : 'Data Transaksi DO dengan nomor ${_nomorDoController.text} berhasil disimpan ke sistem.',
+            isOffline: isOffline,
             onConfirm: () {
               Navigator.of(context).popUntil((route) => route.isFirst);
             },
