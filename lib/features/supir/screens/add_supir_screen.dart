@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
+import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 
 class AddSupirScreen extends StatefulWidget {
   const AddSupirScreen({super.key});
@@ -72,7 +73,18 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tambah Supir', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Row(
+          children: [
+            const Text('Tambah Supir',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+            const Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: LiveDateTimeWidget(),
+              ),
+            ),
+          ],
+        ),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,

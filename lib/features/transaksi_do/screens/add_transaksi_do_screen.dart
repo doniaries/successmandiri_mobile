@@ -515,19 +515,6 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                       const SizedBox(height: 16),
 
                       TextFormField(
-                        controller: _tonaseController,
-                        decoration: _getInputDecoration(
-                          label: 'Tonase (Kg)',
-                          icon: Icons.scale_rounded,
-                          hint: '0',
-                        ).copyWith(suffixText: ' Kg'),
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                        keyboardType: TextInputType.number,
-                        validator: (val) =>
-                            val == null || val.isEmpty ? 'Isi tonase' : null,
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
                         controller: _hargaSatuanController,
                         decoration: _getInputDecoration(
                           label: 'Harga Satuan',
@@ -539,6 +526,19 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                         inputFormatters: [CurrencyInputFormatter()],
                         validator: (val) =>
                             val == null || val.isEmpty ? 'Isi harga' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _tonaseController,
+                        decoration: _getInputDecoration(
+                          label: 'Tonase (Kg)',
+                          icon: Icons.scale_rounded,
+                          hint: '0',
+                        ).copyWith(suffixText: ' Kg'),
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                        keyboardType: TextInputType.number,
+                        validator: (val) =>
+                            val == null || val.isEmpty ? 'Isi tonase' : null,
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
