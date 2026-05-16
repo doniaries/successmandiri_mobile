@@ -45,18 +45,18 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   Future<void> _manualSync() async {
     if (_isManualSyncing) return;
     
+    final txProvider = context.read<TransaksiDoProvider>();
+    final dashboardProvider = context.read<DashboardProvider>();
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    
     setState(() => _isManualSyncing = true);
     try {
       await SyncService().syncNow();
-      if (!mounted) return;
       
-      await context.read<TransaksiDoProvider>().fetchTransactions();
-      if (!mounted) return;
+      await txProvider.fetchTransactions();
+      await dashboardProvider.fetchSummary();
       
-      await context.read<DashboardProvider>().fetchSummary();
-      if (!mounted) return;
-      
-      ScaffoldMessenger.of(context).showSnackBar(
+      scaffoldMessenger.showSnackBar(
         const SnackBar(
           content: Text('Sinkronisasi selesai'),
           backgroundColor: Color(0xFF0D47A1),
@@ -65,7 +65,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        scaffoldMessenger.showSnackBar(
           SnackBar(content: Text('Gagal sinkron: $e'), backgroundColor: Colors.red),
         );
       }

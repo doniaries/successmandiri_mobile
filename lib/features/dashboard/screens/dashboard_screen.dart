@@ -381,16 +381,20 @@ class DashboardScreenState extends State<DashboardScreen> {
                         title: Text(company['name'] ?? 'Tanpa Nama', style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: isSelected ? const Color(0xFF01579B) : Colors.black87)),
                         trailing: isSelected ? const Icon(Icons.check_circle_rounded, color: Color(0xFF01579B)) : null,
                         onTap: () async {
+                          final dashboardProvider = context.read<DashboardProvider>();
+                          final txProvider = context.read<TransaksiDoProvider>();
+                          final saldoProvider = context.read<TambahSaldoProvider>();
+                          final resProvider = context.read<ResourceProvider>();
+                          
                           Navigator.pop(context);
                           final success = await authProvider.switchCompany(company['id']);
-                          if (!success || !mounted) return;
                           
-                          await context.read<DashboardProvider>().fetchSummary();
-                          if (!mounted) return;
-                          
-                          context.read<TransaksiDoProvider>().fetchTransactions();
-                          context.read<TambahSaldoProvider>().fetchRequests();
-                          context.read<ResourceProvider>().fetchAllResources();
+                          if (success) {
+                            await dashboardProvider.fetchSummary();
+                            txProvider.fetchTransactions();
+                            saldoProvider.fetchRequests();
+                            resProvider.fetchAllResources();
+                          }
                         },
                       );
                     },
