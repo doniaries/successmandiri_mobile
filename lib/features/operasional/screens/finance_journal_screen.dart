@@ -143,6 +143,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
                       ? _buildEmptyState()
                       : ListView.separated(
                           controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 8,
@@ -361,13 +362,18 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
             style: TextStyle(color: Colors.white70, fontSize: 13),
           ),
           const SizedBox(height: 4),
-          Text(
-            CurrencyFormatter.formatRupiah(provider.saldoKas),
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-            ),
+          Consumer<DashboardProvider>(
+            builder: (context, dashboardProv, child) {
+              final double currentSaldo = dashboardProv.summary?.saldo ?? 0.0;
+              return Text(
+                CurrencyFormatter.formatRupiah(currentSaldo),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              );
+            },
           ),
           const SizedBox(height: 10),
           InkWell(
@@ -677,22 +683,30 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.account_balance_wallet_rounded,
-            size: 64,
-            color: Colors.grey[300],
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.5,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.account_balance_wallet_rounded,
+                  size: 64,
+                  color: Colors.grey[300],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Belum ada transaksi di periode ini',
+                  style: TextStyle(color: Colors.grey[500]),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 16),
-          Text(
-            'Belum ada transaksi di periode ini',
-            style: TextStyle(color: Colors.grey[500]),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
