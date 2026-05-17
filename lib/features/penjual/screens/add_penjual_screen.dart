@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
@@ -19,6 +21,7 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
   final _teleponController = TextEditingController();
   final _alamatController = TextEditingController();
   final _keteranganController = TextEditingController();
+  final _hutangController = TextEditingController();
   bool _isLoading = false;
 
   @override
@@ -27,6 +30,7 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
     _teleponController.dispose();
     _alamatController.dispose();
     _keteranganController.dispose();
+    _hutangController.dispose();
     super.dispose();
   }
 
@@ -58,11 +62,14 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
         return;
       }
 
+      final double hutangValue = CurrencyInputFormatter.parse(_hutangController.text);
+
       final penjual = await provider.addPenjual({
         'nama': _namaController.text,
         'telepon': _teleponController.text,
         'alamat': _alamatController.text,
         'keterangan': _keteranganController.text,
+        'hutang': hutangValue > 0 ? hutangValue : 0,
       });
 
       if (mounted) {
@@ -141,6 +148,15 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
                 ),
                 const SizedBox(height: 20),
                 _buildTextField(
+                  controller: _hutangController,
+                  label: 'Hutang Awal (Opsional jika migrasi data lama)',
+                  icon: Icons.account_balance_wallet_outlined,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [CurrencyInputFormatter()],
+                  prefixText: 'Rp ',
+                ),
+                const SizedBox(height: 20),
+                _buildTextField(
                   controller: _keteranganController,
                   label: 'Keterangan',
                   icon: Icons.note_outlined,
@@ -167,15 +183,20 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
     TextInputType? keyboardType,
     int maxLines = 1,
     String? Function(String?)? validator,
+    List<TextInputFormatter>? inputFormatters,
+    String? prefixText,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       maxLines: maxLines,
       validator: validator,
+      inputFormatters: inputFormatters,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: const Color(0xFF01579B)),
+        prefixText: prefixText,
+        prefixStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

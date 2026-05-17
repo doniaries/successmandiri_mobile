@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
@@ -16,11 +18,13 @@ class AddPekerjaScreen extends StatefulWidget {
 class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
   final _formKey = GlobalKey<FormState>();
   final _namaController = TextEditingController();
+  final _hutangController = TextEditingController();
   final _keteranganController = TextEditingController();
 
   @override
   void dispose() {
     _namaController.dispose();
+    _hutangController.dispose();
     _keteranganController.dispose();
     super.dispose();
   }
@@ -49,9 +53,12 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
       return;
     }
 
+    final double hutangValue = CurrencyInputFormatter.parse(_hutangController.text);
+
     final result = await provider.addPekerja({
       'nama': _namaController.text,
       'keterangan': _keteranganController.text,
+      'hutang': hutangValue > 0 ? hutangValue : 0,
       'posisi': 'Staff', // Default Posisi
     });
 
@@ -111,6 +118,15 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
                 ),
                 const SizedBox(height: 20),
                 _buildTextField(
+                  controller: _hutangController,
+                  label: 'Hutang Awal (Opsional jika migrasi data lama)',
+                  icon: Icons.account_balance_wallet_outlined,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [CurrencyInputFormatter()],
+                  prefixText: 'Rp ',
+                ),
+                const SizedBox(height: 20),
+                _buildTextField(
                   controller: _keteranganController,
                   label: 'Keterangan / Catatan',
                   icon: Icons.note_rounded,
@@ -134,16 +150,23 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
     required TextEditingController controller,
     required String label,
     required IconData icon,
+    TextInputType? keyboardType,
     int maxLines = 1,
     String? Function(String?)? validator,
+    List<TextInputFormatter>? inputFormatters,
+    String? prefixText,
   }) {
     return TextFormField(
       controller: controller,
+      keyboardType: keyboardType,
       maxLines: maxLines,
       validator: validator,
+      inputFormatters: inputFormatters,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: const Color(0xFF01579B), size: 20),
+        prefixText: prefixText,
+        prefixStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
