@@ -41,16 +41,38 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     super.dispose();
   }
 
+  Map<String, dynamic> _buildApiFilters() {
+    final Map<String, dynamic> filters = {};
+    
+    if (_selectedFilter != 'Semua') {
+      filters['jenis_transaksi'] = _selectedFilter;
+    }
+
+    if (_selectedDateRange != null) {
+      filters['start_date'] = DateFormat('yyyy-MM-dd').format(_selectedDateRange!.start);
+      filters['end_date'] = DateFormat('yyyy-MM-dd').format(_selectedDateRange!.end);
+    } else if (_selectedDateFilter == 'Hari Ini') {
+      final activeDateStr = context
+          .read<DashboardProvider>()
+          .summary
+          ?.systemActiveDate;
+      final systemActiveDate = activeDateStr != null
+          ? DateTime.parse(activeDateStr)
+          : DateTime.now();
+      final dateStr = DateFormat('yyyy-MM-dd').format(systemActiveDate);
+      filters['start_date'] = dateStr;
+      filters['end_date'] = dateStr;
+    }
+    
+    return filters;
+  }
+
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       final provider = context.read<ResourceProvider>();
       if (!provider.isLoading && provider.hasMore('jurnal_keuangan')) {
-        final Map<String, dynamic> filters = {};
-        if (_selectedFilter != 'Semua') {
-          filters['jenis_transaksi'] = _selectedFilter;
-        }
-        provider.fetchResources('jurnal_keuangan', filters: filters);
+        provider.fetchResources('jurnal_keuangan', filters: _buildApiFilters());
       }
     }
   }
@@ -58,11 +80,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
   void _refreshData() {
     if (!mounted) return;
     final provider = context.read<ResourceProvider>();
-    final Map<String, dynamic> filters = {};
-    if (_selectedFilter != 'Semua') {
-      filters['jenis_transaksi'] = _selectedFilter;
-    }
-    provider.fetchResources('jurnal_keuangan', refresh: true, filters: filters);
+    provider.fetchResources('jurnal_keuangan', refresh: true, filters: _buildApiFilters());
   }
 
   @override
@@ -79,9 +97,9 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.print_rounded),
-            onPressed: _handlePrint,
-            tooltip: 'Cetak Laporan',
+            icon: const Icon(Icons.picture_as_pdf_rounded),
+            onPressed: _handleDownloadPdf,
+            tooltip: 'Download PDF',
           ),
           IconButton(
             icon: const Icon(Icons.calendar_month_rounded),
@@ -311,6 +329,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
                       _selectedDateFilter = tab;
                       _selectedDateRange = null;
                     });
+                    _refreshData();
                   }
                 },
                 selectedColor: const Color(0xFF01579B),
@@ -334,7 +353,13 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
                   '${DateFormat('dd/MM').format(_selectedDateRange!.start)} - ${DateFormat('dd/MM').format(_selectedDateRange!.end)}',
                 ),
                 selected: true,
-                onSelected: (_) => setState(() => _selectedDateRange = null),
+                onSelected: (_) {
+                  setState(() {
+                    _selectedDateRange = null;
+                    _selectedDateFilter = 'Hari Ini';
+                  });
+                  _refreshData();
+                },
                 selectedColor: Colors.orange[800],
                 labelStyle: const TextStyle(
                   color: Colors.white,
@@ -525,6 +550,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
                       _selectedDateRange = picked;
                       _selectedDateFilter = 'Semua';
                     });
+                    _refreshData();
                   }
                 },
               ),
@@ -550,6 +576,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
                     );
                     _selectedDateFilter = 'Semua';
                   });
+                  _refreshData();
                 },
               ),
               ListTile(
@@ -576,6 +603,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
                     );
                     _selectedDateFilter = 'Semua';
                   });
+                  _refreshData();
                 },
               ),
               const SizedBox(height: 10),
@@ -586,20 +614,58 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     );
   }
 
-  Future<void> _handlePrint() async {
+  Future<void> _handleDownloadPdf() async {
     final authProvider = context.read<AuthProvider>();
-    final token = await authProvider
-        .getAuthToken(); // We need to add this to AuthProvider if not exists
+    final token = await authProvider.getAuthToken();
+    if (token == null) return;
+
+    String startDateStr;
+    String endDateStr;
+    String rentang;
+
+    if (_selectedDateRange != null) {
+      startDateStr = DateFormat('yyyy-MM-dd').format(_selectedDateRange!.start);
+      endDateStr = DateFormat('yyyy-MM-dd').format(_selectedDateRange!.end);
+      rentang = 'periode';
+    } else if (_selectedDateFilter == 'Hari Ini') {
+      final activeDateStr = context
+          .read<DashboardProvider>()
+          .summary
+          ?.systemActiveDate;
+      final systemActiveDate = activeDateStr != null
+          ? DateTime.parse(activeDateStr)
+          : DateTime.now();
+      startDateStr = DateFormat('yyyy-MM-dd').format(systemActiveDate);
+      endDateStr = DateFormat('yyyy-MM-dd').format(systemActiveDate);
+      rentang = 'hari_ini';
+    } else {
+      final activeDateStr = context
+          .read<DashboardProvider>()
+          .summary
+          ?.systemActiveDate;
+      final systemActiveDate = activeDateStr != null
+          ? DateTime.parse(activeDateStr)
+          : DateTime.now();
+      startDateStr = DateFormat('yyyy-MM-dd').format(DateTime(systemActiveDate.year, systemActiveDate.month, 1));
+      endDateStr = DateFormat('yyyy-MM-dd').format(systemActiveDate);
+      rentang = 'bulan_ini';
+    }
 
     final url = Uri.parse(
-      '${ApiConstants.baseUrl.replaceAll('/api', '')}/jurnal-keuangan/rekap?token=${Uri.encodeComponent(token!)}&download=1',
+      '${ApiConstants.baseUrl.replaceAll('/api', '')}/jurnal-keuangan/rekap?'
+      'token=${Uri.encodeComponent(token)}'
+      '&start_date=$startDateStr'
+      '&end_date=$endDateStr'
+      '&rentang=$rentang'
+      '&download=1',
     );
+
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal membuka link print')),
+          const SnackBar(content: Text('Gagal mengunduh laporan PDF')),
         );
       }
     }
