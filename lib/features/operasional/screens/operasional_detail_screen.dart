@@ -33,7 +33,7 @@ class OperasionalDetailScreen extends StatelessWidget {
                     context.read<DashboardProvider>().fetchSummary();
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Transaksi operasional berhasil dihapus'),
+                        content: Text('Operasional berhasil dihapus'),
                         backgroundColor: Colors.green,
                         behavior: SnackBarBehavior.floating,
                       ),
@@ -42,7 +42,7 @@ class OperasionalDetailScreen extends StatelessWidget {
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(context.read<ResourceProvider>().errorMessage ?? 'Gagal menghapus transaksi'),
+                        content: Text(context.read<ResourceProvider>().errorMessage ?? 'Gagal menghapus operasional'),
                         backgroundColor: Colors.red,
                         behavior: SnackBarBehavior.floating,
                       ),

@@ -447,7 +447,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
               child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
             ),
             SizedBox(width: 12),
-            Text('Menghapus transaksi...'),
+            Text('Menghapus tambah saldo...'),
           ],
         ),
         duration: Duration(days: 1),
@@ -463,7 +463,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
         dashboardProvider.fetchSummary();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Transaksi berhasil dihapus.'),
+            content: Text('Tambah saldo berhasil dihapus.'),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
           ),
@@ -472,7 +472,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
         provider.fetchRequests(); // Restore visually on error
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(provider.errorMessage ?? 'Gagal menghapus transaksi.'),
+            content: Text(provider.errorMessage ?? 'Gagal menghapus tambah saldo.'),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),

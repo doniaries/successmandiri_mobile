@@ -34,7 +34,7 @@ class TambahSaldoDetailScreen extends StatelessWidget {
                     context.read<DashboardProvider>().fetchSummary();
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Transaksi berhasil dihapus'),
+                        content: Text('Tambah saldo berhasil dihapus'),
                         backgroundColor: Colors.green,
                         behavior: SnackBarBehavior.floating,
                       ),
@@ -43,7 +43,7 @@ class TambahSaldoDetailScreen extends StatelessWidget {
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(context.read<TambahSaldoProvider>().errorMessage ?? 'Gagal menghapus transaksi'),
+                        content: Text(context.read<TambahSaldoProvider>().errorMessage ?? 'Gagal menghapus tambah saldo'),
                         backgroundColor: Colors.red,
                         behavior: SnackBarBehavior.floating,
                       ),
