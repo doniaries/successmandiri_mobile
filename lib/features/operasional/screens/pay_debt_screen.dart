@@ -125,7 +125,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
               : 'Pembayaran hutang telah berhasil diproses.',
           isOffline: isOffline,
           onConfirm: () =>
-              Navigator.of(context).popUntil((route) => route.isFirst),
+              Navigator.of(context).pop(),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

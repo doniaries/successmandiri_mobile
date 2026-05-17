@@ -76,7 +76,7 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
                 : 'Data penjual ${_namaController.text} telah berhasil didaftarkan ke sistem.',
             isOffline: isOffline,
             onConfirm: () {
-              Navigator.of(context).popUntil((route) => route.isFirst);
+              Navigator.of(context).pop();
             },
           );
         } else {

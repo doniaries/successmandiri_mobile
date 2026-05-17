@@ -238,7 +238,7 @@ class _EditTambahSaldoScreenState extends State<EditTambahSaldoScreen> {
                             context,
                             title: 'Perubahan Berhasil!',
                             message: 'Transaksi tambah saldo berhasil diperbarui.',
-                            onConfirm: () => Navigator.of(context).popUntil((route) => route.isFirst),
+                            onConfirm: () => Navigator.of(context).pop(),
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(

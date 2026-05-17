@@ -249,7 +249,7 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
                             isOffline: isOffline,
                             onConfirm: () => Navigator.of(
                               context,
-                            ).popUntil((route) => route.isFirst),
+                            ).pop(),
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(

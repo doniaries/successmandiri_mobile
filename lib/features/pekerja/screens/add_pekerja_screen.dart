@@ -66,7 +66,7 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
               : 'Data pekerja ${_namaController.text} telah berhasil didaftarkan ke sistem.',
           isOffline: isOffline,
           onConfirm: () =>
-              Navigator.of(context).popUntil((route) => route.isFirst),
+              Navigator.of(context).pop(),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -154,7 +154,7 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
           message:
               'Transaksi operasional sebesar ${CurrencyFormatter.formatRupiah(nominalValue)} telah diperbarui.',
           onConfirm: () =>
-              Navigator.of(context).popUntil((route) => route.isFirst),
+              Navigator.of(context).pop(),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

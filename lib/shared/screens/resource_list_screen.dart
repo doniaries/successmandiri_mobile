@@ -92,69 +92,245 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
     );
   }
 
+  Widget _buildSummaryCards(List<dynamic> items) {
+    final int totalCount = items.length;
+    final double totalHutang = items.fold(0.0, (sum, item) {
+      if (item is Penjual) return sum + (item.sisaHutang ?? 0.0);
+      if (item is Supir) return sum + (item.sisaHutang ?? 0.0);
+      if (item is Pekerja) return sum + item.sisaHutang;
+      return sum;
+    });
+
+    String titleLabel = 'Total';
+    IconData countIcon = Icons.people_alt_rounded;
+    Color themeColor = const Color(0xFF01579B);
+
+    if (widget.resourceType == 'penjual') {
+      titleLabel = 'Total Penjual';
+      countIcon = Icons.store_rounded;
+      themeColor = const Color(0xFF0288D1);
+    } else if (widget.resourceType == 'supir') {
+      titleLabel = 'Total Supir';
+      countIcon = Icons.local_shipping_rounded;
+      themeColor = const Color(0xFF00897B);
+    } else if (widget.resourceType == 'pekerja') {
+      titleLabel = 'Total Pekerja';
+      countIcon = Icons.engineering_rounded;
+      themeColor = const Color(0xFF7B1FA2);
+    }
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      child: Row(
+        children: [
+          // Total Orang Card
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [themeColor, themeColor.withAlpha(217)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: themeColor.withAlpha(64),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        titleLabel,
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Icon(
+                        countIcon,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    '$totalCount Orang',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Aktif / Terdaftar',
+                    style: TextStyle(
+                      color: Colors.white.withAlpha(204),
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Total Hutang Card
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey[200]!, width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(10),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Total Hutang',
+                        style: TextStyle(
+                          color: Colors.black54,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Icon(
+                        Icons.account_balance_wallet_rounded,
+                        color: Colors.red[400],
+                        size: 20,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      CurrencyFormatter.formatRupiah(totalHutang),
+                      style: TextStyle(
+                        color: totalHutang > 0 ? Colors.red[700] : Colors.black87,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Sisa Kewajiban',
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildListContent(ResourceProvider provider, List<dynamic> items, ScrollController controller) {
     if (provider.isLoading && items.isEmpty) {
       return _buildSkeletons();
     }
 
-    return RefreshIndicator(
+    final bool showCards = widget.resourceType == 'penjual' ||
+        widget.resourceType == 'supir' ||
+        widget.resourceType == 'pekerja';
+
+    Widget listBody = items.isEmpty
+        ? Stack(
+            children: [
+              ListView(), // Dynamic list to enable RefreshIndicator
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      size: 64,
+                      color: Colors.grey[300],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Data ${widget.title} belum tersedia',
+                      style: TextStyle(color: Colors.grey[400]),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Tarik ke bawah untuk memuat ulang',
+                      style: TextStyle(
+                        color: Colors.grey[400],
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          )
+        : ListView.separated(
+            controller: controller,
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            itemCount:
+                items.length +
+                (provider.isFetchingMoreFor(widget.resourceType)
+                    ? 1
+                    : 0),
+            separatorBuilder: (context, index) =>
+                const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              if (index < items.length) {
+                final item = items[index];
+                return _buildItemTile(item);
+              } else {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Center(child: AppLoadingIndicator(size: 24)),
+                );
+              }
+            },
+          );
+
+    final Widget scrollableList = RefreshIndicator(
       onRefresh: _refreshData,
       color: const Color(0xFF01579B),
-      child: items.isEmpty
-          ? Stack(
-              children: [
-                ListView(), // Dynamic list to enable RefreshIndicator
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        size: 64,
-                        color: Colors.grey[300],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Data ${widget.title} belum tersedia',
-                        style: TextStyle(color: Colors.grey[400]),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Tarik ke bawah untuk memuat ulang',
-                        style: TextStyle(
-                          color: Colors.grey[400],
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            )
-          : ListView.separated(
-              controller: controller,
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
-              itemCount:
-                  items.length +
-                  (provider.isFetchingMoreFor(widget.resourceType)
-                      ? 1
-                      : 0),
-              separatorBuilder: (context, index) =>
-                  const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                if (index < items.length) {
-                  final item = items[index];
-                  return _buildItemTile(item);
-                } else {
-                  return const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20),
-                    child: Center(child: AppLoadingIndicator(size: 24)),
-                  );
-                }
-              },
-            ),
+      child: listBody,
     );
+
+    if (showCards) {
+      return Column(
+        children: [
+          _buildSummaryCards(items),
+          Expanded(child: scrollableList),
+        ],
+      );
+    }
+
+    return scrollableList;
   }
 
   @override
