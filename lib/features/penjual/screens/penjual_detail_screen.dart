@@ -432,6 +432,7 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
   Widget _buildInfoSection(String title, List<Widget> children, {VoidCallback? onTap}) {
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(24),

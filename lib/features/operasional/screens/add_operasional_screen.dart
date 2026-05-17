@@ -101,6 +101,7 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
 
     if (mounted) {
       if (success) {
+        context.read<DashboardProvider>().fetchSummary();
         SuccessDialog.show(
           context,
           title: 'Simpan Berhasil!',

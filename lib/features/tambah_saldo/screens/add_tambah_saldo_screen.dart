@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:sawitappmobile/features/tambah_saldo/providers/tambah_saldo_provider.dart';
+import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
@@ -203,6 +204,7 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
                         if (!context.mounted) return;
 
                         if (success) {
+                          context.read<DashboardProvider>().fetchSummary();
                           final bool isOffline = context
                                   .read<TambahSaldoProvider>()
                                   .errorMessage
