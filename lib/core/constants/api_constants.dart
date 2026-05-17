@@ -12,6 +12,29 @@ class ApiConstants {
     return baseUrl.replaceFirst('/api', '/storage');
   }
 
+  static String? normalizeUrl(String? url) {
+    if (url == null || url.isEmpty) return null;
+    
+    if (!url.startsWith('http')) {
+      final base = baseUrl.replaceAll('/api', '');
+      return '$base/storage/$url';
+    }
+    
+    try {
+      final uri = Uri.parse(url);
+      final apiUri = Uri.parse(baseUrl);
+      
+      final newUri = uri.replace(
+        scheme: apiUri.scheme,
+        host: apiUri.host,
+        port: apiUri.port,
+      );
+      return newUri.toString();
+    } catch (e) {
+      return url;
+    }
+  }
+
   static const String login = '/login';
   static const String logout = '/logout';
   static const String user = '/user';

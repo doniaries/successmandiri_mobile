@@ -199,9 +199,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           ],
                         ),
                         child: ClipOval(
-                          child: Consumer2<AuthProvider, ResourceProvider>(
-                            builder: (context, auth, res, child) {
-                              final logoUrl = auth.user?.perusahaanLogoUrl ?? res.appLogoUrl;
+                          child: Consumer<ResourceProvider>(
+                            builder: (context, res, child) {
+                              final logoUrl = res.appLogoUrl;
                               if (logoUrl != null && logoUrl.isNotEmpty) {
                                 return CachedNetworkImage(
                                   imageUrl: logoUrl,

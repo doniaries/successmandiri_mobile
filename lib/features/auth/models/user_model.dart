@@ -60,7 +60,7 @@ class User {
       isActive: (json['is_active'] is bool) ? json['is_active'] : (json['is_active']?.toString() == '1' || json['is_active']?.toString() == 'true'),
       photo: json['photo'] ?? json['avatar'],
       photoUrl: _parsePhotoUrl(json),
-      perusahaanLogoUrl: json['perusahaan_logo_url'],
+      perusahaanLogoUrl: ApiConstants.normalizeUrl(json['perusahaan_logo_url']),
       roles: _parseRoles(json),
       perusahaans: (json['perusahaans'] is List)
           ? (json['perusahaans'] as List)
@@ -135,7 +135,7 @@ class UserCompany {
     return UserCompany(
       id: json['id'] is int ? json['id'] : int.parse(json['id'].toString()),
       name: json['name'] ?? '',
-      logoUrl: json['logo_url'] ?? json['logo_path'],
+      logoUrl: ApiConstants.normalizeUrl(json['logo_url'] ?? json['logo_path']),
     );
   }
 

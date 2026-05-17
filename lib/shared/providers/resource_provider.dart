@@ -9,6 +9,7 @@ import 'package:sawitappmobile/features/jurnal_keuangan/models/jurnal_keuangan_m
 import 'package:sawitappmobile/features/auth/models/user_model.dart';
 import 'package:sawitappmobile/shared/repositories/resource_repository.dart';
 import 'package:sawitappmobile/core/services/seen_state_service.dart';
+import 'package:sawitappmobile/core/constants/api_constants.dart';
 
 class ResourceProvider with ChangeNotifier {
   final ResourceRepository _repository;
@@ -83,7 +84,7 @@ class ResourceProvider with ChangeNotifier {
       final settings = await _repository.getAppSettings().timeout(const Duration(seconds: 15));
       _appVersion = settings['app_version'] ?? '1.0.0';
       _appCreator = settings['app_creator'] ?? 'Success Mandiri';
-      _appLogoUrl = settings['app_logo_url'];
+      _appLogoUrl = ApiConstants.normalizeUrl(settings['app_logo_url']);
     } catch (e) {
       // Ignore if fetch fails
     } finally {
@@ -529,7 +530,7 @@ class ResourceProvider with ChangeNotifier {
       final settings = await _repository.updateAppSettings(data);
       _appVersion = settings['app_version'] ?? version;
       _appCreator = settings['app_creator'] ?? creator;
-      _appLogoUrl = settings['app_logo_url'];
+      _appLogoUrl = ApiConstants.normalizeUrl(settings['app_logo_url']);
       return true;
     } catch (e) {
       debugPrint('Error updating app settings: $e');
