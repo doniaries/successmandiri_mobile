@@ -418,55 +418,67 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                       const SizedBox(height: 12),
 
                       // Penjual sebagai Supir Checkbox
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 0,
-                        ),
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: Checkbox(
-                                value: _penjualSebagaiSupir,
-                                activeColor: const Color(0xFF01579B),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(4),
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            _penjualSebagaiSupir = !_penjualSebagaiSupir;
+                            if (_penjualSebagaiSupir) {
+                              _selectedSupirId = null;
+                            }
+                          });
+                        },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 8,
+                          ),
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: Checkbox(
+                                  value: _penjualSebagaiSupir,
+                                  activeColor: const Color(0xFF01579B),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  onChanged: (val) {
+                                    setState(() {
+                                      _penjualSebagaiSupir = val ?? false;
+                                      if (_penjualSebagaiSupir)
+                                        _selectedSupirId = null;
+                                    });
+                                  },
                                 ),
-                                onChanged: (val) {
-                                  setState(() {
-                                    _penjualSebagaiSupir = val ?? false;
-                                    if (_penjualSebagaiSupir)
-                                      _selectedSupirId = null;
-                                  });
-                                },
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Penjual sekaligus Supir?',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF455A64),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Penjual sekaligus Supir?',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: Color(0xFF455A64),
+                                      ),
                                     ),
-                                  ),
-                                  Text(
-                                    'Centang ini jika penjual yang membawa sendiri kendaraannya. Sistem akan menyembunyikan pilihan Nama Supir.',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.grey[600],
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Centang ini jika penjual yang membawa sendiri kendaraannya. Sistem akan menyembunyikan pilihan Nama Supir.',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.grey[600],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16),
