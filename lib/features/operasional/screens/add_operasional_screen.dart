@@ -316,12 +316,12 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: DropdownButtonFormField<dynamic>(
+                            child: DropdownButtonFormField<int>(
                               key: ValueKey(
                                 'pihak_${_selectedPihakType}_$_selectedKategori',
                               ),
                               isExpanded: true,
-                              initialValue: _selectedPihak,
+                              initialValue: _selectedPihakId,
                               decoration: _inputDecoration(
                                 'Pilih Pihak',
                                 Icons.person_rounded,
@@ -332,8 +332,8 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
                                       e.sisaHutang?.toString() ?? '0',
                                     ) ??
                                     0;
-                                return DropdownMenuItem<dynamic>(
-                                  value: e,
+                                return DropdownMenuItem<int>(
+                                  value: e.id as int,
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -374,8 +374,11 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
                               },
                               onChanged: (val) {
                                 setState(() {
-                                  _selectedPihak = val;
-                                  _selectedPihakId = val?.id;
+                                  _selectedPihakId = val;
+                                  _selectedPihak = parties.firstWhere(
+                                    (e) => e.id == val,
+                                    orElse: () => null,
+                                  );
                                 });
                               },
                               validator: (val) =>

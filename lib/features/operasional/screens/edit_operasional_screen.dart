@@ -332,12 +332,12 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: DropdownButtonFormField<dynamic>(
+                            child: DropdownButtonFormField<int>(
                               key: ValueKey(
-                                'pihak_${_selectedPihakType}_${_selectedKategori}_${_selectedPihak?.id}',
+                                'pihak_${_selectedPihakType}_${_selectedKategori}_$_selectedPihakId',
                               ),
                               isExpanded: true,
-                              initialValue: _selectedPihak,
+                              initialValue: _selectedPihakId,
                               decoration: _inputDecoration(
                                 'Pilih Pihak',
                                 Icons.person_rounded,
@@ -348,8 +348,8 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
                                       e.sisaHutang?.toString() ?? '0',
                                     ) ??
                                     0;
-                                return DropdownMenuItem<dynamic>(
-                                  value: e,
+                                return DropdownMenuItem<int>(
+                                  value: e.id as int,
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -390,8 +390,11 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
                               },
                               onChanged: (val) {
                                 setState(() {
-                                  _selectedPihak = val;
-                                  _selectedPihakId = val?.id;
+                                  _selectedPihakId = val;
+                                  _selectedPihak = parties.firstWhere(
+                                    (e) => e.id == val,
+                                    orElse: () => null,
+                                  );
                                 });
                               },
                               validator: (val) =>

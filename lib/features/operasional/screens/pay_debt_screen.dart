@@ -26,6 +26,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
   DateTime _selectedDate = DateTime.now();
   String? _selectedPihakType;
   dynamic _selectedPihak;
+  int? _selectedPihakId;
 
   @override
   void initState() {
@@ -39,6 +40,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
     }
     if (widget.pihakType != null) {
       _selectedPihakType = widget.pihakType;
+      _selectedPihakId = widget.pihakId;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final provider = context.read<ResourceProvider>();
         List<dynamic> debtors = [];
@@ -55,6 +57,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
             final pihak = debtors.firstWhere((e) => e.id == widget.pihakId);
             setState(() {
               _selectedPihak = pihak;
+              _selectedPihakId = pihak.id;
               _nominalController.text = (pihak.sisaHutang ?? 0).toInt().toString();
             });
           } catch (e) {
@@ -187,6 +190,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                     setState(() {
                       _selectedPihakType = val;
                       _selectedPihak = null;
+                      _selectedPihakId = null;
                       _nominalController.clear();
                     });
                   },
@@ -195,9 +199,9 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                 ),
                 const SizedBox(height: 20),
                 if (_selectedPihakType != null) ...[
-                  DropdownButtonFormField<dynamic>(
+                  DropdownButtonFormField<int>(
                     isExpanded: true,
-                    initialValue: _selectedPihak,
+                    initialValue: _selectedPihakId,
                     decoration: _inputDecoration(
                       'Pilih Nama Pembayar',
                       Icons.person_rounded,
@@ -209,8 +213,8 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                                 ? provider.supirDebtors
                                 : provider.pekerjaDebtors)
                             .map(
-                              (dynamic e) => DropdownMenuItem(
-                                value: e,
+                              (dynamic e) => DropdownMenuItem<int>(
+                                value: e.id as int,
                                 child: Text(
                                   '${e.nama} (${CurrencyFormatter.formatRupiah(e.sisaHutang ?? 0)})',
                                   overflow: TextOverflow.ellipsis,
@@ -218,12 +222,22 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                               ),
                             )
                             .toList(),
-                    onChanged: (dynamic val) {
+                    onChanged: (val) {
                       setState(() {
-                        _selectedPihak = val;
-                        if (val != null) {
+                        _selectedPihakId = val;
+                        final List<dynamic> debtors = (_selectedPihakType == 'App\\Models\\Penjual'
+                                ? provider.penjualDebtors
+                                : _selectedPihakType == 'App\\Models\\Supir'
+                                ? provider.supirDebtors
+                                : provider.pekerjaDebtors);
+                        final dynamic pihak = debtors.firstWhere(
+                          (dynamic e) => e.id == val,
+                          orElse: () => null,
+                        );
+                        _selectedPihak = pihak;
+                        if (pihak != null) {
                           _nominalController.text =
-                              CurrencyFormatter.formatNumber(val.sisaHutang ?? 0);
+                              CurrencyFormatter.formatNumber(pihak.sisaHutang ?? 0);
                         }
                       });
                     },
