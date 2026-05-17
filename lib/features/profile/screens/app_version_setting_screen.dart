@@ -15,6 +15,7 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _versionController;
   late TextEditingController _creatorController;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -34,24 +35,21 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
   Future<void> _saveSettings() async {
     if (!_formKey.currentState!.validate()) return;
 
+    setState(() {
+      _isSaving = true;
+    });
+
     final provider = context.read<ResourceProvider>();
     
-    // Show loading dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
-        child: AnimatedPulsingLogo(),
-      ),
-    );
-
     final success = await provider.updateAppSettings(
       _versionController.text.trim(),
       _creatorController.text.trim(),
     );
 
     if (mounted) {
-      Navigator.pop(context); // Close loading dialog
+      setState(() {
+        _isSaving = false;
+      });
       
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -113,6 +111,7 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
                 hint: 'Contoh: 1.0.5',
                 icon: Icons.update_rounded,
                 validator: (v) => v!.isEmpty ? 'Versi tidak boleh kosong' : null,
+                enabled: !_isSaving,
               ),
               const SizedBox(height: 20),
               
@@ -122,13 +121,15 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
                 hint: 'Contoh: IT Success Mandiri',
                 icon: Icons.person_outline_rounded,
                 validator: (v) => v!.isEmpty ? 'Nama pembuat tidak boleh kosong' : null,
+                enabled: !_isSaving,
               ),
               
               const SizedBox(height: 48),
               
               AppPrimaryButton(
                 text: 'Simpan Perubahan',
-                onPressed: _saveSettings,
+                isLoading: _isSaving,
+                onPressed: _isSaving ? null : _saveSettings,
               ),
             ],
           ),
@@ -143,6 +144,7 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
     required String hint,
     required IconData icon,
     String? Function(String?)? validator,
+    bool enabled = true,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -159,11 +161,12 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
         TextFormField(
           controller: controller,
           validator: validator,
+          enabled: enabled,
           decoration: InputDecoration(
             hintText: hint,
             prefixIcon: Icon(icon, color: const Color(0xFF01579B)),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: enabled ? Colors.white : Colors.grey[100],
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide(color: Colors.grey[300]!),
@@ -175,6 +178,10 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: const BorderSide(color: Color(0xFF01579B), width: 2),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: Colors.grey[200]!),
             ),
           ),
         ),
