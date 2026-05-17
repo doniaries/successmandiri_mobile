@@ -65,6 +65,18 @@ class OperasionalDetailScreen extends StatelessWidget {
 
     final bool isPengeluaran = operasional.operasional.toLowerCase() == 'pengeluaran';
 
+    String labelPihak = 'Pihak Terkait';
+    if (operasional.pihakType != null) {
+      final type = operasional.pihakType!.toLowerCase();
+      if (type.contains('penjual')) {
+        labelPihak = 'Penjual';
+      } else if (type.contains('supir')) {
+        labelPihak = 'Supir';
+      } else if (type.contains('pekerja')) {
+        labelPihak = 'Pekerja';
+      }
+    }
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -167,7 +179,7 @@ class OperasionalDetailScreen extends StatelessWidget {
               _buildInfoRow(Icons.calendar_today_rounded, 'Tanggal', dateFormat.format(operasional.tanggal)),
               _buildInfoRow(Icons.category_rounded, 'Kategori', operasional.kategoriLabel ?? operasional.kategori),
               if (operasional.namaPihak != null)
-                _buildInfoRow(Icons.person_rounded, 'Pihak Terkait', operasional.namaPihak!),
+                _buildInfoRow(Icons.person_rounded, labelPihak, operasional.namaPihak!),
               if (operasional.userName != null && operasional.userName!.isNotEmpty && operasional.userName != '-')
                 _buildInfoRow(Icons.account_circle_rounded, 'Pencatat', operasional.userName!),
             ]),

@@ -622,8 +622,8 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                       Text(
                         item.namaPihak != null && item.namaPihak!.isNotEmpty && item.namaPihak != '-'
                             ? (item.keterangan != null && item.keterangan!.isNotEmpty && item.keterangan != '-'
-                                ? 'Pihak: ${item.namaPihak} (${item.keterangan})'
-                                : 'Pihak: ${item.namaPihak}')
+                                ? '${item.namaPihak} (${item.keterangan})'
+                                : item.namaPihak!)
                             : (item.keterangan ?? '-'),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
