@@ -444,6 +444,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                     TextButton.icon(
                       onPressed: () {
                         context.read<TransaksiDoProvider>().markAsSeen();
+                        context.read<TambahSaldoProvider>().markAsSeen();
                         context.read<ResourceProvider>().markAllAsSeen();
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -858,7 +859,7 @@ class _NotificationButton extends StatelessWidget {
       selector: (_, p1, p2, p3, p4) {
         int total = 0;
         if (p1.hasNewData) total++;
-        if ((p4.summary?.tambahSaldoTodayCount ?? 0) > 0) total++;
+        if (p2.hasNewData) total++;
         if (p3.hasNewDataFor('operasional')) total++;
         if (p3.hasNewDataFor('penjual')) total++;
         if (p3.hasNewDataFor('supir')) total++;
@@ -1203,29 +1204,27 @@ class _MenuGrid extends StatelessWidget {
       shrinkWrap: true, clipBehavior: Clip.none, physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 3, padding: EdgeInsets.zero, crossAxisSpacing: 8, mainAxisSpacing: 8,
       children: [
-        _MenuItem(label: 'Transaksi DO', icon: Icons.local_shipping_rounded, color: const Color(0xFF01579B), onTap: () { context.read<TransaksiDoProvider>().markAsSeen(); Navigator.push(context, MaterialPageRoute(builder: (_) => const TransaksiDoScreen())); }, badgeSelector: (c) => c.select<DashboardProvider, int>((p) => p.summary?.stats.transaksi.today.count ?? 0), hasNewDataSelector: (c) => c.select<TransaksiDoProvider, bool>((p) => p.hasNewData)),
+        _MenuItem(label: 'Transaksi DO', icon: Icons.local_shipping_rounded, color: const Color(0xFF01579B), onTap: () { context.read<TransaksiDoProvider>().markAsSeen(); Navigator.push(context, MaterialPageRoute(builder: (_) => const TransaksiDoScreen())); }, badgeSelector: (c) => c.select<DashboardProvider, int>((p) => p.summary?.stats.transaksi.today.count ?? 0)),
         _MenuItem(
           label: 'Tambah Saldo', 
           icon: Icons.add_to_photos_rounded, 
           color: const Color(0xFFF39C12), 
           onTap: () { Navigator.push(context, MaterialPageRoute(builder: (_) => const TambahSaldoListScreen())); }, 
-          badgeSelector: (c) => c.select<DashboardProvider, int>((p) => p.summary?.tambahSaldoTodayCount ?? 0), 
-          hasNewDataSelector: (c) => c.select<DashboardProvider, bool>((p) => (p.summary?.tambahSaldoTodayCount ?? 0) > 0)
+          badgeSelector: (c) => c.select<DashboardProvider, int>((p) => p.summary?.tambahSaldoTodayCount ?? 0),
         ),
         _MenuItem(
           label: 'Operasional', 
           icon: Icons.payments_rounded, 
           color: const Color(0xFFE74C3C), 
           onTap: () { context.read<ResourceProvider>().markAsSeen('operasional'); Navigator.push(context, MaterialPageRoute(builder: (_) => const OperasionalScreen())); }, 
-          badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.operasionalCount), 
-          hasNewDataSelector: (c) => c.select<ResourceProvider, bool>((p) => p.hasNewDataFor('operasional'))
+          badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.operasionalCount),
         ),
-        _MenuItem(label: 'Penjual', icon: Icons.storefront_rounded, color: const Color(0xFF27AE60), onTap: () { context.read<ResourceProvider>().markAsSeen('penjual'); Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceListScreen(title: 'Penjual', resourceType: 'penjual'))); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.penjualCount), hasNewDataSelector: (c) => c.select<ResourceProvider, bool>((p) => p.hasNewDataFor('penjual'))),
-        _MenuItem(label: 'Supir', icon: Icons.person_rounded, color: const Color(0xFFE67E22), onTap: () { context.read<ResourceProvider>().markAsSeen('supir'); Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceListScreen(title: 'Supir', resourceType: 'supir'))); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.supirCount), hasNewDataSelector: (c) => c.select<ResourceProvider, bool>((p) => p.hasNewDataFor('supir'))),
-        _MenuItem(label: 'Pekerja', icon: Icons.engineering_rounded, color: const Color(0xFF8E44AD), onTap: () { context.read<ResourceProvider>().markAsSeen('pekerja'); Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceListScreen(title: 'Pekerja', resourceType: 'pekerja'))); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.pekerjaCount), hasNewDataSelector: (c) => c.select<ResourceProvider, bool>((p) => p.hasNewDataFor('pekerja'))),
-        _MenuItem(label: 'Laporan', icon: Icons.auto_stories_rounded, color: const Color(0xFF2980B9), onTap: () { Navigator.push(context, MaterialPageRoute(builder: (_) => const FinanceJournalScreen())); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.jurnalCount), hasNewDataSelector: (c) => c.select<ResourceProvider, bool>((p) => p.hasNewDataFor('jurnal_keuangan'))),
+        _MenuItem(label: 'Penjual', icon: Icons.storefront_rounded, color: const Color(0xFF27AE60), onTap: () { context.read<ResourceProvider>().markAsSeen('penjual'); Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceListScreen(title: 'Penjual', resourceType: 'penjual'))); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.penjualCount)),
+        _MenuItem(label: 'Supir', icon: Icons.person_rounded, color: const Color(0xFFE67E22), onTap: () { context.read<ResourceProvider>().markAsSeen('supir'); Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceListScreen(title: 'Supir', resourceType: 'supir'))); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.supirCount)),
+        _MenuItem(label: 'Pekerja', icon: Icons.engineering_rounded, color: const Color(0xFF8E44AD), onTap: () { context.read<ResourceProvider>().markAsSeen('pekerja'); Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceListScreen(title: 'Pekerja', resourceType: 'pekerja'))); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.pekerjaCount)),
+        _MenuItem(label: 'Laporan', icon: Icons.auto_stories_rounded, color: const Color(0xFF2980B9), onTap: () { Navigator.push(context, MaterialPageRoute(builder: (_) => const FinanceJournalScreen())); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.jurnalCount)),
         if (user.isSuperAdmin)
-          _MenuItem(label: 'Pengaturan', icon: Icons.settings_rounded, color: const Color(0xFF7F8C8D), onTap: () { Navigator.push(context, MaterialPageRoute(builder: (_) => const AppVersionSettingScreen())); }, badgeSelector: (c) => 0, hasNewDataSelector: (c) => false),
+          _MenuItem(label: 'Pengaturan', icon: Icons.settings_rounded, color: const Color(0xFF7F8C8D), onTap: () { Navigator.push(context, MaterialPageRoute(builder: (_) => const AppVersionSettingScreen())); }, badgeSelector: (c) => 0),
       ],
     );
   }
@@ -1237,7 +1236,6 @@ class _MenuItem extends StatelessWidget {
   final Color color;
   final VoidCallback onTap;
   final int Function(BuildContext) badgeSelector;
-  final bool Function(BuildContext) hasNewDataSelector;
 
   const _MenuItem({
     required this.label,
@@ -1245,13 +1243,11 @@ class _MenuItem extends StatelessWidget {
     required this.color,
     required this.onTap,
     required this.badgeSelector,
-    required this.hasNewDataSelector,
   });
 
   @override
   Widget build(BuildContext context) {
     final int count = badgeSelector(context);
-    final bool hasNew = hasNewDataSelector(context);
     return GestureDetector(
       onTap: onTap, behavior: HitTestBehavior.opaque,
       child: Stack(
@@ -1271,32 +1267,9 @@ class _MenuItem extends StatelessWidget {
             ),
           ),
           if (count > 0) Positioned(top: 8, right: 8, child: _CountBadge(count: count, color: color)),
-          if (hasNew) const Positioned(top: 5, right: 5, child: RepaintBoundary(child: AnimatedPulsingDot())),
         ],
       ),
     );
-  }
-}
-
-class AnimatedPulsingDot extends StatefulWidget {
-  const AnimatedPulsingDot({super.key});
-  @override
-  State<AnimatedPulsingDot> createState() => _AnimatedPulsingDotState();
-}
-
-class _AnimatedPulsingDotState extends State<AnimatedPulsingDot> with SingleTickerProviderStateMixin {
-  late AnimationController _controller; late Animation<double> _animation;
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000))..repeat(reverse: true);
-    _animation = Tween<double>(begin: 0.7, end: 1.2).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-  }
-  @override
-  void dispose() { _controller.dispose(); super.dispose(); }
-  @override
-  Widget build(BuildContext context) {
-    return ScaleTransition(scale: _animation, child: Container(width: 8, height: 8, decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.redAccent, blurRadius: 4, spreadRadius: 2)])));
   }
 }
 

@@ -2,22 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:sawitappmobile/features/tambah_saldo/models/tambah_saldo_model.dart';
 import 'package:sawitappmobile/shared/repositories/tambah_saldo_repository.dart';
 
+import 'package:sawitappmobile/core/services/seen_state_service.dart';
+
 class TambahSaldoProvider with ChangeNotifier {
   final TambahSaldoRepository _repository;
   List<TambahSaldoModel> _requests = [];
   bool _isLoading = false;
   String? _errorMessage;
+  bool _hasNewData = false;
 
   TambahSaldoProvider(this._repository);
 
   List<TambahSaldoModel> get requests => _requests;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  bool get hasNewData => _hasNewData;
   int get totalCount => _requests.length;
 
   void clearData() {
     _requests.clear();
     _errorMessage = null;
+    _hasNewData = false;
     notifyListeners();
   }
 
@@ -29,10 +34,25 @@ class TambahSaldoProvider with ChangeNotifier {
     try {
       _requests = await _repository.getTambahSaldo().timeout(const Duration(seconds: 15));
       _isLoading = false;
+      
+      if (_requests.isNotEmpty) {
+        _hasNewData = !await SeenStateService.isSeen('tambah_saldo', _requests.first.id.toString());
+      } else {
+        _hasNewData = false;
+      }
+      
       notifyListeners();
     } catch (e) {
       _isLoading = false;
       _errorMessage = 'Gagal memuat data tambah saldo: $e';
+      notifyListeners();
+    }
+  }
+
+  Future<void> markAsSeen() async {
+    if (_requests.isNotEmpty) {
+      await SeenStateService.markAsSeen('tambah_saldo', _requests.first.id.toString());
+      _hasNewData = false;
       notifyListeners();
     }
   }
