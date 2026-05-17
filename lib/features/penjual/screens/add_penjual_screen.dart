@@ -4,7 +4,6 @@ import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
-import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 import 'package:sawitappmobile/shared/widgets/error_dialog.dart';
 
 class AddPenjualScreen extends StatefulWidget {
@@ -35,13 +34,15 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
-    
+
     try {
       final provider = context.read<ResourceProvider>();
-      
+
       // Client-side uniqueness validation
       final isDuplicate = provider.penjuals.any(
-        (p) => p.nama.toLowerCase().trim() == _namaController.text.toLowerCase().trim()
+        (p) =>
+            p.nama.toLowerCase().trim() ==
+            _namaController.text.toLowerCase().trim(),
       );
 
       if (isDuplicate) {
@@ -49,7 +50,8 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
           ErrorDialog.show(
             context,
             title: 'Nama Sudah Ada',
-            message: 'Penjual dengan nama "${_namaController.text}" sudah terdaftar dalam sistem. Silakan gunakan nama lain atau periksa daftar penjual.',
+            message:
+                'Penjual dengan nama "${_namaController.text}" sudah terdaftar dalam sistem. Silakan gunakan nama lain atau periksa daftar penjual.',
           );
         }
         setState(() => _isLoading = false);
@@ -69,7 +71,7 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
           SuccessDialog.show(
             context,
             title: 'Penjual Ditambahkan!',
-            message: isOffline 
+            message: isOffline
                 ? 'Sinyal tidak stabil. Data penjual ${_namaController.text} telah disimpan di antrean perangkat dan akan otomatis dikirim saat ada sinyal.'
                 : 'Data penjual ${_namaController.text} telah berhasil didaftarkan ke sistem.',
             isOffline: isOffline,
@@ -85,9 +87,9 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -120,7 +122,8 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
                   controller: _namaController,
                   label: 'Nama Penjual',
                   icon: Icons.person_outline,
-                  validator: (val) => val == null || val.isEmpty ? 'Nama wajib diisi' : null,
+                  validator: (val) =>
+                      val == null || val.isEmpty ? 'Nama wajib diisi' : null,
                 ),
                 const SizedBox(height: 20),
                 _buildTextField(
@@ -188,4 +191,3 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
     );
   }
 }
-

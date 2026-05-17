@@ -7,7 +7,6 @@ import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
-import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 
 class AddTambahSaldoScreen extends StatefulWidget {
   const AddTambahSaldoScreen({super.key});
@@ -99,10 +98,13 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
                     decoration: InputDecoration(
                       labelText: 'Nominal Saldo',
                       prefixText: 'Rp ',
-                      prefixIcon: const Icon(Icons.account_balance_wallet_outlined,
-                          color: Color(0xFF01579B)),
+                      prefixIcon: const Icon(
+                        Icons.account_balance_wallet_outlined,
+                        color: Color(0xFF01579B),
+                      ),
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(color: Colors.grey[300]!),
@@ -110,25 +112,31 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(
-                            color: Color(0xFF01579B), width: 2),
+                          color: Color(0xFF01579B),
+                          width: 2,
+                        ),
                       ),
                       filled: true,
                       fillColor: Colors.grey[50],
                     ),
                     style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                     keyboardType: TextInputType.number,
                     onChanged: (value) {
                       if (value.isNotEmpty) {
                         String cleanValue = value.replaceAll('.', '');
                         double? nominal = double.tryParse(cleanValue);
                         if (nominal != null) {
-                          String formatted = CurrencyFormatter.formatRupiah(nominal)
-                              .replaceAll('Rp ', '');
+                          String formatted = CurrencyFormatter.formatRupiah(
+                            nominal,
+                          ).replaceAll('Rp ', '');
                           _nominalController.value = TextEditingValue(
                             text: formatted,
                             selection: TextSelection.collapsed(
-                                offset: formatted.length),
+                              offset: formatted.length,
+                            ),
                           );
                         }
                       }
@@ -146,10 +154,13 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
                     child: InputDecorator(
                       decoration: InputDecoration(
                         labelText: 'Tanggal Transaksi',
-                        prefixIcon: const Icon(Icons.calendar_today_outlined,
-                            color: Color(0xFF01579B)),
+                        prefixIcon: const Icon(
+                          Icons.calendar_today_outlined,
+                          color: Color(0xFF01579B),
+                        ),
                         border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(color: Colors.grey[300]!),
@@ -177,10 +188,13 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
                     controller: _keteranganController,
                     decoration: InputDecoration(
                       labelText: 'Keterangan',
-                      prefixIcon: const Icon(Icons.note_outlined,
-                          color: Color(0xFF01579B)),
+                      prefixIcon: const Icon(
+                        Icons.note_outlined,
+                        color: Color(0xFF01579B),
+                      ),
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12)),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide(color: Colors.grey[300]!),
@@ -188,7 +202,9 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(
-                            color: Color(0xFF01579B), width: 2),
+                          color: Color(0xFF01579B),
+                          width: 2,
+                        ),
                       ),
                       filled: true,
                       fillColor: Colors.grey[50],
@@ -206,15 +222,18 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
                     text: 'SIMPAN TRANSAKSI',
                     onPressed: () async {
                       if (_formKey.currentState!.validate()) {
-                        final nominalClean =
-                            _nominalController.text.replaceAll('.', '');
+                        final nominalClean = _nominalController.text.replaceAll(
+                          '.',
+                          '',
+                        );
 
                         final success = await context
                             .read<TambahSaldoProvider>()
                             .createRequest(
                               nominal: double.parse(nominalClean),
-                              tanggal: DateFormat('yyyy-MM-dd')
-                                  .format(_selectedDate),
+                              tanggal: DateFormat(
+                                'yyyy-MM-dd',
+                              ).format(_selectedDate),
                               keterangan: _keteranganController.text,
                             );
 
@@ -222,7 +241,8 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
 
                         if (success) {
                           context.read<DashboardProvider>().fetchSummary();
-                          final bool isOffline = context
+                          final bool isOffline =
+                              context
                                   .read<TambahSaldoProvider>()
                                   .errorMessage
                                   ?.contains('offline') ??
@@ -234,14 +254,17 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
                                 ? 'Sinyal tidak stabil. Permintaan saldo sebesar ${CurrencyFormatter.formatRupiah(double.parse(nominalClean))} telah disimpan di antrean perangkat dan akan otomatis dikirim saat ada sinyal.'
                                 : 'Berhasil menambah saldo sebesar ${CurrencyFormatter.formatRupiah(double.parse(nominalClean))}.',
                             isOffline: isOffline,
-                            onConfirm: () => Navigator.of(context)
-                                .popUntil((route) => route.isFirst),
+                            onConfirm: () => Navigator.of(
+                              context,
+                            ).popUntil((route) => route.isFirst),
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                context.read<TambahSaldoProvider>().errorMessage ??
+                                context
+                                        .read<TambahSaldoProvider>()
+                                        .errorMessage ??
                                     'Gagal menambah saldo',
                               ),
                               backgroundColor: Colors.red,

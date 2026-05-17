@@ -12,7 +12,6 @@ import 'package:sawitappmobile/shared/widgets/searchable_selection_modal.dart';
 import 'package:sawitappmobile/features/penjual/screens/add_penjual_screen.dart';
 import 'package:sawitappmobile/features/supir/screens/add_supir_screen.dart';
 import 'package:sawitappmobile/shared/widgets/balance_validation_modal.dart';
-import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 
 class AddTransaksiDoScreen extends StatefulWidget {
   const AddTransaksiDoScreen({super.key});
@@ -46,7 +45,8 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
   final _sisaBayarController = TextEditingController();
 
   List<String> get _currentCaraBayarOptions {
-    final double saldoPerusahaan = context.read<DashboardProvider>().summary?.saldo ?? 0;
+    final double saldoPerusahaan =
+        context.read<DashboardProvider>().summary?.saldo ?? 0;
     if (_sisaBayar > saldoPerusahaan) {
       return ['transfer', 'cair di luar', 'belum dibayar'];
     }
@@ -62,7 +62,10 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
     _biayaLainController.addListener(_onFieldChanged);
     _pembayaranHutangController.addListener(_onFieldChanged);
 
-    final activeDateStr = context.read<DashboardProvider>().summary?.systemActiveDate;
+    final activeDateStr = context
+        .read<DashboardProvider>()
+        .summary
+        ?.systemActiveDate;
     if (activeDateStr != null) {
       _selectedDate = DateTime.parse(activeDateStr);
     }
@@ -86,10 +89,11 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
 
   void _onFieldChanged() {
     final subTotal = _subTotal;
-    final totalDeductions = CurrencyInputFormatter.parse(_upahBongkarController.text) +
-                          CurrencyInputFormatter.parse(_biayaLainController.text) +
-                          CurrencyInputFormatter.parse(_pembayaranHutangController.text);
-    
+    final totalDeductions =
+        CurrencyInputFormatter.parse(_upahBongkarController.text) +
+        CurrencyInputFormatter.parse(_biayaLainController.text) +
+        CurrencyInputFormatter.parse(_pembayaranHutangController.text);
+
     // Match Filament: sisa_bayar = max(0, sub_total - deductions)
     final sisaBayar = max(0.0, subTotal - totalDeductions);
     final sisaHutang = _sisaHutangPenjual;
@@ -104,15 +108,14 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
     _sisaHutangController.text = currencyFormat.format(sisaHutang).trim();
     _sisaBayarController.text = currencyFormat.format(sisaBayar).trim();
 
-
-
     // Validasi saldo otomatis
     final options = _currentCaraBayarOptions;
     if (!options.contains(_selectedCaraBayar)) {
       _selectedCaraBayar = 'cair di luar';
-      
+
       // Tampilkan modal jika baru saja menjadi tidak cukup
-      final double saldoPerusahaan = context.read<DashboardProvider>().summary?.saldo ?? 0;
+      final double saldoPerusahaan =
+          context.read<DashboardProvider>().summary?.saldo ?? 0;
       if (sisaBayar > saldoPerusahaan) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
@@ -135,7 +138,8 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
       _selectedPenjualId = val;
       if (val != null) {
         final penjual = provider.penjuals.firstWhere((p) => p['id'] == val);
-        _currentSellerDebt = double.tryParse(penjual['sisa_hutang']?.toString() ?? '0') ?? 0;
+        _currentSellerDebt =
+            double.tryParse(penjual['sisa_hutang']?.toString() ?? '0') ?? 0;
       } else {
         _currentSellerDebt = 0;
       }
@@ -164,7 +168,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
   double get _subTotal =>
       CurrencyInputFormatter.parse(_tonaseController.text) *
       CurrencyInputFormatter.parse(_hargaSatuanController.text);
-  
+
   double get _totalPotongan =>
       CurrencyInputFormatter.parse(_upahBongkarController.text) +
       CurrencyInputFormatter.parse(_biayaLainController.text) +
@@ -332,15 +336,16 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                           Expanded(
                             child: InkWell(
                               onTap: () async {
-                                final result = await SearchableSelectionModal.show(
-                                  context: context,
-                                  title: 'Pilih Penjual',
-                                  items: provider.penjuals,
-                                  selectedId: _selectedPenjualId,
-                                  labelKey: 'nama',
-                                  subLabelKey: 'sisa_hutang',
-                                  hint: 'Cari nama penjual...',
-                                );
+                                final result =
+                                    await SearchableSelectionModal.show(
+                                      context: context,
+                                      title: 'Pilih Penjual',
+                                      items: provider.penjuals,
+                                      selectedId: _selectedPenjualId,
+                                      labelKey: 'nama',
+                                      subLabelKey: 'sisa_hutang',
+                                      hint: 'Cari nama penjual...',
+                                    );
                                 if (result != null) {
                                   _onPenjualChanged(result, provider);
                                 }
@@ -350,19 +355,31 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                   key: ValueKey('penjual_$_selectedPenjualId'),
                                   initialValue: _selectedPenjualId != null
                                       ? provider.penjuals
-                                          .firstWhere((p) => p['id'] == _selectedPenjualId,
-                                              orElse: () => {'nama': ''})['nama']
-                                          .toString()
-                                          .toUpperCase()
+                                            .firstWhere(
+                                              (p) =>
+                                                  p['id'] == _selectedPenjualId,
+                                              orElse: () => {'nama': ''},
+                                            )['nama']
+                                            .toString()
+                                            .toUpperCase()
                                       : null,
-                                    decoration: _getInputDecoration(
-                                      label: 'Nama Penjual',
-                                      icon: Icons.person_rounded,
-                                      hint: 'Pilih Penjual',
-                                      suffixIcon: const Icon(Icons.search, size: 20, color: Colors.grey),
+                                  decoration: _getInputDecoration(
+                                    label: 'Nama Penjual',
+                                    icon: Icons.person_rounded,
+                                    hint: 'Pilih Penjual',
+                                    suffixIcon: const Icon(
+                                      Icons.search,
+                                      size: 20,
+                                      color: Colors.grey,
                                     ),
-                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-                                  validator: (val) => _selectedPenjualId == null ? 'Pilih penjual' : null,
+                                  ),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                  validator: (val) => _selectedPenjualId == null
+                                      ? 'Pilih penjual'
+                                      : null,
                                 ),
                               ),
                             ),
@@ -371,13 +388,24 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                           Container(
                             margin: const EdgeInsets.only(top: 4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF01579B).withValues(alpha: 0.1),
+                              color: const Color(
+                                0xFF01579B,
+                              ).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: IconButton(
-                              icon: const Icon(Icons.add, color: Color(0xFF01579B)),
+                              icon: const Icon(
+                                Icons.add,
+                                color: Color(0xFF01579B),
+                              ),
                               onPressed: () async {
-                                final newPenjual = await Navigator.push(context, MaterialPageRoute(builder: (context) => const AddPenjualScreen()));
+                                final newPenjual = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const AddPenjualScreen(),
+                                  ),
+                                );
                                 if (mounted && newPenjual != null) {
                                   await provider.fetchFormData();
                                   _onPenjualChanged(newPenjual['id'], provider);
@@ -391,19 +419,26 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
 
                       // Penjual sebagai Supir Checkbox
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 0,
+                        ),
                         child: Row(
                           children: [
                             SizedBox(
-                              height: 24, width: 24,
+                              height: 24,
+                              width: 24,
                               child: Checkbox(
                                 value: _penjualSebagaiSupir,
                                 activeColor: const Color(0xFF01579B),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
                                 onChanged: (val) {
                                   setState(() {
                                     _penjualSebagaiSupir = val ?? false;
-                                    if (_penjualSebagaiSupir) _selectedSupirId = null;
+                                    if (_penjualSebagaiSupir)
+                                      _selectedSupirId = null;
                                   });
                                 },
                               ),
@@ -415,11 +450,18 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                 children: [
                                   const Text(
                                     'Penjual sekaligus Supir?',
-                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF455A64)),
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF455A64),
+                                    ),
                                   ),
                                   Text(
                                     'Centang ini jika penjual yang membawa sendiri kendaraannya. Sistem akan menyembunyikan pilihan Nama Supir.',
-                                    style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.grey[600],
+                                    ),
                                   ),
                                 ],
                               ),
@@ -438,15 +480,16 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                             Expanded(
                               child: InkWell(
                                 onTap: () async {
-                                  final result = await SearchableSelectionModal.show(
-                                    context: context,
-                                    title: 'Pilih Supir',
-                                    items: provider.supirs,
-                                    selectedId: _selectedSupirId,
-                                    labelKey: 'nama',
-                                    subLabelKey: 'sisa_hutang',
-                                    hint: 'Cari nama supir...',
-                                  );
+                                  final result =
+                                      await SearchableSelectionModal.show(
+                                        context: context,
+                                        title: 'Pilih Supir',
+                                        items: provider.supirs,
+                                        selectedId: _selectedSupirId,
+                                        labelKey: 'nama',
+                                        subLabelKey: 'sisa_hutang',
+                                        hint: 'Cari nama supir...',
+                                      );
                                   if (result != null) {
                                     setState(() {
                                       _selectedSupirId = result;
@@ -459,19 +502,31 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                     key: ValueKey('supir_$_selectedSupirId'),
                                     initialValue: _selectedSupirId != null
                                         ? provider.supirs
-                                            .firstWhere((s) => s['id'] == _selectedSupirId,
-                                                orElse: () => {'nama': ''})['nama']
-                                            .toString()
-                                            .toUpperCase()
+                                              .firstWhere(
+                                                (s) =>
+                                                    s['id'] == _selectedSupirId,
+                                                orElse: () => {'nama': ''},
+                                              )['nama']
+                                              .toString()
+                                              .toUpperCase()
                                         : null,
                                     decoration: _getInputDecoration(
                                       label: 'Nama Supir',
                                       icon: Icons.local_shipping_outlined,
                                       hint: 'Pilih Supir',
-                                      suffixIcon: const Icon(Icons.search, size: 20, color: Colors.grey),
+                                      suffixIcon: const Icon(
+                                        Icons.search,
+                                        size: 20,
+                                        color: Colors.grey,
+                                      ),
                                     ),
-                                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-                                    validator: (val) => _selectedSupirId == null ? 'Pilih supir' : null,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                    ),
+                                    validator: (val) => _selectedSupirId == null
+                                        ? 'Pilih supir'
+                                        : null,
                                   ),
                                 ),
                               ),
@@ -480,13 +535,24 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                             Container(
                               margin: const EdgeInsets.only(top: 4),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF01579B).withValues(alpha: 0.1),
+                                color: const Color(
+                                  0xFF01579B,
+                                ).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: IconButton(
-                                icon: const Icon(Icons.add, color: Color(0xFF01579B)),
+                                icon: const Icon(
+                                  Icons.add,
+                                  color: Color(0xFF01579B),
+                                ),
                                 onPressed: () async {
-                                  await Navigator.push(context, MaterialPageRoute(builder: (context) => const AddSupirScreen()));
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const AddSupirScreen(),
+                                    ),
+                                  );
                                   if (mounted) provider.fetchFormData();
                                 },
                               ),
@@ -617,9 +683,17 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                 return 'Melebihi hutang';
                               }
                               // Match Filament: validatePotonganHutang
-                              final otherDeductions = CurrencyInputFormatter.parse(_upahBongkarController.text) +
-                                                     CurrencyInputFormatter.parse(_biayaLainController.text);
-                              final maxBayarHutang = max(0.0, _subTotal - otherDeductions);
+                              final otherDeductions =
+                                  CurrencyInputFormatter.parse(
+                                    _upahBongkarController.text,
+                                  ) +
+                                  CurrencyInputFormatter.parse(
+                                    _biayaLainController.text,
+                                  );
+                              final maxBayarHutang = max(
+                                0.0,
+                                _subTotal - otherDeductions,
+                              );
                               if (amount > maxBayarHutang) {
                                 return 'Melebihi sisa hasil transaksi';
                               }
@@ -659,41 +733,64 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                       // Indikator Saldo Perusahaan (Match Filament Placeholder)
                       Builder(
                         builder: (context) {
-                          final double currentSaldo = context.select<DashboardProvider, double>((p) => p.summary?.saldo ?? 0);
+                          final double currentSaldo = context
+                              .select<DashboardProvider, double>(
+                                (p) => p.summary?.saldo ?? 0,
+                              );
                           final bool isLow = currentSaldo < 500000;
                           return Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
                             decoration: BoxDecoration(
-                              color: isLow ? Colors.red[100] : const Color(0xFFFFD54F),
+                              color: isLow
+                                  ? Colors.red[100]
+                                  : const Color(0xFFFFD54F),
                               borderRadius: BorderRadius.circular(12),
-                              border: isLow ? Border.all(color: Colors.red[300]!) : null,
+                              border: isLow
+                                  ? Border.all(color: Colors.red[300]!)
+                                  : null,
                             ),
                             child: Row(
                               children: [
                                 Icon(
-                                  isLow ? Icons.warning_amber_rounded : Icons.account_balance_rounded,
+                                  isLow
+                                      ? Icons.warning_amber_rounded
+                                      : Icons.account_balance_rounded,
                                   size: 18,
-                                  color: isLow ? Colors.red[700] : Colors.black87,
+                                  color: isLow
+                                      ? Colors.red[700]
+                                      : Colors.black87,
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        isLow ? 'Saldo Sangat Rendah!' : 'Kondisi Saldo Saat Ini',
+                                        isLow
+                                            ? 'Saldo Sangat Rendah!'
+                                            : 'Kondisi Saldo Saat Ini',
                                         style: TextStyle(
                                           fontSize: 10,
                                           fontWeight: FontWeight.w800,
-                                          color: isLow ? Colors.red[900] : Colors.black87,
+                                          color: isLow
+                                              ? Colors.red[900]
+                                              : Colors.black87,
                                         ),
                                       ),
                                       Text(
-                                        CurrencyFormatter.formatRupiah(currentSaldo),
+                                        CurrencyFormatter.formatRupiah(
+                                          currentSaldo,
+                                        ),
                                         style: TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.w900,
-                                          color: isLow ? Colors.red[900] : Colors.black,
+                                          color: isLow
+                                              ? Colors.red[900]
+                                              : Colors.black,
                                           letterSpacing: -0.5,
                                         ),
                                       ),
@@ -707,10 +804,12 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                       ),
                       const SizedBox(height: 16),
 
-
                       // Cara Bayar
                       DropdownButtonFormField<String>(
-                        initialValue: _currentCaraBayarOptions.contains(_selectedCaraBayar)
+                        initialValue:
+                            _currentCaraBayarOptions.contains(
+                              _selectedCaraBayar,
+                            )
                             ? _selectedCaraBayar
                             : _currentCaraBayarOptions.first,
                         decoration: _getInputDecoration(
@@ -734,8 +833,6 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                       ),
                       const SizedBox(height: 16),
 
-
-
                       // Keterangan Pembayaran (Untuk Selain Tunai/Transfer?)
                       // User minta: Cair di luar (tambah keterangan), belum dibayar (tambah keterangan)
                       if (_selectedCaraBayar == 'cair di luar' ||
@@ -743,15 +840,15 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                         TextFormField(
                           controller: _keteranganPembayaranController,
                           decoration: _getInputDecoration(
-                            label: 'Keterangan ${_selectedCaraBayar.toUpperCase()}',
+                            label:
+                                'Keterangan ${_selectedCaraBayar.toUpperCase()}',
                             icon: Icons.info_outline_rounded,
                             hint: 'Tambahkan detail pembayaran...',
                           ),
                           maxLines: 2,
-                          validator: (val) =>
-                              val == null || val.isEmpty
-                                  ? 'Keterangan wajib diisi'
-                                  : null,
+                          validator: (val) => val == null || val.isEmpty
+                              ? 'Keterangan wajib diisi'
+                              : null,
                         ),
                         const SizedBox(height: 16),
                       ],
@@ -780,7 +877,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
       // Validasi Saldo Perusahaan
       final double saldoPerusahaan =
           context.read<DashboardProvider>().summary?.saldo ?? 0;
-      
+
       if (_selectedCaraBayar == 'tunai' && _sisaBayar > saldoPerusahaan) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -820,11 +917,15 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
 
       if (mounted) {
         if (success) {
-          final bool isOffline = context.read<TransaksiDoProvider>().errorMessage?.contains('offline') ?? false;
+          final bool isOffline =
+              context.read<TransaksiDoProvider>().errorMessage?.contains(
+                'offline',
+              ) ??
+              false;
           SuccessDialog.show(
             context,
             title: 'Transaksi Berhasil!',
-            message: isOffline 
+            message: isOffline
                 ? 'Koneksi internet tidak stabil. Data transaksi DO nomor ${_nomorDoController.text} telah disimpan di antrean perangkat dan akan otomatis dikirim saat sinyal pulih.'
                 : 'Data Transaksi DO dengan nomor ${_nomorDoController.text} berhasil disimpan ke sistem.',
             isOffline: isOffline,
@@ -850,7 +951,8 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
         builder: (context) => AlertDialog(
           title: const Text('Data Belum Lengkap'),
           content: const Text(
-              'Silakan lengkapi semua data yang wajib diisi sebelum menyimpan transaksi.'),
+            'Silakan lengkapi semua data yang wajib diisi sebelum menyimpan transaksi.',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -862,4 +964,3 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
     }
   }
 }
-

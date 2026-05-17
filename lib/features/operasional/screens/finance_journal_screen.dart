@@ -10,7 +10,6 @@ import 'package:sawitappmobile/features/jurnal_keuangan/screens/jurnal_keuangan_
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:sawitappmobile/core/constants/api_constants.dart';
-import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 
 class FinanceJournalScreen extends StatefulWidget {
   const FinanceJournalScreen({super.key});
@@ -43,7 +42,8 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       final provider = context.read<ResourceProvider>();
       if (!provider.isLoading && provider.hasMore('jurnal_keuangan')) {
         final Map<String, dynamic> filters = {};
@@ -70,7 +70,10 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Laporan Keuangan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Laporan Keuangan',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: const Color(0xFF01579B),
         foregroundColor: Colors.white,
         elevation: 0,
@@ -89,14 +92,17 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
       ),
       body: Consumer<ResourceProvider>(
         builder: (context, provider, child) {
-          final bool isInitialLoading = provider.isLoading && provider.jurnalKeuangans.isEmpty;
+          final bool isInitialLoading =
+              provider.isLoading && provider.jurnalKeuangans.isEmpty;
 
           final items = provider.jurnalKeuangans;
           final filteredItems = _getFilteredItems(items);
 
           return Column(
             children: [
-              isInitialLoading ? _buildSkeletonHeader() : _buildSummaryHeader(provider),
+              isInitialLoading
+                  ? _buildSkeletonHeader()
+                  : _buildSummaryHeader(provider),
               _buildDateTabs(),
               _buildFilterChips(),
               Expanded(
@@ -105,22 +111,30 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
                   child: isInitialLoading
                       ? _buildSkeletonList()
                       : filteredItems.isEmpty
-                          ? _buildEmptyState()
-                          : ListView.separated(
-                              controller: _scrollController,
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              itemCount: filteredItems.length + (provider.hasMore('jurnal_keuangan') ? 1 : 0),
-                              separatorBuilder: (context, index) => const SizedBox(height: 12),
-                              itemBuilder: (context, index) {
-                                if (index == filteredItems.length) {
-                                  return const Center(child: Padding(
-                                    padding: EdgeInsets.all(16.0),
-                                    child: CircularProgressIndicator(),
-                                  ));
-                                }
-                                return _buildJournalItem(filteredItems[index]);
-                              },
-                            ),
+                      ? _buildEmptyState()
+                      : ListView.separated(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          itemCount:
+                              filteredItems.length +
+                              (provider.hasMore('jurnal_keuangan') ? 1 : 0),
+                          separatorBuilder: (context, index) =>
+                              const SizedBox(height: 12),
+                          itemBuilder: (context, index) {
+                            if (index == filteredItems.length) {
+                              return const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(16.0),
+                                  child: CircularProgressIndicator(),
+                                ),
+                              );
+                            }
+                            return _buildJournalItem(filteredItems[index]);
+                          },
+                        ),
                 ),
               ),
             ],
@@ -132,9 +146,12 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
 
   Widget _buildSummaryHeader(ResourceProvider provider) {
     final items = provider.jurnalKeuangans;
-    final activeDateStr = context.read<DashboardProvider>().summary?.systemActiveDate;
-    final systemActiveDate = activeDateStr != null 
-        ? DateTime.parse(activeDateStr) 
+    final activeDateStr = context
+        .read<DashboardProvider>()
+        .summary
+        ?.systemActiveDate;
+    final systemActiveDate = activeDateStr != null
+        ? DateTime.parse(activeDateStr)
         : DateTime.now();
 
     // Hitung statistik berdasarkan filter aktif
@@ -145,7 +162,9 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     if (_selectedDateRange != null) {
       for (var item in items) {
         final d = item.tanggal.toLocal();
-        if (d.isAfter(_selectedDateRange!.start.subtract(const Duration(seconds: 1))) && 
+        if (d.isAfter(
+              _selectedDateRange!.start.subtract(const Duration(seconds: 1)),
+            ) &&
             d.isBefore(_selectedDateRange!.end.add(const Duration(days: 1)))) {
           if (item.jenisTransaksi == 'Pemasukan') {
             displayIn += item.nominal;
@@ -192,15 +211,26 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
       ),
       child: Column(
         children: [
-          const Text('Total Saldo Kas', style: TextStyle(color: Colors.white70, fontSize: 14)),
+          const Text(
+            'Total Saldo Kas',
+            style: TextStyle(color: Colors.white70, fontSize: 14),
+          ),
           Text(
             DateFormat('d MMMM yyyy', 'id_ID').format(systemActiveDate),
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.8),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             CurrencyFormatter.formatRupiah(provider.saldoKas),
-            style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 20),
           Row(
@@ -229,7 +259,12 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     );
   }
 
-  Widget _buildSummaryItem(String label, double amount, IconData icon, Color color) {
+  Widget _buildSummaryItem(
+    String label,
+    double amount,
+    IconData icon,
+    Color color,
+  ) {
     return Column(
       children: [
         Row(
@@ -237,13 +272,20 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
           children: [
             Icon(icon, color: color, size: 16),
             const SizedBox(width: 4),
-            Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+            Text(
+              label,
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
+            ),
           ],
         ),
         const SizedBox(height: 4),
         Text(
           CurrencyFormatter.formatRupiah(amount),
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
+          ),
         ),
       ],
     );
@@ -256,7 +298,8 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
       child: Row(
         children: [
           ..._dateFilters.map((tab) {
-            final isSelected = _selectedDateFilter == tab && _selectedDateRange == null;
+            final isSelected =
+                _selectedDateFilter == tab && _selectedDateRange == null;
             return Padding(
               padding: const EdgeInsets.only(right: 8),
               child: ChoiceChip(
@@ -276,7 +319,9 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
                   fontWeight: FontWeight.bold,
                 ),
                 backgroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
                 showCheckmark: false,
               ),
             );
@@ -286,13 +331,18 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
               padding: const EdgeInsets.only(right: 8),
               child: ChoiceChip(
                 label: Text(
-                  '${DateFormat('dd/MM').format(_selectedDateRange!.start)} - ${DateFormat('dd/MM').format(_selectedDateRange!.end)}'
+                  '${DateFormat('dd/MM').format(_selectedDateRange!.start)} - ${DateFormat('dd/MM').format(_selectedDateRange!.end)}',
                 ),
                 selected: true,
                 onSelected: (_) => setState(() => _selectedDateRange = null),
                 selectedColor: Colors.orange[800],
-                labelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                labelStyle: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
                 showCheckmark: true,
               ),
             ),
@@ -328,7 +378,11 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
               backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
-                side: BorderSide(color: isSelected ? const Color(0xFF01579B) : Colors.grey[300]!),
+                side: BorderSide(
+                  color: isSelected
+                      ? const Color(0xFF01579B)
+                      : Colors.grey[300]!,
+                ),
               ),
             ),
           );
@@ -339,8 +393,12 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
 
   Widget _buildJournalItem(JurnalKeuangan item) {
     final isIncome = item.jenisTransaksi == 'Pemasukan';
-    final iconColor = isIncome ? const Color(0xFF27AE60) : const Color(0xFFE74C3C);
-    final bgColor = isIncome ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE);
+    final iconColor = isIncome
+        ? const Color(0xFF27AE60)
+        : const Color(0xFFE74C3C);
+    final bgColor = isIncome
+        ? const Color(0xFFE8F5E9)
+        : const Color(0xFFFFEBEE);
 
     return Container(
       decoration: BoxDecoration(
@@ -357,7 +415,9 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
       child: ListTile(
         onTap: () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => JurnalKeuanganDetailScreen(jurnal: item)),
+          MaterialPageRoute(
+            builder: (context) => JurnalKeuanganDetailScreen(jurnal: item),
+          ),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
@@ -367,7 +427,9 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
-            isIncome ? Icons.add_circle_outline_rounded : Icons.remove_circle_outline_rounded,
+            isIncome
+                ? Icons.add_circle_outline_rounded
+                : Icons.remove_circle_outline_rounded,
             color: iconColor,
             size: 24,
           ),
@@ -408,13 +470,18 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     return items.where((item) {
       if (_selectedDateRange != null) {
         final d = item.tanggal.toLocal();
-        return d.isAfter(_selectedDateRange!.start.subtract(const Duration(seconds: 1))) && 
-               d.isBefore(_selectedDateRange!.end.add(const Duration(days: 1)));
+        return d.isAfter(
+              _selectedDateRange!.start.subtract(const Duration(seconds: 1)),
+            ) &&
+            d.isBefore(_selectedDateRange!.end.add(const Duration(days: 1)));
       }
       if (_selectedDateFilter == 'Hari Ini') {
-        final activeDateStr = context.read<DashboardProvider>().summary?.systemActiveDate;
-        final systemActiveDate = activeDateStr != null 
-            ? DateTime.parse(activeDateStr) 
+        final activeDateStr = context
+            .read<DashboardProvider>()
+            .summary
+            ?.systemActiveDate;
+        final systemActiveDate = activeDateStr != null
+            ? DateTime.parse(activeDateStr)
             : DateTime.now();
         return DateUtils.isSameDay(item.tanggal.toLocal(), systemActiveDate);
       }
@@ -425,17 +492,25 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
   void _showFilterSheet() {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) {
         return Container(
           padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Filter Laporan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Text(
+                'Filter Laporan',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 20),
               ListTile(
-                leading: const Icon(Icons.date_range_rounded, color: Color(0xFF01579B)),
+                leading: const Icon(
+                  Icons.date_range_rounded,
+                  color: Color(0xFF01579B),
+                ),
                 title: const Text('Pilih Rentang Tanggal'),
                 onTap: () async {
                   Navigator.pop(context);
@@ -454,12 +529,20 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.calendar_view_month_rounded, color: Color(0xFF01579B)),
+                leading: const Icon(
+                  Icons.calendar_view_month_rounded,
+                  color: Color(0xFF01579B),
+                ),
                 title: const Text('Pilih Bulan Ini'),
                 onTap: () {
                   Navigator.pop(context);
-                  final activeDateStr = context.read<DashboardProvider>().summary?.systemActiveDate;
-                  final now = activeDateStr != null ? DateTime.parse(activeDateStr) : DateTime.now();
+                  final activeDateStr = context
+                      .read<DashboardProvider>()
+                      .summary
+                      ?.systemActiveDate;
+                  final now = activeDateStr != null
+                      ? DateTime.parse(activeDateStr)
+                      : DateTime.now();
                   setState(() {
                     _selectedDateRange = DateTimeRange(
                       start: DateTime(now.year, now.month, 1),
@@ -470,12 +553,20 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.calendar_month_rounded, color: Color(0xFF01579B)),
+                leading: const Icon(
+                  Icons.calendar_month_rounded,
+                  color: Color(0xFF01579B),
+                ),
                 title: const Text('Pilih Bulan Lalu'),
                 onTap: () {
                   Navigator.pop(context);
-                  final activeDateStr = context.read<DashboardProvider>().summary?.systemActiveDate;
-                  final now = activeDateStr != null ? DateTime.parse(activeDateStr) : DateTime.now();
+                  final activeDateStr = context
+                      .read<DashboardProvider>()
+                      .summary
+                      ?.systemActiveDate;
+                  final now = activeDateStr != null
+                      ? DateTime.parse(activeDateStr)
+                      : DateTime.now();
                   final lastMonth = DateTime(now.year, now.month - 1, 1);
                   final lastDayOfLastMonth = DateTime(now.year, now.month, 0);
                   setState(() {
@@ -497,7 +588,8 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
 
   Future<void> _handlePrint() async {
     final authProvider = context.read<AuthProvider>();
-    final token = await authProvider.getAuthToken(); // We need to add this to AuthProvider if not exists
+    final token = await authProvider
+        .getAuthToken(); // We need to add this to AuthProvider if not exists
 
     final url = Uri.parse(
       '${ApiConstants.baseUrl.replaceAll('/api', '')}/jurnal-keuangan/rekap?token=${Uri.encodeComponent(token!)}&download=1',
@@ -506,9 +598,9 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Gagal membuka link print')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gagal membuka link print')),
+        );
       }
     }
   }
@@ -554,12 +646,18 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.account_balance_wallet_rounded, size: 64, color: Colors.grey[300]),
+          Icon(
+            Icons.account_balance_wallet_rounded,
+            size: 64,
+            color: Colors.grey[300],
+          ),
           const SizedBox(height: 16),
-          Text('Belum ada transaksi di periode ini', style: TextStyle(color: Colors.grey[500])),
+          Text(
+            'Belum ada transaksi di periode ini',
+            style: TextStyle(color: Colors.grey[500]),
+          ),
         ],
       ),
     );
   }
 }
-

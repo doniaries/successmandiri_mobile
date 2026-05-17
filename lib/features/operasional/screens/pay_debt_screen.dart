@@ -6,7 +6,6 @@ import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.d
 import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
-import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
 
 class PayDebtScreen extends StatefulWidget {
@@ -23,7 +22,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nominalController = TextEditingController();
   final _keteranganController = TextEditingController();
-  
+
   DateTime _selectedDate = DateTime.now();
   String? _selectedPihakType;
   dynamic _selectedPihak;
@@ -31,7 +30,10 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
   @override
   void initState() {
     super.initState();
-    final activeDateStr = context.read<DashboardProvider>().summary?.systemActiveDate;
+    final activeDateStr = context
+        .read<DashboardProvider>()
+        .summary
+        ?.systemActiveDate;
     if (activeDateStr != null) {
       _selectedDate = DateTime.parse(activeDateStr);
     }
@@ -53,7 +55,9 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
             final pihak = debtors.firstWhere((e) => e.id == widget.pihakId);
             setState(() {
               _selectedPihak = pihak;
-              _nominalController.text = CurrencyFormatter.formatNumber(pihak.sisaHutang ?? 0);
+              _nominalController.text = CurrencyFormatter.formatNumber(
+                pihak.sisaHutang ?? 0,
+              );
             });
           } catch (e) {
             // Silently fail if firstWhere doesn't find a match (e.g. invalid widget.pihakId)
@@ -85,7 +89,10 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
     if (_selectedPihak == null) return;
 
     final provider = context.read<ResourceProvider>();
-    final cleanNominal = _nominalController.text.replaceAll(RegExp(r'[^0-9]'), '');
+    final cleanNominal = _nominalController.text.replaceAll(
+      RegExp(r'[^0-9]'),
+      '',
+    );
     final nominalValue = double.tryParse(cleanNominal) ?? 0;
 
     final success = await provider.addOperasional({
@@ -104,15 +111,20 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
         SuccessDialog.show(
           context,
           title: 'Pembayaran Berhasil!',
-          message: isOffline 
+          message: isOffline
               ? 'Sinyal tidak stabil. Data pembayaran telah disimpan di antrean perangkat.'
               : 'Pembayaran hutang telah berhasil diproses.',
           isOffline: isOffline,
-          onConfirm: () => Navigator.of(context).popUntil((route) => route.isFirst),
+          onConfirm: () =>
+              Navigator.of(context).popUntil((route) => route.isFirst),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(provider.errorMessage ?? 'Gagal memproses pembayaran')),
+          SnackBar(
+            content: Text(
+              provider.errorMessage ?? 'Gagal memproses pembayaran',
+            ),
+          ),
         );
       }
     }
@@ -124,7 +136,10 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bayar Hutang', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Bayar Hutang',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: const Color(0xFF01579B),
         foregroundColor: Colors.white,
         elevation: 0,
@@ -141,11 +156,23 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
               children: [
                 DropdownButtonFormField<String>(
                   initialValue: _selectedPihakType,
-                  decoration: _inputDecoration('Tipe Pembayar', Icons.group_work_rounded),
+                  decoration: _inputDecoration(
+                    'Tipe Pembayar',
+                    Icons.group_work_rounded,
+                  ),
                   items: const [
-                    DropdownMenuItem(value: 'App\\Models\\Penjual', child: Text('Penjual')),
-                    DropdownMenuItem(value: 'App\\Models\\Supir', child: Text('Supir')),
-                    DropdownMenuItem(value: 'App\\Models\\Pekerja', child: Text('Pekerja')),
+                    DropdownMenuItem(
+                      value: 'App\\Models\\Penjual',
+                      child: Text('Penjual'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'App\\Models\\Supir',
+                      child: Text('Supir'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'App\\Models\\Pekerja',
+                      child: Text('Pekerja'),
+                    ),
                   ],
                   onChanged: (val) {
                     setState(() {
@@ -154,44 +181,66 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                       _nominalController.clear();
                     });
                   },
-                  validator: (val) => val == null ? 'Pilih tipe pembayar' : null,
+                  validator: (val) =>
+                      val == null ? 'Pilih tipe pembayar' : null,
                 ),
                 const SizedBox(height: 20),
                 if (_selectedPihakType != null) ...[
                   DropdownButtonFormField<dynamic>(
                     isExpanded: true,
                     initialValue: _selectedPihak,
-                    decoration: _inputDecoration('Pilih Nama Pembayar', Icons.person_rounded),
-                    items: (_selectedPihakType == 'App\\Models\\Penjual'
-                            ? provider.penjualDebtors
-                            : _selectedPihakType == 'App\\Models\\Supir'
+                    decoration: _inputDecoration(
+                      'Pilih Nama Pembayar',
+                      Icons.person_rounded,
+                    ),
+                    items:
+                        (_selectedPihakType == 'App\\Models\\Penjual'
+                                ? provider.penjualDebtors
+                                : _selectedPihakType == 'App\\Models\\Supir'
                                 ? provider.supirDebtors
                                 : provider.pekerjaDebtors)
-                        .map((dynamic e) => DropdownMenuItem(
-                              value: e,
-                              child: Text('${e.nama} (${CurrencyFormatter.formatRupiah(e.sisaHutang ?? 0)})', overflow: TextOverflow.ellipsis),
-                            ))
-                        .toList(),
+                            .map(
+                              (dynamic e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(
+                                  '${e.nama} (${CurrencyFormatter.formatRupiah(e.sisaHutang ?? 0)})',
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            )
+                            .toList(),
                     onChanged: (dynamic val) {
                       setState(() {
                         _selectedPihak = val;
                         if (val != null) {
-                          _nominalController.text = CurrencyFormatter.formatNumber(val.sisaHutang ?? 0);
+                          _nominalController.text =
+                              CurrencyFormatter.formatNumber(
+                                val.sisaHutang ?? 0,
+                              );
                         }
                       });
                     },
-                    validator: (val) => val == null ? 'Pilih nama pembayar' : null,
+                    validator: (val) =>
+                        val == null ? 'Pilih nama pembayar' : null,
                   ),
                   const SizedBox(height: 20),
                 ],
                 InkWell(
                   onTap: () => _selectDate(context),
                   child: InputDecorator(
-                    decoration: _inputDecoration('Tanggal Pembayaran', Icons.calendar_month_rounded),
+                    decoration: _inputDecoration(
+                      'Tanggal Pembayaran',
+                      Icons.calendar_month_rounded,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(DateFormat('dd MMMM yyyy', 'id_ID').format(_selectedDate)),
+                        Text(
+                          DateFormat(
+                            'dd MMMM yyyy',
+                            'id_ID',
+                          ).format(_selectedDate),
+                        ),
                         const Icon(Icons.arrow_drop_down, color: Colors.grey),
                       ],
                     ),
@@ -209,9 +258,23 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('Total Sisa Hutang:', style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF1565C0))),
-                        Text(CurrencyFormatter.formatRupiah(_selectedPihak.sisaHutang ?? 0),
-                            style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0D47A1), fontSize: 18)),
+                        const Text(
+                          'Total Sisa Hutang:',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1565C0),
+                          ),
+                        ),
+                        Text(
+                          CurrencyFormatter.formatRupiah(
+                            _selectedPihak.sisaHutang ?? 0,
+                          ),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF0D47A1),
+                            fontSize: 18,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -221,13 +284,19 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                   controller: _nominalController,
                   keyboardType: TextInputType.number,
                   inputFormatters: [CurrencyInputFormatter()],
-                  decoration: _inputDecoration('Nominal Bayar', Icons.payments_rounded).copyWith(prefixText: 'Rp '),
+                  decoration: _inputDecoration(
+                    'Nominal Bayar',
+                    Icons.payments_rounded,
+                  ).copyWith(prefixText: 'Rp '),
                   validator: (val) {
-                    if (val == null || val.isEmpty) return 'Nominal wajib diisi';
+                    if (val == null || val.isEmpty)
+                      return 'Nominal wajib diisi';
                     final cleanVal = val.replaceAll(RegExp(r'[^0-9]'), '');
                     final nominal = double.tryParse(cleanVal) ?? 0;
                     if (nominal <= 0) return 'Nominal harus lebih dari 0';
-                    if (_selectedPihak != null && nominal > (_selectedPihak.sisaHutang ?? 0)) return 'Nominal melebihi sisa hutang';
+                    if (_selectedPihak != null &&
+                        nominal > (_selectedPihak.sisaHutang ?? 0))
+                      return 'Nominal melebihi sisa hutang';
                     return null;
                   },
                 ),
@@ -235,7 +304,10 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                 TextFormField(
                   controller: _keteranganController,
                   maxLines: 2,
-                  decoration: _inputDecoration('Keterangan (Opsional)', Icons.note_rounded),
+                  decoration: _inputDecoration(
+                    'Keterangan (Opsional)',
+                    Icons.note_rounded,
+                  ),
                 ),
                 const SizedBox(height: 40),
                 AppPrimaryButton(
@@ -256,8 +328,14 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
       labelText: label,
       prefixIcon: Icon(icon, color: const Color(0xFF01579B), size: 20),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey[300]!)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF01579B), width: 2)),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey[300]!),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Color(0xFF01579B), width: 2),
+      ),
       filled: true,
       fillColor: Colors.grey[50],
     );

@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
-import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
 import 'package:sawitappmobile/shared/widgets/error_dialog.dart';
 
@@ -30,10 +29,12 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final provider = context.read<ResourceProvider>();
-    
+
     // Client-side uniqueness validation
     final isDuplicate = provider.supirs.any(
-      (s) => s.nama.toLowerCase().trim() == _namaController.text.toLowerCase().trim()
+      (s) =>
+          s.nama.toLowerCase().trim() ==
+          _namaController.text.toLowerCase().trim(),
     );
 
     if (isDuplicate) {
@@ -41,7 +42,8 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
         ErrorDialog.show(
           context,
           title: 'Nama Sudah Ada',
-          message: 'Supir dengan nama "${_namaController.text}" sudah terdaftar dalam sistem. Silakan gunakan nama lain atau periksa daftar supir.',
+          message:
+              'Supir dengan nama "${_namaController.text}" sudah terdaftar dalam sistem. Silakan gunakan nama lain atau periksa daftar supir.',
         );
       }
       return;
@@ -59,7 +61,7 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
         SuccessDialog.show(
           context,
           title: 'Supir Ditambahkan!',
-          message: isOffline 
+          message: isOffline
               ? 'Sinyal tidak stabil. Data supir ${_namaController.text} telah disimpan di antrean perangkat dan akan otomatis dikirim saat ada sinyal.'
               : 'Data supir ${_namaController.text} telah berhasil didaftarkan ke sistem.',
           isOffline: isOffline,
@@ -69,7 +71,9 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(provider.errorMessage ?? 'Gagal menambahkan supir')),
+          SnackBar(
+            content: Text(provider.errorMessage ?? 'Gagal menambahkan supir'),
+          ),
         );
       }
     }
@@ -103,7 +107,8 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
                   controller: _namaController,
                   label: 'Nama Supir',
                   icon: Icons.person_rounded,
-                  validator: (val) => val == null || val.isEmpty ? 'Nama wajib diisi' : null,
+                  validator: (val) =>
+                      val == null || val.isEmpty ? 'Nama wajib diisi' : null,
                 ),
                 const SizedBox(height: 20),
                 _buildTextField(
