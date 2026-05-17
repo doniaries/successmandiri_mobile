@@ -491,6 +491,8 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
       initialDate: _selectedSingleDate ?? systemActiveDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now().add(const Duration(days: 365)),
+      initialEntryMode: DatePickerEntryMode.calendarOnly,
+      initialDatePickerMode: DatePickerMode.day,
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(

@@ -82,58 +82,41 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     return items;
   }
 
-  void _showFilterSheet() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        final activeDateStr = context
-            .read<DashboardProvider>()
-            .summary
-            ?.systemActiveDate;
-        final systemActiveDate = activeDateStr != null
-            ? DateTime.parse(activeDateStr)
-            : DateTime.now();
+  void _showFilterSheet() async {
+    final activeDateStr = context
+        .read<DashboardProvider>()
+        .summary
+        ?.systemActiveDate;
+    final systemActiveDate = activeDateStr != null
+        ? DateTime.parse(activeDateStr)
+        : DateTime.now();
 
-        return Container(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'Filter Riwayat Operasional',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 20),
-              ListTile(
-                leading: const Icon(
-                  Icons.calendar_today_rounded,
-                  color: Color(0xFF01579B),
-                ),
-                title: const Text('Pilih Tanggal'),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final picked = await showDatePicker(
-                    context: this.context,
-                    firstDate: DateTime(2020),
-                    lastDate: DateTime.now(),
-                    initialDate: _selectedSingleDate ?? systemActiveDate,
-                  );
-                  if (picked != null) {
-                    setState(() {
-                      _selectedSingleDate = picked;
-                    });
-                  }
-                },
-              ),
-              const SizedBox(height: 10),
-            ],
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedSingleDate ?? systemActiveDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      initialEntryMode: DatePickerEntryMode.calendarOnly,
+      initialDatePickerMode: DatePickerMode.day,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF01579B),
+              onPrimary: Colors.white,
+              onSurface: Color(0xFF2C3E50),
+            ),
           ),
+          child: child!,
         );
       },
     );
+
+    if (picked != null) {
+      setState(() {
+        _selectedSingleDate = picked;
+      });
+    }
   }
 
   @override
