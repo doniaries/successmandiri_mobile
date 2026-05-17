@@ -1119,8 +1119,6 @@ class _MenuGrid extends StatelessWidget {
     final user = context.select<AuthProvider, User?>((a) => a.user);
     if (user == null) return const SizedBox.shrink();
     
-    final double saldo = context.select<DashboardProvider, double>((p) => p.summary?.saldo ?? 0);
-
     return GridView.count(
       shrinkWrap: true, clipBehavior: Clip.none, physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 3, padding: EdgeInsets.zero, crossAxisSpacing: 8, mainAxisSpacing: 8,
@@ -1155,7 +1153,6 @@ class _MenuGrid extends StatelessWidget {
 
 class _MenuItem extends StatelessWidget {
   final String label;
-  final String? subtitle;
   final IconData icon;
   final Color color;
   final VoidCallback onTap;
@@ -1164,7 +1161,6 @@ class _MenuItem extends StatelessWidget {
 
   const _MenuItem({
     required this.label,
-    this.subtitle,
     required this.icon,
     required this.color,
     required this.onTap,
@@ -1190,16 +1186,6 @@ class _MenuItem extends StatelessWidget {
                   Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle), child: Icon(icon, size: 26, color: color)),
                   const SizedBox(height: 8),
                   Text(label, style: const TextStyle(color: Color(0xFF263238), fontSize: 12, fontWeight: FontWeight.w800), textAlign: TextAlign.center),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle!,
-                      style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w900),
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
                 ],
               ),
             ),

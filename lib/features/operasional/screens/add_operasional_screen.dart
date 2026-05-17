@@ -318,7 +318,7 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
                           Expanded(
                             child: DropdownButtonFormField<dynamic>(
                               key: ValueKey(
-                                'pihak_${_selectedPihakType}_${_selectedKategori}',
+                                'pihak_${_selectedPihakType}_$_selectedKategori',
                               ),
                               isExpanded: true,
                               initialValue: _selectedPihak,
