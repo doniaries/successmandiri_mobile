@@ -1,11 +1,11 @@
 class ApiConstants {
   static String get baseUrl {
-    // 1. IP Lokal (Gunakan port 8000 untuk Laravel Serve)
-    return 'http://127.0.0.1:8000/api'; // Infinix (via ADB Reverse) & Chrome
-    // return 'http://192.168.100.16:8000/api'; // Infinix (Koneksi Wi-Fi Langsung)
+    // 1. Produksi (Aktif untuk build produksi)
+    return 'https://sawit.successmandiri.com/api';
 
-    // 2. Produksi (Hapus komentar rute di bawah jika sudah online)
-    //return 'https://sawit.successmandiri.com/api';
+    // 2. IP Lokal (Gunakan port 8000 untuk Laravel Serve saat development)
+    // return 'http://127.0.0.1:8000/api'; // Infinix (via ADB Reverse) & Chrome
+    // return 'http://192.168.100.16:8000/api'; // Infinix (Koneksi Wi-Fi Langsung)
   }
 
   static String get storageUrl {
