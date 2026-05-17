@@ -42,11 +42,15 @@ class ResourceListScreen extends StatefulWidget {
 
 class _ResourceListScreenState extends State<ResourceListScreen> {
   final ScrollController _scrollController = ScrollController();
+  final ScrollController _activeScrollController = ScrollController();
+  final ScrollController _inactiveScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    _activeScrollController.addListener(_onActiveScroll);
+    _inactiveScrollController.addListener(_onInactiveScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _refreshData();
     });
@@ -55,6 +59,8 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _activeScrollController.dispose();
+    _inactiveScrollController.dispose();
     super.dispose();
   }
 
@@ -65,10 +71,89 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
     }
   }
 
+  void _onActiveScroll() {
+    if (_activeScrollController.position.pixels >=
+        _activeScrollController.position.maxScrollExtent - 200) {
+      context.read<ResourceProvider>().fetchResources(widget.resourceType);
+    }
+  }
+
+  void _onInactiveScroll() {
+    if (_inactiveScrollController.position.pixels >=
+        _inactiveScrollController.position.maxScrollExtent - 200) {
+      context.read<ResourceProvider>().fetchResources(widget.resourceType);
+    }
+  }
+
   Future<void> _refreshData() async {
     await context.read<ResourceProvider>().fetchResources(
       widget.resourceType,
       refresh: true,
+    );
+  }
+
+  Widget _buildListContent(ResourceProvider provider, List<dynamic> items, ScrollController controller) {
+    if (provider.isLoading && items.isEmpty) {
+      return _buildSkeletons();
+    }
+
+    return RefreshIndicator(
+      onRefresh: _refreshData,
+      color: const Color(0xFF01579B),
+      child: items.isEmpty
+          ? Stack(
+              children: [
+                ListView(), // Dynamic list to enable RefreshIndicator
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        size: 64,
+                        color: Colors.grey[300],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Data ${widget.title} belum tersedia',
+                        style: TextStyle(color: Colors.grey[400]),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Tarik ke bawah untuk memuat ulang',
+                        style: TextStyle(
+                          color: Colors.grey[400],
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            )
+          : ListView.separated(
+              controller: controller,
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              itemCount:
+                  items.length +
+                  (provider.isFetchingMoreFor(widget.resourceType)
+                      ? 1
+                      : 0),
+              separatorBuilder: (context, index) =>
+                  const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                if (index < items.length) {
+                  final item = items[index];
+                  return _buildItemTile(item);
+                } else {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 20),
+                    child: Center(child: AppLoadingIndicator(size: 24)),
+                  );
+                }
+              },
+            ),
     );
   }
 
@@ -81,7 +166,11 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
       return const TransaksiDoScreen();
     }
 
-    return Scaffold(
+    final bool hasTabs = widget.resourceType == 'penjual' ||
+        widget.resourceType == 'supir' ||
+        widget.resourceType == 'pekerja';
+
+    Widget scaffold = Scaffold(
       appBar: AppBar(
         title: Text(
           widget.title,
@@ -90,6 +179,21 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
+        bottom: hasTabs
+            ? const TabBar(
+                labelColor: Color(0xFF01579B),
+                unselectedLabelColor: Colors.grey,
+                indicatorColor: Color(0xFF01579B),
+                indicatorWeight: 3,
+                indicatorSize: TabBarIndicatorSize.tab,
+                labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal, fontSize: 15),
+                tabs: [
+                  Tab(text: 'AKTIF'),
+                  Tab(text: 'NONAKTIF'),
+                ],
+              )
+            : null,
       ),
       body: Consumer<ResourceProvider>(
         builder: (context, provider, child) {
@@ -139,68 +243,30 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
             }
           }
 
-          if (provider.isLoading && items.isEmpty) {
-            return _buildSkeletons();
+          if (hasTabs) {
+            final activeItems = items.where((i) {
+              if (i is Penjual) return i.isActive;
+              if (i is Supir) return i.isActive;
+              if (i is Pekerja) return i.isActive;
+              return true;
+            }).toList();
+
+            final inactiveItems = items.where((i) {
+              if (i is Penjual) return !i.isActive;
+              if (i is Supir) return !i.isActive;
+              if (i is Pekerja) return !i.isActive;
+              return false;
+            }).toList();
+
+            return TabBarView(
+              children: [
+                _buildListContent(provider, activeItems, _activeScrollController),
+                _buildListContent(provider, inactiveItems, _inactiveScrollController),
+              ],
+            );
           }
 
-          return RefreshIndicator(
-            onRefresh: _refreshData,
-            color: const Color(0xFF01579B),
-            child: items.isEmpty
-                ? Stack(
-                    children: [
-                      ListView(), // Dynamic list to enable RefreshIndicator
-                      Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.info_outline,
-                              size: 64,
-                              color: Colors.grey[300],
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Data ${widget.title} belum tersedia',
-                              style: TextStyle(color: Colors.grey[400]),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Tarik ke bawah untuk memuat ulang',
-                              style: TextStyle(
-                                color: Colors.grey[400],
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  )
-                : ListView.separated(
-                    controller: _scrollController,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(16),
-                    itemCount:
-                        items.length +
-                        (provider.isFetchingMoreFor(widget.resourceType)
-                            ? 1
-                            : 0),
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      if (index < items.length) {
-                        final item = items[index];
-                        return _buildItemTile(item);
-                      } else {
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 20),
-                          child: Center(child: AppLoadingIndicator(size: 24)),
-                        );
-                      }
-                    },
-                  ),
-          );
+          return _buildListContent(provider, items, _scrollController);
         },
       ),
       floatingActionButton: FloatingActionButton(
@@ -232,6 +298,15 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
+
+    if (hasTabs) {
+      return DefaultTabController(
+        length: 2,
+        child: scaffold,
+      );
+    }
+
+    return scaffold;
   }
 
   Widget _buildItemTile(dynamic item) {
