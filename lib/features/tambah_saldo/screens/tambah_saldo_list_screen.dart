@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/features/tambah_saldo/providers/tambah_saldo_provider.dart';
+import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/widgets/skeleton_loader.dart';
 import 'package:sawitappmobile/features/tambah_saldo/models/tambah_saldo_model.dart';
@@ -42,9 +43,13 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: Consumer<TambahSaldoProvider>(
-        builder: (context, provider, child) {
-          final now = DateTime.now();
+      body: Consumer2<TambahSaldoProvider, DashboardProvider>(
+        builder: (context, provider, dashboardProvider, child) {
+          final activeDateStr = dashboardProvider.summary?.systemActiveDate;
+          final systemActiveDate = activeDateStr != null
+              ? DateTime.parse(activeDateStr)
+              : DateTime.now();
+
           final filteredRequests = provider.requests.where((r) {
             if (_selectedDateRange != null) {
               final d = r.tanggal.toLocal();
@@ -52,7 +57,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                      d.isBefore(_selectedDateRange!.end.add(const Duration(days: 1)));
             }
             if (_selectedTab == 'Hari Ini') {
-              return DateUtils.isSameDay(r.tanggal.toLocal(), now);
+              return DateUtils.isSameDay(r.tanggal.toLocal(), systemActiveDate);
             }
             return true;
           }).toList();

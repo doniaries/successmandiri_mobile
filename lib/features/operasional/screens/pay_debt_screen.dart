@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
+import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
@@ -30,6 +31,10 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
   @override
   void initState() {
     super.initState();
+    final activeDateStr = context.read<DashboardProvider>().summary?.systemActiveDate;
+    if (activeDateStr != null) {
+      _selectedDate = DateTime.parse(activeDateStr);
+    }
     if (widget.pihakType != null) {
       _selectedPihakType = widget.pihakType;
       WidgetsBinding.instance.addPostFrameCallback((_) {

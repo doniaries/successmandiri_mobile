@@ -283,9 +283,12 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
     return Consumer2<DashboardProvider, TransaksiDoProvider>(
       builder: (context, dashboardProvider, txProvider, _) {
         final transactions = txProvider.transactions;
-        final now = DateTime.now();
+        final activeDateStr = dashboardProvider.summary?.systemActiveDate;
+        final systemActiveDate = activeDateStr != null 
+            ? DateTime.parse(activeDateStr) 
+            : DateTime.now();
         
-        final todayCount = transactions.where((t) => DateUtils.isSameDay(t.tanggal.toLocal(), now)).length;
+        final todayCount = transactions.where((t) => DateUtils.isSameDay(t.tanggal.toLocal(), systemActiveDate)).length;
         
         int activeCount = transactions.length;
         String label = 'Total Transaksi';
@@ -339,7 +342,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        DateFormat('d MMMM yyyy', 'id_ID').format(DateTime.now()),
+                        DateFormat('d MMMM yyyy', 'id_ID').format(systemActiveDate),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
@@ -423,8 +426,8 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   }
 
   Widget _buildTransactionList() {
-    return Consumer<TransaksiDoProvider>(
-      builder: (context, provider, _) {
+    return Consumer2<TransaksiDoProvider, DashboardProvider>(
+      builder: (context, provider, dashboardProvider, _) {
         if (provider.isLoading && provider.transactions.isEmpty) {
           return const SliverFillRemaining(
             child: Center(child: CircularProgressIndicator()),
@@ -463,6 +466,11 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
           );
         }
 
+        final activeDateStr = dashboardProvider.summary?.systemActiveDate;
+        final systemActiveDate = activeDateStr != null 
+            ? DateTime.parse(activeDateStr) 
+            : DateTime.now();
+
         final filteredTransactions = provider.transactions.where((t) {
           // 1. Search Filter
           if (_searchQuery.isNotEmpty) {
@@ -481,7 +489,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
           }
 
           if (_selectedCategory == 'Hari Ini') {
-            return DateUtils.isSameDay(t.tanggal.toLocal(), DateTime.now());
+            return DateUtils.isSameDay(t.tanggal.toLocal(), systemActiveDate);
           }
           
           if (_selectedCategory == 'Semua') return true;

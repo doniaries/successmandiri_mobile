@@ -69,9 +69,9 @@ class _AnimatedPulsingLogoState extends State<AnimatedPulsingLogo>
         final authProvider = context.watch<AuthProvider>();
         final resourceProvider = context.watch<ResourceProvider>();
         
+        final isAuthenticated = authProvider.isAuthenticated;
         final perusahaanLogo = authProvider.user?.perusahaanLogoUrl;
         final appLogo = resourceProvider.appLogoUrl;
-        final logoUrl = perusahaanLogo ?? appLogo;
 
         return Transform.translate(
           offset: Offset(0, _floatAnimation.value),
@@ -117,28 +117,53 @@ class _AnimatedPulsingLogoState extends State<AnimatedPulsingLogo>
                     colorFilter: ColorFilter.matrix(matrix),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: logoUrl != null && logoUrl.isNotEmpty
-                          ? CachedNetworkImage(
-                              imageUrl: logoUrl,
-                              width: widget.size,
-                              height: widget.size,
-                              fit: BoxFit.contain,
-                              placeholder: (context, url) => Image.asset(
-                                'assets/images/logo.png',
-                                width: widget.size,
-                                height: widget.size,
-                              ),
-                              errorWidget: (context, url, error) => Image.asset(
-                                'assets/images/logo.png',
-                                width: widget.size,
-                                height: widget.size,
-                              ),
-                            )
-                          : Image.asset(
-                              'assets/images/logo.png',
-                              width: widget.size,
-                              height: widget.size,
-                            ),
+                      child: isAuthenticated
+                          ? (perusahaanLogo != null && perusahaanLogo.isNotEmpty
+                              ? CachedNetworkImage(
+                                  imageUrl: perusahaanLogo,
+                                  width: widget.size,
+                                  height: widget.size,
+                                  fit: BoxFit.contain,
+                                  placeholder: (context, url) => Image.asset(
+                                    'assets/images/default_company_logo.png',
+                                    width: widget.size,
+                                    height: widget.size,
+                                  ),
+                                  errorWidget: (context, url, error) => Image.asset(
+                                    'assets/images/default_company_logo.png',
+                                    width: widget.size,
+                                    height: widget.size,
+                                  ),
+                                )
+                              : Image.asset(
+                                  'assets/images/default_company_logo.png',
+                                  width: widget.size,
+                                  height: widget.size,
+                                  fit: BoxFit.contain,
+                                ))
+                          : (appLogo != null && appLogo.isNotEmpty
+                              ? CachedNetworkImage(
+                                  imageUrl: appLogo,
+                                  width: widget.size,
+                                  height: widget.size,
+                                  fit: BoxFit.contain,
+                                  placeholder: (context, url) => Image.asset(
+                                    'assets/images/logo.png',
+                                    width: widget.size,
+                                    height: widget.size,
+                                  ),
+                                  errorWidget: (context, url, error) => Image.asset(
+                                    'assets/images/logo.png',
+                                    width: widget.size,
+                                    height: widget.size,
+                                  ),
+                                )
+                              : Image.asset(
+                                  'assets/images/logo.png',
+                                  width: widget.size,
+                                  height: widget.size,
+                                  fit: BoxFit.contain,
+                                )),
                     ),
                   ),
                 ),

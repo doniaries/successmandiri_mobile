@@ -48,6 +48,15 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    final activeDateStr = context.read<DashboardProvider>().summary?.systemActiveDate;
+    if (activeDateStr != null) {
+      _selectedDate = DateTime.parse(activeDateStr);
+    }
+  }
+
+  @override
   void dispose() {
     _nominalController.dispose();
     _keteranganController.dispose();

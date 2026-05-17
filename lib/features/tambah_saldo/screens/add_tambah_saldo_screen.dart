@@ -22,6 +22,20 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
   DateTime _selectedDate = DateTime.now();
 
   @override
+  void initState() {
+    super.initState();
+    final dashboardProvider = context.read<DashboardProvider>();
+    final activeDateStr = dashboardProvider.summary?.systemActiveDate;
+    if (activeDateStr != null) {
+      try {
+        _selectedDate = DateTime.parse(activeDateStr);
+      } catch (_) {
+        _selectedDate = DateTime.now();
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _nominalController.dispose();
     _keteranganController.dispose();

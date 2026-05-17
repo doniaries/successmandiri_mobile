@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/features/auth/providers/auth_provider.dart';
+import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:sawitappmobile/features/jurnal_keuangan/models/jurnal_keuangan_model.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/features/jurnal_keuangan/screens/jurnal_keuangan_detail_screen.dart';
@@ -142,7 +143,10 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
 
   Widget _buildSummaryHeader(ResourceProvider provider) {
     final items = provider.jurnalKeuangans;
-    final now = DateTime.now();
+    final activeDateStr = context.read<DashboardProvider>().summary?.systemActiveDate;
+    final systemActiveDate = activeDateStr != null 
+        ? DateTime.parse(activeDateStr) 
+        : DateTime.now();
 
     // Hitung statistik berdasarkan filter aktif
     double displayIn = 0;
@@ -164,7 +168,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
       labelSuffix = 'Filtered';
     } else if (_selectedDateFilter == 'Hari Ini') {
       for (var item in items) {
-        if (DateUtils.isSameDay(item.tanggal.toLocal(), now)) {
+        if (DateUtils.isSameDay(item.tanggal.toLocal(), systemActiveDate)) {
           if (item.jenisTransaksi == 'Pemasukan') {
             displayIn += item.nominal;
           } else {
@@ -201,7 +205,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
         children: [
           const Text('Total Saldo Kas', style: TextStyle(color: Colors.white70, fontSize: 14)),
           Text(
-            DateFormat('d MMMM yyyy', 'id_ID').format(DateTime.now()),
+            DateFormat('d MMMM yyyy', 'id_ID').format(systemActiveDate),
             style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
@@ -419,7 +423,11 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
                d.isBefore(_selectedDateRange!.end.add(const Duration(days: 1)));
       }
       if (_selectedDateFilter == 'Hari Ini') {
-        return DateUtils.isSameDay(item.tanggal.toLocal(), DateTime.now());
+        final activeDateStr = context.read<DashboardProvider>().summary?.systemActiveDate;
+        final systemActiveDate = activeDateStr != null 
+            ? DateTime.parse(activeDateStr) 
+            : DateTime.now();
+        return DateUtils.isSameDay(item.tanggal.toLocal(), systemActiveDate);
       }
       return true;
     }).toList();
@@ -461,7 +469,8 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
                 title: const Text('Pilih Bulan Ini'),
                 onTap: () {
                   Navigator.pop(context);
-                  final now = DateTime.now();
+                  final activeDateStr = context.read<DashboardProvider>().summary?.systemActiveDate;
+                  final now = activeDateStr != null ? DateTime.parse(activeDateStr) : DateTime.now();
                   setState(() {
                     _selectedDateRange = DateTimeRange(
                       start: DateTime(now.year, now.month, 1),
@@ -476,7 +485,8 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
                 title: const Text('Pilih Bulan Lalu'),
                 onTap: () {
                   Navigator.pop(context);
-                  final now = DateTime.now();
+                  final activeDateStr = context.read<DashboardProvider>().summary?.systemActiveDate;
+                  final now = activeDateStr != null ? DateTime.parse(activeDateStr) : DateTime.now();
                   final lastMonth = DateTime(now.year, now.month - 1, 1);
                   final lastDayOfLastMonth = DateTime(now.year, now.month, 0);
                   setState(() {

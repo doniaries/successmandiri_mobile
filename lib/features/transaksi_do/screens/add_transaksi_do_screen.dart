@@ -62,6 +62,10 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
     _biayaLainController.addListener(_onFieldChanged);
     _pembayaranHutangController.addListener(_onFieldChanged);
 
+    final activeDateStr = context.read<DashboardProvider>().summary?.systemActiveDate;
+    if (activeDateStr != null) {
+      _selectedDate = DateTime.parse(activeDateStr);
+    }
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<TransaksiDoProvider>().fetchFormData();

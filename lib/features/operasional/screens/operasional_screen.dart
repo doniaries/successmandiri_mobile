@@ -113,6 +113,10 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
               final stats = dashboardProvider.summary?.stats;
               final totalPemasukan = stats?.pemasukan.month.total ?? 0;
               final totalPengeluaran = stats?.pengeluaran.month.total ?? 0;
+              final activeDateStr = dashboardProvider.summary?.systemActiveDate;
+              final systemActiveDate = activeDateStr != null 
+                  ? DateTime.parse(activeDateStr) 
+                  : DateTime.now();
 
               return Container(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
@@ -121,7 +125,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                   children: [
                     const Text('Ringkasan Operasional', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF2C3E50))),
                     Text(
-                      DateFormat('d MMMM yyyy', 'id_ID').format(DateTime.now()),
+                      DateFormat('d MMMM yyyy', 'id_ID').format(systemActiveDate),
                       style: TextStyle(color: Colors.grey[500], fontSize: 13, fontWeight: FontWeight.w500),
                     ),
                     const SizedBox(height: 12),
