@@ -322,7 +322,16 @@ class DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     Text(item.kategoriLabel ?? item.kategori, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50))),
                     const SizedBox(height: 4),
-                    Text(item.keterangan ?? '-', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                    Text(
+                      item.namaPihak != null && item.namaPihak!.isNotEmpty && item.namaPihak != '-'
+                          ? (item.keterangan != null && item.keterangan!.isNotEmpty && item.keterangan != '-'
+                              ? '${item.namaPihak} (${item.keterangan})'
+                              : item.namaPihak!)
+                          : (item.keterangan ?? '-'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
                     const SizedBox(height: 2),
                     Text(DateFormat('dd MMM yyyy • HH:mm', 'id_ID').format(item.tanggal), style: TextStyle(fontSize: 10, color: Colors.grey[400])),
                   ],
