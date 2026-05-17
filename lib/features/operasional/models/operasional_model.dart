@@ -26,7 +26,7 @@ class Operasional {
   factory Operasional.fromJson(Map<String, dynamic> json) {
     return Operasional(
       id: (json['id'] is int) ? json['id'] : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
-      tanggal: DateTime.parse(json['tanggal']),
+      tanggal: DateTime.parse(json['tanggal']).toLocal(),
       operasional: json['operasional'] ?? '',
       kategori: json['kategori'] ?? '',
       kategoriLabel: json['kategori_label'],

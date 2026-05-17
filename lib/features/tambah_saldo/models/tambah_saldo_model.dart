@@ -27,7 +27,7 @@ class TambahSaldoModel {
       id: json['id'],
       perusahaanId: json['perusahaan_id'],
       userId: json['user_id'],
-      tanggal: DateTime.parse(json['tanggal']),
+      tanggal: DateTime.parse(json['tanggal']).toLocal(),
       nominal: double.parse(json['nominal'].toString()),
       keterangan: json['keterangan'] ?? '',
       status: json['status'] ?? 'pending',

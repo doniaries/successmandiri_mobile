@@ -28,7 +28,7 @@ class JurnalKeuangan {
   factory JurnalKeuangan.fromJson(Map<String, dynamic> json) {
     return JurnalKeuangan(
       id: (json['id'] is int) ? json['id'] : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
-      tanggal: DateTime.parse(json['tanggal']),
+      tanggal: DateTime.parse(json['tanggal']).toLocal(),
       jenisTransaksi: json['jenis_transaksi'],
       kategori: json['kategori'],
       subKategori: json['sub_kategori'] ?? '-',

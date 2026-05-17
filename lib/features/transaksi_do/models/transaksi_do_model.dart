@@ -58,7 +58,7 @@ class TransaksiDo {
     DateTime? parsedDate;
     try {
       if (json['tanggal'] != null && json['tanggal'].toString().isNotEmpty) {
-        parsedDate = DateTime.parse(json['tanggal']);
+        parsedDate = DateTime.parse(json['tanggal']).toLocal();
       }
     } catch (_) {}
 
