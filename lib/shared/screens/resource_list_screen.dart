@@ -524,11 +524,13 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
           ? const Color(0xFF0D47A1)
           : const Color(0xFF27AE60);
     } else if (item is JurnalKeuangan) {
-      name = item.keterangan?.isNotEmpty == true
-          ? item.keterangan!
-          : item.jenisTransaksi;
+      name = item.pihakTerkait != null && item.pihakTerkait!.isNotEmpty && item.pihakTerkait != '-'
+          ? '${item.pihakTerkait} (${item.subKategori})'
+          : (item.keterangan?.isNotEmpty == true 
+              ? '${item.subKategori} (${item.keterangan})' 
+              : item.subKategori);
       subtitle =
-          '${CurrencyFormatter.formatRupiah(item.nominal)} - ${item.jenisTransaksi}';
+          '${CurrencyFormatter.formatRupiah(item.nominal)} • ${item.jenisTransaksi} • ${item.caraPembayaran.toUpperCase()}';
       icon = Icons.receipt_long_rounded;
       iconColor = item.jenisTransaksi == 'Pemasukan'
           ? const Color(0xFF27AE60)

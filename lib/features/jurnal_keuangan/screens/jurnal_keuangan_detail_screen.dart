@@ -79,7 +79,22 @@ class JurnalKeuanganDetailScreen extends StatelessWidget {
             _buildInfoSection('Informasi Transaksi', [
               _buildInfoRow(Icons.category_rounded, 'Kategori', jurnal.kategori),
               _buildInfoRow(Icons.account_tree_rounded, 'Sub Kategori', jurnal.subKategori),
-              _buildInfoRow(Icons.person_pin_rounded, 'Pihak Terkait', jurnal.pihakTerkait ?? '-'),
+              () {
+                String labelPihak = 'Pihak Terkait';
+                if (jurnal.tipePihak != null) {
+                  final type = jurnal.tipePihak!.toLowerCase();
+                  if (type.contains('penjual')) {
+                    labelPihak = 'Penjual';
+                  } else if (type.contains('supir')) {
+                    labelPihak = 'Supir';
+                  } else if (type.contains('pekerja')) {
+                    labelPihak = 'Pekerja';
+                  } else if (type.contains('user')) {
+                    labelPihak = 'Karyawan';
+                  }
+                }
+                return _buildInfoRow(Icons.person_pin_rounded, labelPihak, jurnal.pihakTerkait ?? '-');
+              }(),
               _buildInfoRow(Icons.payment_rounded, 'Cara Bayar', jurnal.caraPembayaran.toUpperCase()),
             ]),
             
