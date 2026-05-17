@@ -98,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Column(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
@@ -112,10 +112,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     child: Image.asset(
                       'assets/images/logo.png',
-                      height: 90,
+                      height: 110,
                       errorBuilder: (context, error, stackTrace) => const Icon(
                         Icons.business_rounded,
-                        size: 90,
+                        size: 110,
                         color: Color(0xFF01579B),
                       ),
                     ),

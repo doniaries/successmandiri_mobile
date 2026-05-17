@@ -186,7 +186,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   Column(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
@@ -205,19 +205,19 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                               if (logoUrl != null && logoUrl.isNotEmpty) {
                                 return CachedNetworkImage(
                                   imageUrl: logoUrl,
-                                  height: 90,
-                                  width: 90,
+                                  height: 110,
+                                  width: 110,
                                   fit: BoxFit.contain,
-                                  placeholder: (context, url) => Image.asset('assets/images/logo.png', height: 90),
-                                  errorWidget: (context, url, error) => Image.asset('assets/images/logo.png', height: 90),
+                                  placeholder: (context, url) => Image.asset('assets/images/logo.png', height: 110),
+                                  errorWidget: (context, url, error) => Image.asset('assets/images/logo.png', height: 110),
                                 );
                               }
                               return Image.asset(
                                 'assets/images/logo.png',
-                                height: 90,
+                                height: 110,
                                 errorBuilder: (context, error, stackTrace) => const Icon(
                                   Icons.business_rounded,
-                                  size: 90,
+                                  size: 110,
                                   color: Color(0xFF01579B),
                                 ),
                               );
