@@ -54,17 +54,6 @@ class _AnimatedPulsingLogoState extends State<AnimatedPulsingLogo>
         final t = _controller.value;
         // Color transition logic (0.0 to 1.0 to 0.0)
         final colorProgress = (t < 0.5 ? t * 2 : (1 - t) * 2);
-        
-        final r = 0.2126 + (1 - 0.2126) * colorProgress;
-        final g = 0.7152 * (1 - colorProgress);
-        final b = 0.0722 * (1 - colorProgress);
-        
-        final matrix = <double>[
-          r, g, b, 0, 0,
-          0.2126 * (1 - colorProgress), 0.7152 + (1 - 0.7152) * colorProgress, 0.0722 * (1 - colorProgress), 0, 0,
-          0.2126 * (1 - colorProgress), 0.7152 * (1 - colorProgress), 0.0722 + (1 - 0.0722) * colorProgress, 0, 0,
-          0, 0, 0, 1, 0,
-        ];
 
         final authProvider = context.watch<AuthProvider>();
         final resourceProvider = context.watch<ResourceProvider>();
@@ -113,58 +102,55 @@ class _AnimatedPulsingLogoState extends State<AnimatedPulsingLogo>
                     ).createShader(rect);
                   },
                   blendMode: BlendMode.srcATop,
-                  child: ColorFiltered(
-                    colorFilter: ColorFilter.matrix(matrix),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: isAuthenticated
-                          ? (perusahaanLogo != null && perusahaanLogo.isNotEmpty
-                              ? CachedNetworkImage(
-                                  imageUrl: perusahaanLogo,
-                                  width: widget.size,
-                                  height: widget.size,
-                                  fit: BoxFit.contain,
-                                  placeholder: (context, url) => Image.asset(
-                                    'assets/images/default_company_logo.png',
-                                    width: widget.size,
-                                    height: widget.size,
-                                  ),
-                                  errorWidget: (context, url, error) => Image.asset(
-                                    'assets/images/default_company_logo.png',
-                                    width: widget.size,
-                                    height: widget.size,
-                                  ),
-                                )
-                              : Image.asset(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: isAuthenticated
+                        ? (perusahaanLogo != null && perusahaanLogo.isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: perusahaanLogo,
+                                width: widget.size,
+                                height: widget.size,
+                                fit: BoxFit.contain,
+                                placeholder: (context, url) => Image.asset(
                                   'assets/images/default_company_logo.png',
                                   width: widget.size,
                                   height: widget.size,
-                                  fit: BoxFit.contain,
-                                ))
-                          : (appLogo != null && appLogo.isNotEmpty
-                              ? CachedNetworkImage(
-                                  imageUrl: appLogo,
+                                ),
+                                errorWidget: (context, url, error) => Image.asset(
+                                  'assets/images/default_company_logo.png',
                                   width: widget.size,
                                   height: widget.size,
-                                  fit: BoxFit.contain,
-                                  placeholder: (context, url) => Image.asset(
-                                    'assets/images/logo.png',
-                                    width: widget.size,
-                                    height: widget.size,
-                                  ),
-                                  errorWidget: (context, url, error) => Image.asset(
-                                    'assets/images/logo.png',
-                                    width: widget.size,
-                                    height: widget.size,
-                                  ),
-                                )
-                              : Image.asset(
+                                ),
+                              )
+                            : Image.asset(
+                                'assets/images/default_company_logo.png',
+                                width: widget.size,
+                                height: widget.size,
+                                fit: BoxFit.contain,
+                              ))
+                        : (appLogo != null && appLogo.isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: appLogo,
+                                width: widget.size,
+                                height: widget.size,
+                                fit: BoxFit.contain,
+                                placeholder: (context, url) => Image.asset(
                                   'assets/images/logo.png',
                                   width: widget.size,
                                   height: widget.size,
-                                  fit: BoxFit.contain,
-                                )),
-                    ),
+                                ),
+                                errorWidget: (context, url, error) => Image.asset(
+                                  'assets/images/logo.png',
+                                  width: widget.size,
+                                  height: widget.size,
+                                ),
+                              )
+                            : Image.asset(
+                                'assets/images/logo.png',
+                                width: widget.size,
+                                height: widget.size,
+                                fit: BoxFit.contain,
+                              )),
                   ),
                 ),
               ],
