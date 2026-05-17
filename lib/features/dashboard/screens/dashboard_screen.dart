@@ -20,6 +20,7 @@ import 'package:sawitappmobile/features/tambah_saldo/screens/tambah_saldo_list_s
 import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_detail_screen.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_screen.dart';
 import 'package:sawitappmobile/features/profile/screens/profile_screen.dart';
+import 'package:sawitappmobile/features/profile/screens/app_version_setting_screen.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/widgets/skeleton_loader.dart';
 import 'package:sawitappmobile/shared/widgets/custom_loading_logo.dart';
@@ -1126,6 +1127,8 @@ class _MenuGrid extends StatelessWidget {
         _MenuItem(label: 'Supir', icon: Icons.person_rounded, color: const Color(0xFFE67E22), onTap: () { context.read<ResourceProvider>().markAsSeen('supir'); Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceListScreen(title: 'Supir', resourceType: 'supir'))); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.supirCount), hasNewDataSelector: (c) => c.select<ResourceProvider, bool>((p) => p.hasNewDataFor('supir'))),
         _MenuItem(label: 'Pekerja', icon: Icons.engineering_rounded, color: const Color(0xFF8E44AD), onTap: () { context.read<ResourceProvider>().markAsSeen('pekerja'); Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceListScreen(title: 'Pekerja', resourceType: 'pekerja'))); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.pekerjaCount), hasNewDataSelector: (c) => c.select<ResourceProvider, bool>((p) => p.hasNewDataFor('pekerja'))),
         _MenuItem(label: 'Laporan', icon: Icons.auto_stories_rounded, color: const Color(0xFF2980B9), onTap: () { Navigator.push(context, MaterialPageRoute(builder: (_) => const FinanceJournalScreen())); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.jurnalCount), hasNewDataSelector: (c) => c.select<ResourceProvider, bool>((p) => p.hasNewDataFor('jurnal_keuangan'))),
+        if (user.isSuperAdmin)
+          _MenuItem(label: 'Pengaturan', icon: Icons.settings_rounded, color: const Color(0xFF7F8C8D), onTap: () { Navigator.push(context, MaterialPageRoute(builder: (_) => const AppVersionSettingScreen())); }, badgeSelector: (c) => 0, hasNewDataSelector: (c) => false),
       ],
     );
   }
