@@ -480,6 +480,28 @@ class ResourceProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> updateOperasional(int id, Map<String, dynamic> data) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      await _repository.updateOperasional(id, data);
+      await fetchAllResources();
+      return true;
+    } catch (e) {
+      debugPrint('Error updating operasional: $e');
+      if (e is DioException) {
+        _errorMessage = e.response?.data?['message'] ?? e.message;
+      } else {
+        _errorMessage = e.toString();
+      }
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<Operasional> getOperasionalDetail(int id) async {
     return await _repository.getOperasionalDetail(id);
   }
@@ -553,6 +575,9 @@ class ResourceProvider with ChangeNotifier {
           break;
         case 'pekerja':
           await _repository.deletePekerja(id);
+          break;
+        case 'operasional':
+          await _repository.deleteOperasional(id);
           break;
         default:
           return false;

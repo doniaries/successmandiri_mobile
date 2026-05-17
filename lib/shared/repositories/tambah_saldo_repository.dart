@@ -61,4 +61,34 @@ class TambahSaldoRepository {
       return {'offline': true};
     }
   }
+
+  Future<TambahSaldoModel> updateTambahSaldo(int id, {
+    required double nominal,
+    required String tanggal,
+    required String keterangan,
+  }) async {
+    try {
+      final response = await _apiClient.dio.put(
+        '${ApiConstants.tambahSaldo}/$id',
+        data: {
+          'nominal': nominal,
+          'tanggal': tanggal,
+          'keterangan': keterangan,
+        },
+      );
+      return TambahSaldoModel.fromJson(response.data);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> deleteTambahSaldo(int id) async {
+    try {
+      await _apiClient.dio.delete(
+        '${ApiConstants.tambahSaldo}/$id',
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

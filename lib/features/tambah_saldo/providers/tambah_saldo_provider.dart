@@ -68,4 +68,51 @@ class TambahSaldoProvider with ChangeNotifier {
       return false;
     }
   }
+
+  Future<bool> updateRequest(int id, {
+    required double nominal,
+    required String tanggal,
+    required String keterangan,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _repository.updateTambahSaldo(
+        id,
+        nominal: nominal,
+        tanggal: tanggal,
+        keterangan: keterangan,
+      );
+      await fetchRequests();
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = 'Gagal memperbarui saldo: ${e.toString()}';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> deleteRequest(int id) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _repository.deleteTambahSaldo(id);
+      await fetchRequests();
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = 'Gagal menghapus saldo: ${e.toString()}';
+      notifyListeners();
+      return false;
+    }
+  }
 }

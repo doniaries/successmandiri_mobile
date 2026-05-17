@@ -334,6 +334,23 @@ class ResourceRepository {
     }
   }
 
+  Future<Operasional> updateOperasional(int id, Map<String, dynamic> data) async {
+    try {
+      final response = await _apiClient.dio.put('${ApiConstants.operasional}/$id', data: data);
+      return Operasional.fromJson(response.data);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> deleteOperasional(int id) async {
+    try {
+      await _apiClient.dio.delete('${ApiConstants.operasional}/$id');
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<Map<String, dynamic>> getAppSettings() async {
     try {
       final response = await _apiClient.dio.get(ApiConstants.appSettings);
