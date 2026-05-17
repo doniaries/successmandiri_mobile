@@ -23,6 +23,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  late Animation<double> _shimmerAnimation;
 
   bool _isLoading = true;
   String _statusMessage = 'Memulai inisialisasi...';
@@ -31,12 +32,13 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
-    // Animasi logo
+    // Animasi logo (shimmer repeat)
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 2000),
     );
-    _controller.forward();
+    _shimmerAnimation = Tween<double>(begin: -2.0, end: 2.0).animate(_controller);
+    _controller.repeat();
 
     _startTimers();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -199,53 +201,78 @@ class _SplashScreenState extends State<SplashScreen>
                   // Static Logo (No Animation)
                   Column(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
+                      AnimatedBuilder(
+                        animation: _shimmerAnimation,
+                        builder: (context, child) {
+                          return Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.1),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 10),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        child: ClipOval(
-                          child: Consumer<ResourceProvider>(
-                            builder: (context, res, child) {
-                              final logoUrl = res.appLogoUrl;
-                              if (logoUrl != null && logoUrl.isNotEmpty) {
-                                return CachedNetworkImage(
-                                  imageUrl: logoUrl,
-                                  height: 110,
-                                  width: 110,
-                                  fit: BoxFit.contain,
-                                  placeholder: (context, url) => Image.asset(
-                                    'assets/images/logo.png',
-                                    height: 110,
-                                  ),
-                                  errorWidget: (context, url, error) =>
-                                      Image.asset(
-                                        'assets/images/logo.png',
+                            child: ShaderMask(
+                              shaderCallback: (rect) {
+                                return LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  stops: [
+                                    _shimmerAnimation.value - 0.3,
+                                    _shimmerAnimation.value,
+                                    _shimmerAnimation.value + 0.3,
+                                  ],
+                                  colors: [
+                                    Colors.transparent,
+                                    Colors.white.withValues(alpha: 0.8),
+                                    Colors.transparent,
+                                  ],
+                                ).createShader(rect);
+                              },
+                              blendMode: BlendMode.srcATop,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Consumer<ResourceProvider>(
+                                  builder: (context, res, child) {
+                                    final logoUrl = res.appLogoUrl;
+                                    if (logoUrl != null && logoUrl.isNotEmpty) {
+                                      return CachedNetworkImage(
+                                        imageUrl: logoUrl,
                                         height: 110,
-                                      ),
-                                );
-                              }
-                              return Image.asset(
-                                'assets/images/logo.png',
-                                height: 110,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const Icon(
-                                      Icons.business_rounded,
-                                      size: 110,
-                                      color: Color(0xFF01579B),
-                                    ),
-                              );
-                            },
-                          ),
-                        ),
+                                        width: 110,
+                                        fit: BoxFit.contain,
+                                        placeholder: (context, url) => Image.asset(
+                                          'assets/images/logo.png',
+                                          height: 110,
+                                        ),
+                                        errorWidget: (context, url, error) =>
+                                            Image.asset(
+                                              'assets/images/logo.png',
+                                              height: 110,
+                                            ),
+                                      );
+                                    }
+                                    return Image.asset(
+                                      'assets/images/logo.png',
+                                      height: 110,
+                                      errorBuilder: (context, error, stackTrace) =>
+                                          const Icon(
+                                            Icons.business_rounded,
+                                            size: 110,
+                                            color: Color(0xFF01579B),
+                                          ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                       const SizedBox(height: 12),
                       const Text(

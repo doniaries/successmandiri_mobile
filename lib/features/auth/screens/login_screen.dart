@@ -106,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            shape: BoxShape.circle,
+                            borderRadius: BorderRadius.circular(24),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.1),
@@ -115,7 +115,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ],
                           ),
-                          child: ClipOval(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
                             child: Image.asset(
                               'assets/images/logo.png',
                               height: 110,
@@ -389,42 +390,43 @@ class _LoginScreenState extends State<LoginScreen> {
                               },
                               isLoading: authProvider.isLoading,
                             ),
-                            const SizedBox(height: 24),
-                            Consumer<ResourceProvider>(
-                              builder: (context, provider, child) {
-                                return Column(
-                                  children: [
-                                    Text(
-                                      "Versi ${provider.appVersion}",
-                                      style: TextStyle(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.7,
-                                        ),
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      "DIKEMBANGKAN OLEH ${provider.appCreator.toUpperCase()}",
-                                      style: TextStyle(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.4,
-                                        ),
-                                        fontSize: 8,
-                                        letterSpacing: 2,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
                             const SizedBox(height: 20),
                           ],
                         ),
                       ),
                     ),
+                    const SizedBox(height: 24),
+                    Consumer<ResourceProvider>(
+                      builder: (context, provider, child) {
+                        return Column(
+                          children: [
+                            Text(
+                              "Versi ${provider.appVersion}",
+                              style: TextStyle(
+                                color: Colors.white.withValues(
+                                  alpha: 0.7,
+                                ),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "DIKEMBANGKAN OLEH ${provider.appCreator.toUpperCase()}",
+                              style: TextStyle(
+                                color: Colors.white.withValues(
+                                  alpha: 0.4,
+                                ),
+                                fontSize: 8,
+                                letterSpacing: 2,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
