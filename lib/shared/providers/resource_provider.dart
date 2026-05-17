@@ -26,7 +26,7 @@ class ResourceProvider with ChangeNotifier {
   final List<User> _users = [];
 
   String _appVersion = '1.0.0';
-  String _appCreator = 'Success Mandiri';
+  String _appCreator = 'Don Borland';
   String? _appLogoUrl;
 
   // Track new data for each resource type
@@ -81,9 +81,11 @@ class ResourceProvider with ChangeNotifier {
 
   Future<void> fetchAppSettings() async {
     try {
-      final settings = await _repository.getAppSettings().timeout(const Duration(seconds: 15));
+      final settings = await _repository.getAppSettings().timeout(
+        const Duration(seconds: 15),
+      );
       _appVersion = settings['app_version'] ?? '1.0.0';
-      _appCreator = settings['app_creator'] ?? 'Success Mandiri';
+      _appCreator = settings['app_creator'] ?? 'Don Borland';
       _appLogoUrl = ApiConstants.normalizeUrl(settings['app_logo_url']);
     } catch (e) {
       // Ignore if fetch fails
@@ -126,9 +128,12 @@ class ResourceProvider with ChangeNotifier {
   }
 
   // Debtors (only those with sisa_hutang > 0)
-  List<Supir> get supirDebtors => _supirs.where((e) => (e.sisaHutang ?? 0) > 0).toList();
-  List<Penjual> get penjualDebtors => _penjuals.where((e) => (e.sisaHutang ?? 0) > 0).toList();
-  List<Pekerja> get pekerjaDebtors => _pekerjas.where((e) => e.sisaHutang > 0).toList();
+  List<Supir> get supirDebtors =>
+      _supirs.where((e) => (e.sisaHutang ?? 0) > 0).toList();
+  List<Penjual> get penjualDebtors =>
+      _penjuals.where((e) => (e.sisaHutang ?? 0) > 0).toList();
+  List<Pekerja> get pekerjaDebtors =>
+      _pekerjas.where((e) => e.sisaHutang > 0).toList();
 
   // Financial Summaries (Use server totals if available, otherwise fallback to local calculation)
   double get totalPemasukan {
@@ -151,29 +156,50 @@ class ResourceProvider with ChangeNotifier {
     if (_jurnalKeuangans.isEmpty) _isLoading = true;
     notifyListeners();
     try {
-      _jurnalKeuangans = await _repository.getJurnalKeuangan(startDate: startDate, endDate: endDate);
+      _jurnalKeuangans = await _repository.getJurnalKeuangan(
+        startDate: startDate,
+        endDate: endDate,
+      );
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
 
-  Future<void> fetchResources(String type, {bool refresh = false, Map<String, dynamic>? filters}) async {
+  Future<void> fetchResources(
+    String type, {
+    bool refresh = false,
+    Map<String, dynamic>? filters,
+  }) async {
     if (refresh) {
       _currentPage[type] = 1;
       _hasMore[type] = true;
       _isFetchingMore[type] = false;
-      
+
       // Only set isLoading if we don't have data yet to show skeletons
       // If we have data, we'll keep showing it while refreshing in background
       switch (type) {
-        case 'penjual': if (_penjuals.isEmpty) _isLoading = true; break;
-        case 'supir': if (_supirs.isEmpty) _isLoading = true; break;
-        case 'pekerja': if (_pekerjas.isEmpty) _isLoading = true; break;
-        case 'kendaraan': if (_kendaraans.isEmpty) _isLoading = true; break;
-        case 'operasional': if (_operasionals.isEmpty) _isLoading = true; break;
-        case 'jurnal_keuangan': if (_jurnalKeuangans.isEmpty) _isLoading = true; break;
-        case 'user': if (_users.isEmpty) _isLoading = true; break;
+        case 'penjual':
+          if (_penjuals.isEmpty) _isLoading = true;
+          break;
+        case 'supir':
+          if (_supirs.isEmpty) _isLoading = true;
+          break;
+        case 'pekerja':
+          if (_pekerjas.isEmpty) _isLoading = true;
+          break;
+        case 'kendaraan':
+          if (_kendaraans.isEmpty) _isLoading = true;
+          break;
+        case 'operasional':
+          if (_operasionals.isEmpty) _isLoading = true;
+          break;
+        case 'jurnal_keuangan':
+          if (_jurnalKeuangans.isEmpty) _isLoading = true;
+          break;
+        case 'user':
+          if (_users.isEmpty) _isLoading = true;
+          break;
       }
       notifyListeners();
     } else {
@@ -185,22 +211,34 @@ class ResourceProvider with ChangeNotifier {
     try {
       int page = _currentPage[type] ?? 1;
       dynamic response;
-      
+
       switch (type) {
-        case 'penjual': response = await _repository.getPenjualPaginated(page: page); break;
-        case 'supir': response = await _repository.getSupirPaginated(page: page); break;
-        case 'pekerja': response = await _repository.getPekerjaPaginated(page: page); break;
-        case 'kendaraan': response = await _repository.getKendaraanPaginated(page: page); break;
-        case 'operasional': response = await _repository.getOperasionalPaginated(page: page); break;
-        case 'jurnal_keuangan': 
+        case 'penjual':
+          response = await _repository.getPenjualPaginated(page: page);
+          break;
+        case 'supir':
+          response = await _repository.getSupirPaginated(page: page);
+          break;
+        case 'pekerja':
+          response = await _repository.getPekerjaPaginated(page: page);
+          break;
+        case 'kendaraan':
+          response = await _repository.getKendaraanPaginated(page: page);
+          break;
+        case 'operasional':
+          response = await _repository.getOperasionalPaginated(page: page);
+          break;
+        case 'jurnal_keuangan':
           response = await _repository.getJurnalPaginated(
             page: page,
             startDate: filters?['start_date'],
             endDate: filters?['end_date'],
             jenisTransaksi: filters?['jenis_transaksi'],
-          ); 
+          );
           break;
-        case 'user': response = await _repository.getUsersPaginated(page: page); break;
+        case 'user':
+          response = await _repository.getUsersPaginated(page: page);
+          break;
       }
 
       List<dynamic> rawData = [];
@@ -212,8 +250,16 @@ class ResourceProvider with ChangeNotifier {
 
         // Capture summary if present
         if (response['summary'] != null) {
-          _serverTotalPemasukan = double.tryParse(response['summary']['total_pemasukan']?.toString() ?? '0') ?? 0;
-          _serverTotalPengeluaran = double.tryParse(response['summary']['total_pengeluaran']?.toString() ?? '0') ?? 0;
+          _serverTotalPemasukan =
+              double.tryParse(
+                response['summary']['total_pemasukan']?.toString() ?? '0',
+              ) ??
+              0;
+          _serverTotalPengeluaran =
+              double.tryParse(
+                response['summary']['total_pengeluaran']?.toString() ?? '0',
+              ) ??
+              0;
         }
       } else if (response is List) {
         rawData = response;
@@ -260,18 +306,32 @@ class ResourceProvider with ChangeNotifier {
 
       _currentPage[type] = page + 1;
       _hasMore[type] = hasMore;
-      
+
       // Update counts based on total returned by API if available
       if (response is Map && response['total'] != null) {
         int total = int.tryParse(response['total'].toString()) ?? 0;
         switch (type) {
-          case 'penjual': _totalPenjual = total; break;
-          case 'supir': _totalSupir = total; break;
-          case 'pekerja': _totalPekerja = total; break;
-          case 'kendaraan': _totalKendaraan = total; break;
-          case 'operasional': _totalOperasional = total; break;
-          case 'jurnal_keuangan': _totalJurnal = total; break;
-          case 'user': _totalUser = total; break;
+          case 'penjual':
+            _totalPenjual = total;
+            break;
+          case 'supir':
+            _totalSupir = total;
+            break;
+          case 'pekerja':
+            _totalPekerja = total;
+            break;
+          case 'kendaraan':
+            _totalKendaraan = total;
+            break;
+          case 'operasional':
+            _totalOperasional = total;
+            break;
+          case 'jurnal_keuangan':
+            _totalJurnal = total;
+            break;
+          case 'user':
+            _totalUser = total;
+            break;
         }
       }
 
@@ -288,13 +348,33 @@ class ResourceProvider with ChangeNotifier {
   Future<void> _checkNewDataFor(String type) async {
     String latestId = "";
     switch (type) {
-        case 'penjual': latestId = _penjuals.isNotEmpty ? _penjuals.first.id.toString() : ""; break;
-        case 'supir': latestId = _supirs.isNotEmpty ? _supirs.first.id.toString() : ""; break;
-        case 'pekerja': latestId = _pekerjas.isNotEmpty ? _pekerjas.first.id.toString() : ""; break;
-        case 'kendaraan': latestId = _kendaraans.isNotEmpty ? _kendaraans.first.id.toString() : ""; break;
-        case 'operasional': latestId = _operasionals.isNotEmpty ? _operasionals.first.id.toString() : ""; break;
-        case 'jurnal_keuangan': latestId = _jurnalKeuangans.isNotEmpty ? _jurnalKeuangans.first.id.toString() : ""; break;
-        case 'user': latestId = _users.isNotEmpty ? _users.first.id.toString() : ""; break;
+      case 'penjual':
+        latestId = _penjuals.isNotEmpty ? _penjuals.first.id.toString() : "";
+        break;
+      case 'supir':
+        latestId = _supirs.isNotEmpty ? _supirs.first.id.toString() : "";
+        break;
+      case 'pekerja':
+        latestId = _pekerjas.isNotEmpty ? _pekerjas.first.id.toString() : "";
+        break;
+      case 'kendaraan':
+        latestId = _kendaraans.isNotEmpty
+            ? _kendaraans.first.id.toString()
+            : "";
+        break;
+      case 'operasional':
+        latestId = _operasionals.isNotEmpty
+            ? _operasionals.first.id.toString()
+            : "";
+        break;
+      case 'jurnal_keuangan':
+        latestId = _jurnalKeuangans.isNotEmpty
+            ? _jurnalKeuangans.first.id.toString()
+            : "";
+        break;
+      case 'user':
+        latestId = _users.isNotEmpty ? _users.first.id.toString() : "";
+        break;
     }
     if (latestId.isNotEmpty) {
       _hasNewData[type] = !await SeenStateService.isSeen(type, latestId);
@@ -312,19 +392,38 @@ class ResourceProvider with ChangeNotifier {
     await fetchResources('jurnal_keuangan', refresh: true);
   }
 
-
   Future<void> markAsSeen(String type) async {
     String latestId = "";
     switch (type) {
-      case 'penjual': latestId = _penjuals.isNotEmpty ? _penjuals.first.id.toString() : ""; break;
-      case 'supir': latestId = _supirs.isNotEmpty ? _supirs.first.id.toString() : ""; break;
-      case 'pekerja': latestId = _pekerjas.isNotEmpty ? _pekerjas.first.id.toString() : ""; break;
-      case 'kendaraan': latestId = _kendaraans.isNotEmpty ? _kendaraans.first.id.toString() : ""; break;
-      case 'operasional': latestId = _operasionals.isNotEmpty ? _operasionals.first.id.toString() : ""; break;
-      case 'jurnal_keuangan': latestId = _jurnalKeuangans.isNotEmpty ? _jurnalKeuangans.first.id.toString() : ""; break;
-      case 'user': latestId = _users.isNotEmpty ? _users.first.id.toString() : ""; break;
+      case 'penjual':
+        latestId = _penjuals.isNotEmpty ? _penjuals.first.id.toString() : "";
+        break;
+      case 'supir':
+        latestId = _supirs.isNotEmpty ? _supirs.first.id.toString() : "";
+        break;
+      case 'pekerja':
+        latestId = _pekerjas.isNotEmpty ? _pekerjas.first.id.toString() : "";
+        break;
+      case 'kendaraan':
+        latestId = _kendaraans.isNotEmpty
+            ? _kendaraans.first.id.toString()
+            : "";
+        break;
+      case 'operasional':
+        latestId = _operasionals.isNotEmpty
+            ? _operasionals.first.id.toString()
+            : "";
+        break;
+      case 'jurnal_keuangan':
+        latestId = _jurnalKeuangans.isNotEmpty
+            ? _jurnalKeuangans.first.id.toString()
+            : "";
+        break;
+      case 'user':
+        latestId = _users.isNotEmpty ? _users.first.id.toString() : "";
+        break;
     }
-    
+
     if (latestId.isNotEmpty) {
       await SeenStateService.markAsSeen(type, latestId);
       _hasNewData[type] = false;
@@ -336,13 +435,33 @@ class ResourceProvider with ChangeNotifier {
     for (var type in _hasNewData.keys) {
       String latestId = "";
       switch (type) {
-        case 'penjual': latestId = _penjuals.isNotEmpty ? _penjuals.first.id.toString() : ""; break;
-        case 'supir': latestId = _supirs.isNotEmpty ? _supirs.first.id.toString() : ""; break;
-        case 'pekerja': latestId = _pekerjas.isNotEmpty ? _pekerjas.first.id.toString() : ""; break;
-        case 'kendaraan': latestId = _kendaraans.isNotEmpty ? _kendaraans.first.id.toString() : ""; break;
-        case 'operasional': latestId = _operasionals.isNotEmpty ? _operasionals.first.id.toString() : ""; break;
-        case 'jurnal_keuangan': latestId = _jurnalKeuangans.isNotEmpty ? _jurnalKeuangans.first.id.toString() : ""; break;
-        case 'user': latestId = _users.isNotEmpty ? _users.first.id.toString() : ""; break;
+        case 'penjual':
+          latestId = _penjuals.isNotEmpty ? _penjuals.first.id.toString() : "";
+          break;
+        case 'supir':
+          latestId = _supirs.isNotEmpty ? _supirs.first.id.toString() : "";
+          break;
+        case 'pekerja':
+          latestId = _pekerjas.isNotEmpty ? _pekerjas.first.id.toString() : "";
+          break;
+        case 'kendaraan':
+          latestId = _kendaraans.isNotEmpty
+              ? _kendaraans.first.id.toString()
+              : "";
+          break;
+        case 'operasional':
+          latestId = _operasionals.isNotEmpty
+              ? _operasionals.first.id.toString()
+              : "";
+          break;
+        case 'jurnal_keuangan':
+          latestId = _jurnalKeuangans.isNotEmpty
+              ? _jurnalKeuangans.first.id.toString()
+              : "";
+          break;
+        case 'user':
+          latestId = _users.isNotEmpty ? _users.first.id.toString() : "";
+          break;
       }
       if (latestId.isNotEmpty) {
         await SeenStateService.markAsSeen(type, latestId);
@@ -523,10 +642,7 @@ class ResourceProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      final data = {
-        'app_version': version,
-        'app_creator': creator,
-      };
+      final data = {'app_version': version, 'app_creator': creator};
       final settings = await _repository.updateAppSettings(data);
       _appVersion = settings['app_version'] ?? version;
       _appCreator = settings['app_creator'] ?? creator;
@@ -541,7 +657,11 @@ class ResourceProvider with ChangeNotifier {
     }
   }
 
-  Future<void> changePassword(String current, String password, String confirm) async {
+  Future<void> changePassword(
+    String current,
+    String password,
+    String confirm,
+  ) async {
     _isLoading = true;
     notifyListeners();
     try {
@@ -552,7 +672,11 @@ class ResourceProvider with ChangeNotifier {
     }
   }
 
-  Future<void> resetUserPassword(int userId, String password, String confirm) async {
+  Future<void> resetUserPassword(
+    int userId,
+    String password,
+    String confirm,
+  ) async {
     _isLoading = true;
     notifyListeners();
     try {
@@ -686,4 +810,3 @@ class ResourceProvider with ChangeNotifier {
     }
   }
 }
-

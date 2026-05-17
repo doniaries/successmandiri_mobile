@@ -44,7 +44,7 @@ class ResourceRepository {
 
       final response = await _apiClient.dio.get(ApiConstants.penjual);
       final List<dynamic> data = _extractListData(response.data);
-      
+
       syncService.cacheData('penjual', data);
       return data.map((e) => Penjual.fromJson(e)).toList();
     } catch (e) {
@@ -60,7 +60,10 @@ class ResourceRepository {
         await syncService.addToQueue(ApiConstants.penjual, 'POST', data);
         return {'offline': true};
       }
-      final response = await _apiClient.dio.post(ApiConstants.penjual, data: data);
+      final response = await _apiClient.dio.post(
+        ApiConstants.penjual,
+        data: data,
+      );
       return Penjual.fromJson(response.data);
     } catch (e) {
       await syncService.addToQueue(ApiConstants.penjual, 'POST', data);
@@ -122,7 +125,10 @@ class ResourceRepository {
         await syncService.addToQueue(ApiConstants.supir, 'POST', data);
         return {'offline': true};
       }
-      final response = await _apiClient.dio.post(ApiConstants.supir, data: data);
+      final response = await _apiClient.dio.post(
+        ApiConstants.supir,
+        data: data,
+      );
       return Supir.fromJson(response.data);
     } catch (e) {
       await syncService.addToQueue(ApiConstants.supir, 'POST', data);
@@ -184,7 +190,10 @@ class ResourceRepository {
         await syncService.addToQueue(ApiConstants.pekerja, 'POST', data);
         return {'offline': true};
       }
-      final response = await _apiClient.dio.post(ApiConstants.pekerja, data: data);
+      final response = await _apiClient.dio.post(
+        ApiConstants.pekerja,
+        data: data,
+      );
       return Pekerja.fromJson(response.data);
     } catch (e) {
       await syncService.addToQueue(ApiConstants.pekerja, 'POST', data);
@@ -246,7 +255,10 @@ class ResourceRepository {
         await syncService.addToQueue(ApiConstants.kendaraan, 'POST', data);
         return {'offline': true};
       }
-      final response = await _apiClient.dio.post(ApiConstants.kendaraan, data: data);
+      final response = await _apiClient.dio.post(
+        ApiConstants.kendaraan,
+        data: data,
+      );
       return Kendaraan.fromJson(response.data);
     } catch (e) {
       await syncService.addToQueue(ApiConstants.kendaraan, 'POST', data);
@@ -269,7 +281,9 @@ class ResourceRepository {
   }
 
   Future<Operasional> getOperasionalDetail(int id) async {
-    final response = await _apiClient.dio.get('${ApiConstants.operasional}/$id');
+    final response = await _apiClient.dio.get(
+      '${ApiConstants.operasional}/$id',
+    );
     return Operasional.fromJson(response.data);
   }
 
@@ -281,7 +295,12 @@ class ResourceRepository {
     return response.data;
   }
 
-  Future<dynamic> getJurnalPaginated({int page = 1, String? startDate, String? endDate, String? jenisTransaksi}) async {
+  Future<dynamic> getJurnalPaginated({
+    int page = 1,
+    String? startDate,
+    String? endDate,
+    String? jenisTransaksi,
+  }) async {
     final Map<String, dynamic> params = {'page': page, 'per_page': 10};
     if (startDate != null) params['start_date'] = startDate;
     if (endDate != null) params['end_date'] = endDate;
@@ -294,12 +313,18 @@ class ResourceRepository {
     return response.data;
   }
 
-  Future<List<JurnalKeuangan>> getJurnalKeuangan({String? startDate, String? endDate}) async {
+  Future<List<JurnalKeuangan>> getJurnalKeuangan({
+    String? startDate,
+    String? endDate,
+  }) async {
     final Map<String, dynamic> params = {};
     if (startDate != null) params['start_date'] = startDate;
     if (endDate != null) params['end_date'] = endDate;
-    
-    final response = await _apiClient.dio.get(ApiConstants.jurnalKeuangan, queryParameters: params);
+
+    final response = await _apiClient.dio.get(
+      ApiConstants.jurnalKeuangan,
+      queryParameters: params,
+    );
     final List<dynamic> data = _extractListData(response.data);
     return data.map((e) => JurnalKeuangan.fromJson(e)).toList();
   }
@@ -326,7 +351,10 @@ class ResourceRepository {
         await syncService.addToQueue(ApiConstants.operasional, 'POST', data);
         return {'offline': true};
       }
-      final response = await _apiClient.dio.post(ApiConstants.operasional, data: data);
+      final response = await _apiClient.dio.post(
+        ApiConstants.operasional,
+        data: data,
+      );
       return Operasional.fromJson(response.data);
     } catch (e) {
       await syncService.addToQueue(ApiConstants.operasional, 'POST', data);
@@ -334,9 +362,15 @@ class ResourceRepository {
     }
   }
 
-  Future<Operasional> updateOperasional(int id, Map<String, dynamic> data) async {
+  Future<Operasional> updateOperasional(
+    int id,
+    Map<String, dynamic> data,
+  ) async {
     try {
-      final response = await _apiClient.dio.put('${ApiConstants.operasional}/$id', data: data);
+      final response = await _apiClient.dio.put(
+        '${ApiConstants.operasional}/$id',
+        data: data,
+      );
       return Operasional.fromJson(response.data);
     } catch (e) {
       rethrow;
@@ -356,19 +390,25 @@ class ResourceRepository {
       final response = await _apiClient.dio.get(ApiConstants.appSettings);
       return response.data['data'] as Map<String, dynamic>;
     } catch (e) {
-      return {
-        'app_version': '1.0.0',
-        'app_creator': 'Success Mandiri',
-      };
+      return {'app_version': '1.0.0', 'app_creator': 'Don Borland'};
     }
   }
 
-  Future<Map<String, dynamic>> updateAppSettings(Map<String, dynamic> data) async {
-    final response = await _apiClient.dio.post(ApiConstants.appSettings, data: data);
+  Future<Map<String, dynamic>> updateAppSettings(
+    Map<String, dynamic> data,
+  ) async {
+    final response = await _apiClient.dio.post(
+      ApiConstants.appSettings,
+      data: data,
+    );
     return response.data['data'] as Map<String, dynamic>;
   }
 
-  Future<void> changePassword(String currentPassword, String newPassword, String confirmPassword) async {
+  Future<void> changePassword(
+    String currentPassword,
+    String newPassword,
+    String confirmPassword,
+  ) async {
     await _apiClient.dio.post(
       '/user/change-password',
       data: {
@@ -379,14 +419,14 @@ class ResourceRepository {
     );
   }
 
-  Future<void> resetUserPassword(int userId, String newPassword, String confirmPassword) async {
+  Future<void> resetUserPassword(
+    int userId,
+    String newPassword,
+    String confirmPassword,
+  ) async {
     await _apiClient.dio.post(
       '/user/$userId/reset-password',
-      data: {
-        'password': newPassword,
-        'password_confirmation': confirmPassword,
-      },
+      data: {'password': newPassword, 'password_confirmation': confirmPassword},
     );
   }
 }
-

@@ -21,25 +21,30 @@ class _PermissionWizardScreenState extends State<PermissionWizardScreen> {
     PermissionItem(
       icon: Icons.notifications_active_outlined,
       title: 'Notifikasi',
-      description: 'Dapatkan informasi terbaru mengenai transaksi dan pengajuan dana Anda secara real-time.',
+      description:
+          'Dapatkan informasi terbaru mengenai transaksi dan pengajuan dana Anda secara real-time.',
       permission: Permission.notification,
     ),
     PermissionItem(
       icon: Icons.folder_open_outlined,
       title: 'Akses File',
-      description: 'Diperlukan untuk mengunggah dokumen pendukung dan foto bukti transaksi.',
+      description:
+          'Diperlukan untuk mengunggah dokumen pendukung dan foto bukti transaksi.',
       permission: Permission.storage,
     ),
     PermissionItem(
       icon: Icons.location_on_outlined,
       title: 'Lokasi GPS',
-      description: 'Digunakan untuk memverifikasi lokasi saat melakukan pengajuan atau transaksi di lapangan.',
+      description:
+          'Digunakan untuk memverifikasi lokasi saat melakukan pengajuan atau transaksi di lapangan.',
       permission: Permission.location,
     ),
   ];
 
   Future<PermissionStatus> _getEffectiveStatus(PermissionItem item) async {
-    if (!kIsWeb && item.permission == Permission.storage && Platform.isAndroid) {
+    if (!kIsWeb &&
+        item.permission == Permission.storage &&
+        Platform.isAndroid) {
       final deviceInfo = DeviceInfoPlugin();
       final androidInfo = await deviceInfo.androidInfo;
       if (androidInfo.version.sdkInt >= 33) {
@@ -48,7 +53,8 @@ class _PermissionWizardScreenState extends State<PermissionWizardScreen> {
         if (photosStatus.isGranted || videosStatus.isGranted) {
           return PermissionStatus.granted;
         }
-        if (photosStatus.isPermanentlyDenied || videosStatus.isPermanentlyDenied) {
+        if (photosStatus.isPermanentlyDenied ||
+            videosStatus.isPermanentlyDenied) {
           return PermissionStatus.permanentlyDenied;
         }
         return photosStatus;
@@ -68,37 +74,38 @@ class _PermissionWizardScreenState extends State<PermissionWizardScreen> {
 
   Future<void> _requestPermission(PermissionItem item) async {
     PermissionStatus status;
-    
-    if (!kIsWeb && item.permission == Permission.storage && Platform.isAndroid) {
+
+    if (!kIsWeb &&
+        item.permission == Permission.storage &&
+        Platform.isAndroid) {
       final deviceInfo = DeviceInfoPlugin();
       final androidInfo = await deviceInfo.androidInfo;
       final sdkInt = androidInfo.version.sdkInt;
-      
+
       if (sdkInt >= 33) {
-        final results = await [
-          Permission.photos,
-          Permission.videos,
-        ].request();
-        
-        status = results.values.any((s) => s.isGranted) 
-            ? PermissionStatus.granted 
+        final results = await [Permission.photos, Permission.videos].request();
+
+        status = results.values.any((s) => s.isGranted)
+            ? PermissionStatus.granted
             : results.values.every((s) => s.isPermanentlyDenied)
-                ? PermissionStatus.permanentlyDenied
-                : PermissionStatus.denied;
+            ? PermissionStatus.permanentlyDenied
+            : PermissionStatus.denied;
       } else {
         status = await item.permission.request();
       }
     } else {
       status = await item.permission.request();
     }
-    
+
     if (status.isPermanentlyDenied) {
       if (mounted) {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Izin Diperlukan'),
-            content: const Text('Izin ini telah dinonaktifkan secara permanen. Silakan aktifkan melalui pengaturan aplikasi.'),
+            content: const Text(
+              'Izin ini telah dinonaktifkan secara permanen. Silakan aktifkan melalui pengaturan aplikasi.',
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
@@ -156,7 +163,8 @@ class _PermissionWizardScreenState extends State<PermissionWizardScreen> {
               Expanded(
                 child: PageView.builder(
                   controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(), // Paksa lewat tombol
+                  physics:
+                      const NeverScrollableScrollPhysics(), // Paksa lewat tombol
                   onPageChanged: (index) {
                     setState(() => _currentPage = index);
                   },
@@ -191,7 +199,7 @@ class _PermissionWizardScreenState extends State<PermissionWizardScreen> {
                             ),
                             const SizedBox(height: 20),
                             Text(
-                              'Pengaturan izin selesai. Anda sekarang dapat mulai menggunakan layanan Success Mandiri.',
+                              'Pengaturan izin selesai. Anda sekarang dapat mulai menggunakan layanan My Sawit.',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 16,
@@ -219,7 +227,8 @@ class _PermissionWizardScreenState extends State<PermissionWizardScreen> {
                             child: FutureBuilder<PermissionStatus>(
                               future: _getEffectiveStatus(item),
                               builder: (context, snapshot) {
-                                final isGranted = snapshot.data?.isGranted ?? false;
+                                final isGranted =
+                                    snapshot.data?.isGranted ?? false;
                                 return Stack(
                                   alignment: Alignment.center,
                                   children: [
@@ -263,10 +272,11 @@ class _PermissionWizardScreenState extends State<PermissionWizardScreen> {
                           FutureBuilder<PermissionStatus>(
                             future: _getEffectiveStatus(item),
                             builder: (context, snapshot) {
-                              final isGranted = snapshot.data?.isGranted ?? false;
+                              final isGranted =
+                                  snapshot.data?.isGranted ?? false;
                               return Text(
-                                isGranted 
-                                    ? 'Izin ini sudah aktif. Silakan lanjukan.' 
+                                isGranted
+                                    ? 'Izin ini sudah aktif. Silakan lanjukan.'
                                     : item.description,
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
@@ -309,27 +319,35 @@ class _PermissionWizardScreenState extends State<PermissionWizardScreen> {
                       width: double.infinity,
                       height: 55,
                       child: FutureBuilder<PermissionStatus>(
-                        future: !isCompletionPage 
-                            ? _getEffectiveStatus(_permissions[_currentPage]) 
+                        future: !isCompletionPage
+                            ? _getEffectiveStatus(_permissions[_currentPage])
                             : Future.value(PermissionStatus.granted),
                         builder: (context, snapshot) {
                           final isGranted = snapshot.data?.isGranted ?? false;
-                          
+
                           return ElevatedButton(
                             onPressed: isCompletionPage
                                 ? () => _finishWizard()
-                                : (isGranted ? () => _skipStep() : () => _requestPermission(_permissions[_currentPage])),
+                                : (isGranted
+                                      ? () => _skipStep()
+                                      : () => _requestPermission(
+                                          _permissions[_currentPage],
+                                        )),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: isGranted ? const Color(0xFF01579B) : Colors.white,
-                              foregroundColor: isGranted ? Colors.white : const Color(0xFF01579B),
+                              backgroundColor: isGranted
+                                  ? const Color(0xFF01579B)
+                                  : Colors.white,
+                              foregroundColor: isGranted
+                                  ? Colors.white
+                                  : const Color(0xFF01579B),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(15),
                               ),
                               elevation: 5,
                             ),
                             child: Text(
-                              isCompletionPage 
-                                  ? 'Mulai Aplikasi' 
+                              isCompletionPage
+                                  ? 'Mulai Aplikasi'
                                   : (isGranted ? 'Lanjutkan' : 'Berikan Izin'),
                               style: const TextStyle(
                                 fontSize: 18,
@@ -337,7 +355,7 @@ class _PermissionWizardScreenState extends State<PermissionWizardScreen> {
                               ),
                             ),
                           );
-                        }
+                        },
                       ),
                     ),
                     if (!isCompletionPage)
@@ -350,8 +368,7 @@ class _PermissionWizardScreenState extends State<PermissionWizardScreen> {
                           ),
                         ),
                       ),
-                    if (isCompletionPage)
-                      const SizedBox(height: 48),
+                    if (isCompletionPage) const SizedBox(height: 48),
                   ],
                 ),
               ),
@@ -376,4 +393,3 @@ class PermissionItem {
     required this.permission,
   });
 }
-

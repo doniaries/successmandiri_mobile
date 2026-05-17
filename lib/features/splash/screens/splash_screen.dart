@@ -20,16 +20,17 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  
+
   bool _isLoading = true;
   String _statusMessage = 'Memulai inisialisasi...';
 
   @override
   void initState() {
     super.initState();
-    
+
     // Animasi logo
     _controller = AnimationController(
       vsync: this,
@@ -60,23 +61,27 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   Future<void> _performInitialization() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final resourceProvider = Provider.of<ResourceProvider>(context, listen: false);
+    final resourceProvider = Provider.of<ResourceProvider>(
+      context,
+      listen: false,
+    );
 
     try {
       if (!mounted) return;
-      
+
       // 1. Cek status auth SANGAT CEPAT (menggunakan cache)
       await authProvider.checkAuthStatus();
-      
+
       // 2. Jika sudah login, coba langsung gas ke Dashboard
       if (authProvider.isAuthenticated) {
         final prefs = await SharedPreferences.getInstance();
-        final wizardCompleted = prefs.getBool('permission_wizard_completed') ?? false;
-        
+        final wizardCompleted =
+            prefs.getBool('permission_wizard_completed') ?? false;
+
         if (wizardCompleted) {
           // Trigger fetch settings di background (non-blocking)
           resourceProvider.fetchAppSettings().catchError((_) => null);
-          
+
           if (mounted) {
             _navigateTo(const MainNavigationScreen());
             return;
@@ -85,9 +90,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       }
 
       // 3. Alur normal untuk user baru/belum login
-      setState(() => _statusMessage = 'Memeriksa lokasi database & preferensi...');
+      setState(
+        () => _statusMessage = 'Memeriksa lokasi database & preferensi...',
+      );
       final prefs = await SharedPreferences.getInstance();
-      final wizardCompleted = prefs.getBool('permission_wizard_completed') ?? false;
+      final wizardCompleted =
+          prefs.getBool('permission_wizard_completed') ?? false;
 
       setState(() => _statusMessage = 'Memeriksa izin perangkat...');
       bool storageGranted = false;
@@ -96,7 +104,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
           final deviceInfo = DeviceInfoPlugin();
           final androidInfo = await deviceInfo.androidInfo;
           if (androidInfo.version.sdkInt >= 33) {
-            storageGranted = await Permission.photos.isGranted || await Permission.videos.isGranted;
+            storageGranted =
+                await Permission.photos.isGranted ||
+                await Permission.videos.isGranted;
           } else {
             storageGranted = await Permission.storage.isGranted;
           }
@@ -113,7 +123,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       }
 
       setState(() => _statusMessage = 'Terhubung ke server...');
-      
+
       // Ambil pengaturan aplikasi (versi & pembuat)
       try {
         await resourceProvider.fetchAppSettings();
@@ -125,7 +135,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       await Future.delayed(const Duration(milliseconds: 300));
 
       if (mounted) {
-        _navigateTo(authProvider.isAuthenticated ? const MainNavigationScreen() : const LoginScreen());
+        _navigateTo(
+          authProvider.isAuthenticated
+              ? const MainNavigationScreen()
+              : const LoginScreen(),
+        );
       }
     } catch (e) {
       debugPrint('SplashScreen Error: $e');
@@ -140,9 +154,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   void _navigateTo(Widget screen) {
     if (!mounted) return;
     setState(() => _isLoading = false);
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => screen),
-    );
+    Navigator.of(
+      context,
+    ).pushReplacement(MaterialPageRoute(builder: (context) => screen));
   }
 
   @override
@@ -176,7 +190,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 ),
               ),
             ),
-            
+
             Positioned.fill(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -208,18 +222,26 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                                   height: 110,
                                   width: 110,
                                   fit: BoxFit.contain,
-                                  placeholder: (context, url) => Image.asset('assets/images/logo.png', height: 110),
-                                  errorWidget: (context, url, error) => Image.asset('assets/images/logo.png', height: 110),
+                                  placeholder: (context, url) => Image.asset(
+                                    'assets/images/logo.png',
+                                    height: 110,
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      Image.asset(
+                                        'assets/images/logo.png',
+                                        height: 110,
+                                      ),
                                 );
                               }
                               return Image.asset(
                                 'assets/images/logo.png',
                                 height: 110,
-                                errorBuilder: (context, error, stackTrace) => const Icon(
-                                  Icons.business_rounded,
-                                  size: 110,
-                                  color: Color(0xFF01579B),
-                                ),
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(
+                                      Icons.business_rounded,
+                                      size: 110,
+                                      color: Color(0xFF01579B),
+                                    ),
                               );
                             },
                           ),
@@ -227,7 +249,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                       ),
                       const SizedBox(height: 12),
                       const Text(
-                        "SUCCESS MANDIRI",
+                        "My Sawit",
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 28,
@@ -254,17 +276,19 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     ],
                   ),
                   const Spacer(flex: 2),
-                  
+
                   // Loading & Status Diagnostic
                   if (_isLoading) ...[
                     const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Colors.white70,
+                        ),
+                      ),
                     ),
-                  ),
                     const SizedBox(height: 20),
                     Text(
                       _statusMessage,
@@ -277,7 +301,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   ],
 
                   const Spacer(flex: 1),
-                  
+
                   const SizedBox(height: 24),
                 ],
               ),
@@ -288,4 +312,3 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     );
   }
 }
-
