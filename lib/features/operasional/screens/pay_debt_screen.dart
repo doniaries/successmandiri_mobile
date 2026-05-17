@@ -55,9 +55,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
             final pihak = debtors.firstWhere((e) => e.id == widget.pihakId);
             setState(() {
               _selectedPihak = pihak;
-              _nominalController.text = CurrencyFormatter.formatNumber(
-                pihak.sisaHutang ?? 0,
-              );
+              _nominalController.text = (pihak.sisaHutang ?? 0).toInt().toString();
             });
           } catch (e) {
             // Silently fail if firstWhere doesn't find a match (e.g. invalid widget.pihakId)
@@ -225,9 +223,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                         _selectedPihak = val;
                         if (val != null) {
                           _nominalController.text =
-                              CurrencyFormatter.formatNumber(
-                                val.sisaHutang ?? 0,
-                              );
+                              (val.sisaHutang ?? 0).toInt().toString();
                         }
                       });
                     },
@@ -294,7 +290,6 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                 TextFormField(
                   controller: _nominalController,
                   keyboardType: TextInputType.number,
-                  inputFormatters: [CurrencyInputFormatter()],
                   decoration: _inputDecoration(
                     'Nominal Bayar',
                     Icons.payments_rounded,

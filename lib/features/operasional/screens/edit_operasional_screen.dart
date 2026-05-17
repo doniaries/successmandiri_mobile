@@ -55,7 +55,7 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
   void initState() {
     super.initState();
     _nominalController = TextEditingController(
-      text: CurrencyFormatter.formatRupiah(widget.operasional.nominal).replaceAll('Rp ', ''),
+      text: widget.operasional.nominal.toInt().toString(),
     );
     _keteranganController = TextEditingController(text: widget.operasional.keterangan);
     _selectedDate = widget.operasional.tanggal;
@@ -456,23 +456,6 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
                     'Nominal',
                     Icons.payments_rounded,
                   ).copyWith(prefixText: 'Rp ', hintText: '0'),
-                  onChanged: (value) {
-                    if (value.isNotEmpty) {
-                      String cleanValue = value.replaceAll('.', '');
-                      double? nominal = double.tryParse(cleanValue);
-                      if (nominal != null) {
-                        String formatted = CurrencyFormatter.formatRupiah(
-                          nominal,
-                        ).replaceAll('Rp ', '');
-                        _nominalController.value = TextEditingValue(
-                          text: formatted,
-                          selection: TextSelection.collapsed(
-                            offset: formatted.length,
-                          ),
-                        );
-                      }
-                    }
-                  },
                   validator: (val) {
                     if (val == null || val.isEmpty) {
                       return 'Nominal wajib diisi';

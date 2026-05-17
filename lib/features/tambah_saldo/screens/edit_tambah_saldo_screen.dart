@@ -6,7 +6,6 @@ import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.d
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
-import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/features/tambah_saldo/models/tambah_saldo_model.dart';
 
 class EditTambahSaldoScreen extends StatefulWidget {
@@ -28,7 +27,7 @@ class _EditTambahSaldoScreenState extends State<EditTambahSaldoScreen> {
   void initState() {
     super.initState();
     _nominalController = TextEditingController(
-      text: CurrencyFormatter.formatRupiah(widget.request.nominal).replaceAll('Rp ', ''),
+      text: widget.request.nominal.toInt().toString(),
     );
     _keteranganController = TextEditingController(text: widget.request.keterangan);
     _selectedDate = widget.request.tanggal;
@@ -123,23 +122,6 @@ class _EditTambahSaldoScreenState extends State<EditTambahSaldoScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                     keyboardType: TextInputType.number,
-                    onChanged: (value) {
-                      if (value.isNotEmpty) {
-                        String cleanValue = value.replaceAll('.', '');
-                        double? nominal = double.tryParse(cleanValue);
-                        if (nominal != null) {
-                          String formatted = CurrencyFormatter.formatRupiah(
-                            nominal,
-                          ).replaceAll('Rp ', '');
-                          _nominalController.value = TextEditingValue(
-                            text: formatted,
-                            selection: TextSelection.collapsed(
-                              offset: formatted.length,
-                            ),
-                          );
-                        }
-                      }
-                    },
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Mohon masukkan nominal';

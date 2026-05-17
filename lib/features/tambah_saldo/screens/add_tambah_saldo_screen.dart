@@ -124,23 +124,6 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                     keyboardType: TextInputType.number,
-                    onChanged: (value) {
-                      if (value.isNotEmpty) {
-                        String cleanValue = value.replaceAll('.', '');
-                        double? nominal = double.tryParse(cleanValue);
-                        if (nominal != null) {
-                          String formatted = CurrencyFormatter.formatRupiah(
-                            nominal,
-                          ).replaceAll('Rp ', '');
-                          _nominalController.value = TextEditingValue(
-                            text: formatted,
-                            selection: TextSelection.collapsed(
-                              offset: formatted.length,
-                            ),
-                          );
-                        }
-                      }
-                    },
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Mohon masukkan nominal';
