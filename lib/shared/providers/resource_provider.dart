@@ -88,7 +88,11 @@ class ResourceProvider with ChangeNotifier {
       _appCreator = settings['app_creator'] ?? 'Don Borland';
       _appLogoUrl = ApiConstants.normalizeUrl(settings['app_logo_url']);
     } catch (e) {
-      // Ignore if fetch fails
+      debugPrint('ResourceProvider.fetchAppSettings error: $e');
+      // Safely apply fallback values
+      _appVersion = '1.0.0';
+      _appCreator = 'Don Borland';
+      _appLogoUrl = null;
     } finally {
       notifyListeners();
     }

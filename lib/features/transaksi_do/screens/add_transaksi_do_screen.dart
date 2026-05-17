@@ -633,7 +633,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                       TextFormField(
                         controller: _biayaLainController,
                         decoration: _getInputDecoration(
-                          label: 'Biaya Lain',
+                          label: 'Biaya Lain/Pengambilan',
                           icon: Icons.more_horiz_rounded,
                           hint: '0',
                         ).copyWith(prefixText: 'Rp '),

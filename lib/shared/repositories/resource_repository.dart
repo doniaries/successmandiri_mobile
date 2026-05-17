@@ -390,7 +390,7 @@ class ResourceRepository {
       final response = await _apiClient.dio.get(ApiConstants.appSettings);
       return response.data['data'] as Map<String, dynamic>;
     } catch (e) {
-      return {'app_version': '1.0.0', 'app_creator': 'Don Borland'};
+      rethrow;
     }
   }
 
