@@ -417,10 +417,12 @@ class DashboardScreenState extends State<DashboardScreen> {
     final List<TambahSaldoModel> pengajuanRequests = isLeader 
         ? context.read<TambahSaldoProvider>().requests.where((req) => req.status.toLowerCase() == 'pending').toList() 
         : [];
+    final latestOperasional = context.read<DashboardProvider>().summary?.latestOperasional ?? [];
 
     final allNotifications = [
       ...transactions.map((t) => {'type': 'do', 'data': t, 'id': 'do_${t.id}', 'time': t.tanggal}),
       ...pengajuanRequests.map((p) => {'type': 'pengajuan', 'data': p, 'id': 'pengajuan_${p.id}', 'time': p.tanggal}),
+      ...latestOperasional.map((o) => {'type': 'operasional', 'data': o, 'id': 'operasional_${o.id}', 'time': o.tanggal}),
     ]..sort((a, b) => (b['time'] as DateTime).compareTo(a['time'] as DateTime));
 
     showModalBottomSheet(
@@ -466,9 +468,9 @@ class DashboardScreenState extends State<DashboardScreen> {
                       itemCount: allNotifications.length.clamp(0, 15),
                       itemBuilder: (context, index) {
                         final notif = allNotifications[index];
-                        final bool isDo = notif['type'] == 'do';
+                        final String type = notif['type'] as String;
                         final dynamic data = notif['data'];
-                        return _buildNotificationItem(context, isDo, data);
+                        return _buildNotificationItem(context, type, data);
                       },
                     ),
             ),
@@ -478,14 +480,54 @@ class DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildNotificationItem(BuildContext context, bool isDo, dynamic data) {
+  Widget _buildNotificationItem(BuildContext context, String type, dynamic data) {
+    final bool isDo = type == 'do';
+    final bool isPengajuan = type == 'pengajuan';
+
+    Widget iconWidget;
+    String titleText = '';
+    String bodyText = '';
+    double amount = 0;
+    DateTime date = DateTime.now();
+    Widget? detailScreen;
+
+    if (isDo) {
+      iconWidget = const Icon(Icons.local_shipping_rounded, color: Color(0xFF01579B), size: 20);
+      titleText = data.nomor;
+      bodyText = data.penjualNama ?? '-';
+      amount = data.subTotal;
+      date = data.tanggal;
+      detailScreen = TransaksiDoDetailScreen(transaction: data);
+    } else if (isPengajuan) {
+      iconWidget = Icon(Icons.pending_actions_rounded, color: Colors.amber[900], size: 20);
+      titleText = 'Tambah Saldo';
+      bodyText = data.keterangan ?? '-';
+      amount = data.nominal;
+      date = data.tanggal;
+      detailScreen = TambahSaldoDetailScreen(request: data);
+    } else {
+      final bool isPengeluaran = data.operasional.toLowerCase() == 'pengeluaran';
+      iconWidget = Icon(
+        isPengeluaran ? Icons.trending_down_rounded : Icons.trending_up_rounded, 
+        color: isPengeluaran ? const Color(0xFFC62828) : const Color(0xFF2E7D32), 
+        size: 20
+      );
+      titleText = data.kategoriLabel ?? data.kategori;
+      bodyText = data.keterangan ?? '-';
+      amount = data.nominal;
+      date = data.tanggal;
+      detailScreen = OperasionalDetailScreen(operasional: data);
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.grey[100]!)),
       child: InkWell(
         onTap: () {
           Navigator.pop(context);
-          Navigator.push(context, MaterialPageRoute(builder: (context) => isDo ? TransaksiDoDetailScreen(transaction: data) : TambahSaldoDetailScreen(request: data)));
+          if (detailScreen != null) {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => detailScreen!));
+          }
         },
         borderRadius: BorderRadius.circular(20),
         child: Padding(
@@ -494,26 +536,44 @@ class DashboardScreenState extends State<DashboardScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: isDo ? const Color(0xFFE3F2FD) : Colors.amber[100], shape: BoxShape.circle),
-                child: Icon(isDo ? Icons.local_shipping_rounded : Icons.pending_actions_rounded, color: isDo ? const Color(0xFF01579B) : Colors.amber[900], size: 20),
+                decoration: BoxDecoration(
+                  color: isDo 
+                      ? const Color(0xFFE3F2FD) 
+                      : isPengajuan 
+                          ? Colors.amber[100] 
+                          : (data.operasional.toLowerCase() == 'pengeluaran' ? const Color(0xFFFFEBEE) : const Color(0xFFE8F5E9)), 
+                  shape: BoxShape.circle
+                ),
+                child: iconWidget,
               ),
               const SizedBox(width: 15),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(isDo ? data.nomor : 'Tambah Saldo', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
+                    Text(titleText, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
                     const SizedBox(height: 4),
-                    Text(isDo ? (data.penjualNama ?? '-') : (data.keterangan ?? '-'), style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                    Text(bodyText, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
                   ],
                 ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(CurrencyFormatter.formatRupiah(isDo ? data.subTotal : data.nominal), style: TextStyle(fontWeight: FontWeight.w900, color: isDo ? const Color(0xFF01579B) : Colors.amber[900], fontSize: 13)),
+                  Text(
+                    CurrencyFormatter.formatRupiah(amount), 
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900, 
+                      color: isDo 
+                          ? const Color(0xFF01579B) 
+                          : isPengajuan 
+                              ? Colors.amber[900] 
+                              : (data.operasional.toLowerCase() == 'pengeluaran' ? const Color(0xFFC62828) : const Color(0xFF2E7D32)), 
+                      fontSize: 13
+                    )
+                  ),
                   const SizedBox(height: 4),
-                  Text(DateFormat('dd MMM, HH:mm', 'id_ID').format(data.tanggal), style: TextStyle(color: Colors.grey[400], fontSize: 10, fontWeight: FontWeight.bold)),
+                  Text(DateFormat('dd MMM, HH:mm', 'id_ID').format(date), style: TextStyle(color: Colors.grey[400], fontSize: 10, fontWeight: FontWeight.bold)),
                 ],
               ),
             ],
@@ -786,7 +846,7 @@ class _NotificationButton extends StatelessWidget {
     return Selector4<TransaksiDoProvider, TambahSaldoProvider, ResourceProvider, DashboardProvider, Map<String, dynamic>>(
       selector: (_, p1, p2, p3, p4) {
         bool hasDo = p1.hasNewData;
-        bool hasResource = p3.hasNewDataFor('penjual') || p3.hasNewDataFor('supir') || p3.hasNewDataFor('pekerja') || p3.hasNewDataFor('jurnal_keuangan');
+        bool hasResource = p3.hasNewDataFor('penjual') || p3.hasNewDataFor('supir') || p3.hasNewDataFor('pekerja') || p3.hasNewDataFor('jurnal_keuangan') || p3.hasNewDataFor('operasional');
         int total = (hasDo ? 1 : 0) + (hasResource ? 1 : 0);
         return {'total': total, 'pulsing': total > 0};
       },
