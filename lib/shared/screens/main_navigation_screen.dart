@@ -30,11 +30,34 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   ];
 
   Widget _buildTabNavigator(int index, Widget rootPage) {
-    return Navigator(
-      key: _navigatorKeys[index],
-      onGenerateRoute: (settings) => MaterialPageRoute(
-        builder: (context) => rootPage,
-        settings: settings,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        
+        final navProvider = context.read<MainNavigationProvider>();
+        if (navProvider.selectedIndex != index) {
+          return;
+        }
+
+        final navigator = _navigatorKeys[index].currentState;
+        if (navigator != null && navigator.canPop()) {
+          navigator.pop();
+        } else if (index != 0) {
+          _onItemTapped(0);
+        } else {
+          final shouldExit = await _showExitConfirmationDialog();
+          if (shouldExit) {
+            SystemNavigator.pop();
+          }
+        }
+      },
+      child: Navigator(
+        key: _navigatorKeys[index],
+        onGenerateRoute: (settings) => MaterialPageRoute(
+          builder: (context) => rootPage,
+          settings: settings,
+        ),
       ),
     );
   }
@@ -112,33 +135,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   Widget build(BuildContext context) {
     final selectedIndex = context.watch<MainNavigationProvider>().selectedIndex;
     
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        final navigator = _navigatorKeys[selectedIndex].currentState;
-        if (navigator != null && navigator.canPop()) {
-          navigator.pop();
-        } else if (selectedIndex != 0) {
-          _onItemTapped(0);
-        } else {
-          final shouldExit = await _showExitConfirmationDialog();
-          if (shouldExit) {
-            SystemNavigator.pop();
-          }
-        }
-      },
-      child: Scaffold(
-        body: Column(
-          children: [
-            _buildConnectivityBanner(),
-            Expanded(
-              child: IndexedStack(index: selectedIndex, children: _screens),
-            ),
-          ],
-        ),
-        bottomNavigationBar: _buildBottomBar(selectedIndex),
+    return Scaffold(
+      body: Column(
+        children: [
+          _buildConnectivityBanner(),
+          Expanded(
+            child: IndexedStack(index: selectedIndex, children: _screens),
+          ),
+        ],
       ),
+      bottomNavigationBar: _buildBottomBar(selectedIndex),
     );
   }
 
