@@ -98,7 +98,13 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
           slivers: [
             _buildAppBar(),
             SliverToBoxAdapter(
-              child: _buildSummaryHeader(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildSummaryHeader(),
+                  _buildFilterInfoWidget(),
+                ],
+              ),
             ),
             _buildPendingSyncBanner(),
             _buildTransactionList(),
@@ -211,6 +217,123 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   }
 
 
+  Widget _buildFilterInfoWidget() {
+    return Consumer2<DashboardProvider, TransaksiDoProvider>(
+      builder: (context, dashboardProvider, txProvider, _) {
+        if (_selectedSingleDate == null) return const SizedBox.shrink();
+        
+        final activeDateStr = dashboardProvider.summary?.systemActiveDate;
+        final systemActiveDate = activeDateStr != null 
+            ? DateTime.parse(activeDateStr) 
+            : DateTime.now();
+            
+        if (DateUtils.isSameDay(_selectedSingleDate!, systemActiveDate)) {
+          return const SizedBox.shrink();
+        }
+
+        final filteredCount = txProvider.transactions
+            .where((t) => DateUtils.isSameDay(t.tanggal.toLocal(), _selectedSingleDate!))
+            .length;
+
+        final formattedFilterDate = DateFormat('dd MMMM yyyy', 'id_ID').format(_selectedSingleDate!);
+
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: const Color(0xFF0D47A1).withValues(alpha: 0.15),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0D47A1).withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.filter_alt_rounded,
+                  color: Color(0xFF0D47A1),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Menampilkan Filter DO',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      formattedFilterDate,
+                      style: const TextStyle(
+                        color: Color(0xFF1E293B),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Jumlah: $filteredCount DO ditemukan',
+                      style: const TextStyle(
+                        color: Color(0xFF2E7D32),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              TextButton.icon(
+                onPressed: () {
+                  setState(() {
+                    _selectedSingleDate = null;
+                  });
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.red[700],
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  backgroundColor: Colors.red[50],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                icon: const Icon(Icons.close_rounded, size: 16),
+                label: const Text(
+                  'Reset',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildSummaryHeader() {
     return Consumer2<DashboardProvider, TransaksiDoProvider>(
       builder: (context, dashboardProvider, txProvider, _) {
@@ -224,6 +347,8 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
         final activeCount = transactions.where((t) => DateUtils.isSameDay(t.tanggal.toLocal(), targetDate)).length;
         
         final dateText = DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
+        
+        final isFilterActive = _selectedSingleDate != null && !DateUtils.isSameDay(_selectedSingleDate!, systemActiveDate);
 
         return Container(
           margin: const EdgeInsets.all(16),
@@ -253,57 +378,59 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Ringkasan Transaksi',
-                          style: TextStyle(
+                        Text(
+                          isFilterActive ? 'Filter Transaksi' : 'Ringkasan Transaksi',
+                          style: const TextStyle(
                             color: Colors.white70,
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        InkWell(
-                          onTap: _showFilterSheet,
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 0.5),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.calendar_month_rounded, color: Colors.white, size: 12),
-                                const SizedBox(width: 4),
-                                Text(
-                                  dateText,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
+                        if (!isFilterActive) ...[
+                          const SizedBox(height: 6),
+                          InkWell(
+                            onTap: _showFilterSheet,
+                            borderRadius: BorderRadius.circular(20),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 0.5),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.calendar_month_rounded, color: Colors.white, size: 12),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    dateText,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 2),
-                                const Icon(Icons.arrow_drop_down_rounded, color: Colors.white, size: 14),
-                              ],
+                                  const SizedBox(width: 2),
+                                  const Icon(Icons.arrow_drop_down_rounded, color: Colors.white, size: 14),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 6),
-                        const LiveDateTimeWidget(
-                          showDate: false,
-                          showSeconds: false,
-                          showIcon: true,
-                          isTransparentBg: true,
-                          color: Colors.white70,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
+                          const SizedBox(height: 6),
+                          const LiveDateTimeWidget(
+                            showDate: false,
+                            showSeconds: false,
+                            showIcon: true,
+                            isTransparentBg: true,
                             color: Colors.white70,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white70,
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ),
@@ -317,30 +444,80 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 32),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildMetricItem(
-                      label: 'Transaksi Hari Ini',
-                      value: '$activeCount',
-                      icon: Icons.confirmation_number_rounded,
+              const SizedBox(height: 24),
+              if (isFilterActive) ...[
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Tanggal Transaksi',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              dateText,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  Container(
-                    width: 1,
-                    height: 40,
-                    color: Colors.white24,
-                  ),
-                  Expanded(
-                    child: _buildMetricItem(
-                      label: 'Saldo Saat Ini',
-                      value: CurrencyFormatter.formatRupiah(dashboardProvider.summary?.saldo ?? 0),
-                      icon: Icons.account_balance_wallet_rounded,
+                    Container(
+                      width: 1,
+                      height: 40,
+                      color: Colors.white24,
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
                     ),
-                  ),
-                ],
-              ),
+                    Expanded(
+                      flex: 1,
+                      child: _buildMetricItem(
+                        label: 'Total Transaksi',
+                        value: '$activeCount',
+                        icon: Icons.confirmation_number_rounded,
+                      ),
+                    ),
+                  ],
+                ),
+              ] else ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildMetricItem(
+                        label: 'Transaksi Hari Ini',
+                        value: '$activeCount',
+                        icon: Icons.confirmation_number_rounded,
+                      ),
+                    ),
+                    Container(
+                      width: 1,
+                      height: 40,
+                      color: Colors.white24,
+                    ),
+                    Expanded(
+                      child: _buildMetricItem(
+                        label: 'Saldo Saat Ini',
+                        value: CurrencyFormatter.formatRupiah(dashboardProvider.summary?.saldo ?? 0),
+                        icon: Icons.account_balance_wallet_rounded,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ],
           ),
         );

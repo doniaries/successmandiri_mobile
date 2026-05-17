@@ -174,13 +174,16 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
   Widget _buildSummaryHeader(ResourceProvider provider) {
     final items = provider.jurnalKeuangans;
     final targetDate = _selectedSingleDate ?? _getSystemActiveDate();
+    final systemActiveDate = _getSystemActiveDate();
 
     // Hitung statistik berdasarkan tanggal aktif
     double displayIn = 0;
     double displayOut = 0;
+    int filterCount = 0;
 
     for (var item in items) {
       if (DateUtils.isSameDay(item.tanggal.toLocal(), targetDate)) {
+        filterCount++;
         if (item.jenisTransaksi == 'Pemasukan') {
           displayIn += item.nominal;
         } else {
@@ -189,7 +192,114 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
       }
     }
 
+    final isFilterActive = _selectedSingleDate != null && !DateUtils.isSameDay(_selectedSingleDate!, systemActiveDate);
+    final dateText = DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
     final labelSuffix = DateFormat('d MMM', 'id_ID').format(targetDate);
+
+    if (isFilterActive) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        margin: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF01579B), Color(0xFF0288D1)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF01579B).withValues(alpha: 0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Filter Laporan',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Tanggal Laporan',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          dateText,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  height: 40,
+                  width: 1,
+                  color: Colors.white24,
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Total Transaksi',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          '$filterCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
 
     return Container(
       padding: const EdgeInsets.all(20),
