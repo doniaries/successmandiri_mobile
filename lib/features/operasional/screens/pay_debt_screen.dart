@@ -295,14 +295,18 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                     Icons.payments_rounded,
                   ).copyWith(prefixText: 'Rp '),
                   validator: (val) {
-                    if (val == null || val.isEmpty)
+                    if (val == null || val.isEmpty) {
                       return 'Nominal wajib diisi';
+                    }
                     final cleanVal = val.replaceAll(RegExp(r'[^0-9]'), '');
                     final nominal = double.tryParse(cleanVal) ?? 0;
-                    if (nominal <= 0) return 'Nominal harus lebih dari 0';
+                    if (nominal <= 0) {
+                      return 'Nominal harus lebih dari 0';
+                    }
                     if (_selectedPihak != null &&
-                        nominal > (_selectedPihak.sisaHutang ?? 0))
+                        nominal > (_selectedPihak.sisaHutang ?? 0)) {
                       return 'Nominal melebihi sisa hutang';
+                    }
                     return null;
                   },
                 ),

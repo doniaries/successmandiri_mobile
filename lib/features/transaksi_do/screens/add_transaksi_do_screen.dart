@@ -447,8 +447,9 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                   onChanged: (val) {
                                     setState(() {
                                       _penjualSebagaiSupir = val ?? false;
-                                      if (_penjualSebagaiSupir)
+                                      if (_penjualSebagaiSupir) {
                                         _selectedSupirId = null;
+                                      }
                                     });
                                   },
                                 ),

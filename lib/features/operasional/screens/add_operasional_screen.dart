@@ -42,8 +42,9 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
   };
 
   String _getOperasionalType(String kategoriLabel) {
-    if (kategoriLabel == 'Tambah Saldo' || kategoriLabel == 'Bayar Hutang')
+    if (kategoriLabel == 'Tambah Saldo' || kategoriLabel == 'Bayar Hutang') {
       return 'Pemasukan';
+    }
     return 'Pengeluaran';
   }
 
@@ -428,11 +429,14 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
                     Icons.payments_rounded,
                   ).copyWith(prefixText: 'Rp ', hintText: '0'),
                   validator: (val) {
-                    if (val == null || val.isEmpty)
+                    if (val == null || val.isEmpty) {
                       return 'Nominal wajib diisi';
+                    }
                     final cleanVal = val.replaceAll(RegExp(r'[^0-9]'), '');
                     final nominal = double.tryParse(cleanVal) ?? 0;
-                    if (nominal <= 0) return 'Nominal harus lebih dari 0';
+                    if (nominal <= 0) {
+                      return 'Nominal harus lebih dari 0';
+                    }
 
                     if (_selectedKategori == 'Bayar Hutang' &&
                         _selectedPihak != null) {
