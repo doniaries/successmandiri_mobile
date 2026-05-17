@@ -122,6 +122,20 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
     }
   }
 
+  void _showEditBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return _SupirEditBottomSheet(
+          supir: _currentSupir,
+          onSuccess: _fetchDetail,
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -134,13 +148,7 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => EditSupirScreen(supir: _currentSupir)),
-              );
-              _fetchDetail();
-            },
+            onPressed: _showEditBottomSheet,
           ),
           IconButton(
             icon: Icon(
@@ -262,19 +270,24 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
             const SizedBox(height: 24),
             
             // Info Sections
-            _buildInfoSection('Informasi Kontak & Status', [
-              _buildInfoRow(
-                Icons.phone_android_rounded, 
-                'Telepon', 
-                _currentSupir.telepon ?? '-',
-                trailing: _currentSupir.telepon != null ? IconButton(
-                  icon: const Icon(Icons.call, color: Color(0xFF01579B)),
-                  onPressed: () => _makePhoneCall(_currentSupir.telepon!),
-                ) : null,
-              ),
-              _buildInfoRow(Icons.info_outline_rounded, 'Status', _currentSupir.status ?? 'Aktif'),
-              _buildInfoRow(Icons.location_on_rounded, 'Alamat', _currentSupir.alamat ?? '-', isMultiLine: true),
-            ]),
+            // Info Sections
+            _buildInfoSection(
+              'Informasi Kontak & Status',
+              [
+                _buildInfoRow(
+                  Icons.phone_android_rounded, 
+                  'Telepon', 
+                  _currentSupir.telepon ?? '-',
+                  trailing: _currentSupir.telepon != null ? IconButton(
+                    icon: const Icon(Icons.call, color: Color(0xFF01579B)),
+                    onPressed: () => _makePhoneCall(_currentSupir.telepon!),
+                  ) : null,
+                ),
+                _buildInfoRow(Icons.info_outline_rounded, 'Status', _currentSupir.status ?? 'Aktif'),
+                _buildInfoRow(Icons.location_on_rounded, 'Alamat', _currentSupir.alamat ?? '-', isMultiLine: true),
+              ],
+              onTap: _showEditBottomSheet,
+            ),
 
             const SizedBox(height: 24),
             _buildInfoSection('Status Keuangan', [
@@ -415,38 +428,60 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
     );
   }
 
-  Widget _buildInfoSection(String title, List<Widget> children) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 4,
-                height: 16,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF01579B),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF2C3E50)),
-              ),
-            ],
+  Widget _buildInfoSection(String title, List<Widget> children, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: onTap != null 
+              ? const Color(0xFF01579B).withOpacity(0.3) 
+              : Colors.grey[200]!,
+            width: onTap != null ? 1.5 : 1,
           ),
-          const SizedBox(height: 20),
-          ...children,
-        ],
+          boxShadow: onTap != null ? [
+            BoxShadow(
+              color: const Color(0xFF01579B).withOpacity(0.05),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            )
+          ] : null,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 4,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF01579B),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      title,
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF2C3E50)),
+                    ),
+                  ],
+                ),
+                if (onTap != null)
+                  const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF01579B)),
+              ],
+            ),
+            const SizedBox(height: 20),
+            ...children,
+          ],
+        ),
       ),
     );
   }
@@ -485,6 +520,221 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
           ),
           trailing ?? const SizedBox.shrink(),
         ],
+      ),
+    );
+  }
+}
+
+class _SupirEditBottomSheet extends StatefulWidget {
+  final Supir supir;
+  final VoidCallback onSuccess;
+
+  const _SupirEditBottomSheet({
+    required this.supir,
+    required this.onSuccess,
+  });
+
+  @override
+  State<_SupirEditBottomSheet> createState() => _SupirEditBottomSheetState();
+}
+
+class _SupirEditBottomSheetState extends State<_SupirEditBottomSheet> {
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _namaController;
+  late TextEditingController _teleponController;
+  late TextEditingController _alamatController;
+  String? _status;
+  bool _isLoading = false;
+
+  final List<String> _statusOptions = ['AKTIF', 'NONAKTIF', 'CUTI'];
+
+  @override
+  void initState() {
+    super.initState();
+    _namaController = TextEditingController(text: widget.supir.nama);
+    _teleponController = TextEditingController(text: widget.supir.telepon);
+    _alamatController = TextEditingController(text: widget.supir.alamat);
+    _status = widget.supir.status?.toUpperCase() ?? 'AKTIF';
+    if (!_statusOptions.contains(_status)) {
+      _status = 'AKTIF';
+    }
+  }
+
+  @override
+  void dispose() {
+    _namaController.dispose();
+    _teleponController.dispose();
+    _alamatController.dispose();
+    super.dispose();
+  }
+
+  void _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final provider = context.read<ResourceProvider>();
+      final success = await provider.updateSupir(widget.supir.id, {
+        'nama': _namaController.text,
+        'telepon': _teleponController.text,
+        'alamat': _alamatController.text,
+        'status_supir': _status,
+      });
+
+      if (mounted) {
+        if (success) {
+          Navigator.pop(context); // Close bottom sheet
+          widget.onSuccess(); // Trigger refresh
+          SuccessDialog.show(
+            context,
+            title: 'Data Diperbarui!',
+            message: 'Informasi Supir ${_namaController.text} telah berhasil diperbarui.',
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Gagal memperbarui data Supir')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: MediaQuery.of(context).viewInsets,
+      child: Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Row(
+                children: [
+                  Icon(Icons.edit_outlined, color: Color(0xFF01579B)),
+                  SizedBox(width: 8),
+                  Text(
+                    'Edit Informasi Kontak',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF2C3E50),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              _buildTextField(
+                controller: _namaController,
+                label: 'Nama Supir',
+                icon: Icons.person_outline,
+                validator: (val) => val == null || val.isEmpty ? 'Nama wajib diisi' : null,
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                controller: _teleponController,
+                label: 'Nomor Telepon',
+                icon: Icons.phone_outlined,
+                keyboardType: TextInputType.phone,
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _status,
+                decoration: InputDecoration(
+                  labelText: 'Status Supir',
+                  prefixIcon: const Icon(Icons.info_outline, color: Color(0xFF01579B)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey[50],
+                ),
+                items: _statusOptions.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                onChanged: (val) => setState(() => _status = val),
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                controller: _alamatController,
+                label: 'Alamat',
+                icon: Icons.location_on_outlined,
+                maxLines: 3,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _isLoading ? null : _submit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF01579B),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+                child: _isLoading 
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : const Text('SIMPAN PERUBAHAN', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType? keyboardType,
+    int maxLines = 1,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      maxLines: maxLines,
+      validator: validator,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: const Color(0xFF01579B)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF01579B), width: 2),
+        ),
+        filled: true,
+        fillColor: Colors.grey[50],
       ),
     );
   }
