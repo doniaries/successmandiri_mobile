@@ -24,7 +24,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
   final List<String> _filters = ['Semua', 'Pemasukan', 'Pengeluaran'];
   final List<String> _dateFilters = ['Hari Ini', 'Semua'];
   final ScrollController _scrollController = ScrollController();
-  DateTimeRange? _selectedDateRange;
+  DateTime? _selectedSingleDate;
 
   @override
   void initState() {
@@ -48,9 +48,10 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
       filters['jenis_transaksi'] = _selectedFilter;
     }
 
-    if (_selectedDateRange != null) {
-      filters['start_date'] = DateFormat('yyyy-MM-dd').format(_selectedDateRange!.start);
-      filters['end_date'] = DateFormat('yyyy-MM-dd').format(_selectedDateRange!.end);
+    if (_selectedSingleDate != null) {
+      final dateStr = DateFormat('yyyy-MM-dd').format(_selectedSingleDate!);
+      filters['start_date'] = dateStr;
+      filters['end_date'] = dateStr;
     } else if (_selectedDateFilter == 'Hari Ini') {
       final activeDateStr = context
           .read<DashboardProvider>()
@@ -177,13 +178,9 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     double displayOut = 0;
     String labelSuffix = '';
 
-    if (_selectedDateRange != null) {
+    if (_selectedSingleDate != null) {
       for (var item in items) {
-        final d = item.tanggal.toLocal();
-        if (d.isAfter(
-              _selectedDateRange!.start.subtract(const Duration(seconds: 1)),
-            ) &&
-            d.isBefore(_selectedDateRange!.end.add(const Duration(days: 1)))) {
+        if (DateUtils.isSameDay(item.tanggal.toLocal(), _selectedSingleDate!)) {
           if (item.jenisTransaksi == 'Pemasukan') {
             displayIn += item.nominal;
           } else {
@@ -191,7 +188,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
           }
         }
       }
-      labelSuffix = 'Filtered';
+      labelSuffix = DateFormat('d MMM').format(_selectedSingleDate!);
     } else if (_selectedDateFilter == 'Hari Ini') {
       for (var item in items) {
         if (DateUtils.isSameDay(item.tanggal.toLocal(), systemActiveDate)) {
@@ -206,7 +203,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     } else {
       displayIn = provider.totalPemasukan;
       displayOut = provider.totalPengeluaran;
-      labelSuffix = 'Bulan Ini';
+      labelSuffix = 'Semua';
     }
 
     return Container(
@@ -317,7 +314,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
         children: [
           ..._dateFilters.map((tab) {
             final isSelected =
-                _selectedDateFilter == tab && _selectedDateRange == null;
+                _selectedDateFilter == tab && _selectedSingleDate == null;
             return Padding(
               padding: const EdgeInsets.only(right: 8),
               child: ChoiceChip(
@@ -327,7 +324,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
                   if (val) {
                     setState(() {
                       _selectedDateFilter = tab;
-                      _selectedDateRange = null;
+                      _selectedSingleDate = null;
                     });
                     _refreshData();
                   }
@@ -345,17 +342,17 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
               ),
             );
           }),
-          if (_selectedDateRange != null)
+          if (_selectedSingleDate != null)
             Padding(
               padding: const EdgeInsets.only(right: 8),
               child: ChoiceChip(
                 label: Text(
-                  '${DateFormat('dd/MM').format(_selectedDateRange!.start)} - ${DateFormat('dd/MM').format(_selectedDateRange!.end)}',
+                  DateFormat('dd/MM/yyyy').format(_selectedSingleDate!),
                 ),
                 selected: true,
                 onSelected: (_) {
                   setState(() {
-                    _selectedDateRange = null;
+                    _selectedSingleDate = null;
                     _selectedDateFilter = 'Hari Ini';
                   });
                   _refreshData();
@@ -493,12 +490,9 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
 
   List<JurnalKeuangan> _getFilteredItems(List<JurnalKeuangan> items) {
     return items.where((item) {
-      if (_selectedDateRange != null) {
+      if (_selectedSingleDate != null) {
         final d = item.tanggal.toLocal();
-        return d.isAfter(
-              _selectedDateRange!.start.subtract(const Duration(seconds: 1)),
-            ) &&
-            d.isBefore(_selectedDateRange!.end.add(const Duration(days: 1)));
+        return DateUtils.isSameDay(d, _selectedSingleDate!);
       }
       if (_selectedDateFilter == 'Hari Ini') {
         final activeDateStr = context
@@ -533,77 +527,25 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
               const SizedBox(height: 20),
               ListTile(
                 leading: const Icon(
-                  Icons.date_range_rounded,
+                  Icons.calendar_today_rounded,
                   color: Color(0xFF01579B),
                 ),
-                title: const Text('Pilih Rentang Tanggal'),
+                title: const Text('Pilih Tanggal'),
                 onTap: () async {
                   Navigator.pop(context);
-                  final picked = await showDateRangePicker(
+                  final picked = await showDatePicker(
                     context: this.context,
+                    initialDate: _selectedSingleDate ?? DateTime.now(),
                     firstDate: DateTime(2020),
                     lastDate: DateTime.now(),
-                    initialDateRange: _selectedDateRange,
                   );
                   if (picked != null) {
                     setState(() {
-                      _selectedDateRange = picked;
+                      _selectedSingleDate = picked;
                       _selectedDateFilter = 'Semua';
                     });
                     _refreshData();
                   }
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.calendar_view_month_rounded,
-                  color: Color(0xFF01579B),
-                ),
-                title: const Text('Pilih Bulan Ini'),
-                onTap: () {
-                  Navigator.pop(context);
-                  final activeDateStr = context
-                      .read<DashboardProvider>()
-                      .summary
-                      ?.systemActiveDate;
-                  final now = activeDateStr != null
-                      ? DateTime.parse(activeDateStr)
-                      : DateTime.now();
-                  setState(() {
-                    _selectedDateRange = DateTimeRange(
-                      start: DateTime(now.year, now.month, 1),
-                      end: now,
-                    );
-                    _selectedDateFilter = 'Semua';
-                  });
-                  _refreshData();
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.calendar_month_rounded,
-                  color: Color(0xFF01579B),
-                ),
-                title: const Text('Pilih Bulan Lalu'),
-                onTap: () {
-                  Navigator.pop(context);
-                  final activeDateStr = context
-                      .read<DashboardProvider>()
-                      .summary
-                      ?.systemActiveDate;
-                  final now = activeDateStr != null
-                      ? DateTime.parse(activeDateStr)
-                      : DateTime.now();
-                  final lastMonth = DateTime(now.year, now.month - 1, 1);
-                  final lastDayOfLastMonth = DateTime(now.year, now.month, 0);
-                  setState(() {
-                    _selectedDateRange = DateTimeRange(
-                      start: lastMonth,
-                      end: lastDayOfLastMonth,
-                    );
-                    _selectedDateFilter = 'Semua';
-                  });
-                  _refreshData();
                 },
               ),
               const SizedBox(height: 10),
@@ -623,9 +565,10 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     String endDateStr;
     String rentang;
 
-    if (_selectedDateRange != null) {
-      startDateStr = DateFormat('yyyy-MM-dd').format(_selectedDateRange!.start);
-      endDateStr = DateFormat('yyyy-MM-dd').format(_selectedDateRange!.end);
+    if (_selectedSingleDate != null) {
+      final dateStr = DateFormat('yyyy-MM-dd').format(_selectedSingleDate!);
+      startDateStr = dateStr;
+      endDateStr = dateStr;
       rentang = 'periode';
     } else if (_selectedDateFilter == 'Hari Ini') {
       final activeDateStr = context
@@ -646,9 +589,9 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
       final systemActiveDate = activeDateStr != null
           ? DateTime.parse(activeDateStr)
           : DateTime.now();
-      startDateStr = DateFormat('yyyy-MM-dd').format(DateTime(systemActiveDate.year, systemActiveDate.month, 1));
+      startDateStr = DateFormat('yyyy-MM-dd').format(systemActiveDate);
       endDateStr = DateFormat('yyyy-MM-dd').format(systemActiveDate);
-      rentang = 'bulan_ini';
+      rentang = 'semua';
     }
 
     final url = Uri.parse(

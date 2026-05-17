@@ -856,10 +856,15 @@ class _NotificationButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Selector4<TransaksiDoProvider, TambahSaldoProvider, ResourceProvider, DashboardProvider, Map<String, dynamic>>(
       selector: (_, p1, p2, p3, p4) {
-        bool hasDo = p1.hasNewData;
-        bool hasResource = p3.hasNewDataFor('penjual') || p3.hasNewDataFor('supir') || p3.hasNewDataFor('pekerja') || p3.hasNewDataFor('jurnal_keuangan') || p3.hasNewDataFor('operasional');
-        int total = (hasDo ? 1 : 0) + (hasResource ? 1 : 0);
-        return {'total': total, 'pulsing': total > 0};
+        int total = 0;
+        if (p1.hasNewData) total++;
+        if ((p4.summary?.tambahSaldoTodayCount ?? 0) > 0) total++;
+        if (p3.hasNewDataFor('operasional')) total++;
+        if (p3.hasNewDataFor('penjual')) total++;
+        if (p3.hasNewDataFor('supir')) total++;
+        if (p3.hasNewDataFor('pekerja')) total++;
+        if (p3.hasNewDataFor('jurnal_keuangan')) total++;
+        return {'total': total};
       },
       builder: (context, data, _) => Stack(
         clipBehavior: Clip.none,
@@ -868,8 +873,12 @@ class _NotificationButton extends StatelessWidget {
             icon: Icons.notifications_none_rounded,
             onTap: () => context.findAncestorStateOfType<DashboardScreenState>()?._showNotifications(context),
           ),
-          if (data['total'] > 0) Positioned(top: -6, right: -6, child: _CountBadge(count: data['total'], color: Colors.red)),
-          if (data['pulsing']) const Positioned(top: -3, right: -3, child: RepaintBoundary(child: AnimatedPulsingDot())),
+          if (data['total'] > 0)
+            Positioned(
+              top: -6,
+              right: -6,
+              child: _CountBadge(count: data['total'], color: Colors.red),
+            ),
         ],
       ),
     );
