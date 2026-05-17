@@ -7,7 +7,6 @@ import 'package:sawitappmobile/shared/models/mutasi_hutang_model.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/features/operasional/screens/pay_debt_screen.dart';
-import 'package:sawitappmobile/features/penjual/screens/edit_penjual_screen.dart';
 import 'package:sawitappmobile/shared/widgets/error_dialog.dart';
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 
@@ -441,13 +440,13 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: onTap != null 
-              ? const Color(0xFF01579B).withOpacity(0.3) 
+              ? const Color(0xFF01579B).withValues(alpha: 0.3) 
               : Colors.grey[200]!,
             width: onTap != null ? 1.5 : 1,
           ),
           boxShadow: onTap != null ? [
             BoxShadow(
-              color: const Color(0xFF01579B).withOpacity(0.05),
+              color: const Color(0xFF01579B).withValues(alpha: 0.05),
               blurRadius: 12,
               offset: const Offset(0, 4),
             )
