@@ -94,8 +94,6 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
         ),
       ),
       actions: [
-        const Center(child: LiveDateTimeWidget()),
-        const SizedBox(width: 8),
         IconButton(
           onPressed: _refreshData,
           icon: const Icon(Icons.refresh_rounded),

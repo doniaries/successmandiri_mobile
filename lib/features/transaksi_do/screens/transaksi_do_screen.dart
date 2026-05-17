@@ -185,8 +185,6 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
         ),
       ),
       actions: [
-        const Center(child: LiveDateTimeWidget()),
-        const SizedBox(width: 8),
         IconButton(
           icon: const Icon(Icons.search_rounded),
           onPressed: () {
@@ -347,6 +345,19 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                           color: Colors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const LiveDateTimeWidget(
+                        showDate: false,
+                        showSeconds: false,
+                        showIcon: true,
+                        isTransparentBg: true,
+                        color: Colors.white70,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white70,
                         ),
                       ),
                     ],

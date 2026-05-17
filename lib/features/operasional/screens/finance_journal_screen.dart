@@ -70,21 +70,10 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: Row(
-          children: [
-            const Text('Laporan Keuangan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            const SizedBox(width: 4),
-            const Flexible(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: LiveDateTimeWidget(),
-              ),
-            ),
-          ],
-        ),
+        title: const Text('Laporan Keuangan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xFF01579B),
+        foregroundColor: Colors.white,
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
         actions: [
           IconButton(
             icon: const Icon(Icons.print_rounded),

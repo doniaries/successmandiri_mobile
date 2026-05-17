@@ -134,21 +134,10 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
       message: 'Menyimpan transaksi...',
       child: Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            const Text('Tambah Operasional',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            const Expanded(
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: LiveDateTimeWidget(),
-              ),
-            ),
-          ],
-        ),
+        title: const Text('Tambah Operasional', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        backgroundColor: const Color(0xFF01579B),
+        foregroundColor: Colors.white,
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),

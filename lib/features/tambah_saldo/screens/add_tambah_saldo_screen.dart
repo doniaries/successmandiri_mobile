@@ -7,6 +7,7 @@ import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
+import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 
 class AddTambahSaldoScreen extends StatefulWidget {
   const AddTambahSaldoScreen({super.key});
@@ -74,11 +75,13 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tambah Saldo',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Tambah Saldo',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: const Color(0xFF01579B),
+        foregroundColor: Colors.white,
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
       ),
       body: AppLoadingOverlay(
         isLoading: isLoading,

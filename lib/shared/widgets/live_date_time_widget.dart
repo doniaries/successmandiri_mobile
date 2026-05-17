@@ -6,12 +6,18 @@ class LiveDateTimeWidget extends StatefulWidget {
   final TextStyle? style;
   final Color? color;
   final bool showSeconds;
+  final bool showDate;
+  final bool showIcon;
+  final bool isTransparentBg;
 
   const LiveDateTimeWidget({
     super.key,
     this.style,
     this.color,
-    this.showSeconds = true,
+    this.showSeconds = false,
+    this.showDate = true,
+    this.showIcon = true,
+    this.isTransparentBg = false,
   });
 
   @override
@@ -46,6 +52,39 @@ class _LiveDateTimeWidgetState extends State<LiveDateTimeWidget> {
     final dateFormat = DateFormat('E, d MMM yyyy', 'id_ID');
     final timeFormat = DateFormat(widget.showSeconds ? 'HH:mm:ss' : 'HH:mm', 'id_ID');
 
+    final textToShow = widget.showDate 
+        ? '${dateFormat.format(_currentTime)} • ${timeFormat.format(_currentTime)}'
+        : timeFormat.format(_currentTime);
+
+    final textWidget = Text(
+      textToShow,
+      style: widget.style ?? TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: widget.color ?? const Color(0xFF01579B),
+        letterSpacing: 0.3,
+      ),
+    );
+
+    final rowChildren = <Widget>[
+      if (widget.showIcon) ...[
+        Icon(
+          Icons.access_time_rounded,
+          size: 14,
+          color: widget.color ?? const Color(0xFF01579B),
+        ),
+        const SizedBox(width: 8),
+      ],
+      textWidget,
+    ];
+
+    if (widget.isTransparentBg) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: rowChildren,
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -58,23 +97,7 @@ class _LiveDateTimeWidgetState extends State<LiveDateTimeWidget> {
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.access_time_rounded,
-            size: 14,
-            color: widget.color ?? const Color(0xFF01579B),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            '${dateFormat.format(_currentTime)} • ${timeFormat.format(_currentTime)}',
-            style: widget.style ?? TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: widget.color ?? const Color(0xFF01579B),
-              letterSpacing: 0.3,
-            ),
-          ),
-        ],
+        children: rowChildren,
       ),
     );
   }

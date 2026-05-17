@@ -47,6 +47,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     } else {
       navProvider.setIndex(index);
       
+      // Pastikan ketika pindah ke tab Transaksi DO (index 1), navigator selalu direset ke root (halaman index/list)
+      if (index == 1) {
+        _navigatorKeys[1].currentState?.popUntil((route) => route.isFirst);
+      }
+      
       // Trigger auto-fetch if data is empty
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (index == 1) {

@@ -81,21 +81,13 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            const Text('Tambah Supir',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            const Expanded(
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: LiveDateTimeWidget(),
-              ),
-            ),
-          ],
+        title: const Text(
+          'Tambah Supir',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
+        backgroundColor: const Color(0xFF01579B),
+        foregroundColor: Colors.white,
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
       ),
       body: AppLoadingOverlay(
         isLoading: provider.isLoading,

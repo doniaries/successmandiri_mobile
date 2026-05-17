@@ -279,12 +279,6 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
             'Tambah Transaksi DO',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          actions: const [
-            Padding(
-              padding: EdgeInsets.only(right: 12),
-              child: LiveDateTimeWidget(),
-            ),
-          ],
           backgroundColor: const Color(0xFF01579B),
           foregroundColor: Colors.white,
         ),
