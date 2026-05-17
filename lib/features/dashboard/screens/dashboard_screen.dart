@@ -513,7 +513,18 @@ class DashboardScreenState extends State<DashboardScreen> {
         size: 20
       );
       titleText = data.kategoriLabel ?? data.kategori;
-      bodyText = data.keterangan ?? '-';
+      
+      final creator = data.userName != null && data.userName!.isNotEmpty && data.userName != '-' 
+          ? 'Oleh: ${data.userName}' 
+          : 'Oleh: -';
+      final pihak = data.namaPihak != null && data.namaPihak!.isNotEmpty && data.namaPihak != '-' 
+          ? ' • Pihak: ${data.namaPihak}' 
+          : '';
+      final ket = data.keterangan != null && data.keterangan!.isNotEmpty && data.keterangan != '-' 
+          ? ' (${data.keterangan})' 
+          : '';
+      bodyText = '$creator$pihak$ket';
+      
       amount = data.nominal;
       date = data.tanggal;
       detailScreen = OperasionalDetailScreen(operasional: data);

@@ -9,6 +9,7 @@ class Operasional {
   final int? pihakId;
   final String? pihakType;
   final String? namaPihak;
+  final String? userName;
 
   Operasional({
     required this.id,
@@ -21,6 +22,7 @@ class Operasional {
     this.pihakId,
     this.pihakType,
     this.namaPihak,
+    this.userName,
   });
 
   factory Operasional.fromJson(Map<String, dynamic> json) {
@@ -35,6 +37,7 @@ class Operasional {
       pihakId: (json['pihak_id'] is int) ? json['pihak_id'] : int.tryParse(json['pihak_id']?.toString() ?? ''),
       pihakType: json['pihak_type'],
       namaPihak: json['nama'] ?? json['pihak_nama'], // Handle from accessor
+      userName: json['user_name'] ?? json['user']?['name'], // Handle both accessor and direct eager relation
     );
   }
 }

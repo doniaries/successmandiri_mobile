@@ -625,6 +625,13 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                       ),
+                      if (item.userName != null && item.userName!.isNotEmpty && item.userName != '-') ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          'Pencatat: ${item.userName}',
+                          style: TextStyle(fontSize: 11, color: Colors.grey[500], fontWeight: FontWeight.w500),
+                        ),
+                      ],
                       const SizedBox(height: 4),
                       Text(
                         DateFormat('dd MMM yyyy • HH:mm', 'id_ID').format(item.tanggal),

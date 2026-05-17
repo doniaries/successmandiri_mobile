@@ -168,6 +168,8 @@ class OperasionalDetailScreen extends StatelessWidget {
               _buildInfoRow(Icons.category_rounded, 'Kategori', operasional.kategoriLabel ?? operasional.kategori),
               if (operasional.namaPihak != null)
                 _buildInfoRow(Icons.person_rounded, 'Pihak Terkait', operasional.namaPihak!),
+              if (operasional.userName != null && operasional.userName!.isNotEmpty && operasional.userName != '-')
+                _buildInfoRow(Icons.account_circle_rounded, 'Pencatat', operasional.userName!),
             ]),
             
             const SizedBox(height: 20),
