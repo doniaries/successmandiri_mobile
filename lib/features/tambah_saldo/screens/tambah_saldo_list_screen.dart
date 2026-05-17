@@ -529,37 +529,53 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
             );
           },
           child: ListTile(
-            contentPadding: const EdgeInsets.all(16),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             title: Text(
               CurrencyFormatter.formatRupiah(request.nominal),
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Text(
                   request.keterangan,
-                  style: TextStyle(color: Colors.grey[700]),
+                  style: TextStyle(color: Colors.grey[700], fontSize: 13),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 8),
                 Row(
                   children: [
-                    Icon(Icons.person, size: 14, color: Colors.grey[600]),
+                    Icon(Icons.person_outline_rounded, size: 13, color: Colors.grey[600]),
                     const SizedBox(width: 4),
-                    Text(
-                      request.userName ?? 'N/A',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    Expanded(
+                      child: Text(
+                        request.userName ?? 'N/A',
+                        style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    const Spacer(),
-                    Icon(Icons.calendar_today, size: 14, color: Colors.grey[600]),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Row(
+                  children: [
+                    Icon(Icons.calendar_today_outlined, size: 12, color: Colors.grey[600]),
                     const SizedBox(width: 4),
-                    Text(
-                      DateFormat(
-                        'dd MMM yyyy • HH:mm',
-                        'id_ID',
-                      ).format(request.tanggal),
-                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    Expanded(
+                      child: Text(
+                        DateFormat(
+                          'dd MMM yyyy • HH:mm',
+                          'id_ID',
+                        ).format(request.tanggal),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
