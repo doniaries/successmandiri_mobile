@@ -140,7 +140,7 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
     });
 
     if (mounted) {
-      if (success) {
+      if (success != null) {
         context.read<DashboardProvider>().fetchSummary();
         SuccessDialog.show(
           context,

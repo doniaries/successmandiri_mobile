@@ -115,7 +115,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
     });
 
     if (mounted) {
-      if (success) {
+      if (success != null) {
         final bool isOffline = provider.errorMessage == 'offline';
         SuccessDialog.show(
           context,
