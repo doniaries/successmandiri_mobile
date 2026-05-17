@@ -1,8 +1,8 @@
 class ApiConstants {
   static String get baseUrl {
     // 1. IP Lokal (Gunakan port 8000 untuk Laravel Serve)
-    // return 'http://192.168.100.246:8000/api';
-    return 'http://localhost:8000/api';
+    return 'http://192.168.100.16:8000/api'; // Infinix
+    // return 'http://localhost:8000/api'; // Chrome
 
     // 2. Produksi (Hapus komentar rute di bawah jika sudah online)
     //return 'https://sawit.successmandiri.com/api';
