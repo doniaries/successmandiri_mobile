@@ -31,6 +31,7 @@ import 'package:sawitappmobile/features/operasional/models/operasional_model.dar
 import 'package:sawitappmobile/shared/providers/navigation_provider.dart';
 import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 import 'package:sawitappmobile/shared/widgets/custom_loading_logo.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardScreen extends StatefulWidget {
   final VoidCallback? onAddBalance;
@@ -428,64 +429,104 @@ class DashboardScreenState extends State<DashboardScreen> {
         : [];
     final latestOperasional = context.read<DashboardProvider>().summary?.latestOperasional ?? [];
 
-    final allNotifications = [
-      ...transactions.map((t) => {'type': 'do', 'data': t, 'id': 'do_${t.id}', 'time': t.tanggal}),
-      ...pengajuanRequests.map((p) => {'type': 'pengajuan', 'data': p, 'id': 'pengajuan_${p.id}', 'time': p.tanggal}),
-      ...latestOperasional.map((o) => {'type': 'operasional', 'data': o, 'id': 'operasional_${o.id}', 'time': o.tanggal}),
-    ]..sort((a, b) => (b['time'] as DateTime).compareTo(a['time'] as DateTime));
-
     showModalBottomSheet(
       context: context, backgroundColor: Colors.transparent, isScrollControlled: true,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.7,
-        decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30))),
-        child: Column(
-          children: [
-            const SizedBox(height: 12),
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text('Informasi Terbaru', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF2C3E50))),
-                  if (allNotifications.isNotEmpty) 
-                    TextButton.icon(
-                      onPressed: () {
-                        context.read<TransaksiDoProvider>().markAsSeen();
-                        context.read<TambahSaldoProvider>().markAsSeen();
-                        context.read<ResourceProvider>().markAllAsSeen();
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Notifikasi telah dibersihkan'),
-                            behavior: SnackBarBehavior.floating,
-                            backgroundColor: Color(0xFF01579B),
-                          ),
-                        );
-                      }, 
-                      icon: const Icon(Icons.done_all_rounded, size: 18, color: Colors.redAccent), 
-                      label: const Text('Bersihkan', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
-                    ),
-                ],
+      builder: (context) => FutureBuilder<Map<String, String>>(
+        future: () async {
+          final prefs = await SharedPreferences.getInstance();
+          return {
+            'transaksi_do': prefs.getString('seen_state_transaksi_do') ?? '',
+            'tambah_saldo': prefs.getString('seen_state_tambah_saldo') ?? '',
+            'operasional': prefs.getString('seen_state_operasional') ?? '',
+          };
+        }(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.7,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
               ),
+              child: const Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          final seenStates = snapshot.data!;
+          final lastSeenDoId = int.tryParse(seenStates['transaksi_do'] ?? '0') ?? 0;
+          final lastSeenSaldoId = int.tryParse(seenStates['tambah_saldo'] ?? '0') ?? 0;
+          final lastSeenOperasionalId = int.tryParse(seenStates['operasional'] ?? '0') ?? 0;
+
+          final filteredTransactions = transactions.where((t) => t.id > lastSeenDoId).toList();
+          final filteredPengajuan = pengajuanRequests.where((p) => p.id > lastSeenSaldoId).toList();
+          final filteredOperasional = latestOperasional.where((o) => o.id > lastSeenOperasionalId).toList();
+
+          final allNotifications = [
+            ...filteredTransactions.map((t) => {'type': 'do', 'data': t, 'id': 'do_${t.id}', 'time': t.tanggal}),
+            ...filteredPengajuan.map((p) => {'type': 'pengajuan', 'data': p, 'id': 'pengajuan_${p.id}', 'time': p.tanggal}),
+            ...filteredOperasional.map((o) => {'type': 'operasional', 'data': o, 'id': 'operasional_${o.id}', 'time': o.tanggal}),
+          ]..sort((a, b) => (b['time'] as DateTime).compareTo(a['time'] as DateTime));
+
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.7,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
             ),
-            Expanded(
-              child: allNotifications.isEmpty 
-                  ? const Center(child: Text('Belum ada aktivitas terbaru'))
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      itemCount: allNotifications.length.clamp(0, 15),
-                      itemBuilder: (context, index) {
-                        final notif = allNotifications[index];
-                        final String type = notif['type'] as String;
-                        final dynamic data = notif['data'];
-                        return _buildNotificationItem(context, type, data);
-                      },
-                    ),
+            child: Column(
+              children: [
+                const SizedBox(height: 12),
+                Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Informasi Terbaru', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF2C3E50))),
+                      if (allNotifications.isNotEmpty) 
+                        TextButton.icon(
+                          onPressed: () async {
+                            final txProvider = context.read<TransaksiDoProvider>();
+                            final saldoProvider = context.read<TambahSaldoProvider>();
+                            final resProvider = context.read<ResourceProvider>();
+                            await txProvider.markAsSeen();
+                            await saldoProvider.markAsSeen();
+                            await resProvider.markAllAsSeen();
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Notifikasi telah dibersihkan'),
+                                  behavior: SnackBarBehavior.floating,
+                                  backgroundColor: Color(0xFF01579B),
+                                ),
+                              );
+                            }
+                          }, 
+                          icon: const Icon(Icons.done_all_rounded, size: 18, color: Colors.redAccent), 
+                          label: const Text('Bersihkan', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                        ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: allNotifications.isEmpty 
+                      ? const Center(child: Text('Belum ada aktivitas terbaru'))
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          itemCount: allNotifications.length.clamp(0, 15),
+                          itemBuilder: (context, index) {
+                            final notif = allNotifications[index];
+                            final String type = notif['type'] as String;
+                            final dynamic data = notif['data'];
+                            return _buildNotificationItem(context, type, data);
+                          },
+                        ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
