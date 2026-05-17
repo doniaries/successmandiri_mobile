@@ -204,6 +204,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
     Widget? suffixIcon,
     Color? fillColor,
     String? helperText,
+    TextStyle? prefixStyle,
   }) {
     return InputDecoration(
       labelText: label,
@@ -257,10 +258,12 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
               !label.contains('Cara')
           ? 'Rp '
           : null,
-      prefixStyle: const TextStyle(
-        color: Color(0xFF01579B),
-        fontWeight: FontWeight.bold,
-      ),
+      prefixStyle:
+          prefixStyle ??
+          const TextStyle(
+            color: Color(0xFF01579B),
+            fontWeight: FontWeight.bold,
+          ),
       errorStyle: const TextStyle(color: Colors.orangeAccent),
     );
   }
@@ -645,16 +648,21 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                         controller: _subTotalController,
                         readOnly: true,
                         decoration: _getInputDecoration(
-                          label: 'Sub Total (Tonase x Harga)',
+                          label: 'Sub Total',
                           icon: Icons.calculate_rounded,
                           fillColor: const Color(
                             0xFFF1F8E9,
                           ), // Light green tint
+                          prefixStyle: const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 20,
+                          ),
                         ),
                         style: const TextStyle(
                           fontWeight: FontWeight.w900,
-                          color: Color(0xFF2E7D32),
-                          fontSize: 16,
+                          color: Colors.black,
+                          fontSize: 20,
                         ),
                       ),
                       const SizedBox(height: 16),
