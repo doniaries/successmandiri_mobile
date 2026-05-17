@@ -8,6 +8,7 @@ import 'package:sawitappmobile/shared/widgets/skeleton_loader.dart';
 import 'package:sawitappmobile/features/tambah_saldo/models/tambah_saldo_model.dart';
 import 'package:sawitappmobile/features/tambah_saldo/screens/add_tambah_saldo_screen.dart';
 import 'package:sawitappmobile/features/tambah_saldo/screens/tambah_saldo_detail_screen.dart';
+import 'package:sawitappmobile/features/tambah_saldo/screens/edit_tambah_saldo_screen.dart';
 
 class TambahSaldoListScreen extends StatefulWidget {
   const TambahSaldoListScreen({super.key});
@@ -53,8 +54,14 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
           final filteredRequests = provider.requests.where((r) {
             if (_selectedDateRange != null) {
               final d = r.tanggal.toLocal();
-              return d.isAfter(_selectedDateRange!.start.subtract(const Duration(seconds: 1))) && 
-                     d.isBefore(_selectedDateRange!.end.add(const Duration(days: 1)));
+              return d.isAfter(
+                    _selectedDateRange!.start.subtract(
+                      const Duration(seconds: 1),
+                    ),
+                  ) &&
+                  d.isBefore(
+                    _selectedDateRange!.end.add(const Duration(days: 1)),
+                  );
             }
             if (_selectedTab == 'Hari Ini') {
               return DateUtils.isSameDay(r.tanggal.toLocal(), systemActiveDate);
@@ -68,20 +75,34 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
               itemCount: 5,
               itemBuilder: (context, index) => const Padding(
                 padding: EdgeInsets.symmetric(vertical: 8),
-                child: SkeletonLoader(height: 100, width: double.infinity, borderRadius: 12),
+                child: SkeletonLoader(
+                  height: 100,
+                  width: double.infinity,
+                  borderRadius: 12,
+                ),
               ),
             );
           }
 
           return Column(
             children: [
-              _buildSummaryHeader(provider, dashboardProvider, filteredRequests),
+              _buildSummaryHeader(
+                provider,
+                dashboardProvider,
+                filteredRequests,
+              ),
               _buildDateTabs(),
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () => provider.fetchRequests(),
                   child: filteredRequests.isEmpty
-                      ? Center(child: Text(_selectedTab == 'Hari Ini' ? 'Tidak ada transaksi hari ini.' : 'Belum ada transaksi tambah saldo.'))
+                      ? Center(
+                          child: Text(
+                            _selectedTab == 'Hari Ini'
+                                ? 'Tidak ada transaksi hari ini.'
+                                : 'Belum ada transaksi tambah saldo.',
+                          ),
+                        )
                       : ListView.builder(
                           padding: const EdgeInsets.all(10),
                           itemCount: filteredRequests.length,
@@ -101,7 +122,9 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const AddTambahSaldoScreen()),
+            MaterialPageRoute(
+              builder: (context) => const AddTambahSaldoScreen(),
+            ),
           );
         },
         child: const Icon(Icons.add),
@@ -109,7 +132,11 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
     );
   }
 
-  Widget _buildSummaryHeader(TambahSaldoProvider provider, DashboardProvider dashboardProvider, List<TambahSaldoModel> filtered) {
+  Widget _buildSummaryHeader(
+    TambahSaldoProvider provider,
+    DashboardProvider dashboardProvider,
+    List<TambahSaldoModel> filtered,
+  ) {
     double totalNominal = 0;
     for (var r in filtered) {
       totalNominal += r.nominal;
@@ -119,7 +146,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
     if (_selectedDateRange != null) {
       label = 'Total Terfilter';
     } else if (_selectedTab == 'Hari Ini') {
-      label = 'Total Hari Ini';
+      label = 'Tambah Saldo';
     }
 
     final double currentSaldo = dashboardProvider.summary?.saldo ?? 0.0;
@@ -152,11 +179,19 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
               children: [
                 const Row(
                   children: [
-                    Icon(Icons.account_balance_wallet_rounded, color: Colors.white70, size: 14),
+                    Icon(
+                      Icons.account_balance_wallet_rounded,
+                      color: Colors.white70,
+                      size: 14,
+                    ),
                     SizedBox(width: 6),
                     Text(
                       'Saldo Perusahaan',
-                      style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
@@ -165,7 +200,11 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                   fit: BoxFit.scaleDown,
                   child: Text(
                     CurrencyFormatter.formatRupiah(currentSaldo),
-                    style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
               ],
@@ -184,11 +223,19 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.add_circle_outline_rounded, color: Colors.white70, size: 14),
+                    const Icon(
+                      Icons.add_circle_outline_rounded,
+                      color: Colors.white70,
+                      size: 14,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       label,
-                      style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
@@ -197,7 +244,11 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                   fit: BoxFit.scaleDown,
                   child: Text(
                     CurrencyFormatter.formatRupiah(totalNominal),
-                    style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                 ),
               ],
@@ -215,7 +266,8 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
       child: Row(
         children: [
           ..._tabs.map((tab) {
-            final isSelected = _selectedTab == tab && _selectedDateRange == null;
+            final isSelected =
+                _selectedTab == tab && _selectedDateRange == null;
             return Padding(
               padding: const EdgeInsets.only(right: 8),
               child: ChoiceChip(
@@ -235,7 +287,9 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                   fontWeight: FontWeight.bold,
                 ),
                 backgroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
                 showCheckmark: false,
               ),
             );
@@ -245,13 +299,18 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
               padding: const EdgeInsets.only(right: 8),
               child: ChoiceChip(
                 label: Text(
-                  '${DateFormat('dd/MM').format(_selectedDateRange!.start)} - ${DateFormat('dd/MM').format(_selectedDateRange!.end)}'
+                  '${DateFormat('dd/MM').format(_selectedDateRange!.start)} - ${DateFormat('dd/MM').format(_selectedDateRange!.end)}',
                 ),
                 selected: true,
                 onSelected: (_) => setState(() => _selectedDateRange = null),
                 selectedColor: Colors.orange[800],
-                labelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                labelStyle: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
                 showCheckmark: true,
               ),
             ),
@@ -263,17 +322,25 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
   void _showFilterSheet() {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) {
         return Container(
           padding: const EdgeInsets.all(20),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Filter Riwayat', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Text(
+                'Filter Riwayat',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 20),
               ListTile(
-                leading: const Icon(Icons.date_range_rounded, color: Color(0xFFE67E22)),
+                leading: const Icon(
+                  Icons.date_range_rounded,
+                  color: Color(0xFFE67E22),
+                ),
                 title: const Text('Pilih Rentang Tanggal'),
                 onTap: () async {
                   Navigator.pop(context);
@@ -292,7 +359,10 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.calendar_view_month_rounded, color: Color(0xFFE67E22)),
+                leading: const Icon(
+                  Icons.calendar_view_month_rounded,
+                  color: Color(0xFFE67E22),
+                ),
                 title: const Text('Pilih Bulan Ini'),
                 onTap: () {
                   Navigator.pop(context);
@@ -307,7 +377,10 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.calendar_month_rounded, color: Color(0xFFE67E22)),
+                leading: const Icon(
+                  Icons.calendar_month_rounded,
+                  color: Color(0xFFE67E22),
+                ),
                 title: const Text('Pilih Bulan Lalu'),
                 onTap: () {
                   Navigator.pop(context);
@@ -331,48 +404,194 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
     );
   }
 
-  Widget _buildRequestItem(TambahSaldoModel request) {
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TambahSaldoDetailScreen(request: request),
-            ),
-          );
-        },
-        child: ListTile(
-          contentPadding: const EdgeInsets.all(16),
-          title: Text(
-            CurrencyFormatter.formatRupiah(request.nominal),
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+  Future<bool?> _showDeleteConfirmDialog(TambahSaldoModel request) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.redAccent),
+            SizedBox(width: 8),
+            Text('Hapus Transaksi', style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Text(
+          'Apakah Anda yakin ingin menghapus transaksi tambah saldo sebesar ${CurrencyFormatter.formatRupiah(request.nominal)}?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal', style: TextStyle(color: Colors.grey)),
           ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 8),
-              Text(request.keterangan, style: TextStyle(color: Colors.grey[700])),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Icon(Icons.person, size: 14, color: Colors.grey[600]),
-                  const SizedBox(width: 4),
-                  Text(request.userName ?? 'N/A', style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-                  const Spacer(),
-                  Icon(Icons.calendar_today, size: 14, color: Colors.grey[600]),
-                  const SizedBox(width: 4),
-                  Text(
-                    DateFormat('dd MMM yyyy • HH:mm', 'id_ID').format(request.tanggal),
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                  ),
-                ],
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Ya, Hapus', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleDelete(TambahSaldoModel request) async {
+    final provider = context.read<TambahSaldoProvider>();
+    final dashboardProvider = context.read<DashboardProvider>();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+            ),
+            SizedBox(width: 12),
+            Text('Menghapus transaksi...'),
+          ],
+        ),
+        duration: Duration(days: 1),
+      ),
+    );
+
+    final success = await provider.deleteRequest(request.id);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+      if (success) {
+        dashboardProvider.fetchSummary();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Transaksi berhasil dihapus.'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        provider.fetchRequests(); // Restore visually on error
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(provider.errorMessage ?? 'Gagal menghapus transaksi.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _buildRequestItem(TambahSaldoModel request) {
+    return Dismissible(
+      key: ValueKey('tambah_saldo_${request.id}'),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20.0),
+        decoration: BoxDecoration(
+          color: Colors.redAccent.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              'Hapus',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+            ),
+            SizedBox(width: 8),
+            Icon(
+              Icons.delete_outline_rounded,
+              color: Colors.white,
+              size: 28,
+            ),
+          ],
+        ),
+      ),
+      confirmDismiss: (direction) async {
+        return await _showDeleteConfirmDialog(request);
+      },
+      onDismissed: (direction) {
+        _handleDelete(request);
+      },
+      child: Card(
+        elevation: 2,
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TambahSaldoDetailScreen(request: request),
               ),
-            ],
+            );
+          },
+          child: ListTile(
+            contentPadding: const EdgeInsets.all(16),
+            title: Text(
+              CurrencyFormatter.formatRupiah(request.nominal),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 8),
+                Text(
+                  request.keterangan,
+                  style: TextStyle(color: Colors.grey[700]),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(Icons.person, size: 14, color: Colors.grey[600]),
+                    const SizedBox(width: 4),
+                    Text(
+                      request.userName ?? 'N/A',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    ),
+                    const Spacer(),
+                    Icon(Icons.calendar_today, size: 14, color: Colors.grey[600]),
+                    const SizedBox(width: 4),
+                    Text(
+                      DateFormat(
+                        'dd MMM yyyy • HH:mm',
+                        'id_ID',
+                      ).format(request.tanggal),
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit_rounded, color: Colors.blueAccent, size: 22),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EditTambahSaldoScreen(request: request),
+                      ),
+                    );
+                  },
+                  tooltip: 'Ubah',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_rounded, color: Colors.redAccent, size: 22),
+                  onPressed: () async {
+                    final confirmed = await _showDeleteConfirmDialog(request);
+                    if (confirmed == true) {
+                      _handleDelete(request);
+                    }
+                  },
+                  tooltip: 'Hapus',
+                ),
+              ],
+            ),
           ),
         ),
       ),
