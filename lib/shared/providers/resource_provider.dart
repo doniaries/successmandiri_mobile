@@ -587,7 +587,17 @@ class ResourceProvider with ChangeNotifier {
     } catch (e) {
       debugPrint('Error deleting $type: $e');
       if (e is DioException) {
-        _errorMessage = e.response?.data?['message'] ?? e.message;
+        if (e.response?.data is Map && e.response?.data['errors'] != null) {
+          final Map errors = e.response?.data['errors'];
+          final firstError = errors.values.first;
+          if (firstError is List && firstError.isNotEmpty) {
+            _errorMessage = firstError.first.toString();
+          } else {
+            _errorMessage = firstError.toString();
+          }
+        } else {
+          _errorMessage = e.response?.data?['message'] ?? e.message;
+        }
       } else {
         _errorMessage = e.toString();
       }
@@ -654,7 +664,17 @@ class ResourceProvider with ChangeNotifier {
     } catch (e) {
       debugPrint('Error updating $type status: $e');
       if (e is DioException) {
-        _errorMessage = e.response?.data?['message'] ?? e.message;
+        if (e.response?.data is Map && e.response?.data['errors'] != null) {
+          final Map errors = e.response?.data['errors'];
+          final firstError = errors.values.first;
+          if (firstError is List && firstError.isNotEmpty) {
+            _errorMessage = firstError.first.toString();
+          } else {
+            _errorMessage = firstError.toString();
+          }
+        } else {
+          _errorMessage = e.response?.data?['message'] ?? e.message;
+        }
       } else {
         _errorMessage = e.toString();
       }
