@@ -304,28 +304,42 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
                       final bool isBayarHutang =
                           _selectedKategori == 'Bayar Hutang';
 
-                      if (_selectedPihakType == 'App\\Models\\Penjual') {
-                        parties = isBayarHutang
-                            ? provider.penjualDebtors
-                            : provider.penjuals;
-                      } else if (_selectedPihakType == 'App\\Models\\Supir') {
-                        parties = isBayarHutang
-                            ? provider.supirDebtors
-                            : provider.supirs;
-                      } else if (_selectedPihakType == 'App\\Models\\Pekerja') {
-                        parties = isBayarHutang
-                            ? provider.pekerjaDebtors
-                            : provider.pekerjas;
-                      }
+                       if (_selectedPihakType == 'App\\Models\\Penjual') {
+                         parties = isBayarHutang
+                             ? provider.penjuals
+                                 .where((e) => (e.sisaHutang ?? 0) > 0)
+                                 .toList()
+                             : provider.penjuals
+                                 .where((e) => e.isActive)
+                                 .toList();
+                       } else if (_selectedPihakType == 'App\\Models\\Supir') {
+                         parties = isBayarHutang
+                             ? provider.supirs
+                                 .where((e) => (e.sisaHutang ?? 0) > 0)
+                                 .toList()
+                             : provider.supirs
+                                 .where((e) => e.isActive)
+                                 .toList();
+                       } else if (_selectedPihakType == 'App\\Models\\Pekerja') {
+                         parties = isBayarHutang
+                             ? provider.pekerjas
+                                 .where((e) => e.sisaHutang > 0)
+                                 .toList()
+                             : provider.pekerjas
+                                 .where((e) => e.isActive)
+                                 .toList();
+                       }
 
                       // Dynamic pre-fill of full object based on selected pihak ID
                       if (_selectedPihak == null && _selectedPihakId != null && parties.isNotEmpty) {
-                        try {
-                          _selectedPihak = parties.firstWhere(
-                            (e) => e.id == _selectedPihakId,
-                            orElse: () => null,
-                          );
-                        } catch (_) {}
+                        dynamic found;
+                        for (var e in parties) {
+                          if (e.id == _selectedPihakId) {
+                            found = e;
+                            break;
+                          }
+                        }
+                        _selectedPihak = found;
                       }
 
                       return Row(
@@ -334,7 +348,7 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
                           Expanded(
                             child: DropdownButtonFormField<int>(
                               key: ValueKey(
-                                'pihak_${_selectedPihakType}_${_selectedKategori}_$_selectedPihakId',
+                                'pihak_${_selectedPihakType}_${_selectedKategori}_${_selectedPihakId}_${parties.length}',
                               ),
                               isExpanded: true,
                               initialValue: _selectedPihakId,
@@ -391,10 +405,14 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
                               onChanged: (val) {
                                 setState(() {
                                   _selectedPihakId = val;
-                                  _selectedPihak = parties.firstWhere(
-                                    (e) => e.id == val,
-                                    orElse: () => null,
-                                  );
+                                  dynamic found;
+                                  for (var e in parties) {
+                                    if (e.id == val) {
+                                      found = e;
+                                      break;
+                                    }
+                                  }
+                                  _selectedPihak = found;
                                 });
                               },
                               validator: (val) =>

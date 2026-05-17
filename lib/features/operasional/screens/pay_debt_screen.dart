@@ -230,14 +230,17 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                                 : _selectedPihakType == 'App\\Models\\Supir'
                                 ? provider.supirDebtors
                                 : provider.pekerjaDebtors);
-                        final dynamic pihak = debtors.firstWhere(
-                          (dynamic e) => e.id == val,
-                          orElse: () => null,
-                        );
-                        _selectedPihak = pihak;
-                        if (pihak != null) {
+                        dynamic found;
+                        for (var e in debtors) {
+                          if (e.id == val) {
+                            found = e;
+                            break;
+                          }
+                        }
+                        _selectedPihak = found;
+                        if (found != null) {
                           _nominalController.text =
-                              CurrencyFormatter.formatNumber(pihak.sisaHutang ?? 0);
+                              CurrencyFormatter.formatNumber(found.sisaHutang ?? 0);
                         }
                       });
                     },
