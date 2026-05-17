@@ -124,6 +124,7 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                     keyboardType: TextInputType.number,
+                    inputFormatters: [CurrencyInputFormatter()],
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Mohon masukkan nominal';

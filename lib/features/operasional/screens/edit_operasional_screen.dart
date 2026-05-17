@@ -55,7 +55,7 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
   void initState() {
     super.initState();
     _nominalController = TextEditingController(
-      text: widget.operasional.nominal.toInt().toString(),
+      text: CurrencyFormatter.formatNumber(widget.operasional.nominal),
     );
     _keteranganController = TextEditingController(text: widget.operasional.keterangan);
     _selectedDate = widget.operasional.tanggal;
@@ -452,6 +452,7 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
                 TextFormField(
                   controller: _nominalController,
                   keyboardType: TextInputType.number,
+                  inputFormatters: [CurrencyInputFormatter()],
                   decoration: _inputDecoration(
                     'Nominal',
                     Icons.payments_rounded,

@@ -223,7 +223,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                         _selectedPihak = val;
                         if (val != null) {
                           _nominalController.text =
-                              (val.sisaHutang ?? 0).toInt().toString();
+                              CurrencyFormatter.formatNumber(val.sisaHutang ?? 0);
                         }
                       });
                     },
@@ -290,6 +290,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                 TextFormField(
                   controller: _nominalController,
                   keyboardType: TextInputType.number,
+                  inputFormatters: [CurrencyInputFormatter()],
                   decoration: _inputDecoration(
                     'Nominal Bayar',
                     Icons.payments_rounded,

@@ -597,6 +597,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                         ).copyWith(prefixText: 'Rp '),
                         style: const TextStyle(fontWeight: FontWeight.w600),
                         keyboardType: TextInputType.number,
+                        inputFormatters: [CurrencyInputFormatter()],
                         validator: (val) =>
                             val == null || val.isEmpty ? 'Isi harga' : null,
                       ),
@@ -623,6 +624,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                         ).copyWith(prefixText: 'Rp '),
                         style: const TextStyle(fontWeight: FontWeight.w600),
                         keyboardType: TextInputType.number,
+                        inputFormatters: [CurrencyInputFormatter()],
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
@@ -634,6 +636,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                         ).copyWith(prefixText: 'Rp '),
                         style: const TextStyle(fontWeight: FontWeight.w600),
                         keyboardType: TextInputType.number,
+                        inputFormatters: [CurrencyInputFormatter()],
                       ),
                       const SizedBox(height: 16),
 
@@ -676,13 +679,16 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                       ? _currentSellerDebt
                                       : _subTotal;
                                   _pembayaranHutangController.text =
-                                      amount.toInt().toString();
+                                      NumberFormat.decimalPattern(
+                                        'id_ID',
+                                      ).format(amount);
                                   _onFieldChanged();
                                 }
                               },
                             ),
                           ).copyWith(prefixText: 'Rp '),
                           keyboardType: TextInputType.number,
+                          inputFormatters: [CurrencyInputFormatter()],
                           validator: (val) {
                             if (val != null && val.isNotEmpty) {
                               final amount = CurrencyInputFormatter.parse(val);

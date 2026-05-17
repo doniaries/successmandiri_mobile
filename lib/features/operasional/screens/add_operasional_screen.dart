@@ -424,6 +424,7 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
                 TextFormField(
                   controller: _nominalController,
                   keyboardType: TextInputType.number,
+                  inputFormatters: [CurrencyInputFormatter()],
                   decoration: _inputDecoration(
                     'Nominal',
                     Icons.payments_rounded,
