@@ -91,6 +91,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     if (!mounted) return;
     final provider = context.read<ResourceProvider>();
     provider.fetchResources('jurnal_keuangan', refresh: true, filters: _buildApiFilters());
+    context.read<DashboardProvider>().fetchSummary(); // Sync real balance from backend
   }
 
   @override
