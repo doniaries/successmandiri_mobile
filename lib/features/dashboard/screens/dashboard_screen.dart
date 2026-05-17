@@ -947,7 +947,7 @@ class _StatCardsState extends State<_StatCards> {
               Expanded(
                 child: _StatCard(
                   label: 'Pemasukan', 
-                  value: CurrencyFormatter.formatRupiah(isToday ? stats.pemasukan.today.total : stats.pemasukan.month.total), 
+                  value: CurrencyFormatter.formatCompactRupiah(isToday ? stats.pemasukan.today.total : stats.pemasukan.month.total), 
                   icon: Icons.trending_up_rounded, 
                   color: const Color(0xFF2E7D32), 
                   subtitle: isToday ? 'Hari ini' : 'Bulan ini', 
@@ -959,7 +959,7 @@ class _StatCardsState extends State<_StatCards> {
               Expanded(
                 child: _StatCard(
                   label: 'Pengeluaran', 
-                  value: CurrencyFormatter.formatRupiah(isToday ? stats.pengeluaran.today.total : stats.pengeluaran.month.total), 
+                  value: CurrencyFormatter.formatCompactRupiah(isToday ? stats.pengeluaran.today.total : stats.pengeluaran.month.total), 
                   icon: Icons.trending_down_rounded, 
                   color: const Color(0xFFC62828), 
                   subtitle: isToday ? 'Hari ini' : 'Bulan ini', 
@@ -1029,7 +1029,8 @@ class _StatCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Container(
-          padding: const EdgeInsets.all(12),
+          constraints: const BoxConstraints(minHeight: 125),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
@@ -1120,7 +1121,7 @@ class _MenuGrid extends StatelessWidget {
       crossAxisCount: 3, padding: EdgeInsets.zero, crossAxisSpacing: 8, mainAxisSpacing: 8,
       children: [
         _MenuItem(label: 'Transaksi DO', icon: Icons.local_shipping_rounded, color: const Color(0xFF01579B), onTap: () { context.read<TransaksiDoProvider>().markAsSeen(); Navigator.push(context, MaterialPageRoute(builder: (_) => const TransaksiDoScreen())); }, badgeSelector: (c) => c.select<DashboardProvider, int>((p) => p.summary?.stats.transaksi.today.count ?? 0), hasNewDataSelector: (c) => c.select<TransaksiDoProvider, bool>((p) => p.hasNewData)),
-        _MenuItem(label: 'Tambah Saldo', icon: Icons.add_to_photos_rounded, color: const Color(0xFFF39C12), onTap: () { Navigator.push(context, MaterialPageRoute(builder: (_) => const TambahSaldoListScreen())); }, badgeSelector: (c) => 0, hasNewDataSelector: (c) => false),
+        _MenuItem(label: 'Tambah Saldo', icon: Icons.add_to_photos_rounded, color: const Color(0xFFF39C12), onTap: () { Navigator.push(context, MaterialPageRoute(builder: (_) => const TambahSaldoListScreen())); }, badgeSelector: (c) => c.select<DashboardProvider, int>((p) => p.summary?.tambahSaldoTodayCount ?? 0), hasNewDataSelector: (c) => c.select<DashboardProvider, bool>((p) => (p.summary?.tambahSaldoTodayCount ?? 0) > 0)),
         _MenuItem(label: 'Penjual', icon: Icons.storefront_rounded, color: const Color(0xFF27AE60), onTap: () { context.read<ResourceProvider>().markAsSeen('penjual'); Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceListScreen(title: 'Penjual', resourceType: 'penjual'))); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.penjualCount), hasNewDataSelector: (c) => c.select<ResourceProvider, bool>((p) => p.hasNewDataFor('penjual'))),
         _MenuItem(label: 'Supir', icon: Icons.person_rounded, color: const Color(0xFFE67E22), onTap: () { context.read<ResourceProvider>().markAsSeen('supir'); Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceListScreen(title: 'Supir', resourceType: 'supir'))); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.supirCount), hasNewDataSelector: (c) => c.select<ResourceProvider, bool>((p) => p.hasNewDataFor('supir'))),
         _MenuItem(label: 'Pekerja', icon: Icons.engineering_rounded, color: const Color(0xFF8E44AD), onTap: () { context.read<ResourceProvider>().markAsSeen('pekerja'); Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceListScreen(title: 'Pekerja', resourceType: 'pekerja'))); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.pekerjaCount), hasNewDataSelector: (c) => c.select<ResourceProvider, bool>((p) => p.hasNewDataFor('pekerja'))),

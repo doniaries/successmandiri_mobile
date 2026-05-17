@@ -12,6 +12,7 @@ class DashboardSummary {
   final int totalUser;
   final double totalPengajuanDana;
   final int totalPengajuanCount;
+  final int tambahSaldoTodayCount;
   final String perusahaanName;
   final List<TransaksiDo> transactions;
   final List<Operasional> latestOperasional;
@@ -28,6 +29,7 @@ class DashboardSummary {
     required this.totalUser,
     required this.totalPengajuanDana,
     required this.totalPengajuanCount,
+    required this.tambahSaldoTodayCount,
     required this.perusahaanName,
     required this.transactions,
     required this.latestOperasional,
@@ -47,6 +49,7 @@ class DashboardSummary {
       totalUser: int.tryParse(json['total_user']?.toString() ?? '0') ?? 0,
       totalPengajuanDana: double.tryParse(json['total_pengajuan_dana']?.toString() ?? '0') ?? 0,
       totalPengajuanCount: int.tryParse(json['total_pengajuan_count']?.toString() ?? '0') ?? 0,
+      tambahSaldoTodayCount: int.tryParse(json['tambah_saldo_today_count']?.toString() ?? '0') ?? 0,
       perusahaanName: json['perusahaan_name']?.toString() ?? '-',
       transactions: (json['transactions'] as List?)
               ?.map((e) => TransaksiDo.fromJson(e))
