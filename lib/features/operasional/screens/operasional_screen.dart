@@ -18,15 +18,26 @@ class OperasionalScreen extends StatefulWidget {
 
 class _OperasionalScreenState extends State<OperasionalScreen> {
   final ScrollController _scrollController = ScrollController();
-  String _selectedTab = 'Hari Ini';
-  final List<String> _tabs = ['Hari Ini', 'Semua'];
-  DateTimeRange? _selectedDateRange;
+  DateTime? _selectedSingleDate;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final activeDateStr = context
+          .read<DashboardProvider>()
+          .summary
+          ?.systemActiveDate;
+      if (activeDateStr != null) {
+        setState(() {
+          _selectedSingleDate = DateTime.parse(activeDateStr);
+        });
+      } else {
+        setState(() {
+          _selectedSingleDate = DateTime.now();
+        });
+      }
       _refreshData();
       context.read<DashboardProvider>().fetchSummary();
     });
@@ -53,22 +64,9 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
   }
 
   List<Operasional> _getFilteredDateItems(List<Operasional> allItems, DateTime systemActiveDate) {
+    final targetDate = _selectedSingleDate ?? systemActiveDate;
     return allItems.where((item) {
-      if (_selectedDateRange != null) {
-        final d = item.tanggal.toLocal();
-        return d.isAfter(
-              _selectedDateRange!.start.subtract(
-                const Duration(seconds: 1),
-              ),
-            ) &&
-            d.isBefore(
-              _selectedDateRange!.end.add(const Duration(days: 1)),
-            );
-      }
-      if (_selectedTab == 'Hari Ini') {
-        return DateUtils.isSameDay(item.tanggal.toLocal(), systemActiveDate);
-      }
-      return true;
+      return DateUtils.isSameDay(item.tanggal.toLocal(), targetDate);
     }).toList();
   }
 
@@ -91,6 +89,14 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
+        final activeDateStr = context
+            .read<DashboardProvider>()
+            .summary
+            ?.systemActiveDate;
+        final systemActiveDate = activeDateStr != null
+            ? DateTime.parse(activeDateStr)
+            : DateTime.now();
+
         return Container(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -103,62 +109,23 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
               const SizedBox(height: 20),
               ListTile(
                 leading: const Icon(
-                  Icons.date_range_rounded,
+                  Icons.calendar_today_rounded,
                   color: Color(0xFF01579B),
                 ),
-                title: const Text('Pilih Rentang Tanggal'),
+                title: const Text('Pilih Tanggal'),
                 onTap: () async {
                   Navigator.pop(context);
-                  final picked = await showDateRangePicker(
+                  final picked = await showDatePicker(
                     context: this.context,
                     firstDate: DateTime(2020),
                     lastDate: DateTime.now(),
-                    initialDateRange: _selectedDateRange,
+                    initialDate: _selectedSingleDate ?? systemActiveDate,
                   );
                   if (picked != null) {
                     setState(() {
-                      _selectedDateRange = picked;
-                      _selectedTab = 'Semua';
+                      _selectedSingleDate = picked;
                     });
                   }
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.calendar_view_month_rounded,
-                  color: Color(0xFF01579B),
-                ),
-                title: const Text('Pilih Bulan Ini'),
-                onTap: () {
-                  Navigator.pop(context);
-                  final now = DateTime.now();
-                  setState(() {
-                    _selectedDateRange = DateTimeRange(
-                      start: DateTime(now.year, now.month, 1),
-                      end: now,
-                    );
-                    _selectedTab = 'Semua';
-                  });
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.calendar_month_rounded,
-                  color: Color(0xFF01579B),
-                ),
-                title: const Text('Pilih Bulan Lalu'),
-                onTap: () {
-                  Navigator.pop(context);
-                  final now = DateTime.now();
-                  final lastMonth = DateTime(now.year, now.month - 1, 1);
-                  final lastDayOfLastMonth = DateTime(now.year, now.month, 0);
-                  setState(() {
-                    _selectedDateRange = DateTimeRange(
-                      start: lastMonth,
-                      end: lastDayOfLastMonth,
-                    );
-                    _selectedTab = 'Semua';
-                  });
                 },
               ),
               const SizedBox(height: 10),
@@ -246,35 +213,55 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                 }
               }
 
-              String dateText;
-              if (_selectedDateRange != null) {
-                dateText = '${DateFormat('d MMMM yyyy', 'id_ID').format(_selectedDateRange!.start)} - ${DateFormat('d MMMM yyyy', 'id_ID').format(_selectedDateRange!.end)}';
-              } else if (_selectedTab == 'Hari Ini') {
-                dateText = DateFormat('d MMMM yyyy', 'id_ID').format(systemActiveDate);
-              } else {
-                dateText = 'Semua Transaksi';
-              }
+              final targetDate = _selectedSingleDate ?? systemActiveDate;
+              final dateText = DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
 
               return Container(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Ringkasan Operasional',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF2C3E50),
-                      ),
-                    ),
-                    Text(
-                      dateText,
-                      style: TextStyle(
-                        color: Colors.grey[500],
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Ringkasan Operasional',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF2C3E50),
+                          ),
+                        ),
+                        InkWell(
+                          onTap: _showFilterSheet,
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF01579B).withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: const Color(0xFF01579B).withValues(alpha: 0.3), width: 0.5),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.calendar_month_rounded, color: Color(0xFF01579B), size: 12),
+                                const SizedBox(width: 4),
+                                Text(
+                                  dateText,
+                                  style: const TextStyle(
+                                    color: Color(0xFF01579B),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(width: 2),
+                                const Icon(Icons.arrow_drop_down_rounded, color: Color(0xFF01579B), size: 14),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
                     Row(
@@ -303,74 +290,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
               );
             },
           ),
-          _buildDateTabs(),
           _buildFilterChips(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDateTabs() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-      child: Row(
-        children: [
-          ..._tabs.map((tab) {
-            final isSelected =
-                _selectedTab == tab && _selectedDateRange == null;
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: ChoiceChip(
-                label: Text(tab),
-                selected: isSelected,
-                onSelected: (val) {
-                  if (val) {
-                    setState(() {
-                      _selectedTab = tab;
-                      _selectedDateRange = null;
-                    });
-                  }
-                },
-                selectedColor: const Color(0xFF01579B),
-                labelStyle: TextStyle(
-                  color: isSelected ? Colors.white : Colors.grey[600],
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
-                backgroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(
-                    color: isSelected ? const Color(0xFF01579B) : Colors.grey[300]!,
-                  ),
-                ),
-                showCheckmark: false,
-              ),
-            );
-          }),
-          if (_selectedDateRange != null)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: ChoiceChip(
-                label: Text(
-                  '${DateFormat('dd/MM').format(_selectedDateRange!.start)} - ${DateFormat('dd/MM').format(_selectedDateRange!.end)}',
-                ),
-                selected: true,
-                onSelected: (_) => setState(() => _selectedDateRange = null),
-                selectedColor: const Color(0xFF01579B),
-                labelStyle: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: const BorderSide(color: Color(0xFF01579B)),
-                ),
-                showCheckmark: true,
-              ),
-            ),
         ],
       ),
     );

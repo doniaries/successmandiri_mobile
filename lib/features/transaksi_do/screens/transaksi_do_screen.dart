@@ -18,12 +18,11 @@ class TransaksiDoScreen extends StatefulWidget {
 
 class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   final ScrollController _scrollController = ScrollController();
-  String _selectedCategory = 'Hari Ini';
+  DateTime? _selectedSingleDate;
   bool _isManualSyncing = false;
   bool _isSearching = false;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
-  DateTimeRange? _selectedDateRange;
 
   @override
   void initState() {
@@ -102,9 +101,6 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
               child: _buildSummaryHeader(),
             ),
             _buildPendingSyncBanner(),
-            SliverToBoxAdapter(
-              child: _buildCategoryFilter(),
-            ),
             _buildTransactionList(),
             const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
@@ -214,68 +210,6 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
     );
   }
 
-  Widget _buildCategoryFilter() {
-    final categories = ['Hari Ini', 'Semua', 'Tunai', 'Transfer'];
-    return Container(
-      color: const Color(0xFFF8FAFC),
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Row(
-          children: [
-            ...categories.map((cat) {
-              final isSelected = _selectedCategory == cat && _selectedDateRange == null;
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: ChoiceChip(
-                  label: Text(cat),
-                  selected: isSelected,
-                  onSelected: (_) {
-                    setState(() {
-                      _selectedCategory = cat;
-                      _selectedDateRange = null;
-                    });
-                  },
-                  backgroundColor: Colors.white,
-                  selectedColor: const Color(0xFF0D47A1),
-                  labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : const Color(0xFF64748B),
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(
-                      color: isSelected ? Colors.transparent : Colors.grey[300]!,
-                    ),
-                  ),
-                  showCheckmark: false,
-                  elevation: isSelected ? 4 : 0,
-                ),
-              );
-            }),
-            if (_selectedDateRange != null)
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: ChoiceChip(
-                  label: Text(
-                    '${DateFormat('dd/MM/yy').format(_selectedDateRange!.start)} - ${DateFormat('dd/MM/yy').format(_selectedDateRange!.end)}'
-                  ),
-                  selected: true,
-                  onSelected: (_) => setState(() => _selectedDateRange = null),
-                  selectedColor: Colors.orange[800],
-                  labelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  showCheckmark: true,
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
 
   Widget _buildSummaryHeader() {
     return Consumer2<DashboardProvider, TransaksiDoProvider>(
@@ -286,22 +220,10 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
             ? DateTime.parse(activeDateStr) 
             : DateTime.now();
         
-        final todayCount = transactions.where((t) => DateUtils.isSameDay(t.tanggal.toLocal(), systemActiveDate)).length;
+        final targetDate = _selectedSingleDate ?? systemActiveDate;
+        final activeCount = transactions.where((t) => DateUtils.isSameDay(t.tanggal.toLocal(), targetDate)).length;
         
-        int activeCount = transactions.length;
-        String label = 'Total Transaksi';
-
-        if (_selectedDateRange != null) {
-          activeCount = transactions.where((t) {
-            final d = t.tanggal.toLocal();
-            return d.isAfter(_selectedDateRange!.start.subtract(const Duration(seconds: 1))) && 
-                   d.isBefore(_selectedDateRange!.end.add(const Duration(days: 1)));
-          }).length;
-          label = 'Transaksi Filtered';
-        } else if (_selectedCategory == 'Hari Ini') {
-          activeCount = todayCount;
-          label = 'Transaksi Hari Ini';
-        }
+        final dateText = DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
 
         return Container(
           margin: const EdgeInsets.all(16),
@@ -327,40 +249,63 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                   Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Ringkasan Transaksi',
-                        style: TextStyle(
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Ringkasan Transaksi',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        InkWell(
+                          onTap: _showFilterSheet,
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 0.5),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.calendar_month_rounded, color: Colors.white, size: 12),
+                                const SizedBox(width: 4),
+                                Text(
+                                  dateText,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(width: 2),
+                                const Icon(Icons.arrow_drop_down_rounded, color: Colors.white, size: 14),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        const LiveDateTimeWidget(
+                          showDate: false,
+                          showSeconds: false,
+                          showIcon: true,
+                          isTransparentBg: true,
                           color: Colors.white70,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white70,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        DateFormat('d MMMM yyyy', 'id_ID').format(systemActiveDate),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      const LiveDateTimeWidget(
-                        showDate: false,
-                        showSeconds: false,
-                        showIcon: true,
-                        isTransparentBg: true,
-                        color: Colors.white70,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white70,
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   Container(
                     padding: const EdgeInsets.all(12),
@@ -377,7 +322,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                 children: [
                   Expanded(
                     child: _buildMetricItem(
-                      label: label,
+                      label: 'Transaksi Hari Ini',
                       value: '$activeCount',
                       icon: Icons.confirmation_number_rounded,
                     ),
@@ -482,6 +427,8 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
             ? DateTime.parse(activeDateStr) 
             : DateTime.now();
 
+        final targetDate = _selectedSingleDate ?? systemActiveDate;
+
         final filteredTransactions = provider.transactions.where((t) {
           // 1. Search Filter
           if (_searchQuery.isNotEmpty) {
@@ -492,20 +439,8 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
             if (!matchesSearch) return false;
           }
 
-          // 2. Date/Category Filter
-          if (_selectedDateRange != null) {
-            final d = t.tanggal.toLocal();
-            return d.isAfter(_selectedDateRange!.start.subtract(const Duration(seconds: 1))) && 
-                   d.isBefore(_selectedDateRange!.end.add(const Duration(days: 1)));
-          }
-
-          if (_selectedCategory == 'Hari Ini') {
-            return DateUtils.isSameDay(t.tanggal.toLocal(), systemActiveDate);
-          }
-          
-          if (_selectedCategory == 'Semua') return true;
-          
-          return t.caraBayar?.toLowerCase() == _selectedCategory.toLowerCase();
+          // 2. Date Filter
+          return DateUtils.isSameDay(t.tanggal.toLocal(), targetDate);
         }).toList();
 
         if (filteredTransactions.isEmpty) {
@@ -544,75 +479,37 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
     );
   }
 
-  void _showFilterSheet() {
-    showModalBottomSheet(
+  void _showFilterSheet() async {
+    final dashboardProvider = context.read<DashboardProvider>();
+    final activeDateStr = dashboardProvider.summary?.systemActiveDate;
+    final systemActiveDate = activeDateStr != null
+        ? DateTime.parse(activeDateStr)
+        : DateTime.now();
+
+    final DateTime? picked = await showDatePicker(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Filter Transaksi', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 20),
-              ListTile(
-                leading: const Icon(Icons.date_range_rounded, color: Color(0xFF0D47A1)),
-                title: const Text('Pilih Rentang Tanggal'),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final picked = await showDateRangePicker(
-                    context: this.context,
-                    firstDate: DateTime(2020),
-                    lastDate: DateTime.now(),
-                    initialDateRange: _selectedDateRange,
-                  );
-                  if (picked != null) {
-                    setState(() {
-                      _selectedDateRange = picked;
-                      _selectedCategory = 'Semua';
-                    });
-                  }
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.calendar_view_month_rounded, color: Color(0xFF0D47A1)),
-                title: const Text('Pilih Bulan Ini'),
-                onTap: () {
-                  Navigator.pop(context);
-                  final now = DateTime.now();
-                  setState(() {
-                    _selectedDateRange = DateTimeRange(
-                      start: DateTime(now.year, now.month, 1),
-                      end: now,
-                    );
-                    _selectedCategory = 'Semua';
-                  });
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.calendar_month_rounded, color: Color(0xFF0D47A1)),
-                title: const Text('Pilih Bulan Lalu'),
-                onTap: () {
-                  Navigator.pop(context);
-                  final now = DateTime.now();
-                  final lastMonth = DateTime(now.year, now.month - 1, 1);
-                  final lastDayOfLastMonth = DateTime(now.year, now.month, 0);
-                  setState(() {
-                    _selectedDateRange = DateTimeRange(
-                      start: lastMonth,
-                      end: lastDayOfLastMonth,
-                    );
-                    _selectedCategory = 'Semua';
-                  });
-                },
-              ),
-              const SizedBox(height: 10),
-            ],
+      initialDate: _selectedSingleDate ?? systemActiveDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF0D47A1),
+              onPrimary: Colors.white,
+              onSurface: Color(0xFF1E293B),
+            ),
           ),
+          child: child!,
         );
       },
     );
+
+    if (picked != null) {
+      setState(() {
+        _selectedSingleDate = picked;
+      });
+    }
   }
 
   Widget _buildPendingSyncBanner() {

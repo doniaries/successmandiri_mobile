@@ -18,9 +18,7 @@ class TambahSaldoListScreen extends StatefulWidget {
 }
 
 class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
-  String _selectedTab = 'Hari Ini';
-  final List<String> _tabs = ['Hari Ini', 'Semua'];
-  DateTimeRange? _selectedDateRange;
+  DateTime? _selectedSingleDate;
 
   @override
   void initState() {
@@ -51,22 +49,10 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
               ? DateTime.parse(activeDateStr)
               : DateTime.now();
 
+          final targetDate = _selectedSingleDate ?? systemActiveDate;
+
           final filteredRequests = provider.requests.where((r) {
-            if (_selectedDateRange != null) {
-              final d = r.tanggal.toLocal();
-              return d.isAfter(
-                    _selectedDateRange!.start.subtract(
-                      const Duration(seconds: 1),
-                    ),
-                  ) &&
-                  d.isBefore(
-                    _selectedDateRange!.end.add(const Duration(days: 1)),
-                  );
-            }
-            if (_selectedTab == 'Hari Ini') {
-              return DateUtils.isSameDay(r.tanggal.toLocal(), systemActiveDate);
-            }
-            return true;
+            return DateUtils.isSameDay(r.tanggal.toLocal(), targetDate);
           }).toList();
 
           if (provider.isLoading && provider.requests.isEmpty) {
@@ -84,23 +70,28 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
             );
           }
 
+          final formattedDateText = DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
+
           return Column(
             children: [
               _buildSummaryHeader(
                 provider,
                 dashboardProvider,
                 filteredRequests,
+                systemActiveDate,
               ),
-              _buildDateTabs(),
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () => provider.fetchRequests(),
                   child: filteredRequests.isEmpty
                       ? Center(
                           child: Text(
-                            _selectedTab == 'Hari Ini'
-                                ? 'Tidak ada transaksi hari ini.'
-                                : 'Belum ada transaksi tambah saldo.',
+                            'Tidak ada transaksi untuk tanggal $formattedDateText.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 14,
+                            ),
                           ),
                         )
                       : ListView.builder(
@@ -136,20 +127,16 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
     TambahSaldoProvider provider,
     DashboardProvider dashboardProvider,
     List<TambahSaldoModel> filtered,
+    DateTime systemActiveDate,
   ) {
     double totalNominal = 0;
     for (var r in filtered) {
       totalNominal += r.nominal;
     }
 
-    String label = 'Total Tambah Saldo';
-    if (_selectedDateRange != null) {
-      label = 'Total Terfilter';
-    } else if (_selectedTab == 'Hari Ini') {
-      label = 'Tambah Saldo';
-    }
-
     final double currentSaldo = dashboardProvider.summary?.saldo ?? 0.0;
+    final targetDate = _selectedSingleDate ?? systemActiveDate;
+    final formattedDateText = DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
 
     return Container(
       width: double.infinity,
@@ -170,238 +157,184 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Row(
-                  children: [
-                    Icon(
-                      Icons.account_balance_wallet_rounded,
-                      color: Colors.white70,
-                      size: 14,
-                    ),
-                    SizedBox(width: 6),
-                    Text(
-                      'Saldo Perusahaan',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    CurrencyFormatter.formatRupiah(currentSaldo),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            height: 40,
-            width: 1,
-            color: Colors.white24,
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.add_circle_outline_rounded,
-                      color: Colors.white70,
-                      size: 14,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    CurrencyFormatter.formatRupiah(totalNominal),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDateTabs() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          ..._tabs.map((tab) {
-            final isSelected =
-                _selectedTab == tab && _selectedDateRange == null;
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: ChoiceChip(
-                label: Text(tab),
-                selected: isSelected,
-                onSelected: (val) {
-                  if (val) {
-                    setState(() {
-                      _selectedTab = tab;
-                      _selectedDateRange = null;
-                    });
-                  }
-                },
-                selectedColor: const Color(0xFFE67E22),
-                labelStyle: TextStyle(
-                  color: isSelected ? Colors.white : Colors.grey[600],
-                  fontWeight: FontWeight.bold,
-                ),
-                backgroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                showCheckmark: false,
-              ),
-            );
-          }),
-          if (_selectedDateRange != null)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: ChoiceChip(
-                label: Text(
-                  '${DateFormat('dd/MM').format(_selectedDateRange!.start)} - ${DateFormat('dd/MM').format(_selectedDateRange!.end)}',
-                ),
-                selected: true,
-                onSelected: (_) => setState(() => _selectedDateRange = null),
-                selectedColor: Colors.orange[800],
-                labelStyle: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                showCheckmark: true,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  void _showFilterSheet() {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Filter Riwayat',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 20),
-              ListTile(
-                leading: const Icon(
-                  Icons.date_range_rounded,
-                  color: Color(0xFFE67E22),
+                'Ringkasan Saldo',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
                 ),
-                title: const Text('Pilih Rentang Tanggal'),
-                onTap: () async {
-                  Navigator.pop(context);
-                  final picked = await showDateRangePicker(
-                    context: this.context,
-                    firstDate: DateTime(2020),
-                    lastDate: DateTime.now(),
-                    initialDateRange: _selectedDateRange,
-                  );
-                  if (picked != null) {
-                    setState(() {
-                      _selectedDateRange = picked;
-                      _selectedTab = 'Semua';
-                    });
-                  }
-                },
               ),
-              ListTile(
-                leading: const Icon(
-                  Icons.calendar_view_month_rounded,
-                  color: Color(0xFFE67E22),
+              InkWell(
+                onTap: _showFilterSheet,
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.25),
+                      width: 0.5,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.calendar_month_rounded,
+                        color: Colors.white,
+                        size: 12,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        formattedDateText,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      const Icon(
+                        Icons.arrow_drop_down_rounded,
+                        color: Colors.white,
+                        size: 14,
+                      ),
+                    ],
+                  ),
                 ),
-                title: const Text('Pilih Bulan Ini'),
-                onTap: () {
-                  Navigator.pop(context);
-                  final now = DateTime.now();
-                  setState(() {
-                    _selectedDateRange = DateTimeRange(
-                      start: DateTime(now.year, now.month, 1),
-                      end: now,
-                    );
-                    _selectedTab = 'Semua';
-                  });
-                },
               ),
-              ListTile(
-                leading: const Icon(
-                  Icons.calendar_month_rounded,
-                  color: Color(0xFFE67E22),
-                ),
-                title: const Text('Pilih Bulan Lalu'),
-                onTap: () {
-                  Navigator.pop(context);
-                  final now = DateTime.now();
-                  final lastMonth = DateTime(now.year, now.month - 1, 1);
-                  final lastDayOfLastMonth = DateTime(now.year, now.month, 0);
-                  setState(() {
-                    _selectedDateRange = DateTimeRange(
-                      start: lastMonth,
-                      end: lastDayOfLastMonth,
-                    );
-                    _selectedTab = 'Semua';
-                  });
-                },
-              ),
-              const SizedBox(height: 10),
             ],
           ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(
+                          Icons.account_balance_wallet_rounded,
+                          color: Colors.white70,
+                          size: 14,
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          'Saldo Perusahaan',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        CurrencyFormatter.formatRupiah(currentSaldo),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                height: 40,
+                width: 1,
+                color: Colors.white24,
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(
+                          Icons.add_circle_outline_rounded,
+                          color: Colors.white70,
+                          size: 14,
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          'Tambah Saldo',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        CurrencyFormatter.formatRupiah(totalNominal),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showFilterSheet() async {
+    final dashboardProvider = context.read<DashboardProvider>();
+    final activeDateStr = dashboardProvider.summary?.systemActiveDate;
+    final systemActiveDate = activeDateStr != null
+        ? DateTime.parse(activeDateStr)
+        : DateTime.now();
+
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedSingleDate ?? systemActiveDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFFE67E22),
+              onPrimary: Colors.white,
+              onSurface: Color(0xFF2C3E50),
+            ),
+          ),
+          child: child!,
         );
       },
     );
+
+    if (picked != null) {
+      setState(() {
+        _selectedSingleDate = picked;
+      });
+    }
   }
 
   Future<bool?> _showDeleteConfirmDialog(TambahSaldoModel request) {
