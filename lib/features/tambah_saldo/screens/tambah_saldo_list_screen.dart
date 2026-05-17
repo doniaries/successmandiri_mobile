@@ -75,7 +75,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
 
           return Column(
             children: [
-              _buildSummaryHeader(provider, filteredRequests),
+              _buildSummaryHeader(provider, dashboardProvider, filteredRequests),
               _buildDateTabs(),
               Expanded(
                 child: RefreshIndicator(
@@ -109,23 +109,25 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
     );
   }
 
-  Widget _buildSummaryHeader(TambahSaldoProvider provider, List<TambahSaldoModel> filtered) {
+  Widget _buildSummaryHeader(TambahSaldoProvider provider, DashboardProvider dashboardProvider, List<TambahSaldoModel> filtered) {
     double totalNominal = 0;
     for (var r in filtered) {
       totalNominal += r.nominal;
     }
 
-    String label = 'Total Nominal Tambah Saldo';
+    String label = 'Total Tambah Saldo';
     if (_selectedDateRange != null) {
-      label = 'Nominal Terfilter';
+      label = 'Total Terfilter';
     } else if (_selectedTab == 'Hari Ini') {
-      label = 'Nominal Tambah Saldo Hari Ini';
+      label = 'Total Hari Ini';
     }
+
+    final double currentSaldo = dashboardProvider.summary?.saldo ?? 0.0;
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFFE67E22), Color(0xFFF39C12)],
@@ -141,15 +143,64 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
           ),
         ],
       ),
-      child: Column(
+      child: Row(
         children: [
-          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 14)),
-          const SizedBox(height: 8),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              CurrencyFormatter.formatRupiah(totalNominal),
-              style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Row(
+                  children: [
+                    Icon(Icons.account_balance_wallet_rounded, color: Colors.white70, size: 14),
+                    SizedBox(width: 6),
+                    Text(
+                      'Saldo Perusahaan',
+                      style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    CurrencyFormatter.formatRupiah(currentSaldo),
+                    style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            height: 40,
+            width: 1,
+            color: Colors.white24,
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.add_circle_outline_rounded, color: Colors.white70, size: 14),
+                    const SizedBox(width: 6),
+                    Text(
+                      label,
+                      style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    CurrencyFormatter.formatRupiah(totalNominal),
+                    style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

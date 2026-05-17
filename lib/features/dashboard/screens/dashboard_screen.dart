@@ -23,13 +23,14 @@ import 'package:sawitappmobile/features/profile/screens/profile_screen.dart';
 import 'package:sawitappmobile/features/profile/screens/app_version_setting_screen.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/widgets/skeleton_loader.dart';
-import 'package:sawitappmobile/shared/widgets/custom_loading_logo.dart';
+import 'package:sawitappmobile/features/operasional/screens/operasional_screen.dart';
 import 'package:sawitappmobile/features/operasional/screens/operasional_detail_screen.dart';
 import 'package:sawitappmobile/features/operasional/screens/finance_journal_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/features/operasional/models/operasional_model.dart';
 import 'package:sawitappmobile/shared/providers/navigation_provider.dart';
 import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
+import 'package:sawitappmobile/shared/widgets/custom_loading_logo.dart';
 
 class DashboardScreen extends StatefulWidget {
   final VoidCallback? onAddBalance;
@@ -1127,12 +1128,19 @@ class _MenuGrid extends StatelessWidget {
         _MenuItem(label: 'Transaksi DO', icon: Icons.local_shipping_rounded, color: const Color(0xFF01579B), onTap: () { context.read<TransaksiDoProvider>().markAsSeen(); Navigator.push(context, MaterialPageRoute(builder: (_) => const TransaksiDoScreen())); }, badgeSelector: (c) => c.select<DashboardProvider, int>((p) => p.summary?.stats.transaksi.today.count ?? 0), hasNewDataSelector: (c) => c.select<TransaksiDoProvider, bool>((p) => p.hasNewData)),
         _MenuItem(
           label: 'Tambah Saldo', 
-          subtitle: CurrencyFormatter.formatCompactRupiah(saldo),
           icon: Icons.add_to_photos_rounded, 
           color: const Color(0xFFF39C12), 
           onTap: () { Navigator.push(context, MaterialPageRoute(builder: (_) => const TambahSaldoListScreen())); }, 
           badgeSelector: (c) => c.select<DashboardProvider, int>((p) => p.summary?.tambahSaldoTodayCount ?? 0), 
           hasNewDataSelector: (c) => c.select<DashboardProvider, bool>((p) => (p.summary?.tambahSaldoTodayCount ?? 0) > 0)
+        ),
+        _MenuItem(
+          label: 'Operasional', 
+          icon: Icons.payments_rounded, 
+          color: const Color(0xFFE74C3C), 
+          onTap: () { context.read<ResourceProvider>().markAsSeen('operasional'); Navigator.push(context, MaterialPageRoute(builder: (_) => const OperasionalScreen())); }, 
+          badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.operasionalCount), 
+          hasNewDataSelector: (c) => c.select<ResourceProvider, bool>((p) => p.hasNewDataFor('operasional'))
         ),
         _MenuItem(label: 'Penjual', icon: Icons.storefront_rounded, color: const Color(0xFF27AE60), onTap: () { context.read<ResourceProvider>().markAsSeen('penjual'); Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceListScreen(title: 'Penjual', resourceType: 'penjual'))); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.penjualCount), hasNewDataSelector: (c) => c.select<ResourceProvider, bool>((p) => p.hasNewDataFor('penjual'))),
         _MenuItem(label: 'Supir', icon: Icons.person_rounded, color: const Color(0xFFE67E22), onTap: () { context.read<ResourceProvider>().markAsSeen('supir'); Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceListScreen(title: 'Supir', resourceType: 'supir'))); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.supirCount), hasNewDataSelector: (c) => c.select<ResourceProvider, bool>((p) => p.hasNewDataFor('supir'))),

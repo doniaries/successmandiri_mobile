@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
-import 'package:sawitappmobile/shared/widgets/custom_loading_logo.dart';
 
 class AppVersionSettingScreen extends StatefulWidget {
   const AppVersionSettingScreen({super.key});
 
   @override
-  State<AppVersionSettingScreen> createState() => _AppVersionSettingScreenState();
+  State<AppVersionSettingScreen> createState() =>
+      _AppVersionSettingScreenState();
 }
 
 class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
@@ -40,7 +40,7 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
     });
 
     final provider = context.read<ResourceProvider>();
-    
+
     final success = await provider.updateAppSettings(
       _versionController.text.trim(),
       _creatorController.text.trim(),
@@ -50,7 +50,7 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
       setState(() {
         _isSaving = false;
       });
-      
+
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -104,28 +104,30 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
                 style: TextStyle(color: Colors.grey, fontSize: 13),
               ),
               const SizedBox(height: 32),
-              
+
               _buildTextField(
                 label: 'Versi Aplikasi',
                 controller: _versionController,
                 hint: 'Contoh: 1.0.5',
                 icon: Icons.update_rounded,
-                validator: (v) => v!.isEmpty ? 'Versi tidak boleh kosong' : null,
+                validator: (v) =>
+                    v!.isEmpty ? 'Versi tidak boleh kosong' : null,
                 enabled: !_isSaving,
               ),
               const SizedBox(height: 20),
-              
+
               _buildTextField(
                 label: 'Nama Pembuat / Pengelola',
                 controller: _creatorController,
                 hint: 'Contoh: IT Success Mandiri',
                 icon: Icons.person_outline_rounded,
-                validator: (v) => v!.isEmpty ? 'Nama pembuat tidak boleh kosong' : null,
+                validator: (v) =>
+                    v!.isEmpty ? 'Nama pembuat tidak boleh kosong' : null,
                 enabled: !_isSaving,
               ),
-              
+
               const SizedBox(height: 48),
-              
+
               AppPrimaryButton(
                 text: 'Simpan Perubahan',
                 isLoading: _isSaving,
@@ -189,4 +191,3 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
     );
   }
 }
-

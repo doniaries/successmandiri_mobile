@@ -58,6 +58,20 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
     if (activeDateStr != null) {
       _selectedDate = DateTime.parse(activeDateStr);
     }
+
+    // Fetch resources if empty to populate the dropdowns
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final resourceProvider = context.read<ResourceProvider>();
+      if (resourceProvider.penjuals.isEmpty) {
+        resourceProvider.fetchResources('penjual');
+      }
+      if (resourceProvider.supirs.isEmpty) {
+        resourceProvider.fetchResources('supir');
+      }
+      if (resourceProvider.pekerjas.isEmpty) {
+        resourceProvider.fetchResources('pekerja');
+      }
+    });
   }
 
   @override
@@ -304,7 +318,7 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
                           Expanded(
                             child: DropdownButtonFormField<dynamic>(
                               key: ValueKey(
-                                ' pihak_${_selectedPihakType}_${_selectedKategori}_${_selectedPihak?.id}',
+                                'pihak_${_selectedPihakType}_${_selectedKategori}',
                               ),
                               isExpanded: true,
                               initialValue: _selectedPihak,
