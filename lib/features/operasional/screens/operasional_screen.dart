@@ -620,7 +620,11 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        item.keterangan ?? '-',
+                        item.namaPihak != null && item.namaPihak!.isNotEmpty && item.namaPihak != '-'
+                            ? (item.keterangan != null && item.keterangan!.isNotEmpty && item.keterangan != '-'
+                                ? 'Pihak: ${item.namaPihak} (${item.keterangan})'
+                                : 'Pihak: ${item.namaPihak}')
+                            : (item.keterangan ?? '-'),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(fontSize: 13, color: Colors.grey[600]),
