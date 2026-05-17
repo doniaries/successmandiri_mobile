@@ -104,7 +104,18 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
     }
 
     final success = await provider.addOperasional({
-      'tanggal': DateFormat('yyyy-MM-dd').format(_selectedDate),
+      'tanggal': (() {
+        final now = DateTime.now();
+        final finalDateTime = DateTime(
+          _selectedDate.year,
+          _selectedDate.month,
+          _selectedDate.day,
+          now.hour,
+          now.minute,
+          now.second,
+        );
+        return DateFormat('yyyy-MM-dd HH:mm:ss').format(finalDateTime);
+      })(),
       'operasional': _selectedOperasional,
       'kategori': _kategoriMap[_selectedKategori],
       'nominal': nominalValue,

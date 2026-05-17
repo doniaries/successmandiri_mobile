@@ -53,7 +53,7 @@ class TambahSaldoDetailScreen extends StatelessWidget {
             
             // Detail Info Section
             _buildInfoSection('Rincian Transaksi', [
-              _buildInfoRow(Icons.calendar_today_rounded, 'Tanggal', DateFormat('dd MMMM yyyy', 'id_ID').format(request.tanggal)),
+              _buildInfoRow(Icons.calendar_today_rounded, 'Tanggal & Jam', DateFormat('dd MMMM yyyy • HH:mm', 'id_ID').format(request.tanggal)),
               _buildInfoRow(Icons.person_rounded, 'Diinput Oleh', request.userName ?? '-'),
               _buildInfoRow(Icons.description_rounded, 'Keterangan', request.keterangan),
             ]),

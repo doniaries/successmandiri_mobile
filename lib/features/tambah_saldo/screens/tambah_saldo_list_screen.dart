@@ -316,7 +316,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                   Icon(Icons.calendar_today, size: 14, color: Colors.grey[600]),
                   const SizedBox(width: 4),
                   Text(
-                    DateFormat('dd MMM yyyy', 'id_ID').format(request.tanggal),
+                    DateFormat('dd MMM yyyy • HH:mm', 'id_ID').format(request.tanggal),
                     style: TextStyle(color: Colors.grey[600], fontSize: 12),
                   ),
                 ],

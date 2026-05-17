@@ -96,7 +96,18 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
     final nominalValue = double.tryParse(cleanNominal) ?? 0;
 
     final success = await provider.addOperasional({
-      'tanggal': DateFormat('yyyy-MM-dd').format(_selectedDate),
+      'tanggal': (() {
+        final now = DateTime.now();
+        final finalDateTime = DateTime(
+          _selectedDate.year,
+          _selectedDate.month,
+          _selectedDate.day,
+          now.hour,
+          now.minute,
+          now.second,
+        );
+        return DateFormat('yyyy-MM-dd HH:mm:ss').format(finalDateTime);
+      })(),
       'operasional': 'Pemasukan',
       'kategori': 'bayar_hutang',
       'nominal': nominalValue,

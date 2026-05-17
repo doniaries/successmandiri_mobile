@@ -424,7 +424,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        DateFormat('dd MMM yyyy, HH:mm').format(item.tanggal),
+                        DateFormat('dd MMM yyyy • HH:mm', 'id_ID').format(item.tanggal),
                         style: TextStyle(fontSize: 11, color: Colors.grey[400]),
                       ),
                     ],
