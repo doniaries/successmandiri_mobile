@@ -579,23 +579,50 @@ class ResourceProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      String endpoint;
+      final Map<String, dynamic> data = {'is_active': isActive};
+
       switch (type) {
         case 'penjual':
-          endpoint = 'penjual/$id';
+          Penjual item;
+          try {
+            item = _penjuals.firstWhere((e) => e.id == id);
+          } catch (_) {
+            item = await _repository.getPenjualDetail(id);
+          }
+          data['nama'] = item.nama;
+          data['alamat'] = item.alamat;
+          data['telepon'] = item.telepon;
+          await _repository.updatePenjual(id, data);
           break;
         case 'supir':
-          endpoint = 'logistik/supir/$id';
+          Supir item;
+          try {
+            item = _supirs.firstWhere((e) => e.id == id);
+          } catch (_) {
+            item = await _repository.getSupirDetail(id);
+          }
+          data['nama'] = item.nama;
+          data['alamat'] = item.alamat;
+          data['telepon'] = item.telepon;
+          data['status_supir'] = item.status;
+          await _repository.updateSupir(id, data);
           break;
         case 'pekerja':
-          endpoint = 'pekerja/$id';
+          Pekerja item;
+          try {
+            item = _pekerjas.firstWhere((e) => e.id == id);
+          } catch (_) {
+            item = await _repository.getPekerjaDetail(id);
+          }
+          data['nama'] = item.nama;
+          data['alamat'] = item.alamat;
+          data['telepon'] = item.telepon;
+          await _repository.updatePekerja(id, data);
           break;
         default:
           throw Exception('Tipe resource tidak dikenal');
       }
 
-      await _apiService.put(endpoint, data: {'is_active': isActive});
-      
       // Refresh list
       await fetchResources(type, refresh: true);
       return true;

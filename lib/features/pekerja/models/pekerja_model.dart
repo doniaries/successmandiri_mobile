@@ -9,6 +9,7 @@ class Pekerja {
   final double hutang;
   final double sisaHutang;
   final int perusahaanId;
+  final bool isActive;
   final List<MutasiHutang>? mutasiHutang;
 
   Pekerja({
@@ -20,6 +21,7 @@ class Pekerja {
     required this.hutang,
     required this.sisaHutang,
     required this.perusahaanId,
+    required this.isActive,
     this.mutasiHutang,
   });
 
@@ -33,6 +35,7 @@ class Pekerja {
       hutang: double.tryParse(json['hutang']?.toString() ?? '0') ?? 0,
       sisaHutang: double.tryParse(json['sisa_hutang']?.toString() ?? '0') ?? 0,
       perusahaanId: (json['perusahaan_id'] is int) ? json['perusahaan_id'] : int.tryParse(json['perusahaan_id']?.toString() ?? '0') ?? 0,
+      isActive: json['is_active'] == true || json['is_active'] == 1 || json['is_active'] == '1',
       mutasiHutang: json['mutasi_hutang'] != null
           ? (json['mutasi_hutang'] as List)
               .map((i) => MutasiHutang.fromJson(i))

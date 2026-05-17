@@ -8,6 +8,7 @@ class Supir {
   final String? status;
   final double? hutang;
   final double? sisaHutang;
+  final bool isActive;
   final List<dynamic>? transaksiDo;
   final List<MutasiHutang>? mutasiHutang;
 
@@ -19,6 +20,7 @@ class Supir {
     this.status,
     this.hutang,
     this.sisaHutang,
+    required this.isActive,
     this.transaksiDo,
     this.mutasiHutang,
   });
@@ -32,6 +34,7 @@ class Supir {
       status: json['status_supir'],
       hutang: double.tryParse(json['hutang']?.toString() ?? '0'),
       sisaHutang: double.tryParse(json['sisa_hutang']?.toString() ?? '0'),
+      isActive: json['is_active'] == true || json['is_active'] == 1 || json['is_active'] == '1',
       transaksiDo: json['transaksi_do'],
       mutasiHutang: (json['mutasi_hutang'] as List?)
           ?.map((m) => MutasiHutang.fromJson(m))
