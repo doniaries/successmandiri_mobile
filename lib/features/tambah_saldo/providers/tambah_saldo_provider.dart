@@ -98,9 +98,17 @@ class TambahSaldoProvider with ChangeNotifier {
   }
 
   Future<bool> deleteRequest(int id) async {
+    // Optimistic UI: remove item locally first
+    final index = _requests.indexWhere((r) => r.id == id);
+    TambahSaldoModel? backupRequest;
+    if (index != -1) {
+      backupRequest = _requests[index];
+      _requests.removeAt(index);
+    }
+
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners();
+    notifyListeners(); // Rebuild UI instantly without the deleted item
 
     try {
       await _repository.deleteTambahSaldo(id);
@@ -109,6 +117,10 @@ class TambahSaldoProvider with ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
+      // Revert if request failed
+      if (index != -1 && backupRequest != null) {
+        _requests.insert(index, backupRequest);
+      }
       _isLoading = false;
       _errorMessage = 'Gagal menghapus saldo: ${e.toString()}';
       notifyListeners();
