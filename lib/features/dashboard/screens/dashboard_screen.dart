@@ -1117,12 +1117,23 @@ class _MenuGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = context.select<AuthProvider, User?>((a) => a.user);
     if (user == null) return const SizedBox.shrink();
+    
+    final double saldo = context.select<DashboardProvider, double>((p) => p.summary?.saldo ?? 0);
+
     return GridView.count(
       shrinkWrap: true, clipBehavior: Clip.none, physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 3, padding: EdgeInsets.zero, crossAxisSpacing: 8, mainAxisSpacing: 8,
       children: [
         _MenuItem(label: 'Transaksi DO', icon: Icons.local_shipping_rounded, color: const Color(0xFF01579B), onTap: () { context.read<TransaksiDoProvider>().markAsSeen(); Navigator.push(context, MaterialPageRoute(builder: (_) => const TransaksiDoScreen())); }, badgeSelector: (c) => c.select<DashboardProvider, int>((p) => p.summary?.stats.transaksi.today.count ?? 0), hasNewDataSelector: (c) => c.select<TransaksiDoProvider, bool>((p) => p.hasNewData)),
-        _MenuItem(label: 'Tambah Saldo', icon: Icons.add_to_photos_rounded, color: const Color(0xFFF39C12), onTap: () { Navigator.push(context, MaterialPageRoute(builder: (_) => const TambahSaldoListScreen())); }, badgeSelector: (c) => c.select<DashboardProvider, int>((p) => p.summary?.tambahSaldoTodayCount ?? 0), hasNewDataSelector: (c) => c.select<DashboardProvider, bool>((p) => (p.summary?.tambahSaldoTodayCount ?? 0) > 0)),
+        _MenuItem(
+          label: 'Tambah Saldo', 
+          subtitle: CurrencyFormatter.formatCompactRupiah(saldo),
+          icon: Icons.add_to_photos_rounded, 
+          color: const Color(0xFFF39C12), 
+          onTap: () { Navigator.push(context, MaterialPageRoute(builder: (_) => const TambahSaldoListScreen())); }, 
+          badgeSelector: (c) => c.select<DashboardProvider, int>((p) => p.summary?.tambahSaldoTodayCount ?? 0), 
+          hasNewDataSelector: (c) => c.select<DashboardProvider, bool>((p) => (p.summary?.tambahSaldoTodayCount ?? 0) > 0)
+        ),
         _MenuItem(label: 'Penjual', icon: Icons.storefront_rounded, color: const Color(0xFF27AE60), onTap: () { context.read<ResourceProvider>().markAsSeen('penjual'); Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceListScreen(title: 'Penjual', resourceType: 'penjual'))); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.penjualCount), hasNewDataSelector: (c) => c.select<ResourceProvider, bool>((p) => p.hasNewDataFor('penjual'))),
         _MenuItem(label: 'Supir', icon: Icons.person_rounded, color: const Color(0xFFE67E22), onTap: () { context.read<ResourceProvider>().markAsSeen('supir'); Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceListScreen(title: 'Supir', resourceType: 'supir'))); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.supirCount), hasNewDataSelector: (c) => c.select<ResourceProvider, bool>((p) => p.hasNewDataFor('supir'))),
         _MenuItem(label: 'Pekerja', icon: Icons.engineering_rounded, color: const Color(0xFF8E44AD), onTap: () { context.read<ResourceProvider>().markAsSeen('pekerja'); Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceListScreen(title: 'Pekerja', resourceType: 'pekerja'))); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.pekerjaCount), hasNewDataSelector: (c) => c.select<ResourceProvider, bool>((p) => p.hasNewDataFor('pekerja'))),
@@ -1135,9 +1146,24 @@ class _MenuGrid extends StatelessWidget {
 }
 
 class _MenuItem extends StatelessWidget {
-  final String label; final IconData icon; final Color color; final VoidCallback onTap;
-  final int Function(BuildContext) badgeSelector; final bool Function(BuildContext) hasNewDataSelector;
-  const _MenuItem({required this.label, required this.icon, required this.color, required this.onTap, required this.badgeSelector, required this.hasNewDataSelector});
+  final String label;
+  final String? subtitle;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+  final int Function(BuildContext) badgeSelector;
+  final bool Function(BuildContext) hasNewDataSelector;
+
+  const _MenuItem({
+    required this.label,
+    this.subtitle,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+    required this.badgeSelector,
+    required this.hasNewDataSelector,
+  });
+
   @override
   Widget build(BuildContext context) {
     final int count = badgeSelector(context);
@@ -1153,9 +1179,19 @@ class _MenuItem extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle), child: Icon(icon, size: 30, color: color)),
-                  const SizedBox(height: 12),
+                  Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle), child: Icon(icon, size: 26, color: color)),
+                  const SizedBox(height: 8),
                   Text(label, style: const TextStyle(color: Color(0xFF263238), fontSize: 12, fontWeight: FontWeight.w800), textAlign: TextAlign.center),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle!,
+                      style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w900),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ],
               ),
             ),
