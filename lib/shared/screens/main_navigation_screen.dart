@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
@@ -74,6 +75,39 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     }
   }
 
+  Future<bool> _showExitConfirmationDialog() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.exit_to_app_rounded, color: Color(0xFF01579B)),
+            SizedBox(width: 8),
+            Text('Keluar Aplikasi', style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: const Text(
+          'Apakah Anda yakin ingin keluar dari aplikasi Success Mandiri?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal', style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Keluar',
+              style: TextStyle(color: Color(0xFF01579B), fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final selectedIndex = context.watch<MainNavigationProvider>().selectedIndex;
@@ -88,9 +122,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         } else if (selectedIndex != 0) {
           _onItemTapped(0);
         } else {
-          // If at dashboard root, allow app to close
-          if (mounted) {
-            // Navigator.of(context).pop(); // This might close the app
+          final shouldExit = await _showExitConfirmationDialog();
+          if (shouldExit) {
+            SystemNavigator.pop();
           }
         }
       },
