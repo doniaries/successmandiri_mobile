@@ -20,16 +20,41 @@ class TambahSaldoRepository {
   }
 
   Future<List<TambahSaldoModel>> getTambahSaldo({String? status}) async {
-    try {
-      final response = await _apiClient.dio.get(
-        ApiConstants.tambahSaldo,
-      );
+    List<TambahSaldoModel> models = [];
 
-      final List<dynamic> data = _extractListData(response.data);
-      return data.map((json) => TambahSaldoModel.fromJson(json)).toList();
+    try {
+      final connectivity = await Connectivity().checkConnectivity();
+      final isOffline = connectivity.every((r) => r == ConnectivityResult.none);
+
+      if (!isOffline) {
+        final response = await _apiClient.dio.get(ApiConstants.tambahSaldo);
+        final List<dynamic> data = _extractListData(response.data);
+        models = data.map((json) => TambahSaldoModel.fromJson(json)).toList();
+      }
     } catch (e) {
-      rethrow;
+      // Abaikan jika error jaringan
     }
+
+    try {
+      final offlineQueue = await _syncService.getOfflineQueueForEndpoint(ApiConstants.tambahSaldo);
+      for (var item in offlineQueue) {
+        final data = item['data'] as Map<String, dynamic>;
+        models.insert(0, TambahSaldoModel(
+          id: item['id'],
+          perusahaanId: 0,
+          userId: 0,
+          tanggal: DateTime.tryParse(data['tanggal']?.toString() ?? '') ?? DateTime.now(),
+          nominal: double.tryParse(data['nominal'].toString()) ?? 0.0,
+          keterangan: data['keterangan'] ?? 'Menunggu Sinkronisasi...',
+          status: 'pending',
+          userName: 'Data Offline (Lokal)',
+        ));
+      }
+    } catch (e) {
+      // Abaikan jika gagal load queue
+    }
+
+    return models;
   }
 
   Future<dynamic> createTambahSaldo({
@@ -83,6 +108,24 @@ class TambahSaldoRepository {
     required String keterangan,
   }) async {
     try {
+      if (id < 0) {
+        await _syncService.updateQueueData(id.abs(), {
+          'nominal': nominal,
+          'tanggal': tanggal,
+          'keterangan': keterangan,
+        });
+        return TambahSaldoModel(
+          id: id,
+          perusahaanId: 0,
+          userId: 0,
+          tanggal: DateTime.parse(tanggal).toLocal(),
+          nominal: nominal,
+          keterangan: keterangan,
+          status: 'pending',
+          userName: 'Data Offline (Lokal)',
+        );
+      }
+      
       final response = await _apiClient.dio.put(
         '${ApiConstants.tambahSaldo}/$id',
         data: {
@@ -99,6 +142,10 @@ class TambahSaldoRepository {
 
   Future<void> deleteTambahSaldo(int id) async {
     try {
+      if (id < 0) {
+        await _syncService.deleteFromQueue(id.abs());
+        return;
+      }
       await _apiClient.dio.delete(
         '${ApiConstants.tambahSaldo}/$id',
       );

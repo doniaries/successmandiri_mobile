@@ -51,6 +51,57 @@ class SyncService {
     }
   }
 
+  Future<List<Map<String, dynamic>>> getOfflineQueueForEndpoint(String endpointMatch) async {
+    try {
+      final queue = await _db.query('offline_queue');
+      List<Map<String, dynamic>> results = [];
+      for (var item in queue) {
+        final endpoint = item['endpoint'] as String;
+        if (endpoint.contains(endpointMatch)) {
+          final data = jsonDecode(item['data'] as String);
+          results.add({
+            'id': -1 * (item['id'] as int),
+            'data': data,
+          });
+        }
+      }
+      return results;
+    } catch (e) {
+      debugPrint('Error getting offline queue: $e');
+      return [];
+    }
+  }
+
+  Future<void> deleteFromQueue(int id) async {
+    try {
+      await _db.deleteQueue(id);
+      await updatePendingCount();
+    } catch (e) {
+      debugPrint('Error deleting from queue: $e');
+    }
+  }
+
+  Future<void> updateQueueData(int id, Map<String, dynamic> newData) async {
+    try {
+      final queue = await _db.query('offline_queue');
+      final item = queue.firstWhere((q) => q['id'] == id, orElse: () => {});
+      if (item.isNotEmpty) {
+        final existingData = jsonDecode(item['data'] as String) as Map<String, dynamic>;
+        existingData.addAll(newData);
+        
+        final db = await DatabaseService().database;
+        await db.update(
+          'offline_queue',
+          {'data': jsonEncode(existingData)},
+          where: 'id = ?',
+          whereArgs: [id],
+        );
+      }
+    } catch (e) {
+      debugPrint('Error updating queue: $e');
+    }
+  }
+
   Future<void> addToQueue(String endpoint, String method, Map<String, dynamic> data) async {
     await _db.insert('offline_queue', {
       'endpoint': endpoint,
