@@ -5,9 +5,12 @@ import 'package:sawitappmobile/features/dashboard/models/dashboard_summary_model
 class DashboardRepository {
   final ApiClient _apiClient = ApiClient();
 
-  Future<DashboardSummary> getSummary() async {
+  Future<DashboardSummary> getSummary({String? date}) async {
     try {
-      final response = await _apiClient.dio.get(ApiConstants.dashboardSummary);
+      final response = await _apiClient.dio.get(
+        ApiConstants.dashboardSummary,
+        queryParameters: date != null ? {'date': date} : null,
+      );
       return DashboardSummary.fromJson(response.data);
     } catch (e) {
       rethrow;

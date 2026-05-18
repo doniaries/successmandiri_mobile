@@ -13,13 +13,13 @@ class DashboardProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
 
-  Future<void> fetchSummary() async {
-    if (_summary == null) _isLoading = true;
+  Future<void> fetchSummary({String? date}) async {
+    if (_summary == null || date != null) _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      _summary = await _repository.getSummary();
+      _summary = await _repository.getSummary(date: date);
     } catch (e) {
       _error = e.toString();
     } finally {

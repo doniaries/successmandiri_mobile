@@ -1043,7 +1043,53 @@ class _StatCards extends StatefulWidget {
 }
 
 class _StatCardsState extends State<_StatCards> {
-  int _periodFilter = 0; // 0: Hari Ini, 1: Bulan Ini
+  int _periodFilter = 0; // 0: Hari Ini, 1: Pilih Tanggal
+  DateTime? _selectedDate;
+
+  void _onPeriodTap(int index) async {
+    if (index == 0) {
+      setState(() {
+        _periodFilter = 0;
+        _selectedDate = null;
+      });
+      context.read<DashboardProvider>().fetchSummary();
+    } else {
+      final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: _selectedDate ?? DateTime.now(),
+        firstDate: DateTime(2020),
+        lastDate: DateTime.now().add(const Duration(days: 365)),
+        locale: const Locale('id', 'ID'),
+        builder: (context, child) {
+          return Theme(
+            data: Theme.of(context).copyWith(
+              colorScheme: const ColorScheme.light(
+                primary: Color(0xFF01579B),
+                onPrimary: Colors.white,
+                onSurface: Colors.black87,
+              ),
+              textButtonTheme: TextButtonThemeData(
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF01579B),
+                ),
+              ),
+            ),
+            child: child!,
+          );
+        },
+      );
+      if (picked != null) {
+        setState(() {
+          _periodFilter = 1;
+          _selectedDate = picked;
+        });
+        final formattedDate = DateFormat('yyyy-MM-dd').format(picked);
+        if (mounted) {
+          context.read<DashboardProvider>().fetchSummary(date: formattedDate);
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1052,6 +1098,12 @@ class _StatCardsState extends State<_StatCards> {
 
     final isToday = _periodFilter == 0;
     final stats = summary.stats;
+
+    final subtitleStr = isToday 
+        ? 'Hari ini' 
+        : (_selectedDate != null 
+            ? DateFormat('dd MMM', 'id_ID').format(_selectedDate!) 
+            : 'Tanggal terpilih');
 
     return Column(
       children: [
@@ -1069,10 +1121,10 @@ class _StatCardsState extends State<_StatCards> {
               Expanded(
                 child: _StatCard(
                   label: 'Transaksi DO', 
-                  value: isToday ? '${stats.transaksi.today.count}' : '${stats.transaksi.month.count}', 
+                  value: '${stats.transaksi.today.count}', 
                   icon: Icons.local_shipping_rounded, 
                   color: const Color(0xFF01579B), 
-                  subtitle: isToday ? 'Hari ini' : 'Bulan ini', 
+                  subtitle: subtitleStr, 
                   onTap: () => context.read<MainNavigationProvider>().setIndex(1)
                 )
               ),
@@ -1080,10 +1132,10 @@ class _StatCardsState extends State<_StatCards> {
               Expanded(
                 child: _StatCard(
                   label: 'Pemasukan', 
-                  value: CurrencyFormatter.formatCompactRupiah(isToday ? stats.pemasukan.today.total : stats.pemasukan.month.total), 
+                  value: CurrencyFormatter.formatCompactRupiah(stats.pemasukan.today.total), 
                   icon: Icons.trending_up_rounded, 
                   color: const Color(0xFF2E7D32), 
-                  subtitle: isToday ? 'Hari ini' : 'Bulan ini', 
+                  subtitle: subtitleStr, 
                   isCurrency: true, 
                   onTap: () => context.read<MainNavigationProvider>().setIndex(3)
                 )
@@ -1092,10 +1144,10 @@ class _StatCardsState extends State<_StatCards> {
               Expanded(
                 child: _StatCard(
                   label: 'Pengeluaran', 
-                  value: CurrencyFormatter.formatCompactRupiah(isToday ? stats.pengeluaran.today.total : stats.pengeluaran.month.total), 
+                  value: CurrencyFormatter.formatCompactRupiah(stats.pengeluaran.today.total), 
                   icon: Icons.trending_down_rounded, 
                   color: const Color(0xFFC62828), 
-                  subtitle: isToday ? 'Hari ini' : 'Bulan ini', 
+                  subtitle: subtitleStr, 
                   isCurrency: true, 
                   onTap: () => context.read<MainNavigationProvider>().setIndex(3)
                 )
@@ -1118,7 +1170,9 @@ class _StatCardsState extends State<_StatCards> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _toggleItem(0, 'Hari Ini'),
-          _toggleItem(1, 'Bulan Ini'),
+          _toggleItem(1, _selectedDate != null 
+              ? DateFormat('dd MMM yyyy', 'id_ID').format(_selectedDate!) 
+              : 'Pilih Tanggal'),
         ],
       ),
     );
@@ -1127,20 +1181,33 @@ class _StatCardsState extends State<_StatCards> {
   Widget _toggleItem(int index, String label) {
     final bool active = _periodFilter == index;
     return GestureDetector(
-      onTap: () => setState(() => _periodFilter = index),
+      onTap: () => _onPeriodTap(index),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
           color: active ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: active ? const Color(0xFF01579B) : Colors.white70,
-            fontSize: 10,
-            fontWeight: FontWeight.w800,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (index == 1) ...[
+              Icon(
+                Icons.calendar_month_rounded, 
+                size: 12, 
+                color: active ? const Color(0xFF01579B) : Colors.white70
+              ),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                color: active ? const Color(0xFF01579B) : Colors.white70,
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
         ),
       ),
     );
