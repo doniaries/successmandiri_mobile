@@ -91,6 +91,9 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
   Future<void> _refreshData() async {
     if (!mounted) return;
     final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final provider = context.read<ResourceProvider>();
+    final dashboardProvider = context.read<DashboardProvider>();
+    
     scaffoldMessenger.showSnackBar(
       const SnackBar(
         content: Text('Memulai Sinkronisasi Laporan...'),
@@ -103,18 +106,14 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
       // 1. Process offline queue
       await SyncService().syncNow();
       
-      if (mounted) {
-        final provider = context.read<ResourceProvider>();
-        
-        // 2. Fetch latest master data from web
-        await provider.syncMasterData();
-        
-        // 3. Fetch latest financial journal data
-        await provider.fetchResources('jurnal_keuangan', refresh: true, filters: _buildApiFilters());
-        
-        // 4. Fetch latest dashboard summary
-        await context.read<DashboardProvider>().fetchSummary();
-      }
+      // 2. Fetch latest master data from web
+      await provider.syncMasterData();
+      
+      // 3. Fetch latest financial journal data
+      await provider.fetchResources('jurnal_keuangan', refresh: true, filters: _buildApiFilters());
+      
+      // 4. Fetch latest dashboard summary
+      await dashboardProvider.fetchSummary();
       
       scaffoldMessenger.showSnackBar(
         const SnackBar(

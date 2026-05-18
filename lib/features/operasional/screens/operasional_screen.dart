@@ -66,6 +66,9 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
 
   Future<void> _refreshData() async {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final provider = context.read<ResourceProvider>();
+    final dashboardProvider = context.read<DashboardProvider>();
+    
     scaffoldMessenger.showSnackBar(
       const SnackBar(
         content: Text('Memulai Sinkronisasi Operasional...'),
@@ -79,18 +82,16 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
       await SyncService().syncNow();
       
       // 2. Fetch latest master data from web
-      await context.read<ResourceProvider>().syncMasterData();
+      await provider.syncMasterData();
       
       // 3. Fetch latest operational data
-      await context.read<ResourceProvider>().fetchResources(
+      await provider.fetchResources(
         'operasional',
         refresh: true,
       );
       
       // 4. Fetch latest dashboard summary
-      if (mounted) {
-        await context.read<DashboardProvider>().fetchSummary();
-      }
+      await dashboardProvider.fetchSummary();
       
       scaffoldMessenger.showSnackBar(
         const SnackBar(
