@@ -63,6 +63,7 @@ class TambahSaldoProvider with ChangeNotifier {
     String? keterangan,
   }) async {
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {
@@ -71,23 +72,30 @@ class TambahSaldoProvider with ChangeNotifier {
         tanggal: tanggal,
         keterangan: keterangan,
       );
-      
+
       if (result is Map && result['offline'] == true) {
-        _errorMessage = 'Koneksi bermasalah. Permintaan saldo disimpan di antrean offline.';
+        // Benar-benar offline → tandai dengan pesan offline
+        _errorMessage = 'offline';
       } else {
-        await fetchRequests(); // Refresh list
+        _errorMessage = null;
+        await fetchRequests();
       }
-      
+
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
       _isLoading = false;
-      _errorMessage = 'Gagal membuat permintaan saldo: ${e.toString()}';
+      // Error dari server — tampilkan pesan error nyata, bukan offline
+      final msg = e.toString().replaceAll('Exception: ', '');
+      _errorMessage = msg.contains('DioException')
+          ? 'Gagal terhubung ke server. Periksa koneksi Anda.'
+          : msg;
       notifyListeners();
       return false;
     }
   }
+
 
   Future<bool> updateRequest(int id, {
     required double nominal,

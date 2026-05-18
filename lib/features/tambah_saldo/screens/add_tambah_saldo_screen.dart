@@ -237,9 +237,7 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
                           final bool isOffline =
                               context
                                   .read<TambahSaldoProvider>()
-                                  .errorMessage
-                                  ?.contains('offline') ??
-                              false;
+                                  .errorMessage == 'offline';
                           SuccessDialog.show(
                             context,
                             title: 'Saldo Bertambah!',

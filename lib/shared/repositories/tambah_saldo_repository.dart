@@ -43,24 +43,39 @@ class TambahSaldoRepository {
       'keterangan': keterangan,
     };
 
-    try {
-      final connectivity = await Connectivity().checkConnectivity();
-      if (connectivity.contains(ConnectivityResult.none)) {
-        await _syncService.addToQueue(ApiConstants.tambahSaldo, 'POST', data);
-        return {'offline': true};
-      }
+    // Cek koneksi terlebih dahulu
+    final connectivity = await Connectivity().checkConnectivity();
+    final isOffline = connectivity.every((r) => r == ConnectivityResult.none);
 
+    if (isOffline) {
+      // Benar-benar offline → simpan ke queue
+      await _syncService.addToQueue(ApiConstants.tambahSaldo, 'POST', data);
+      return {'offline': true};
+    }
+
+    // Ada koneksi → coba kirim ke server
+    try {
       final response = await _apiClient.dio.post(
         ApiConstants.tambahSaldo,
         data: data,
       );
+      return TambahSaldoModel.fromJson(response.data['data'] ?? response.data);
+    } on Exception catch (_) {
+      // Cek ulang koneksi saat terjadi error
+      final connectivityAfter = await Connectivity().checkConnectivity();
+      final isReallyOffline = connectivityAfter.every((r) => r == ConnectivityResult.none);
 
-      return TambahSaldoModel.fromJson(response.data);
-    } catch (e) {
-      await _syncService.addToQueue(ApiConstants.tambahSaldo, 'POST', data);
-      return {'offline': true};
+      if (isReallyOffline) {
+        // Koneksi putus saat request → simpan ke queue
+        await _syncService.addToQueue(ApiConstants.tambahSaldo, 'POST', data);
+        return {'offline': true};
+      }
+
+      // Error dari server (bukan masalah koneksi) → lempar error agar ditampilkan
+      rethrow;
     }
   }
+
 
   Future<TambahSaldoModel> updateTambahSaldo(int id, {
     required double nominal,

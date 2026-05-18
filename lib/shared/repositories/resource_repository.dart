@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:sawitappmobile/core/network/api_client.dart';
 import 'package:sawitappmobile/core/constants/api_constants.dart';
 import 'package:sawitappmobile/features/penjual/models/penjual_model.dart';
@@ -54,34 +55,37 @@ class ResourceRepository {
   }
 
   Future<dynamic> storePenjual(Map<String, dynamic> data) async {
+    final connectivity = await Connectivity().checkConnectivity();
+    final isOffline = connectivity.every((r) => r == ConnectivityResult.none);
+    if (isOffline) {
+      await syncService.addToQueue(ApiConstants.penjual, 'POST', data);
+      return {'offline': true};
+    }
     try {
-      final connectivity = await Connectivity().checkConnectivity();
-      if (connectivity.contains(ConnectivityResult.none)) {
-        await syncService.addToQueue(ApiConstants.penjual, 'POST', data);
-        return {'offline': true};
-      }
-      final response = await _apiClient.dio.post(
-        ApiConstants.penjual,
-        data: data,
-      );
+      final response = await _apiClient.dio.post(ApiConstants.penjual, data: data);
       return Penjual.fromJson(response.data);
-    } catch (e) {
+    } on DioException catch (e) {
+      if (e.response != null && (e.response!.statusCode ?? 0) >= 400 && (e.response!.statusCode ?? 0) < 500) {
+        rethrow; // Validation/client error — jangan queue
+      }
       await syncService.addToQueue(ApiConstants.penjual, 'POST', data);
       return {'offline': true};
     }
   }
 
   Future<void> updatePenjual(int id, Map<String, dynamic> data) async {
+    final url = '${ApiConstants.penjual}/$id';
+    final connectivity = await Connectivity().checkConnectivity();
+    if (connectivity.every((r) => r == ConnectivityResult.none)) {
+      await syncService.addToQueue(url, 'PUT', data);
+      return;
+    }
     try {
-      final connectivity = await Connectivity().checkConnectivity();
-      final url = '${ApiConstants.penjual}/$id';
-      if (connectivity.contains(ConnectivityResult.none)) {
-        await syncService.addToQueue(url, 'PUT', data);
-        return;
-      }
       await _apiClient.dio.put(url, data: data);
-    } catch (e) {
-      final url = '${ApiConstants.penjual}/$id';
+    } on DioException catch (e) {
+      if (e.response != null && (e.response!.statusCode ?? 0) >= 400 && (e.response!.statusCode ?? 0) < 500) {
+        rethrow;
+      }
       await syncService.addToQueue(url, 'PUT', data);
     }
   }
@@ -119,34 +123,37 @@ class ResourceRepository {
   }
 
   Future<dynamic> storeSupir(Map<String, dynamic> data) async {
+    final connectivity = await Connectivity().checkConnectivity();
+    final isOffline = connectivity.every((r) => r == ConnectivityResult.none);
+    if (isOffline) {
+      await syncService.addToQueue(ApiConstants.supir, 'POST', data);
+      return {'offline': true};
+    }
     try {
-      final connectivity = await Connectivity().checkConnectivity();
-      if (connectivity.contains(ConnectivityResult.none)) {
-        await syncService.addToQueue(ApiConstants.supir, 'POST', data);
-        return {'offline': true};
-      }
-      final response = await _apiClient.dio.post(
-        ApiConstants.supir,
-        data: data,
-      );
+      final response = await _apiClient.dio.post(ApiConstants.supir, data: data);
       return Supir.fromJson(response.data);
-    } catch (e) {
+    } on DioException catch (e) {
+      if (e.response != null && (e.response!.statusCode ?? 0) >= 400 && (e.response!.statusCode ?? 0) < 500) {
+        rethrow;
+      }
       await syncService.addToQueue(ApiConstants.supir, 'POST', data);
       return {'offline': true};
     }
   }
 
   Future<void> updateSupir(int id, Map<String, dynamic> data) async {
+    final url = '${ApiConstants.supir}/$id';
+    final connectivity = await Connectivity().checkConnectivity();
+    if (connectivity.every((r) => r == ConnectivityResult.none)) {
+      await syncService.addToQueue(url, 'PUT', data);
+      return;
+    }
     try {
-      final connectivity = await Connectivity().checkConnectivity();
-      final url = '${ApiConstants.supir}/$id';
-      if (connectivity.contains(ConnectivityResult.none)) {
-        await syncService.addToQueue(url, 'PUT', data);
-        return;
-      }
       await _apiClient.dio.put(url, data: data);
-    } catch (e) {
-      final url = '${ApiConstants.supir}/$id';
+    } on DioException catch (e) {
+      if (e.response != null && (e.response!.statusCode ?? 0) >= 400 && (e.response!.statusCode ?? 0) < 500) {
+        rethrow;
+      }
       await syncService.addToQueue(url, 'PUT', data);
     }
   }
@@ -184,34 +191,37 @@ class ResourceRepository {
   }
 
   Future<dynamic> storePekerja(Map<String, dynamic> data) async {
+    final connectivity = await Connectivity().checkConnectivity();
+    final isOffline = connectivity.every((r) => r == ConnectivityResult.none);
+    if (isOffline) {
+      await syncService.addToQueue(ApiConstants.pekerja, 'POST', data);
+      return {'offline': true};
+    }
     try {
-      final connectivity = await Connectivity().checkConnectivity();
-      if (connectivity.contains(ConnectivityResult.none)) {
-        await syncService.addToQueue(ApiConstants.pekerja, 'POST', data);
-        return {'offline': true};
-      }
-      final response = await _apiClient.dio.post(
-        ApiConstants.pekerja,
-        data: data,
-      );
+      final response = await _apiClient.dio.post(ApiConstants.pekerja, data: data);
       return Pekerja.fromJson(response.data);
-    } catch (e) {
+    } on DioException catch (e) {
+      if (e.response != null && (e.response!.statusCode ?? 0) >= 400 && (e.response!.statusCode ?? 0) < 500) {
+        rethrow;
+      }
       await syncService.addToQueue(ApiConstants.pekerja, 'POST', data);
       return {'offline': true};
     }
   }
 
   Future<void> updatePekerja(int id, Map<String, dynamic> data) async {
+    final url = '${ApiConstants.pekerja}/$id';
+    final connectivity = await Connectivity().checkConnectivity();
+    if (connectivity.every((r) => r == ConnectivityResult.none)) {
+      await syncService.addToQueue(url, 'PUT', data);
+      return;
+    }
     try {
-      final connectivity = await Connectivity().checkConnectivity();
-      final url = '${ApiConstants.pekerja}/$id';
-      if (connectivity.contains(ConnectivityResult.none)) {
-        await syncService.addToQueue(url, 'PUT', data);
-        return;
-      }
       await _apiClient.dio.put(url, data: data);
-    } catch (e) {
-      final url = '${ApiConstants.pekerja}/$id';
+    } on DioException catch (e) {
+      if (e.response != null && (e.response!.statusCode ?? 0) >= 400 && (e.response!.statusCode ?? 0) < 500) {
+        rethrow;
+      }
       await syncService.addToQueue(url, 'PUT', data);
     }
   }
@@ -249,18 +259,19 @@ class ResourceRepository {
   }
 
   Future<dynamic> storeKendaraan(Map<String, dynamic> data) async {
+    final connectivity = await Connectivity().checkConnectivity();
+    final isOffline = connectivity.every((r) => r == ConnectivityResult.none);
+    if (isOffline) {
+      await syncService.addToQueue(ApiConstants.kendaraan, 'POST', data);
+      return {'offline': true};
+    }
     try {
-      final connectivity = await Connectivity().checkConnectivity();
-      if (connectivity.contains(ConnectivityResult.none)) {
-        await syncService.addToQueue(ApiConstants.kendaraan, 'POST', data);
-        return {'offline': true};
-      }
-      final response = await _apiClient.dio.post(
-        ApiConstants.kendaraan,
-        data: data,
-      );
+      final response = await _apiClient.dio.post(ApiConstants.kendaraan, data: data);
       return Kendaraan.fromJson(response.data);
-    } catch (e) {
+    } on DioException catch (e) {
+      if (e.response != null && (e.response!.statusCode ?? 0) >= 400 && (e.response!.statusCode ?? 0) < 500) {
+        rethrow;
+      }
       await syncService.addToQueue(ApiConstants.kendaraan, 'POST', data);
       return {'offline': true};
     }
@@ -345,18 +356,19 @@ class ResourceRepository {
   }
 
   Future<dynamic> storeOperasional(Map<String, dynamic> data) async {
+    final connectivity = await Connectivity().checkConnectivity();
+    final isOffline = connectivity.every((r) => r == ConnectivityResult.none);
+    if (isOffline) {
+      await syncService.addToQueue(ApiConstants.operasional, 'POST', data);
+      return {'offline': true};
+    }
     try {
-      final connectivity = await Connectivity().checkConnectivity();
-      if (connectivity.contains(ConnectivityResult.none)) {
-        await syncService.addToQueue(ApiConstants.operasional, 'POST', data);
-        return {'offline': true};
-      }
-      final response = await _apiClient.dio.post(
-        ApiConstants.operasional,
-        data: data,
-      );
+      final response = await _apiClient.dio.post(ApiConstants.operasional, data: data);
       return Operasional.fromJson(response.data);
-    } catch (e) {
+    } on DioException catch (e) {
+      if (e.response != null && (e.response!.statusCode ?? 0) >= 400 && (e.response!.statusCode ?? 0) < 500) {
+        rethrow;
+      }
       await syncService.addToQueue(ApiConstants.operasional, 'POST', data);
       return {'offline': true};
     }

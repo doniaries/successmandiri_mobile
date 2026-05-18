@@ -39,7 +39,7 @@ class PushNotificationService {
 
     // Versi terbaru flutter_local_notifications menggunakan named parameter
     await _localNotifications.initialize(
-      initSettings,
+      settings: initSettings,
       onDidReceiveNotificationResponse: _onNotificationTap,
     );
 
@@ -117,10 +117,10 @@ class PushNotificationService {
 
     // Versi terbaru flutter_local_notifications pakai named parameters
     await _localNotifications.show(
-      notification.hashCode,
-      notification.title,
-      notification.body,
-      details,
+      id: notification.hashCode,
+      title: notification.title,
+      body: notification.body,
+      notificationDetails: details,
       payload: jsonEncode(message.data),
     );
   }
