@@ -1,17 +1,47 @@
-# Sawit App Mobile
+# MySawit Mobile App
 
-A new Flutter project.
+Aplikasi mobile untuk manajemen kelapa sawit terintegrasi (multi-tenancy, offline sync, dan real-time transaction recording).
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## 🚀 Memulai (Getting Started)
 
-A few resources to get you started if this is your first Flutter project:
+Aplikasi ini dibangun menggunakan **Flutter Stable** dan terintegrasi langsung dengan backend Laravel melalui REST API.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+### Prasyarat:
+- Flutter SDK (Stable Channel)
+- Android SDK / Xcode (untuk iOS)
+- Koneksi ke Backend Laravel (Gunakan `adb reverse tcp:8000 tcp:8000` jika menggunakan emulator/perangkat fisik dengan Laravel localhost)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
+
+## 🛠️ Perintah Reset Data Aplikasi (Command Line)
+
+Untuk keperluan testing, debugging, atau membersihkan data lokal yang tersimpan di perangkat tanpa perlu melakukan uninstall aplikasi, Anda bisa menggunakan perintah-perintah berikut:
+
+### 1. Reset Storage & Database Lokal Aplikasi (Android)
+Perintah ini akan langsung menghapus database SQLite lokal (`successmandiri.db`), data autentikasi (Secure Storage), dan preference cache secara instan:
+
+```bash
+# Bersihkan seluruh data lokal aplikasi via ADB
+adb shell pm clear com.example.sawitappmobile
+```
+
+> [!TIP]
+> Pastikan perangkat android fisik atau emulator Anda sudah terhubung (verifikasi dengan `adb devices`) sebelum menjalankan perintah di atas.
+
+### 2. Reset Build Cache & Dependensi Project
+Jika Anda menemui kendala caching aset atau dependensi yang tidak sinkron setelah melakukan pull update terbaru, jalankan rangkaian perintah pembersihan ini:
+
+```bash
+# Bersihkan build cache Flutter
+flutter clean
+
+# Ambil ulang seluruh dependensi project
+flutter pub get
+```
+
+---
+
+## 📱 Dokumen Terkait
+- [PROGRESS.md](file:///c:/laragon/www/successmandiri_mobile/PROGRESS.md) - Laporan riwayat implementasi multi-tenancy & autentikasi.
