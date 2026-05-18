@@ -1062,12 +1062,13 @@ class _StatCardsState extends State<_StatCards> {
         locale: const Locale('id', 'ID'),
         builder: (context, child) {
           return Theme(
-            data: Theme.of(context).copyWith(
+            data: ThemeData.light().copyWith(
               colorScheme: const ColorScheme.light(
                 primary: Color(0xFF01579B),
                 onPrimary: Colors.white,
                 onSurface: Colors.black87,
               ),
+              dialogBackgroundColor: Colors.white,
               textButtonTheme: TextButtonThemeData(
                 style: TextButton.styleFrom(
                   foregroundColor: const Color(0xFF01579B),
