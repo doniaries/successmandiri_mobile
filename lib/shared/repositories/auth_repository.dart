@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sawitappmobile/core/constants/api_constants.dart';
 import 'package:sawitappmobile/core/network/api_client.dart';
+import 'package:sawitappmobile/core/services/push_notification_service.dart';
 import 'package:sawitappmobile/features/auth/models/user_model.dart';
 
 class AuthRepository {
@@ -32,6 +33,11 @@ class AuthRepository {
         
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('auth_token', token);
+
+        // Daftarkan FCM token ke backend setelah login berhasil
+        PushNotificationService.registerTokenToBackend(token)
+            .catchError((e) => null); // Non-blocking
+
         return {
           'user': User.fromJson(userData),
           'token': token,
@@ -58,6 +64,13 @@ class AuthRepository {
 
   Future<void> logout() async {
     try {
+      // Hapus FCM token dari backend sebelum logout
+      final prefs = await SharedPreferences.getInstance();
+      final authToken = prefs.getString('auth_token');
+      if (authToken != null) {
+        await PushNotificationService.unregisterTokenFromBackend(authToken)
+            .catchError((e) => null);
+      }
       await _apiClient.dio.post(ApiConstants.logout);
     } catch (e) {
       // Abaikan error saat logout (misal 401) agar tetap bisa membersihkan data lokal

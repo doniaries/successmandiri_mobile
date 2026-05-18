@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'dart:ui';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:sawitappmobile/core/navigation/navigation_service.dart';
 import 'package:sawitappmobile/core/network/api_client.dart';
+import 'package:sawitappmobile/core/services/push_notification_service.dart';
 import 'package:sawitappmobile/features/auth/providers/auth_provider.dart';
 import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_provider.dart';
 import 'package:sawitappmobile/features/tambah_saldo/providers/tambah_saldo_provider.dart';
@@ -44,9 +46,11 @@ void main() async {
 
   // 3. Lakukan inisialisasi WAJIB sebelum UI berjalan
   try {
+    await Firebase.initializeApp(); // Init Firebase
     await initializeDateFormatting('id_ID', null);
+    await PushNotificationService.initialize(); // Init FCM
   } catch (e) {
-    debugPrint('Locale init error: $e');
+    debugPrint('Init error: $e');
   }
 
   // Jalankan aplikasi dengan initialScreen
