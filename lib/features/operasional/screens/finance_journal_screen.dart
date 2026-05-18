@@ -360,6 +360,28 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildSummaryItem(
+                    'Masuk ($labelSuffix)',
+                    displayIn,
+                    Icons.arrow_downward_rounded,
+                    Colors.greenAccent,
+                  ),
+                ),
+                Container(width: 1, height: 40, color: Colors.white24),
+                Expanded(
+                  child: _buildSummaryItem(
+                    'Keluar ($labelSuffix)',
+                    displayOut,
+                    Icons.arrow_upward_rounded,
+                    Colors.orangeAccent,
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       );
