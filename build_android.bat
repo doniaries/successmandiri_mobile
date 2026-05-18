@@ -16,7 +16,7 @@ if %ERRORLEVEL% NEQ 0 goto GAGAL
 
 echo.
 echo 3. Menyalin dan mengubah nama APK...
-copy build\app\outputs\flutter-apk\app-release.apk mysawit.apk /Y
+copy /B build\app\outputs\flutter-apk\app-release.apk mysawit.apk /Y
 if %ERRORLEVEL% NEQ 0 goto GAGAL
 
 :SUKSES
