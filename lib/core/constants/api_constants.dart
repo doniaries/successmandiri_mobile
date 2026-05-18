@@ -1,11 +1,24 @@
-class ApiConstants {
-  static String get baseUrl {
-    // 1. Produksi (Aktif untuk build produksi)
-    return 'https://sawit.successmandiri.com/api';
+import 'package:flutter/foundation.dart';
 
-    // 2. IP Lokal (Gunakan port 8000 untuk Laravel Serve saat development)
-    // return 'http://127.0.0.1:8000/api'; // Infinix (via ADB Reverse) & Chrome
-    // return 'http://192.168.100.16:8000/api'; // Infinix (Koneksi Wi-Fi Langsung)
+class ApiConstants {
+  // Set true untuk mengarahkan ke local server saat didebug, atau false untuk selalu ke produksi
+  static const bool useLocalInDebug = true;
+
+  static String get baseUrl {
+    if (kDebugMode && useLocalInDebug) {
+      // Pilihlah salah satu URL di bawah ini sesuai setup Anda:
+      
+      // A. Menggunakan kabel USB + ADB Reverse (Jauh lebih stabil):
+      //    Jalankan perintah ini di CMD/Terminal PC Anda sebelum me-run app:
+      //    adb reverse tcp:8000 tcp:8000
+      return 'http://127.0.0.1:8000/api';
+
+      // B. Menggunakan satu jaringan Wi-Fi (Ganti 192.168.100.16 dengan IP lokal komputer Anda):
+      // return 'http://192.168.100.16:8000/api';
+    }
+
+    // Produksi (Online)
+    return 'https://sawit.successmandiri.com/api';
   }
 
   static String get storageUrl {
