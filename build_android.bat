@@ -15,7 +15,7 @@ if %ERRORLEVEL% NEQ 0 goto GAGAL
 
 echo.
 echo 3. Menyalin dan mengubah nama APK...
-copy build\app\outputs\flutter-apk\app-release.apk SuksesMandiri.apk /Y
+copy build\app\outputs\flutter-apk\app-release.apk mysawit.apk /Y
 if %ERRORLEVEL% NEQ 0 goto GAGAL
 
 :SUKSES
@@ -23,7 +23,7 @@ echo.
 echo =============================================================
 echo [SUKSES] Build berhasil!
 echo File APK kustom Anda kini berada di folder utama proyek:
-echo -> SuksesMandiri.apk
+echo -> mysawit.apk
 echo =============================================================
 goto END
 
