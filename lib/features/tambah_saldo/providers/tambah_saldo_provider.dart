@@ -78,8 +78,8 @@ class TambahSaldoProvider with ChangeNotifier {
         _errorMessage = 'offline';
       } else {
         _errorMessage = null;
-        await fetchRequests();
       }
+      await fetchRequests();
 
       _isLoading = false;
       notifyListeners();

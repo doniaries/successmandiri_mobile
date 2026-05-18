@@ -9,6 +9,7 @@ import 'package:sawitappmobile/features/tambah_saldo/models/tambah_saldo_model.d
 import 'package:sawitappmobile/features/tambah_saldo/screens/add_tambah_saldo_screen.dart';
 import 'package:sawitappmobile/features/tambah_saldo/screens/tambah_saldo_detail_screen.dart';
 import 'package:sawitappmobile/features/tambah_saldo/screens/edit_tambah_saldo_screen.dart';
+import 'package:sawitappmobile/core/services/sync_service.dart';
 
 class TambahSaldoListScreen extends StatefulWidget {
   const TambahSaldoListScreen({super.key});
@@ -88,7 +89,13 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
               ),
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: () => provider.fetchRequests(),
+                  onRefresh: () async {
+                    await SyncService().syncNow();
+                    await provider.fetchRequests();
+                    if (context.mounted) {
+                      await context.read<DashboardProvider>().fetchSummary();
+                    }
+                  },
                   child: filteredRequests.isEmpty
                       ? Center(
                           child: Text(

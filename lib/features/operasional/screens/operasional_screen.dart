@@ -8,6 +8,7 @@ import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/widgets/skeleton_loader.dart';
 import 'package:sawitappmobile/features/operasional/screens/add_operasional_screen.dart';
 import 'package:sawitappmobile/features/operasional/screens/operasional_detail_screen.dart';
+import 'package:sawitappmobile/core/services/sync_service.dart';
 
 class OperasionalScreen extends StatefulWidget {
   const OperasionalScreen({super.key});
@@ -57,10 +58,14 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
   }
 
   Future<void> _refreshData() async {
+    await SyncService().syncNow();
     await context.read<ResourceProvider>().fetchResources(
       'operasional',
       refresh: true,
     );
+    if (mounted) {
+      await context.read<DashboardProvider>().fetchSummary();
+    }
   }
 
   List<Operasional> _getFilteredDateItems(List<Operasional> allItems, DateTime systemActiveDate) {

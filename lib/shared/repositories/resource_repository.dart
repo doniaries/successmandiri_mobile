@@ -10,6 +10,7 @@ import 'package:sawitappmobile/features/jurnal_keuangan/models/jurnal_keuangan_m
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/core/services/database_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:uuid/uuid.dart';
 
 class ResourceRepository {
   final ApiClient _apiClient;
@@ -356,6 +357,13 @@ class ResourceRepository {
   }
 
   Future<dynamic> storeOperasional(Map<String, dynamic> data) async {
+    if (data['client_uuid'] == null) {
+      data['client_uuid'] = const Uuid().v4();
+    }
+    if (data['client_created_at'] == null) {
+      data['client_created_at'] = DateTime.now().toUtc().toIso8601String();
+    }
+
     final connectivity = await Connectivity().checkConnectivity();
     final isOffline = connectivity.every((r) => r == ConnectivityResult.none);
     if (isOffline) {

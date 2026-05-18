@@ -3,6 +3,7 @@ import 'package:sawitappmobile/core/network/api_client.dart';
 import 'package:sawitappmobile/features/tambah_saldo/models/tambah_saldo_model.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:uuid/uuid.dart';
 
 class TambahSaldoRepository {
   final ApiClient _apiClient;
@@ -63,6 +64,8 @@ class TambahSaldoRepository {
     String? keterangan,
   }) async {
     final Map<String, dynamic> data = {
+      'client_uuid': const Uuid().v4(),
+      'client_created_at': DateTime.now().toUtc().toIso8601String(),
       'nominal': nominal,
       'tanggal': tanggal,
       'keterangan': keterangan,
