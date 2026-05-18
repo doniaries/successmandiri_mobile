@@ -1,4 +1,5 @@
 @echo off
+cd /d "%~dp0"
 title Sukses Mandiri - Build Android APK
 echo =============================================================
 echo               MEMULAI PROSES BUILD ANDROID APK
