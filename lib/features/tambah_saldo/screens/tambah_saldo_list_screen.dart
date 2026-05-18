@@ -11,6 +11,7 @@ import 'package:sawitappmobile/features/tambah_saldo/screens/tambah_saldo_detail
 import 'package:sawitappmobile/features/tambah_saldo/screens/edit_tambah_saldo_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
+import 'package:sawitappmobile/shared/widgets/active_company_header.dart';
 
 class TambahSaldoListScreen extends StatefulWidget {
   const TambahSaldoListScreen({super.key});
@@ -44,9 +45,13 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: Consumer2<TambahSaldoProvider, DashboardProvider>(
-        builder: (context, provider, dashboardProvider, child) {
-          final activeDateStr = dashboardProvider.summary?.systemActiveDate;
+      body: Column(
+        children: [
+          const ActiveCompanyHeader(),
+          Expanded(
+            child: Consumer2<TambahSaldoProvider, DashboardProvider>(
+              builder: (context, provider, dashboardProvider, child) {
+                final activeDateStr = dashboardProvider.summary?.systemActiveDate;
           final systemActiveDate = activeDateStr != null
               ? DateTime.parse(activeDateStr)
               : DateTime.now();
@@ -168,7 +173,10 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
               ),
             ],
           );
-        },
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'tambah_saldo_fab',

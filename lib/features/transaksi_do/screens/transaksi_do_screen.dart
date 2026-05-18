@@ -8,6 +8,7 @@ import 'package:sawitappmobile/features/transaksi_do/screens/add_transaksi_do_sc
 import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_detail_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
+import 'package:sawitappmobile/shared/widgets/active_company_header.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 
 class TransaksiDoScreen extends StatefulWidget {
@@ -159,6 +160,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  const ActiveCompanyHeader(),
                   _buildSummaryHeader(),
                   _buildFilterInfoWidget(),
                 ],

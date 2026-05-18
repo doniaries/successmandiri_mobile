@@ -6,6 +6,7 @@ import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.d
 import 'package:sawitappmobile/features/operasional/models/operasional_model.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/widgets/skeleton_loader.dart';
+import 'package:sawitappmobile/shared/widgets/active_company_header.dart';
 import 'package:sawitappmobile/features/operasional/screens/add_operasional_screen.dart';
 import 'package:sawitappmobile/features/operasional/screens/operasional_detail_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
@@ -175,7 +176,14 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
         child: CustomScrollView(
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [_buildAppBar(), _buildSummaryHeader(), _buildListSection()],
+          slivers: [
+            _buildAppBar(),
+            const SliverToBoxAdapter(
+              child: ActiveCompanyHeader(),
+            ),
+            _buildSummaryHeader(),
+            _buildListSection(),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(

@@ -23,6 +23,7 @@ import 'package:sawitappmobile/features/pekerja/screens/pekerja_detail_screen.da
 import 'package:sawitappmobile/features/user/screens/user_detail_screen.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
 import 'package:sawitappmobile/shared/widgets/skeleton_loader.dart';
+import 'package:sawitappmobile/shared/widgets/active_company_header.dart';
 
 import 'package:sawitappmobile/core/services/sync_service.dart';
 
@@ -393,79 +394,86 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
               )
             : null,
       ),
-      body: Consumer<ResourceProvider>(
-        builder: (context, provider, child) {
-          List<dynamic> items = [];
-          switch (widget.resourceType) {
-            case 'penjual':
-              items = provider.penjuals;
-              break;
-            case 'supir':
-              items = provider.supirs;
-              break;
-            case 'pekerja':
-              items = provider.pekerjas;
-              break;
-            case 'kendaraan':
-              items = provider.kendaraans;
-              break;
-            case 'operasional':
-              items = provider.operasionals;
-              break;
-            case 'jurnal_keuangan':
-              items = provider.jurnalKeuangans;
-              break;
-            case 'user':
-              items = provider.users;
-              break;
-          }
+      body: Column(
+        children: [
+          const ActiveCompanyHeader(),
+          Expanded(
+            child: Consumer<ResourceProvider>(
+              builder: (context, provider, child) {
+                List<dynamic> items = [];
+                switch (widget.resourceType) {
+                  case 'penjual':
+                    items = provider.penjuals;
+                    break;
+                  case 'supir':
+                    items = provider.supirs;
+                    break;
+                  case 'pekerja':
+                    items = provider.pekerjas;
+                    break;
+                  case 'kendaraan':
+                    items = provider.kendaraans;
+                    break;
+                  case 'operasional':
+                    items = provider.operasionals;
+                    break;
+                  case 'jurnal_keuangan':
+                    items = provider.jurnalKeuangans;
+                    break;
+                  case 'user':
+                    items = provider.users;
+                    break;
+                }
 
-          // Apply initial filter if provided
-          if (widget.initialFilter != null) {
-            if (widget.resourceType == 'operasional') {
-              items = items
-                  .where(
-                    (i) =>
-                        i.operasional.toLowerCase() ==
-                        widget.initialFilter!.toLowerCase(),
-                  )
-                  .toList();
-            } else if (widget.resourceType == 'jurnal_keuangan') {
-              items = items
-                  .where(
-                    (i) =>
-                        i.jenisTransaksi.toLowerCase() ==
-                        widget.initialFilter!.toLowerCase(),
-                  )
-                  .toList();
-            }
-          }
+                // Apply initial filter if provided
+                if (widget.initialFilter != null) {
+                  if (widget.resourceType == 'operasional') {
+                    items = items
+                        .where(
+                          (i) =>
+                              i.operasional.toLowerCase() ==
+                              widget.initialFilter!.toLowerCase(),
+                        )
+                        .toList();
+                  } else if (widget.resourceType == 'jurnal_keuangan') {
+                    items = items
+                        .where(
+                          (i) =>
+                              i.jenisTransaksi.toLowerCase() ==
+                              widget.initialFilter!.toLowerCase(),
+                        )
+                        .toList();
+                  }
+                }
 
-          if (hasTabs) {
-            final activeItems = items.where((i) {
-              if (i is Penjual) return i.isActive;
-              if (i is Supir) return i.isActive;
-              if (i is Pekerja) return i.isActive;
-              return true;
-            }).toList();
+                if (hasTabs) {
+                  final activeItems = items.where((i) {
+                    if (i is Penjual) return i.isActive;
+                    if (i is Supir) return i.isActive;
+                    if (i is Pekerja) return i.isActive;
+                    return true;
+                  }).toList();
 
-            final inactiveItems = items.where((i) {
-              if (i is Penjual) return !i.isActive;
-              if (i is Supir) return !i.isActive;
-              if (i is Pekerja) return !i.isActive;
-              return false;
-            }).toList();
+                  final inactiveItems = items.where((i) {
+                    if (i is Penjual) return !i.isActive;
+                    if (i is Supir) return !i.isActive;
+                    if (i is Pekerja) return !i.isActive;
+                    return false;
+                  }).toList();
 
-            return TabBarView(
-              children: [
-                _buildListContent(provider, activeItems, _activeScrollController),
-                _buildListContent(provider, inactiveItems, _inactiveScrollController),
-              ],
-            );
-          }
+                  return TabBarView(
+                    children: [
+                      _buildListContent(provider, activeItems, _activeScrollController),
+                      _buildListContent(provider, inactiveItems, _inactiveScrollController),
+                    ],
+                  );
+                }
 
-          return _buildListContent(provider, items, _scrollController);
-        },
+                return _buildListContent(provider, items, _scrollController);
+              },
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'resource_list_fab_${widget.resourceType}',
