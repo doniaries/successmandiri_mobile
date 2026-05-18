@@ -56,10 +56,6 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
 
   Map<String, dynamic> _buildApiFilters() {
     final Map<String, dynamic> filters = {};
-    
-    if (_selectedFilter != 'Semua') {
-      filters['jenis_transaksi'] = _selectedFilter;
-    }
 
     final targetDate = _selectedSingleDate ?? _getSystemActiveDate();
     final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
@@ -219,25 +215,13 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
   }
 
   Widget _buildSummaryHeader(ResourceProvider provider) {
-    final items = provider.jurnalKeuangans;
     final targetDate = _selectedSingleDate ?? _getSystemActiveDate();
     final systemActiveDate = _getSystemActiveDate();
 
-    // Hitung statistik berdasarkan tanggal aktif
-    double displayIn = 0;
-    double displayOut = 0;
-    int filterCount = 0;
-
-    for (var item in items) {
-      if (DateUtils.isSameDay(item.tanggal.toLocal(), targetDate)) {
-        filterCount++;
-        if (item.jenisTransaksi == 'Pemasukan') {
-          displayIn += item.nominal;
-        } else {
-          displayOut += item.nominal;
-        }
-      }
-    }
+    // Hitung statistik berdasarkan tanggal aktif menggunakan ringkasan data dari server
+    final double displayIn = provider.totalPemasukan;
+    final double displayOut = provider.totalPengeluaran;
+    final int filterCount = provider.jurnalCount;
 
     final isFilterActive = _selectedSingleDate != null && !DateUtils.isSameDay(_selectedSingleDate!, systemActiveDate);
     final dateText = DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
@@ -523,7 +507,6 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
               onSelected: (val) {
                 if (val) {
                   setState(() => _selectedFilter = filter);
-                  _refreshData();
                 }
               },
               selectedColor: const Color(0xFF01579B).withValues(alpha: 0.1),
@@ -626,7 +609,11 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
   List<JurnalKeuangan> _getFilteredItems(List<JurnalKeuangan> items) {
     final targetDate = _selectedSingleDate ?? _getSystemActiveDate();
     return items.where((item) {
-      return DateUtils.isSameDay(item.tanggal.toLocal(), targetDate);
+      final matchesDate = DateUtils.isSameDay(item.tanggal.toLocal(), targetDate);
+      if (!matchesDate) return false;
+
+      if (_selectedFilter == 'Semua') return true;
+      return item.jenisTransaksi.toLowerCase() == _selectedFilter.toLowerCase();
     }).toList();
   }
 

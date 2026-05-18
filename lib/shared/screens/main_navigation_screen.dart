@@ -84,15 +84,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         } else if (index == 2) {
           // Operasional
           context.read<ResourceProvider>().fetchResources('operasional');
-        } else if (index == 3) {
-          // Laporan Keuangan
-          context.read<ResourceProvider>().fetchJurnalByDateRange(
-            DateTime.now()
-                .subtract(const Duration(days: 30))
-                .toString()
-                .split(' ')[0],
-            DateTime.now().toString().split(' ')[0],
-          );
         }
       });
     }
