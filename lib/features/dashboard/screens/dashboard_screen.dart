@@ -1095,10 +1095,9 @@ class _StatCardsState extends State<_StatCards> {
         initialDate: _selectedDate ?? DateTime.now(),
         firstDate: DateTime(2020),
         lastDate: DateTime.now().add(const Duration(days: 365)),
-        locale: const Locale('id', 'ID'),
         builder: (context, child) {
           return Theme(
-            data: ThemeData.light().copyWith(
+            data: Theme.of(context).copyWith(
               colorScheme: const ColorScheme.light(
                 primary: Color(0xFF01579B),
                 onPrimary: Colors.white,
