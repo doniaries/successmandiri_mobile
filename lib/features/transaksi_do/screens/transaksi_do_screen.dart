@@ -7,7 +7,6 @@ import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/add_transaksi_do_screen.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_detail_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
-import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 import 'package:sawitappmobile/shared/widgets/active_company_header.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 
@@ -162,7 +161,6 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                 children: [
                   const ActiveCompanyHeader(),
                   _buildSummaryHeader(),
-                  _buildFilterInfoWidget(),
                 ],
               ),
             ),
@@ -277,122 +275,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   }
 
 
-  Widget _buildFilterInfoWidget() {
-    return Consumer2<DashboardProvider, TransaksiDoProvider>(
-      builder: (context, dashboardProvider, txProvider, _) {
-        if (_selectedSingleDate == null) return const SizedBox.shrink();
-        
-        final activeDateStr = dashboardProvider.summary?.systemActiveDate;
-        final systemActiveDate = activeDateStr != null 
-            ? DateTime.parse(activeDateStr) 
-            : DateTime.now();
-            
-        if (DateUtils.isSameDay(_selectedSingleDate!, systemActiveDate)) {
-          return const SizedBox.shrink();
-        }
 
-        final filteredCount = txProvider.transactions
-            .where((t) => DateUtils.isSameDay(t.tanggal.toLocal(), _selectedSingleDate!))
-            .length;
-
-        final formattedFilterDate = DateFormat('dd MMMM yyyy', 'id_ID').format(_selectedSingleDate!);
-
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: const Color(0xFF0D47A1).withValues(alpha: 0.15),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0D47A1).withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.filter_alt_rounded,
-                  color: Color(0xFF0D47A1),
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Menampilkan Filter DO',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      formattedFilterDate,
-                      style: const TextStyle(
-                        color: Color(0xFF1E293B),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Jumlah: $filteredCount DO ditemukan',
-                      style: const TextStyle(
-                        color: Color(0xFF2E7D32),
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              TextButton.icon(
-                onPressed: () {
-                  setState(() {
-                    _selectedSingleDate = null;
-                  });
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.red[700],
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  backgroundColor: Colors.red[50],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                icon: const Icon(Icons.close_rounded, size: 16),
-                label: const Text(
-                  'Reset',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
 
   Widget _buildSummaryHeader() {
     return Consumer2<DashboardProvider, TransaksiDoProvider>(
@@ -434,183 +317,140 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Text(
+                    isFilterActive ? 'Filter Transaksi' : 'Ringkasan Transaksi',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.local_shipping_rounded, color: Colors.white, size: 20),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
                   Expanded(
+                    flex: 3,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          isFilterActive ? 'Filter Transaksi' : 'Ringkasan Transaksi',
-                          style: const TextStyle(
+                        const Text(
+                          'Tanggal Transaksi',
+                          style: TextStyle(
                             color: Colors.white70,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        if (!isFilterActive) ...[
-                          const SizedBox(height: 6),
-                          InkWell(
-                            onTap: _showFilterSheet,
-                            borderRadius: BorderRadius.circular(20),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 0.5),
+                        const SizedBox(height: 4),
+                        InkWell(
+                          onTap: _showFilterSheet,
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.25),
+                                width: 0.5,
                               ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.calendar_month_rounded, color: Colors.white, size: 12),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    dateText,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.calendar_month_rounded,
+                                  color: Colors.white,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      dateText,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w900,
+                                      ),
                                     ),
                                   ),
-                                  const SizedBox(width: 2),
-                                  const Icon(Icons.arrow_drop_down_rounded, color: Colors.white, size: 14),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.arrow_drop_down_rounded,
+                                  color: Colors.white,
+                                  size: 18,
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 6),
-                          const LiveDateTimeWidget(
-                            showDate: false,
-                            showSeconds: false,
-                            showIcon: true,
-                            isTransparentBg: true,
-                            color: Colors.white70,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white70,
-                            ),
-                          ),
-                        ],
+                        ),
                       ],
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(16),
+                    height: 40,
+                    width: 1,
+                    color: Colors.white24,
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'Total Transaksi',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            '$activeCount',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    child: const Icon(Icons.local_shipping_rounded, color: Colors.white, size: 28),
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
-              if (isFilterActive) ...[
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Tanggal Transaksi',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          InkWell(
-                            onTap: _showFilterSheet,
-                            borderRadius: BorderRadius.circular(12),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.25),
-                                  width: 0.5,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.calendar_month_rounded,
-                                    color: Colors.white,
-                                    size: 16,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Flexible(
-                                    child: FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      child: Text(
-                                        dateText,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w900,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  const Icon(
-                                    Icons.arrow_drop_down_rounded,
-                                    color: Colors.white,
-                                    size: 18,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildSummaryItemInsideCard(
+                      'Saldo Saat Ini',
+                      CurrencyFormatter.formatRupiah(dashboardProvider.summary?.saldo ?? 0),
+                      Icons.account_balance_wallet_rounded,
+                      Colors.greenAccent,
                     ),
-                    Container(
-                      width: 1,
-                      height: 40,
-                      color: Colors.white24,
-                      margin: const EdgeInsets.symmetric(horizontal: 16),
-                    ),
-                    Expanded(
-                      flex: 1,
-                      child: _buildMetricItem(
-                        label: 'Total Transaksi',
-                        value: '$activeCount',
-                        icon: Icons.confirmation_number_rounded,
-                      ),
-                    ),
-                  ],
-                ),
-              ] else ...[
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildMetricItem(
-                        label: 'Transaksi Hari Ini',
-                        value: '$activeCount',
-                        icon: Icons.confirmation_number_rounded,
-                      ),
-                    ),
-                    Container(
-                      width: 1,
-                      height: 40,
-                      color: Colors.white24,
-                    ),
-                    Expanded(
-                      child: _buildMetricItem(
-                        label: 'Saldo Saat Ini',
-                        value: CurrencyFormatter.formatRupiah(dashboardProvider.summary?.saldo ?? 0),
-                        icon: Icons.account_balance_wallet_rounded,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ],
           ),
         );
@@ -618,33 +458,32 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
     );
   }
 
-  Widget _buildMetricItem({
-    required String label,
-    required String value,
-    required IconData icon,
-  }) {
+  Widget _buildSummaryItemInsideCard(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Column(
       children: [
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -0.5,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 16),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
             ),
-          ),
+          ],
         ),
         const SizedBox(height: 4),
         Text(
-          label,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.7),
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
           ),
         ),
       ],
