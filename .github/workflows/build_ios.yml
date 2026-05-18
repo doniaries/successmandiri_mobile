@@ -1,9 +1,6 @@
 name: Build iOS (No Codesign)
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
