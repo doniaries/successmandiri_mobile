@@ -69,21 +69,36 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      context.read<ResourceProvider>().fetchResources(widget.resourceType);
+      final provider = context.read<ResourceProvider>();
+      if (!provider.isLoading &&
+          !provider.isFetchingMoreFor(widget.resourceType) &&
+          !provider.isRefreshingFor(widget.resourceType)) {
+        provider.fetchResources(widget.resourceType);
+      }
     }
   }
 
   void _onActiveScroll() {
     if (_activeScrollController.position.pixels >=
         _activeScrollController.position.maxScrollExtent - 200) {
-      context.read<ResourceProvider>().fetchResources(widget.resourceType);
+      final provider = context.read<ResourceProvider>();
+      if (!provider.isLoading &&
+          !provider.isFetchingMoreFor(widget.resourceType) &&
+          !provider.isRefreshingFor(widget.resourceType)) {
+        provider.fetchResources(widget.resourceType);
+      }
     }
   }
 
   void _onInactiveScroll() {
     if (_inactiveScrollController.position.pixels >=
         _inactiveScrollController.position.maxScrollExtent - 200) {
-      context.read<ResourceProvider>().fetchResources(widget.resourceType);
+      final provider = context.read<ResourceProvider>();
+      if (!provider.isLoading &&
+          !provider.isFetchingMoreFor(widget.resourceType) &&
+          !provider.isRefreshingFor(widget.resourceType)) {
+        provider.fetchResources(widget.resourceType);
+      }
     }
   }
 

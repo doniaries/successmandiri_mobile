@@ -53,7 +53,13 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      context.read<ResourceProvider>().fetchResources('operasional');
+      final provider = context.read<ResourceProvider>();
+      if (!provider.isLoading &&
+          !provider.isFetchingMore('operasional') &&
+          !provider.isRefreshingFor('operasional') &&
+          provider.hasMore('operasional')) {
+        provider.fetchResources('operasional');
+      }
     }
   }
 

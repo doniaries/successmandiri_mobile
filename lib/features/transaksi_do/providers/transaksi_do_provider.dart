@@ -18,6 +18,7 @@ class TransaksiDoProvider with ChangeNotifier {
   bool _hasMore = true;
   bool _isFetchingMore = false;
   bool _isSaving = false;
+  bool _isRefreshing = false;
 
   TransaksiDoProvider(this._repository);
 
@@ -27,6 +28,7 @@ class TransaksiDoProvider with ChangeNotifier {
   List<dynamic> get kendaraans => _kendaraans;
   bool get isLoading => _isLoading;
   bool get isFetchingMore => _isFetchingMore;
+  bool get isRefreshing => _isRefreshing;
   bool get isSaving => _isSaving;
   bool get hasMore => _hasMore;
   String? get errorMessage => _errorMessage;
@@ -46,6 +48,8 @@ class TransaksiDoProvider with ChangeNotifier {
   }
 
   Future<void> fetchTransactions({String? tanggal}) async {
+    if (_isRefreshing || _isFetchingMore) return;
+    _isRefreshing = true;
     if (_transactions.isEmpty) _isLoading = true;
     _errorMessage = null;
     _currentPage = 1;
@@ -78,11 +82,14 @@ class TransaksiDoProvider with ChangeNotifier {
       _isLoading = false;
       _errorMessage = 'Gagal memuat data transaksi: $e';
       notifyListeners();
+    } finally {
+      _isRefreshing = false;
+      notifyListeners();
     }
   }
 
   Future<void> fetchMoreTransactions({String? tanggal}) async {
-    if (_isFetchingMore || !_hasMore) return;
+    if (_isFetchingMore || _isRefreshing || !_hasMore) return;
 
     _isFetchingMore = true;
     _errorMessage = null;
@@ -105,7 +112,11 @@ class TransaksiDoProvider with ChangeNotifier {
       
       final newItems = rawData.map((json) => TransaksiDo.fromJson(json)).toList();
       
-      _transactions.addAll(newItems);
+      for (var item in newItems) {
+        if (!_transactions.any((e) => e.id == item.id)) {
+          _transactions.add(item);
+        }
+      }
       _isFetchingMore = false;
       notifyListeners();
     } catch (e) {

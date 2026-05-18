@@ -83,7 +83,10 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       final provider = context.read<ResourceProvider>();
-      if (!provider.isLoading && provider.hasMore('jurnal_keuangan')) {
+      if (!provider.isLoading &&
+          !provider.isFetchingMore('jurnal_keuangan') &&
+          !provider.isRefreshingFor('jurnal_keuangan') &&
+          provider.hasMore('jurnal_keuangan')) {
         provider.fetchResources('jurnal_keuangan', filters: _buildApiFilters());
       }
     }

@@ -44,8 +44,10 @@ class ResourceProvider with ChangeNotifier {
   final Map<String, int> _currentPage = {};
   final Map<String, bool> _hasMore = {};
   final Map<String, bool> _isFetchingMore = {};
+  final Map<String, bool> _isRefreshing = {};
 
   bool isFetchingMoreFor(String type) => _isFetchingMore[type] ?? false;
+  bool isRefreshingFor(String type) => _isRefreshing[type] ?? false;
   bool hasMoreFor(String type) => _hasMore[type] ?? true;
 
   // Total counts from summary (for list badges)
@@ -176,6 +178,8 @@ class ResourceProvider with ChangeNotifier {
     Map<String, dynamic>? filters,
   }) async {
     if (refresh) {
+      if (_isRefreshing[type] == true || _isFetchingMore[type] == true) return;
+      _isRefreshing[type] = true;
       _currentPage[type] = 1;
       _hasMore[type] = true;
       _isFetchingMore[type] = false;
@@ -207,7 +211,7 @@ class ResourceProvider with ChangeNotifier {
       }
       notifyListeners();
     } else {
-      if (_isFetchingMore[type] == true || _hasMore[type] == false) return;
+      if (_isFetchingMore[type] == true || _isRefreshing[type] == true || _hasMore[type] == false) return;
       _isFetchingMore[type] = true;
       notifyListeners();
     }
@@ -274,37 +278,65 @@ class ResourceProvider with ChangeNotifier {
         case 'penjual':
           final items = rawData.map((e) => Penjual.fromJson(e)).toList();
           if (page == 1) _penjuals.clear();
-          _penjuals.addAll(items);
+          for (var item in items) {
+            if (!_penjuals.any((e) => e.id == item.id)) {
+              _penjuals.add(item);
+            }
+          }
           break;
         case 'supir':
           final items = rawData.map((e) => Supir.fromJson(e)).toList();
           if (page == 1) _supirs.clear();
-          _supirs.addAll(items);
+          for (var item in items) {
+            if (!_supirs.any((e) => e.id == item.id)) {
+              _supirs.add(item);
+            }
+          }
           break;
         case 'pekerja':
           final items = rawData.map((e) => Pekerja.fromJson(e)).toList();
           if (page == 1) _pekerjas.clear();
-          _pekerjas.addAll(items);
+          for (var item in items) {
+            if (!_pekerjas.any((e) => e.id == item.id)) {
+              _pekerjas.add(item);
+            }
+          }
           break;
         case 'kendaraan':
           final items = rawData.map((e) => Kendaraan.fromJson(e)).toList();
           if (page == 1) _kendaraans.clear();
-          _kendaraans.addAll(items);
+          for (var item in items) {
+            if (!_kendaraans.any((e) => e.id == item.id)) {
+              _kendaraans.add(item);
+            }
+          }
           break;
         case 'operasional':
           final items = rawData.map((e) => Operasional.fromJson(e)).toList();
           if (page == 1) _operasionals.clear();
-          _operasionals.addAll(items);
+          for (var item in items) {
+            if (!_operasionals.any((e) => e.id == item.id)) {
+              _operasionals.add(item);
+            }
+          }
           break;
         case 'jurnal_keuangan':
           final items = rawData.map((e) => JurnalKeuangan.fromJson(e)).toList();
           if (page == 1) _jurnalKeuangans.clear();
-          _jurnalKeuangans.addAll(items);
+          for (var item in items) {
+            if (!_jurnalKeuangans.any((e) => e.id == item.id)) {
+              _jurnalKeuangans.add(item);
+            }
+          }
           break;
         case 'user':
           final items = rawData.map((e) => User.fromJson(e)).toList();
           if (page == 1) _users.clear();
-          _users.addAll(items);
+          for (var item in items) {
+            if (!_users.any((e) => e.id == item.id)) {
+              _users.add(item);
+            }
+          }
           break;
       }
 
@@ -345,6 +377,7 @@ class ResourceProvider with ChangeNotifier {
     } finally {
       _isLoading = false;
       _isFetchingMore[type] = false;
+      _isRefreshing[type] = false;
       notifyListeners();
     }
   }
