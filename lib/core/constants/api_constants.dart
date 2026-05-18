@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 class ApiConstants {
   // Set true untuk mengarahkan ke local server saat didebug, atau false untuk selalu ke produksi
-  static const bool useLocalInDebug = true;
+  static const bool useLocalInDebug = false;
 
   static String get baseUrl {
     if (kDebugMode && useLocalInDebug) {
