@@ -95,10 +95,25 @@ class SyncService {
       }
 
       if (successCount > 0) {
+        // Buat pesan notifikasi berdasarkan endpoint yang berhasil disinkronkan
+        final syncedEndpoints = queue
+            .take(successCount)
+            .map((item) => _getProcessName(item['endpoint'] as String))
+            .toSet()
+            .toList();
+
+        final processNames = syncedEndpoints.join(', ');
+        final title = syncedEndpoints.length == 1
+            ? '✅ ${syncedEndpoints.first} Berhasil'
+            : '✅ Sinkronisasi Berhasil';
+        final body = syncedEndpoints.length == 1
+            ? '$successCount data $processNames telah dikirim ke server.'
+            : '$successCount data ($processNames) berhasil disinkronkan.';
+
         await _notificationService.showNotification(
           id: 999,
-          title: 'Sinkronisasi Berhasil',
-          body: '$successCount data telah berhasil disinkronkan ke server.',
+          title: title,
+          body: body,
         );
       }
     } finally {
@@ -106,6 +121,21 @@ class SyncService {
       updatePendingCount();
     }
   }
+
+  /// Konversi endpoint API ke nama proses yang mudah dibaca
+  String _getProcessName(String endpoint) {
+    if (endpoint.contains('tambah-saldo')) return 'Tambah Saldo';
+    if (endpoint.contains('transaksi-do')) return 'Transaksi DO';
+    if (endpoint.contains('operasional')) return 'Operasional';
+    if (endpoint.contains('penjual')) return 'Data Penjual';
+    if (endpoint.contains('supir')) return 'Data Supir';
+    if (endpoint.contains('pekerja')) return 'Data Pekerja';
+    if (endpoint.contains('kendaraan')) return 'Data Kendaraan';
+    if (endpoint.contains('pembayaran-hutang')) return 'Bayar Hutang';
+    if (endpoint.contains('lansir')) return 'Lansir';
+    return 'Data';
+  }
+
 
   Future<void> cacheData(String table, List<dynamic> list) async {
     List<Map<String, dynamic>> mappedList = [];
