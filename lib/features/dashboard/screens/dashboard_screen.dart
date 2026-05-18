@@ -95,20 +95,56 @@ class DashboardScreenState extends State<DashboardScreen> {
       backgroundColor: Colors.grey[50],
       body: RefreshIndicator(
         onRefresh: () async {
+          final scaffoldMessenger = ScaffoldMessenger.of(context);
           final dashboardProvider = context.read<DashboardProvider>();
           final resourceProvider = context.read<ResourceProvider>();
-          await dashboardProvider.fetchSummary();
-          if (!mounted) return;
-          if (dashboardProvider.summary != null) {
-            final s = dashboardProvider.summary!;
-            resourceProvider.updateTotalCounts(
-              penjual: s.totalPenjual,
-              supir: s.totalSupir,
-              pekerja: s.totalPekerja,
-              kendaraan: s.totalKendaraan,
-              operasional: s.totalOperasional,
-              jurnal: s.totalJurnalKeuangan,
+          
+          scaffoldMessenger.showSnackBar(
+            const SnackBar(
+              content: Text('Memulai Sinkronisasi Data...'),
+              duration: Duration(seconds: 1),
+            ),
+          );
+          
+          try {
+            // 1. Process offline queue
+            await SyncService().syncNow();
+            
+            // 2. Fetch latest master data from web
+            await resourceProvider.syncMasterData();
+            
+            // 3. Fetch latest summary for dashboard
+            await dashboardProvider.fetchSummary();
+            
+            if (!mounted) return;
+            
+            if (dashboardProvider.summary != null) {
+              final s = dashboardProvider.summary!;
+              resourceProvider.updateTotalCounts(
+                penjual: s.totalPenjual,
+                supir: s.totalSupir,
+                pekerja: s.totalPekerja,
+                kendaraan: s.totalKendaraan,
+                operasional: s.totalOperasional,
+                jurnal: s.totalJurnalKeuangan,
+              );
+            }
+            
+            scaffoldMessenger.showSnackBar(
+              const SnackBar(
+                content: Text('Sinkronisasi Data Selesai'),
+                backgroundColor: Colors.green,
+              ),
             );
+          } catch (e) {
+            if (mounted) {
+              scaffoldMessenger.showSnackBar(
+                SnackBar(
+                  content: Text('Gagal sinkronisasi: $e'),
+                  backgroundColor: Colors.redAccent,
+                ),
+              );
+            }
           }
         },
         child: CustomScrollView(
