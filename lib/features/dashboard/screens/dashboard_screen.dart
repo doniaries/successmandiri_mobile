@@ -1068,7 +1068,7 @@ class _StatCardsState extends State<_StatCards> {
                 onPrimary: Colors.white,
                 onSurface: Colors.black87,
               ),
-              dialogBackgroundColor: Colors.white,
+              dialogTheme: const DialogThemeData(backgroundColor: Colors.white),
               textButtonTheme: TextButtonThemeData(
                 style: TextButton.styleFrom(
                   foregroundColor: const Color(0xFF01579B),
