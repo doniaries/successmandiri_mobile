@@ -58,13 +58,48 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
   }
 
   Future<void> _refreshData() async {
-    await SyncService().syncNow();
-    await context.read<ResourceProvider>().fetchResources(
-      'operasional',
-      refresh: true,
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    scaffoldMessenger.showSnackBar(
+      const SnackBar(
+        content: Text('Memulai Sinkronisasi Operasional...'),
+        duration: Duration(seconds: 1),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
-    if (mounted) {
-      await context.read<DashboardProvider>().fetchSummary();
+    
+    try {
+      // 1. Process offline queue
+      await SyncService().syncNow();
+      
+      // 2. Fetch latest master data from web
+      await context.read<ResourceProvider>().syncMasterData();
+      
+      // 3. Fetch latest operational data
+      await context.read<ResourceProvider>().fetchResources(
+        'operasional',
+        refresh: true,
+      );
+      
+      // 4. Fetch latest dashboard summary
+      if (mounted) {
+        await context.read<DashboardProvider>().fetchSummary();
+      }
+      
+      scaffoldMessenger.showSnackBar(
+        const SnackBar(
+          content: Text('Sinkronisasi Operasional Selesai'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text('Gagal sinkron: $e'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 

@@ -90,12 +90,14 @@ class SyncService {
         existingData.addAll(newData);
         
         final db = await DatabaseService().database;
-        await db.update(
-          'offline_queue',
-          {'data': jsonEncode(existingData)},
-          where: 'id = ?',
-          whereArgs: [id],
-        );
+        if (db != null) {
+          await db.update(
+            'offline_queue',
+            {'data': jsonEncode(existingData)},
+            where: 'id = ?',
+            whereArgs: [id],
+          );
+        }
       }
     } catch (e) {
       debugPrint('Error updating queue: $e');

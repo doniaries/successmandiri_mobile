@@ -8,6 +8,7 @@ import 'package:sawitappmobile/features/transaksi_do/screens/add_transaksi_do_sc
 import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_detail_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
+import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 
 class TransaksiDoScreen extends StatefulWidget {
   const TransaksiDoScreen({super.key});
@@ -52,18 +53,34 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
     
     final txProvider = context.read<TransaksiDoProvider>();
     final dashboardProvider = context.read<DashboardProvider>();
+    final resourceProvider = context.read<ResourceProvider>();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     
     setState(() => _isManualSyncing = true);
+    scaffoldMessenger.showSnackBar(
+      const SnackBar(
+        content: Text('Memulai Sinkronisasi DO...'),
+        duration: Duration(seconds: 1),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+    
     try {
+      // 1. Process offline queue
       await SyncService().syncNow();
       
+      // 2. Fetch latest master data from web
+      await resourceProvider.syncMasterData();
+      
+      // 3. Fetch latest DO transactions
       await txProvider.fetchTransactions();
+      
+      // 4. Fetch latest dashboard summary
       await dashboardProvider.fetchSummary();
       
       scaffoldMessenger.showSnackBar(
         const SnackBar(
-          content: Text('Sinkronisasi selesai'),
+          content: Text('Sinkronisasi DO Selesai'),
           backgroundColor: Color(0xFF0D47A1),
           behavior: SnackBarBehavior.floating,
         ),
@@ -71,7 +88,11 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
     } catch (e) {
       if (mounted) {
         scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text('Gagal sinkron: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Gagal sinkron: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
         );
       }
     } finally {
@@ -88,13 +109,50 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
           if (!mounted) return;
           final txProvider = context.read<TransaksiDoProvider>();
           final dashboardProvider = context.read<DashboardProvider>();
+          final resourceProvider = context.read<ResourceProvider>();
+          final scaffoldMessenger = ScaffoldMessenger.of(context);
           
-          await SyncService().syncNow();
-          await txProvider.fetchTransactions();
-          await dashboardProvider.fetchSummary();
+          scaffoldMessenger.showSnackBar(
+            const SnackBar(
+              content: Text('Memulai Sinkronisasi DO...'),
+              duration: Duration(seconds: 1),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          
+          try {
+            // 1. Process offline queue
+            await SyncService().syncNow();
+            
+            // 2. Fetch latest master data from web
+            await resourceProvider.syncMasterData();
+            
+            // 3. Fetch latest DO transactions
+            await txProvider.fetchTransactions();
+            
+            // 4. Fetch latest dashboard summary
+            await dashboardProvider.fetchSummary();
+            
+            scaffoldMessenger.showSnackBar(
+              const SnackBar(
+                content: Text('Sinkronisasi DO Selesai'),
+                backgroundColor: Colors.green,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          } catch (e) {
+            scaffoldMessenger.showSnackBar(
+              SnackBar(
+                content: Text('Gagal sinkron: $e'),
+                backgroundColor: Colors.red,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
         },
         child: CustomScrollView(
           controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             _buildAppBar(),
             SliverToBoxAdapter(
@@ -655,6 +713,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
 
         if (filteredTransactions.isEmpty) {
           return const SliverFillRemaining(
+            hasScrollBody: false,
             child: Center(
               child: Text(
                 'Tidak ada transaksi ditemukan',

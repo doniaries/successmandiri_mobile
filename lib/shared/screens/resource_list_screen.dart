@@ -24,6 +24,8 @@ import 'package:sawitappmobile/features/user/screens/user_detail_screen.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
 import 'package:sawitappmobile/shared/widgets/skeleton_loader.dart';
 
+import 'package:sawitappmobile/core/services/sync_service.dart';
+
 class ResourceListScreen extends StatefulWidget {
   final String title;
   final String resourceType;
@@ -86,10 +88,15 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
   }
 
   Future<void> _refreshData() async {
-    await context.read<ResourceProvider>().fetchResources(
-      widget.resourceType,
-      refresh: true,
-    );
+    try {
+      await SyncService().syncNow();
+    } catch (_) {}
+    if (mounted) {
+      await context.read<ResourceProvider>().fetchResources(
+        widget.resourceType,
+        refresh: true,
+      );
+    }
   }
 
   Widget _buildSummaryCards(List<dynamic> items) {
@@ -263,7 +270,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
     Widget listBody = items.isEmpty
         ? Stack(
             children: [
-              ListView(), // Dynamic list to enable RefreshIndicator
+              ListView(physics: const AlwaysScrollableScrollPhysics()), // Dynamic list to enable RefreshIndicator
               Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,

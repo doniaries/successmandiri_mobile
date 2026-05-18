@@ -10,6 +10,7 @@ import 'package:sawitappmobile/features/tambah_saldo/screens/add_tambah_saldo_sc
 import 'package:sawitappmobile/features/tambah_saldo/screens/tambah_saldo_detail_screen.dart';
 import 'package:sawitappmobile/features/tambah_saldo/screens/edit_tambah_saldo_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
+import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 
 class TambahSaldoListScreen extends StatefulWidget {
   const TambahSaldoListScreen({super.key});
@@ -90,22 +91,70 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () async {
-                    await SyncService().syncNow();
-                    await provider.fetchRequests();
-                    if (context.mounted) {
-                      await context.read<DashboardProvider>().fetchSummary();
+                    final scaffoldMessenger = ScaffoldMessenger.of(context);
+                    scaffoldMessenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('Memulai Sinkronisasi Data...'),
+                        duration: Duration(seconds: 1),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                    
+                    try {
+                      // 1. Process offline queue
+                      await SyncService().syncNow();
+                      
+                      // 2. Fetch latest master data from web
+                      if (context.mounted) {
+                        await context.read<ResourceProvider>().syncMasterData();
+                      }
+                      
+                      // 3. Fetch latest requests list
+                      await provider.fetchRequests();
+                      
+                      // 4. Fetch latest summary for dashboard
+                      if (context.mounted) {
+                        await context.read<DashboardProvider>().fetchSummary();
+                      }
+                      
+                      scaffoldMessenger.showSnackBar(
+                        const SnackBar(
+                          content: Text('Sinkronisasi Data Selesai'),
+                          backgroundColor: Colors.green,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    } catch (e) {
+                      scaffoldMessenger.showSnackBar(
+                        SnackBar(
+                          content: Text('Gagal sinkron: $e'),
+                          backgroundColor: Colors.red,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
                     }
                   },
                   child: filteredRequests.isEmpty
-                      ? Center(
-                          child: Text(
-                            'Tidak ada transaksi untuk tanggal $formattedDateText.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 14,
+                      ? ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [
+                            SizedBox(
+                              height: MediaQuery.of(context).size.height * 0.4,
+                              child: Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(32.0),
+                                  child: Text(
+                                    'Tidak ada transaksi untuk tanggal $formattedDateText.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         )
                       : ListView.builder(
                           padding: const EdgeInsets.all(10),

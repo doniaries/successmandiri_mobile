@@ -11,6 +11,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:sawitappmobile/core/constants/api_constants.dart';
 
+import 'package:sawitappmobile/core/services/sync_service.dart';
+
 class FinanceJournalScreen extends StatefulWidget {
   const FinanceJournalScreen({super.key});
 
@@ -87,11 +89,50 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     }
   }
 
-  void _refreshData() {
+  Future<void> _refreshData() async {
     if (!mounted) return;
-    final provider = context.read<ResourceProvider>();
-    provider.fetchResources('jurnal_keuangan', refresh: true, filters: _buildApiFilters());
-    context.read<DashboardProvider>().fetchSummary(); // Sync real balance from backend
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    scaffoldMessenger.showSnackBar(
+      const SnackBar(
+        content: Text('Memulai Sinkronisasi Laporan...'),
+        duration: Duration(seconds: 1),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+    
+    try {
+      // 1. Process offline queue
+      await SyncService().syncNow();
+      
+      if (mounted) {
+        final provider = context.read<ResourceProvider>();
+        
+        // 2. Fetch latest master data from web
+        await provider.syncMasterData();
+        
+        // 3. Fetch latest financial journal data
+        await provider.fetchResources('jurnal_keuangan', refresh: true, filters: _buildApiFilters());
+        
+        // 4. Fetch latest dashboard summary
+        await context.read<DashboardProvider>().fetchSummary();
+      }
+      
+      scaffoldMessenger.showSnackBar(
+        const SnackBar(
+          content: Text('Sinkronisasi Laporan Selesai'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text('Gagal sinkron: $e'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   @override

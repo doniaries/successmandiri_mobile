@@ -24,11 +24,11 @@ class TambahSaldoModel {
 
   factory TambahSaldoModel.fromJson(Map<String, dynamic> json) {
     return TambahSaldoModel(
-      id: json['id'],
-      perusahaanId: json['perusahaan_id'],
-      userId: json['user_id'],
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
+      perusahaanId: int.tryParse(json['perusahaan_id']?.toString() ?? '') ?? 0,
+      userId: int.tryParse(json['user_id']?.toString() ?? '') ?? 0,
       tanggal: DateTime.parse(json['tanggal']).toLocal(),
-      nominal: double.parse(json['nominal'].toString()),
+      nominal: double.tryParse(json['nominal']?.toString() ?? '0') ?? 0.0,
       keterangan: json['keterangan'] ?? '',
       status: json['status'] ?? 'pending',
       buktiTransfer: json['bukti_transfer'],
