@@ -33,29 +33,30 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     super.initState();
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final activeDateStr = context
-          .read<DashboardProvider>()
-          .summary
-          ?.systemActiveDate;
-      if (activeDateStr != null) {
-        setState(() {
-          _selectedSingleDate = DateTime.parse(activeDateStr);
-        });
-      } else {
-        setState(() {
-          _selectedSingleDate = DateTime.now();
-        });
-      }
+      if (!mounted) return;
+      final dashboardProvider = context.read<DashboardProvider>();
       
-      final provider = context.read<ResourceProvider>();
-      if (provider.jurnalKeuangans.isEmpty) {
-        _refreshData();
+      // Prioritaskan filterDate dari dashboard jika ada
+      final filterDate = dashboardProvider.filterDate;
+      if (filterDate != null) {
+        _selectedSingleDate = filterDate;
+        _lastDashboardFilterDate = filterDate;
+        _hasInitializedFilterDate = true;
       } else {
-        final dashboardProvider = context.read<DashboardProvider>();
-        if (dashboardProvider.summary == null) {
-          dashboardProvider.fetchSummary();
-        }
+        final activeDateStr = dashboardProvider.summary?.systemActiveDate;
+        _selectedSingleDate = activeDateStr != null
+            ? DateTime.parse(activeDateStr)
+            : DateTime.now();
+        _hasInitializedFilterDate = true;
+        _lastDashboardFilterDate = null;
       }
+
+      // Fetch data sesuai tanggal yang sudah ditentukan
+      context.read<ResourceProvider>().fetchResources(
+        'jurnal_keuangan',
+        refresh: true,
+        filters: _buildApiFilters(),
+      );
     });
   }
 
@@ -149,8 +150,8 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     final dashboardProvider = context.watch<DashboardProvider>();
     final dashboardFilterDate = dashboardProvider.filterDate;
     
-    if (!_hasInitializedFilterDate || _lastDashboardFilterDate != dashboardFilterDate) {
-      _hasInitializedFilterDate = true;
+    // Deteksi perubahan filterDate dari dashboard SETELAH inisialisasi awal
+    if (_hasInitializedFilterDate && _lastDashboardFilterDate != dashboardFilterDate) {
       _lastDashboardFilterDate = dashboardFilterDate;
       
       final activeDateStr = dashboardProvider.summary?.systemActiveDate;
@@ -160,8 +161,9 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
           
       _selectedSingleDate = dashboardFilterDate ?? systemActiveDate;
       
-      // Trigger fetch for this new date!
+      // Trigger fetch saat filter dashboard berubah
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
         context.read<ResourceProvider>().fetchResources(
           'jurnal_keuangan',
           refresh: true,
