@@ -186,6 +186,85 @@ class TransaksiDoRepository {
     } catch (e) {
       return 'OTOMATIS (SISTEM)';
     }
+  Future<dynamic> updateTransaksiDo(
+    int id, {
+    required String tanggal,
+    required int penjualId,
+    int? supirId,
+    String? noPolisi,
+    required double tonase,
+    required double hargaSatuan,
+    double? upahBongkar,
+    double? biayaLain,
+    double? pembayaranHutang,
+    String? keteranganBiayaLain,
+    required String caraBayar,
+    dynamic buktiTransfer,
+    String? keteranganPembayaran,
+  }) async {
+    final Map<String, dynamic> data = {
+      'tanggal': tanggal,
+      'penjual_id': penjualId,
+      'supir_id': supirId,
+      'no_polisi': noPolisi,
+      'tonase': tonase,
+      'harga_satuan': hargaSatuan,
+      'upah_bongkar': upahBongkar,
+      'biaya_lain': biayaLain,
+      'pembayaran_hutang': pembayaranHutang,
+      'keterangan_biaya_lain': keteranganBiayaLain,
+      'cara_bayar': caraBayar,
+      'keterangan_pembayaran': keteranganPembayaran,
+    };
+
+    if (buktiTransfer is String) {
+      data['bukti_transfer'] = buktiTransfer;
+    } else if (buktiTransfer == null) {
+      data['bukti_transfer'] = '';
+    }
+
+    try {
+      if (buktiTransfer is XFile) {
+        final Map<String, dynamic> postData = Map.from(data);
+        if (kIsWeb) {
+          postData['bukti_transfer'] = MultipartFile.fromBytes(
+            await buktiTransfer.readAsBytes(),
+            filename: buktiTransfer.name,
+          );
+        } else {
+          postData['bukti_transfer'] = await MultipartFile.fromFile(
+            buktiTransfer.path,
+            filename: buktiTransfer.name,
+          );
+        }
+        
+        postData['_method'] = 'PUT';
+        final formData = FormData.fromMap(postData);
+        final response = await _apiClient.dio.post(
+          '${ApiConstants.transaksiDo}/$id',
+          data: formData,
+        );
+        return response.data;
+      } else {
+        final response = await _apiClient.dio.put(
+          '${ApiConstants.transaksiDo}/$id',
+          data: data,
+        );
+        return response.data;
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> deleteTransaksiDo(int id) async {
+    try {
+      await _apiClient.dio.delete(
+        '${ApiConstants.transaksiDo}/$id',
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 }
 

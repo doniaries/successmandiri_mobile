@@ -1,13 +1,64 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/core/constants/api_constants.dart';
 import 'package:sawitappmobile/features/transaksi_do/models/transaksi_do_model.dart';
+import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_provider.dart';
+import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
+import 'package:sawitappmobile/features/transaksi_do/screens/edit_transaksi_do_screen.dart';
 
 class TransaksiDoDetailScreen extends StatelessWidget {
   final TransaksiDo transaction;
 
   const TransaksiDoDetailScreen({super.key, required this.transaction});
+
+  void _showDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Hapus Transaksi'),
+          content: const Text('Apakah Anda yakin ingin menghapus transaksi DO ini? Seluruh jurnal keuangan, sisa bayar, dan mutasi hutang terkait akan dikoreksi otomatis.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () async {
+                Navigator.pop(dialogContext); // Close dialog
+                final success = await context.read<TransaksiDoProvider>().deleteTransaction(transaction.id);
+                if (context.mounted) {
+                  if (success) {
+                    context.read<DashboardProvider>().fetchSummary();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Transaksi DO berhasil dihapus'),
+                        backgroundColor: Colors.green,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                    Navigator.pop(context); // Pop detail screen
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(context.read<TransaksiDoProvider>().errorMessage ?? 'Gagal menghapus transaksi DO'),
+                        backgroundColor: Colors.red,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                }
+              },
+              child: const Text('Hapus', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +74,45 @@ class TransaksiDoDetailScreen extends StatelessWidget {
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'edit') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditTransaksiDoScreen(transaction: transaction),
+                  ),
+                );
+              } else if (value == 'delete') {
+                _showDeleteConfirmation(context);
+              }
+            },
+            itemBuilder: (BuildContext context) => [
+              const PopupMenuItem<String>(
+                value: 'edit',
+                child: Row(
+                  children: [
+                    Icon(Icons.edit, color: Colors.blue),
+                    SizedBox(width: 8),
+                    Text('Ubah'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete, color: Colors.red),
+                    SizedBox(width: 8),
+                    Text('Hapus'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),

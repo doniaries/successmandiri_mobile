@@ -215,5 +215,84 @@ class TransaksiDoProvider with ChangeNotifier {
       return false;
     }
   }
+
+  Future<bool> updateTransaction(
+    int id, {
+    required String tanggal,
+    required int penjualId,
+    int? supirId,
+    String? noPolisi,
+    required double tonase,
+    required double hargaSatuan,
+    double? upahBongkar,
+    double? biayaLain,
+    double? pembayaranHutang,
+    String? keteranganBiayaLain,
+    required String caraBayar,
+    dynamic buktiTransfer,
+    String? keteranganPembayaran,
+  }) async {
+    _isSaving = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _repository.updateTransaksiDo(
+        id,
+        tanggal: tanggal,
+        penjualId: penjualId,
+        supirId: supirId,
+        noPolisi: noPolisi,
+        tonase: tonase,
+        hargaSatuan: hargaSatuan,
+        upahBongkar: upahBongkar,
+        biayaLain: biayaLain,
+        pembayaranHutang: pembayaranHutang,
+        keteranganBiayaLain: keteranganBiayaLain,
+        caraBayar: caraBayar,
+        buktiTransfer: buktiTransfer,
+        keteranganPembayaran: keteranganPembayaran,
+      );
+
+      await fetchTransactions();
+      _isSaving = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isSaving = false;
+      if (e is DioException) {
+        final serverMessage = e.response?.data['message'];
+        _errorMessage = serverMessage ?? 'Gagal menghubungi server.';
+      } else {
+        _errorMessage = 'Gagal memperbarui transaksi: $e';
+      }
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> deleteTransaction(int id) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _repository.deleteTransaksiDo(id);
+      _transactions.removeWhere((element) => element.id == id);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      if (e is DioException) {
+        final serverMessage = e.response?.data['message'];
+        _errorMessage = serverMessage ?? 'Gagal menghubungi server.';
+      } else {
+        _errorMessage = 'Gagal menghapus transaksi: $e';
+      }
+      notifyListeners();
+      return false;
+    }
+  }
 }
 
