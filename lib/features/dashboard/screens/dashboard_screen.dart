@@ -464,6 +464,13 @@ class DashboardScreenState extends State<DashboardScreen> {
         ? context.read<TambahSaldoProvider>().requests.where((req) => req.status.toLowerCase() == 'pending').toList() 
         : [];
     final latestOperasional = context.read<DashboardProvider>().summary?.latestOperasional ?? [];
+    
+    // Master data resources for Admin/Super Admin
+    final resourceProvider = context.read<ResourceProvider>();
+    final penjuals = isLeader ? resourceProvider.penjuals : <Penjual>[];
+    final supirs = isLeader ? resourceProvider.supirs : <Supir>[];
+    final pekerjas = isLeader ? resourceProvider.pekerjas : <Pekerja>[];
+    final jurnalKeuangans = isLeader ? resourceProvider.jurnalKeuangans : <JurnalKeuangan>[];
 
     showModalBottomSheet(
       context: context, backgroundColor: Colors.transparent, isScrollControlled: true,
@@ -474,6 +481,10 @@ class DashboardScreenState extends State<DashboardScreen> {
             'transaksi_do': prefs.getString('seen_state_transaksi_do') ?? '',
             'tambah_saldo': prefs.getString('seen_state_tambah_saldo') ?? '',
             'operasional': prefs.getString('seen_state_operasional') ?? '',
+            'penjual': prefs.getString('seen_state_penjual') ?? '',
+            'supir': prefs.getString('seen_state_supir') ?? '',
+            'pekerja': prefs.getString('seen_state_pekerja') ?? '',
+            'jurnal_keuangan': prefs.getString('seen_state_jurnal_keuangan') ?? '',
           };
         }(),
         builder: (context, snapshot) {
@@ -492,15 +503,27 @@ class DashboardScreenState extends State<DashboardScreen> {
           final lastSeenDoId = int.tryParse(seenStates['transaksi_do'] ?? '0') ?? 0;
           final lastSeenSaldoId = int.tryParse(seenStates['tambah_saldo'] ?? '0') ?? 0;
           final lastSeenOperasionalId = int.tryParse(seenStates['operasional'] ?? '0') ?? 0;
+          final lastSeenPenjualId = int.tryParse(seenStates['penjual'] ?? '0') ?? 0;
+          final lastSeenSupirId = int.tryParse(seenStates['supir'] ?? '0') ?? 0;
+          final lastSeenPekerjaId = int.tryParse(seenStates['pekerja'] ?? '0') ?? 0;
+          final lastSeenJurnalId = int.tryParse(seenStates['jurnal_keuangan'] ?? '0') ?? 0;
 
           final filteredTransactions = transactions.where((t) => t.id > lastSeenDoId).toList();
           final filteredPengajuan = pengajuanRequests.where((p) => p.id > lastSeenSaldoId).toList();
           final filteredOperasional = latestOperasional.where((o) => o.id > lastSeenOperasionalId).toList();
+          final filteredPenjuals = penjuals.where((p) => p.id > lastSeenPenjualId).toList();
+          final filteredSupirs = supirs.where((s) => s.id > lastSeenSupirId).toList();
+          final filteredPekerjas = pekerjas.where((pk) => pk.id > lastSeenPekerjaId).toList();
+          final filteredJurnal = jurnalKeuangans.where((j) => j.id > lastSeenJurnalId).toList();
 
           final allNotifications = [
             ...filteredTransactions.map((t) => {'type': 'do', 'data': t, 'id': 'do_${t.id}', 'time': t.tanggal}),
             ...filteredPengajuan.map((p) => {'type': 'pengajuan', 'data': p, 'id': 'pengajuan_${p.id}', 'time': p.tanggal}),
             ...filteredOperasional.map((o) => {'type': 'operasional', 'data': o, 'id': 'operasional_${o.id}', 'time': o.tanggal}),
+            ...filteredPenjuals.map((p) => {'type': 'penjual', 'data': p, 'id': 'penjual_${p.id}', 'time': DateTime.now()}),
+            ...filteredSupirs.map((s) => {'type': 'supir', 'data': s, 'id': 'supir_${s.id}', 'time': DateTime.now()}),
+            ...filteredPekerjas.map((pk) => {'type': 'pekerja', 'data': pk, 'id': 'pekerja_${pk.id}', 'time': DateTime.now()}),
+            ...filteredJurnal.map((j) => {'type': 'jurnal_keuangan', 'data': j, 'id': 'jurnal_${j.id}', 'time': j.tanggal}),
           ]..sort((a, b) => (b['time'] as DateTime).compareTo(a['time'] as DateTime));
 
           return Container(
@@ -570,6 +593,11 @@ class DashboardScreenState extends State<DashboardScreen> {
   Widget _buildNotificationItem(BuildContext context, String type, dynamic data) {
     final bool isDo = type == 'do';
     final bool isPengajuan = type == 'pengajuan';
+    final bool isOperasional = type == 'operasional';
+    final bool isPenjual = type == 'penjual';
+    final bool isSupir = type == 'supir';
+    final bool isPekerja = type == 'pekerja';
+    final bool isJurnal = type == 'jurnal_keuangan';
 
     Widget iconWidget;
     String titleText = '';
@@ -592,7 +620,7 @@ class DashboardScreenState extends State<DashboardScreen> {
       amount = data.nominal;
       date = data.tanggal;
       detailScreen = TambahSaldoDetailScreen(request: data);
-    } else {
+    } else if (isOperasional) {
       final bool isPengeluaran = data.operasional.toLowerCase() == 'pengeluaran';
       iconWidget = Icon(
         isPengeluaran ? Icons.trending_down_rounded : Icons.trending_up_rounded, 
@@ -615,6 +643,38 @@ class DashboardScreenState extends State<DashboardScreen> {
       amount = data.nominal;
       date = data.tanggal;
       detailScreen = OperasionalDetailScreen(operasional: data);
+    } else if (isPenjual) {
+      iconWidget = const Icon(Icons.store_rounded, color: Color(0xFF0288D1), size: 20);
+      titleText = 'Pendaftaran Penjual';
+      bodyText = 'Penjual baru: ${data.nama} (${data.telepon ?? 'No Telp -'})';
+      amount = 0;
+      date = DateTime.now();
+      detailScreen = const ResourceListScreen(title: 'Master Penjual', resourceType: 'penjual');
+    } else if (isSupir) {
+      iconWidget = const Icon(Icons.person_rounded, color: Color(0xFF00897B), size: 20);
+      titleText = 'Pendaftaran Supir';
+      bodyText = 'Supir baru: ${data.nama} (${data.telepon ?? 'No Telp -'})';
+      amount = 0;
+      date = DateTime.now();
+      detailScreen = const ResourceListScreen(title: 'Master Supir', resourceType: 'supir');
+    } else if (isPekerja) {
+      iconWidget = const Icon(Icons.engineering_rounded, color: Color(0xFF7B1FA2), size: 20);
+      titleText = 'Pendaftaran Pekerja';
+      bodyText = 'Pekerja baru: ${data.nama} (${data.posisi})';
+      amount = 0;
+      date = DateTime.now();
+      detailScreen = const ResourceListScreen(title: 'Master Pekerja', resourceType: 'pekerja');
+    } else { // Jurnal Keuangan
+      iconWidget = Icon(
+        data.jenisTransaksi == 'Pemasukan' ? Icons.trending_up_rounded : Icons.trending_down_rounded, 
+        color: data.jenisTransaksi == 'Pemasukan' ? const Color(0xFF2E7D32) : const Color(0xFFC62828), 
+        size: 20
+      );
+      titleText = 'Jurnal Keuangan Baru';
+      bodyText = '${data.jenisTransaksi}: ${data.subKategori} - ${data.pihakTerkait ?? '-'}';
+      amount = data.nominal;
+      date = data.tanggal;
+      detailScreen = const ResourceListScreen(title: 'Laporan Keuangan', resourceType: 'jurnal_keuangan');
     }
 
     return Container(
@@ -639,7 +699,15 @@ class DashboardScreenState extends State<DashboardScreen> {
                       ? const Color(0xFFE3F2FD) 
                       : isPengajuan 
                           ? Colors.amber[100] 
-                          : (data.operasional.toLowerCase() == 'pengeluaran' ? const Color(0xFFFFEBEE) : const Color(0xFFE8F5E9)), 
+                          : isPenjual
+                              ? const Color(0xFFE3F2FD)
+                              : isSupir
+                                  ? const Color(0xFFE0F2F1)
+                                  : isPekerja
+                                      ? const Color(0xFFF3E5F5)
+                                      : isJurnal
+                                          ? (data.jenisTransaksi == 'Pemasukan' ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE))
+                                          : (data.operasional.toLowerCase() == 'pengeluaran' ? const Color(0xFFFFEBEE) : const Color(0xFFE8F5E9)), 
                   shape: BoxShape.circle
                 ),
                 child: iconWidget,
@@ -655,25 +723,54 @@ class DashboardScreenState extends State<DashboardScreen> {
                   ],
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    CurrencyFormatter.formatRupiah(amount), 
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900, 
-                      color: isDo 
-                          ? const Color(0xFF01579B) 
-                          : isPengajuan 
-                              ? Colors.amber[900] 
-                              : (data.operasional.toLowerCase() == 'pengeluaran' ? const Color(0xFFC62828) : const Color(0xFF2E7D32)), 
-                      fontSize: 13
-                    )
-                  ),
-                  const SizedBox(height: 4),
-                  Text(DateFormat('dd MMM, HH:mm', 'id_ID').format(date), style: TextStyle(color: Colors.grey[400], fontSize: 10, fontWeight: FontWeight.bold)),
-                ],
-              ),
+              if (amount > 0)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      CurrencyFormatter.formatRupiah(amount), 
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900, 
+                        color: isDo 
+                            ? const Color(0xFF01579B) 
+                            : isPengajuan 
+                                ? Colors.amber[900] 
+                                : isJurnal
+                                    ? (data.jenisTransaksi == 'Pemasukan' ? const Color(0xFF2E7D32) : const Color(0xFFC62828))
+                                    : (data.operasional.toLowerCase() == 'pengeluaran' ? const Color(0xFFC62828) : const Color(0xFF2E7D32)), 
+                        fontSize: 13
+                      )
+                    ),
+                    const SizedBox(height: 4),
+                    Text(DateFormat('dd MMM, HH:mm', 'id_ID').format(date), style: TextStyle(color: Colors.grey[400], fontSize: 10, fontWeight: FontWeight.bold)),
+                  ],
+                )
+              else
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE3F2FD),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        'BARU',
+                        style: TextStyle(
+                          color: Color(0xFF01579B),
+                          fontWeight: FontWeight.w800,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      DateFormat('dd MMM', 'id_ID').format(date),
+                      style: TextStyle(color: Colors.grey[400], fontSize: 10, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
             ],
           ),
         ),

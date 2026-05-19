@@ -5,7 +5,6 @@ import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_prov
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/add_transaksi_do_screen.dart';
-import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_detail_screen.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/edit_transaksi_do_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/shared/widgets/active_company_header.dart';
@@ -846,108 +845,173 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
           color: Colors.transparent,
           child: InkWell(
             onTap: () async {
+              final txProvider = context.read<TransaksiDoProvider>();
+              final dashProvider = context.read<DashboardProvider>();
               await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => EditTransaksiDoScreen(transaction: tx, popParent: false),
                 ),
               );
-              if (context.mounted) {
-                context.read<TransaksiDoProvider>().fetchTransactions();
-                context.read<DashboardProvider>().fetchSummary();
+              if (mounted) {
+                txProvider.fetchTransactions();
+                dashProvider.fetchSummary();
               }
             },
             borderRadius: BorderRadius.circular(20),
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: (isTunai ? Colors.green : Colors.blue).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Icon(
-                      isTunai ? Icons.payments_rounded : Icons.account_balance_rounded,
-                      color: isTunai ? Colors.green[700] : Colors.blue[700],
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          tx.nomor,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            color: Color(0xFF1E293B),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${tx.penjualNama} • ${tx.displaySupirNama}',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  // Baris 1: Status Pembayaran, Nomor DO & Subtotal Nominal
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
-                        CurrencyFormatter.formatRupiah(tx.subTotal),
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
-                          color: Color(0xFF1E293B),
+                      // Sisi Kiri: Icon + Nomor DO
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: (isTunai ? Colors.green : Colors.blue).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                isTunai ? Icons.payments_rounded : Icons.account_balance_rounded,
+                                color: isTunai ? Colors.green[700] : Colors.blue[700],
+                                size: 18,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                tx.nomor,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF1E293B),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(width: 12),
+                      // Sisi Kanan: Nominal Subtotal
                       Text(
-                        DateFormat('dd MMM yyyy • HH:mm', 'id_ID').format(tx.tanggal),
+                        CurrencyFormatter.formatRupiah(tx.subTotal),
                         style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.grey[500],
-                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          color: isTunai ? Colors.green[700] : Colors.blue[700],
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: const Icon(Icons.edit_outlined, color: Colors.blueAccent, size: 20),
-                    onPressed: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => EditTransaksiDoScreen(transaction: tx, popParent: false),
-                        ),
-                      );
-                      if (context.mounted) {
-                        context.read<TransaksiDoProvider>().fetchTransactions();
-                        context.read<DashboardProvider>().fetchSummary();
-                      }
-                    },
-                    tooltip: 'Edit Transaksi',
-                    constraints: const BoxConstraints(),
-                    padding: const EdgeInsets.all(4),
+                  const SizedBox(height: 10),
+                  // Divider Halus Pemisah Konten
+                  Container(
+                    height: 1,
+                    color: Colors.grey[100],
                   ),
-                  const SizedBox(width: 4),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
-                    onPressed: () => _confirmDelete(tx),
-                    tooltip: 'Hapus Transaksi',
-                    constraints: const BoxConstraints(),
-                    padding: const EdgeInsets.all(4),
+                  const SizedBox(height: 10),
+                  // Baris 2: Nama Penjual/Supir, Tanggal & Tombol Aksi Mandiri
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Info Nama & Tanggal
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${tx.penjualNama} • ${tx.displaySupirNama}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey[700],
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Icon(Icons.access_time_rounded, size: 12, color: Colors.grey[400]),
+                                const SizedBox(width: 4),
+                                Text(
+                                  DateFormat('dd MMM yyyy • HH:mm', 'id_ID').format(tx.tanggal),
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.grey[500],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Tombol Aksi (Edit & Hapus) dengan Desain Compact Chips
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Material(
+                            color: Colors.blueAccent.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(10),
+                            child: InkWell(
+                              onTap: () async {
+                                final txProvider = context.read<TransaksiDoProvider>();
+                                final dashProvider = context.read<DashboardProvider>();
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => EditTransaksiDoScreen(transaction: tx, popParent: false),
+                                  ),
+                                );
+                                if (mounted) {
+                                  txProvider.fetchTransactions();
+                                  dashProvider.fetchSummary();
+                                }
+                              },
+                              borderRadius: BorderRadius.circular(10),
+                              child: const Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Icon(
+                                  Icons.edit_rounded,
+                                  color: Colors.blueAccent,
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Material(
+                            color: Colors.redAccent.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(10),
+                            child: InkWell(
+                              onTap: () => _confirmDelete(tx),
+                              borderRadius: BorderRadius.circular(10),
+                              child: const Padding(
+                                padding: EdgeInsets.all(8),
+                                child: Icon(
+                                  Icons.delete_outline_rounded,
+                                  color: Colors.redAccent,
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ],
               ),
