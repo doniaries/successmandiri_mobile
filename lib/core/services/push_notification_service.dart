@@ -28,117 +28,150 @@ class PushNotificationService {
       'Notifikasi transaksi DO, saldo, dan operasional';
 
   static Future<void> initialize() async {
-    await _initLocalNotifications();
-    await _initFCM();
+    try {
+      debugPrint('FCM DEBUG: Memulai inisialisasi PushNotificationService...');
+      await _initLocalNotifications();
+      await _initFCM();
+      debugPrint('FCM DEBUG: Inisialisasi selesai dengan sukses.');
+    } catch (e) {
+      debugPrint('FCM DEBUG ERROR: Gagal inisialisasi total: $e');
+    }
   }
 
   static Future<void> _initLocalNotifications() async {
-    const AndroidInitializationSettings androidSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+    try {
+      const AndroidInitializationSettings androidSettings =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const InitializationSettings initSettings = InitializationSettings(
-      android: androidSettings,
-    );
+      const InitializationSettings initSettings = InitializationSettings(
+        android: androidSettings,
+      );
 
-    // Versi terbaru flutter_local_notifications menggunakan named parameter
-    await _localNotifications.initialize(
-      settings: initSettings,
-      onDidReceiveNotificationResponse: _onNotificationTap,
-    );
+      debugPrint('FCM DEBUG: Menginisialisasi flutter_local_notifications...');
+      final initResult = await _localNotifications.initialize(
+        settings: initSettings,
+        onDidReceiveNotificationResponse: _onNotificationTap,
+      );
+      debugPrint('FCM DEBUG: flutter_local_notifications diinisialisasi. Status: $initResult');
 
-    // Buat notification channel dengan suara default
-    const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      _channelId,
-      _channelName,
-      description: _channelDesc,
-      importance: Importance.max,
-      playSound: true,
-      enableVibration: true,
-    );
+      // Buat notification channel dengan suara default dan kepentingan maksimal
+      const AndroidNotificationChannel channel = AndroidNotificationChannel(
+        _channelId,
+        _channelName,
+        description: _channelDesc,
+        importance: Importance.max,
+        playSound: true,
+        enableVibration: true,
+      );
 
-    await _localNotifications
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
+      final androidPlugin = _localNotifications
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+
+      if (androidPlugin != null) {
+        await androidPlugin.createNotificationChannel(channel);
+        debugPrint('FCM DEBUG: Berhasil membuat AndroidNotificationChannel: $_channelId');
+      } else {
+        debugPrint('FCM DEBUG WARNING: AndroidFlutterLocalNotificationsPlugin NULL, tidak dapat membuat saluran!');
+      }
+    } catch (e) {
+      debugPrint('FCM DEBUG ERROR: Gagal inisialisasi notifikasi lokal: $e');
+    }
   }
 
   static Future<void> _initFCM() async {
-    final messaging = FirebaseMessaging.instance;
+    try {
+      final messaging = FirebaseMessaging.instance;
 
-    // Minta izin notifikasi Android
-    final settings = await messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+      debugPrint('FCM DEBUG: Meminta izin notifikasi...');
+      final settings = await messaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+      debugPrint('FCM DEBUG: Status Izin Notifikasi: ${settings.authorizationStatus}');
 
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      debugPrint('FCM: Izin notifikasi diberikan');
-    }
+      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+        debugPrint('FCM DEBUG: Izin notifikasi resmi diberikan oleh user.');
+      } else {
+        debugPrint('FCM DEBUG WARNING: Izin notifikasi DITOLAK atau belum disetujui!');
+      }
 
-    // Handler saat app di foreground — tampilkan notifikasi lokal
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      debugPrint('FCM foreground: ${message.notification?.title}');
-      _showLocalNotification(message);
-      
-      // Sinkronisasi data di background agar UI (seperti bell count) langsung update
-      SyncService().syncNow();
-    });
+      // Handler saat app di foreground — tampilkan notifikasi lokal
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        debugPrint('FCM DEBUG foreground: Pesan masuk! Judul: "${message.notification?.title}", Isi: "${message.notification?.body}"');
+        _showLocalNotification(message);
+        
+        // Sinkronisasi data di background agar UI (seperti bell count) langsung update
+        SyncService().syncNow();
+      });
 
-    // Handler saat user tap notifikasi dari background
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      debugPrint('FCM onMessageOpenedApp: ${message.data}');
-      // Sinkronisasi data saat user tap notifikasi untuk memastikan data terbaru dimuat
-      SyncService().syncNow();
-    });
+      // Handler saat user tap notifikasi dari background
+      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+        debugPrint('FCM DEBUG onMessageOpenedApp: User mengetuk notifikasi! Data: ${message.data}');
+        SyncService().syncNow();
+      });
 
-    // Handler background (top-level function)
-    FirebaseMessaging.onBackgroundMessage(firebaseBackgroundMessageHandler);
+      // Handler background (top-level function)
+      FirebaseMessaging.onBackgroundMessage(firebaseBackgroundMessageHandler);
 
-    // Cek apakah app dibuka dari terminated state
-    final initialMessage = await messaging.getInitialMessage();
-    if (initialMessage != null) {
-      debugPrint('FCM initial message: ${initialMessage.data}');
+      // Cek apakah app dibuka dari terminated state
+      final initialMessage = await messaging.getInitialMessage();
+      if (initialMessage != null) {
+        debugPrint('FCM DEBUG initial message: Aplikasi dibuka dari posisi mati melalui notifikasi! Data: ${initialMessage.data}');
+      }
+    } catch (e) {
+      debugPrint('FCM DEBUG ERROR: Gagal setup FCM: $e');
     }
   }
 
   /// Tampilkan notifikasi lokal dengan suara (untuk pesan foreground)
   static Future<void> _showLocalNotification(RemoteMessage message) async {
-    final notification = message.notification;
-    if (notification == null) return;
+    try {
+      final notification = message.notification;
+      if (notification == null) {
+        debugPrint('FCM DEBUG: RemoteMessage tidak memiliki payload notification, lewati.');
+        return;
+      }
 
-    const AndroidNotificationDetails androidDetails =
-        AndroidNotificationDetails(
-      _channelId,
-      _channelName,
-      channelDescription: _channelDesc,
-      importance: Importance.max,
-      priority: Priority.high,
-      playSound: true,
-      enableVibration: true,
-      icon: '@mipmap/ic_launcher',
-    );
+      debugPrint('FCM DEBUG: Mempersiapkan untuk menampilkan local notification...');
+      const AndroidNotificationDetails androidDetails =
+          AndroidNotificationDetails(
+        _channelId,
+        _channelName,
+        channelDescription: _channelDesc,
+        importance: Importance.max,
+        priority: Priority.high,
+        playSound: true,
+        enableVibration: true,
+        icon: '@mipmap/ic_launcher',
+      );
 
-    const NotificationDetails details = NotificationDetails(
-      android: androidDetails,
-    );
+      const NotificationDetails details = NotificationDetails(
+        android: androidDetails,
+      );
 
-    // Versi terbaru flutter_local_notifications pakai named parameters
-    await _localNotifications.show(
-      id: notification.hashCode,
-      title: notification.title,
-      body: notification.body,
-      notificationDetails: details,
-      payload: jsonEncode(message.data),
-    );
+      await _localNotifications.show(
+        id: notification.hashCode,
+        title: notification.title,
+        body: notification.body,
+        notificationDetails: details,
+        payload: jsonEncode(message.data),
+      );
+      debugPrint('FCM DEBUG: Berhasil menampilkan local notification ke layar!');
+    } catch (e) {
+      debugPrint('FCM DEBUG ERROR: Gagal memanggil _localNotifications.show: $e');
+    }
   }
 
   static void _onNotificationTap(NotificationResponse response) {
     if (response.payload != null) {
       try {
         final data = jsonDecode(response.payload!) as Map<String, dynamic>;
-        debugPrint('Notification tapped, type: ${data['type']}');
-      } catch (_) {}
+        debugPrint('FCM DEBUG: Notifikasi diketuk oleh pengguna. Type: ${data['type']}');
+      } catch (e) {
+        debugPrint('FCM DEBUG ERROR: Gagal parsing payload tap notifikasi: $e');
+      }
     }
   }
 
