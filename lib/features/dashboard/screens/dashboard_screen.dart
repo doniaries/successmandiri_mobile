@@ -695,6 +695,7 @@ class DashboardScreenState extends State<DashboardScreen> {
         child: Padding(
           padding: const EdgeInsets.all(15),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
@@ -720,61 +721,101 @@ class DashboardScreenState extends State<DashboardScreen> {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(titleText, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
-                    const SizedBox(height: 4),
-                    Text(bodyText, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            titleText, 
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800, 
+                              fontSize: 14,
+                              color: Color(0xFF2C3E50),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          DateFormat('dd MMM, HH:mm', 'id_ID').format(date), 
+                          style: TextStyle(
+                            color: Colors.grey[400], 
+                            fontSize: 10, 
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      bodyText, 
+                      style: TextStyle(
+                        color: Colors.grey[600], 
+                        fontSize: 12,
+                        height: 1.3,
+                      ),
+                    ),
+                    if (amount > 0) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: isDo 
+                                  ? const Color(0xFFE3F2FD) 
+                                  : isPengajuan 
+                                      ? Colors.amber[50] 
+                                      : isJurnal
+                                          ? (data.jenisTransaksi == 'Pemasukan' ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE))
+                                          : (data.operasional.toLowerCase() == 'pengeluaran' ? const Color(0xFFFFEBEE) : const Color(0xFFE8F5E9)),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              CurrencyFormatter.formatRupiah(amount), 
+                              style: TextStyle(
+                                fontWeight: FontWeight.w900, 
+                                color: isDo 
+                                    ? const Color(0xFF01579B) 
+                                    : isPengajuan 
+                                        ? Colors.amber[900] 
+                                        : isJurnal
+                                            ? (data.jenisTransaksi == 'Pemasukan' ? const Color(0xFF2E7D32) : const Color(0xFFC62828))
+                                            : (data.operasional.toLowerCase() == 'pengeluaran' ? const Color(0xFFC62828) : const Color(0xFF2E7D32)), 
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ] else ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE3F2FD),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              'BARU',
+                              style: TextStyle(
+                                color: Color(0xFF01579B),
+                                fontWeight: FontWeight.w800,
+                                fontSize: 9,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
-              if (amount > 0)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      CurrencyFormatter.formatRupiah(amount), 
-                      style: TextStyle(
-                        fontWeight: FontWeight.w900, 
-                        color: isDo 
-                            ? const Color(0xFF01579B) 
-                            : isPengajuan 
-                                ? Colors.amber[900] 
-                                : isJurnal
-                                    ? (data.jenisTransaksi == 'Pemasukan' ? const Color(0xFF2E7D32) : const Color(0xFFC62828))
-                                    : (data.operasional.toLowerCase() == 'pengeluaran' ? const Color(0xFFC62828) : const Color(0xFF2E7D32)), 
-                        fontSize: 13
-                      )
-                    ),
-                    const SizedBox(height: 4),
-                    Text(DateFormat('dd MMM, HH:mm', 'id_ID').format(date), style: TextStyle(color: Colors.grey[400], fontSize: 10, fontWeight: FontWeight.bold)),
-                  ],
-                )
-              else
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE3F2FD),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        'BARU',
-                        style: TextStyle(
-                          color: Color(0xFF01579B),
-                          fontWeight: FontWeight.w800,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      DateFormat('dd MMM', 'id_ID').format(date),
-                      style: TextStyle(color: Colors.grey[400], fontSize: 10, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
             ],
           ),
         ),
