@@ -209,6 +209,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 _buildInfoTile(const Icon(Icons.badge_rounded, color: Color(0xFF01579B)), 'Role', _formatRole(user?.role)),
+                _buildInfoTile(const Icon(Icons.person_outline_rounded, color: Color(0xFF01579B)), 'Kasir', user?.perusahaanKasir ?? 'Kasir Utama'),
                 
                 const SizedBox(height: 10),
                 _buildInfoTile(

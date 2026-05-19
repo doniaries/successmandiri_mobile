@@ -435,6 +435,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                           child: company['logo_url'] != null ? CachedNetworkImage(imageUrl: company['logo_url'], width: 24, height: 24, fit: BoxFit.contain) : Icon(Icons.business_rounded, color: isSelected ? const Color(0xFF01579B) : Colors.grey[400]),
                         ),
                         title: Text(company['name'] ?? 'Tanpa Nama', style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: isSelected ? const Color(0xFF01579B) : Colors.black87)),
+                        subtitle: Text('Kasir: ${company['nama_kasir'] ?? 'Kasir Utama'}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
                         trailing: isSelected ? const Icon(Icons.check_circle_rounded, color: Color(0xFF01579B)) : null,
                         onTap: () async {
                           final dashboardProvider = context.read<DashboardProvider>();
@@ -1172,6 +1173,7 @@ class _CompanySelector extends StatelessWidget {
     final bool isSwitching = context.select<AuthProvider, bool>((a) => a.isSwitchingCompany);
     final String name = context.select<AuthProvider, String>((a) => a.user?.perusahaanName ?? 'Pilih Unit Bisnis');
     final String? logo = context.select<AuthProvider, String?>((a) => a.user?.perusahaanLogoUrl);
+    final String cashier = context.select<AuthProvider, String>((a) => a.user?.perusahaanKasir ?? 'Kasir Utama');
 
     return GestureDetector(
       onTap: isSwitching ? null : () => context.findAncestorStateOfType<DashboardScreenState>()?._showCompanySelector(context, context.read<AuthProvider>()),
@@ -1190,7 +1192,16 @@ class _CompanySelector extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Unit Bisnis Aktif', style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 1)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Unit Bisnis Aktif', style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 1)),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: Text('Kasir: $cashier', style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 10, fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
                   Text(name, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w900)),
                 ],
               ),
