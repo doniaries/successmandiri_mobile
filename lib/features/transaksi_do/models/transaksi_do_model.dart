@@ -21,6 +21,8 @@ class TransaksiDo {
   final String? buktiTransfer;
   final String? keteranganPembayaran;
 
+  final String? perusahaanNama;
+
   String get displaySupirNama => supirNama ?? penjualNama ?? 'Tanpa Supir';
 
 
@@ -49,6 +51,7 @@ class TransaksiDo {
     required this.sisaHutangPenjual,
     this.buktiTransfer,
     this.keteranganPembayaran,
+    this.perusahaanNama,
 
     this.isMismatch = false,
     this.buktiRekap,
@@ -84,6 +87,7 @@ class TransaksiDo {
       sisaHutangPenjual: double.tryParse(json['sisa_hutang_penjual']?.toString() ?? '0') ?? 0,
       buktiTransfer: json['bukti_transfer'],
       keteranganPembayaran: json['keterangan_pembayaran'],
+      perusahaanNama: json['perusahaan'] != null ? json['perusahaan']['name']?.toString() : json['perusahaan_nama']?.toString(),
 
       isMismatch: json['is_mismatch'] == 1 || json['is_mismatch'] == true,
       buktiRekap: json['bukti_rekap'],

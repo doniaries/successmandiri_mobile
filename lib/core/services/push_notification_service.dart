@@ -137,13 +137,20 @@ class PushNotificationService {
   /// Register FCM token ke backend Laravel setelah login
   static Future<void> registerTokenToBackend(String authToken) async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
+      if (!notificationsEnabled) {
+        debugPrint('FCM: Notifikasi dinonaktifkan oleh user, skip register token');
+        return;
+      }
+
+      debugPrint('FCM: Mengambil token...');
       final fcmToken = await FirebaseMessaging.instance.getToken();
       if (fcmToken == null) {
         debugPrint('FCM: Token null, skip register');
         return;
       }
-
-      final prefs = await SharedPreferences.getInstance();
+      debugPrint('FCM TOKEN: $fcmToken');
       // Selalu daftarkan ke backend untuk memastikan token sinkron di database backend
 
       final deviceId = Platform.isAndroid

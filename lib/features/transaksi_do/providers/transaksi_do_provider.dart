@@ -146,7 +146,8 @@ class TransaksiDoProvider with ChangeNotifier {
 
   Future<void> markAsSeen() async {
     if (_transactions.isNotEmpty) {
-      await SeenStateService.markAsSeen('transaksi_do', _transactions.first.id.toString());
+      final maxId = _transactions.map((t) => t.id).reduce((curr, next) => curr > next ? curr : next);
+      await SeenStateService.markAsSeen('transaksi_do', maxId.toString());
       _unreadCount = 0;
       _hasNewData = false;
       notifyListeners();

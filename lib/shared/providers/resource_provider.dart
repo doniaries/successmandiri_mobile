@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:sawitappmobile/features/penjual/models/penjual_model.dart';
@@ -150,6 +151,8 @@ class ResourceProvider with ChangeNotifier {
   }
 
   Future<void> syncMasterData() async {
+    final isLeader = await _isUserLeader();
+    if (!isLeader) return;
     await _repository.syncService.performFullSync(_repository);
     notifyListeners();
   }
@@ -436,46 +439,75 @@ class ResourceProvider with ChangeNotifier {
     _hasNewData[type] = count > 0;
   }
 
+  Future<bool> _isUserLeader() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userStr = prefs.getString('cached_user');
+    if (userStr != null) {
+      try {
+        final decoded = jsonDecode(userStr);
+        final user = User.fromJson(decoded);
+        final role = user.role;
+        return role == 'admin' || role == 'super_admin' || role == 'pimpinan';
+      } catch (e) {
+        debugPrint('Error parsing user in ResourceProvider: $e');
+      }
+    }
+    return false;
+  }
+
   Future<void> fetchAllResources() async {
     // Sequential fetching to prevent local dev server request queuing timeout
-    syncMasterData();
-    await fetchResources('penjual', refresh: true);
-    await fetchResources('supir', refresh: true);
-    await fetchResources('pekerja', refresh: true);
-    await fetchResources('kendaraan', refresh: true);
-    await fetchResources('operasional', refresh: true);
-    await fetchResources('jurnal_keuangan', refresh: true);
+    final isLeader = await _isUserLeader();
+    if (isLeader) {
+      syncMasterData();
+      await fetchResources('penjual', refresh: true);
+      await fetchResources('supir', refresh: true);
+      await fetchResources('pekerja', refresh: true);
+      await fetchResources('kendaraan', refresh: true);
+      await fetchResources('operasional', refresh: true);
+      await fetchResources('jurnal_keuangan', refresh: true);
+    } else {
+      await fetchResources('operasional', refresh: true);
+    }
   }
 
   Future<void> markAsSeen(String type) async {
     String latestId = "";
     switch (type) {
       case 'penjual':
-        latestId = _penjuals.isNotEmpty ? _penjuals.first.id.toString() : "";
+        latestId = _penjuals.isNotEmpty 
+            ? _penjuals.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString() 
+            : "";
         break;
       case 'supir':
-        latestId = _supirs.isNotEmpty ? _supirs.first.id.toString() : "";
+        latestId = _supirs.isNotEmpty 
+            ? _supirs.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString() 
+            : "";
         break;
       case 'pekerja':
-        latestId = _pekerjas.isNotEmpty ? _pekerjas.first.id.toString() : "";
+        latestId = _pekerjas.isNotEmpty 
+            ? _pekerjas.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString() 
+            : "";
         break;
       case 'kendaraan':
         latestId = _kendaraans.isNotEmpty
-            ? _kendaraans.first.id.toString()
+            ? _kendaraans.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString()
             : "";
         break;
       case 'operasional':
         latestId = _operasionals.isNotEmpty
-            ? _operasionals.first.id.toString()
+            ? _operasionals.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString()
             : "";
         break;
       case 'jurnal_keuangan':
         latestId = _jurnalKeuangans.isNotEmpty
-            ? _jurnalKeuangans.first.id.toString()
+            ? _jurnalKeuangans.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString()
             : "";
         break;
       case 'user':
-        latestId = _users.isNotEmpty ? _users.first.id.toString() : "";
+        latestId = _users.isNotEmpty 
+            ? _users.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString() 
+            : "";
         break;
     }
 
@@ -492,31 +524,39 @@ class ResourceProvider with ChangeNotifier {
       String latestId = "";
       switch (type) {
         case 'penjual':
-          latestId = _penjuals.isNotEmpty ? _penjuals.first.id.toString() : "";
+          latestId = _penjuals.isNotEmpty 
+              ? _penjuals.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString() 
+              : "";
           break;
         case 'supir':
-          latestId = _supirs.isNotEmpty ? _supirs.first.id.toString() : "";
+          latestId = _supirs.isNotEmpty 
+              ? _supirs.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString() 
+              : "";
           break;
         case 'pekerja':
-          latestId = _pekerjas.isNotEmpty ? _pekerjas.first.id.toString() : "";
+          latestId = _pekerjas.isNotEmpty 
+              ? _pekerjas.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString() 
+              : "";
           break;
         case 'kendaraan':
           latestId = _kendaraans.isNotEmpty
-              ? _kendaraans.first.id.toString()
+              ? _kendaraans.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString()
               : "";
           break;
         case 'operasional':
           latestId = _operasionals.isNotEmpty
-              ? _operasionals.first.id.toString()
+              ? _operasionals.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString()
               : "";
           break;
         case 'jurnal_keuangan':
           latestId = _jurnalKeuangans.isNotEmpty
-              ? _jurnalKeuangans.first.id.toString()
+              ? _jurnalKeuangans.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString()
               : "";
           break;
         case 'user':
-          latestId = _users.isNotEmpty ? _users.first.id.toString() : "";
+          latestId = _users.isNotEmpty 
+              ? _users.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString() 
+              : "";
           break;
       }
       if (latestId.isNotEmpty) {

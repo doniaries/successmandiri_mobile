@@ -41,7 +41,7 @@ class TambahSaldoProvider with ChangeNotifier {
       if (_requests.isNotEmpty) {
         final prefs = await SharedPreferences.getInstance();
         final lastSeenId = int.tryParse(prefs.getString('seen_state_tambah_saldo') ?? '0') ?? 0;
-        _unreadCount = _requests.where((r) => r.id > lastSeenId).length;
+        _unreadCount = _requests.where((r) => r.id > lastSeenId && r.status.toLowerCase() == 'pending').length;
         _hasNewData = _unreadCount > 0;
       } else {
         _unreadCount = 0;
@@ -58,7 +58,8 @@ class TambahSaldoProvider with ChangeNotifier {
 
   Future<void> markAsSeen() async {
     if (_requests.isNotEmpty) {
-      await SeenStateService.markAsSeen('tambah_saldo', _requests.first.id.toString());
+      final maxId = _requests.map((r) => r.id).reduce((curr, next) => curr > next ? curr : next);
+      await SeenStateService.markAsSeen('tambah_saldo', maxId.toString());
       _unreadCount = 0;
       _hasNewData = false;
       notifyListeners();

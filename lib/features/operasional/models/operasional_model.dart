@@ -10,6 +10,7 @@ class Operasional {
   final String? pihakType;
   final String? namaPihak;
   final String? userName;
+  final String? perusahaanNama;
 
   Operasional({
     required this.id,
@@ -23,6 +24,7 @@ class Operasional {
     this.pihakType,
     this.namaPihak,
     this.userName,
+    this.perusahaanNama,
   });
 
   factory Operasional.fromJson(Map<String, dynamic> json) {
@@ -38,6 +40,7 @@ class Operasional {
       pihakType: json['pihak_type'],
       namaPihak: json['nama'] ?? json['pihak_nama'], // Handle from accessor
       userName: json['user_name'] ?? json['user']?['name'], // Handle both accessor and direct eager relation
+      perusahaanNama: json['perusahaan'] != null ? json['perusahaan']['name']?.toString() : json['perusahaan_nama']?.toString(),
     );
   }
 }

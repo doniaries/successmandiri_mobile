@@ -11,6 +11,9 @@ import 'package:sawitappmobile/features/profile/screens/app_version_setting_scre
 import 'package:sawitappmobile/shared/widgets/change_password_dialog.dart';
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sawitappmobile/core/services/push_notification_service.dart';
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -20,6 +23,38 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final ImagePicker _picker = ImagePicker();
+  bool _notificationsEnabled = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotificationPreference();
+  }
+
+  Future<void> _loadNotificationPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
+    });
+  }
+
+  Future<void> _toggleNotifications(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _notificationsEnabled = value;
+    });
+    await prefs.setBool('notifications_enabled', value);
+
+    final authProvider = context.read<AuthProvider>();
+    final token = await authProvider.getAuthToken();
+    if (token != null) {
+      if (value) {
+        await PushNotificationService.registerTokenToBackend(token);
+      } else {
+        await PushNotificationService.unregisterTokenFromBackend(token);
+      }
+    }
+  }
 
   Future<void> _pickImage(BuildContext context, AuthProvider authProvider) async {
     final XFile? image = await showModalBottomSheet<XFile?>(
@@ -218,6 +253,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   'Ganti Password',
                   onTap: () => _showChangePasswordDialog(context),
                   trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF01579B)),
+                ),
+                
+                _buildInfoTile(
+                  const Icon(Icons.notifications_active_outlined, color: Color(0xFF01579B)), 
+                  'Notifikasi Push', 
+                  _notificationsEnabled ? 'Aktif' : 'Nonaktif',
+                  trailing: Switch(
+                    value: _notificationsEnabled,
+                    onChanged: _toggleNotifications,
+                    activeColor: const Color(0xFF01579B),
+                  ),
                 ),
                 
                 if (user?.isSuperAdmin == true) ...[

@@ -11,6 +11,7 @@ class JurnalKeuangan {
   final String? keterangan;
   final String caraPembayaran;
   final String? tipePihak;
+  final String? perusahaanNama;
 
   JurnalKeuangan({
     required this.id,
@@ -25,6 +26,7 @@ class JurnalKeuangan {
     this.pihakTerkait,
     this.keterangan,
     this.tipePihak,
+    this.perusahaanNama,
   });
 
   factory JurnalKeuangan.fromJson(Map<String, dynamic> json) {
@@ -41,6 +43,7 @@ class JurnalKeuangan {
       keterangan: json['keterangan'],
       caraPembayaran: json['cara_pembayaran'] ?? 'tunai',
       tipePihak: json['tipe_pihak'],
+      perusahaanNama: json['perusahaan'] != null ? json['perusahaan']['name']?.toString() : json['perusahaan_nama']?.toString(),
     );
   }
 }

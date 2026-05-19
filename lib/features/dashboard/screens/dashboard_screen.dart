@@ -716,6 +716,11 @@ class DashboardScreenState extends State<DashboardScreen> {
       detailScreen = const ResourceListScreen(title: 'Laporan Keuangan', resourceType: 'jurnal_keuangan');
     }
 
+    String? perusahaanNama;
+    try {
+      perusahaanNama = data.perusahaanNama;
+    } catch (_) {}
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.grey[100]!)),
@@ -782,6 +787,32 @@ class DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ],
                     ),
+                    if (perusahaanNama != null && perusahaanNama.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F5E9),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: const Color(0xFFC8E6C9)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.business_rounded, size: 10, color: Color(0xFF2E7D32)),
+                            const SizedBox(width: 4),
+                            Text(
+                              perusahaanNama,
+                              style: const TextStyle(
+                                color: Color(0xFF2E7D32),
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 6),
                     Text(
                       bodyText, 

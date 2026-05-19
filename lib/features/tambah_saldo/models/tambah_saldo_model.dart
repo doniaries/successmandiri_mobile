@@ -7,6 +7,7 @@ class TambahSaldoModel {
   final String keterangan;
   final String? buktiTransfer;
   final String? userName;
+  final String? perusahaanNama;
 
   final String status;
 
@@ -20,6 +21,7 @@ class TambahSaldoModel {
     required this.status,
     this.buktiTransfer,
     this.userName,
+    this.perusahaanNama,
   });
 
   factory TambahSaldoModel.fromJson(Map<String, dynamic> json) {
@@ -33,6 +35,7 @@ class TambahSaldoModel {
       status: json['status'] ?? 'pending',
       buktiTransfer: json['bukti_transfer'],
       userName: json['user'] != null ? json['user']['name'] : null,
+      perusahaanNama: json['perusahaan'] != null ? json['perusahaan']['name']?.toString() : json['perusahaan_nama']?.toString(),
     );
   }
 
