@@ -11,6 +11,7 @@ class Supir {
   final bool isActive;
   final List<dynamic>? transaksiDo;
   final List<MutasiHutang>? mutasiHutang;
+  final DateTime? createdAt;
 
   Supir({
     required this.id,
@@ -23,9 +24,17 @@ class Supir {
     required this.isActive,
     this.transaksiDo,
     this.mutasiHutang,
+    this.createdAt,
   });
 
   factory Supir.fromJson(Map<String, dynamic> json) {
+    DateTime? parsedDate;
+    try {
+      if (json['created_at'] != null && json['created_at'].toString().isNotEmpty) {
+        parsedDate = DateTime.parse(json['created_at']).toLocal();
+      }
+    } catch (_) {}
+
     return Supir(
       id: (json['id'] is int) ? json['id'] : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
       nama: json['nama'],
@@ -39,6 +48,7 @@ class Supir {
       mutasiHutang: (json['mutasi_hutang'] as List?)
           ?.map((m) => MutasiHutang.fromJson(m))
           .toList(),
+      createdAt: parsedDate,
     );
   }
 }

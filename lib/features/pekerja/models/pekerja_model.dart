@@ -11,6 +11,7 @@ class Pekerja {
   final int perusahaanId;
   final bool isActive;
   final List<MutasiHutang>? mutasiHutang;
+  final DateTime? createdAt;
 
   Pekerja({
     required this.id,
@@ -23,9 +24,17 @@ class Pekerja {
     required this.perusahaanId,
     required this.isActive,
     this.mutasiHutang,
+    this.createdAt,
   });
 
   factory Pekerja.fromJson(Map<String, dynamic> json) {
+    DateTime? parsedDate;
+    try {
+      if (json['created_at'] != null && json['created_at'].toString().isNotEmpty) {
+        parsedDate = DateTime.parse(json['created_at']).toLocal();
+      }
+    } catch (_) {}
+
     return Pekerja(
       id: (json['id'] is int) ? json['id'] : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
       nama: json['nama'],
@@ -41,6 +50,7 @@ class Pekerja {
               .map((i) => MutasiHutang.fromJson(i))
               .toList()
           : null,
+      createdAt: parsedDate,
     );
   }
 }

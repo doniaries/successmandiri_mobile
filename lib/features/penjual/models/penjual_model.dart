@@ -10,6 +10,7 @@ class Penjual {
   final bool isActive;
   final List<dynamic>? transaksiDo;
   final List<MutasiHutang>? mutasiHutang;
+  final DateTime? createdAt;
 
   Penjual({
     required this.id,
@@ -21,9 +22,17 @@ class Penjual {
     required this.isActive,
     this.transaksiDo,
     this.mutasiHutang,
+    this.createdAt,
   });
 
   factory Penjual.fromJson(Map<String, dynamic> json) {
+    DateTime? parsedDate;
+    try {
+      if (json['created_at'] != null && json['created_at'].toString().isNotEmpty) {
+        parsedDate = DateTime.parse(json['created_at']).toLocal();
+      }
+    } catch (_) {}
+
     return Penjual(
       id: (json['id'] is int) ? json['id'] : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
       nama: json['nama'],
@@ -36,6 +45,7 @@ class Penjual {
       mutasiHutang: (json['mutasi_hutang'] as List?)
           ?.map((m) => MutasiHutang.fromJson(m))
           .toList(),
+      createdAt: parsedDate,
     );
   }
   static double? _parseDouble(dynamic value) {

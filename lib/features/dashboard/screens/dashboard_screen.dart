@@ -563,9 +563,9 @@ class DashboardScreenState extends State<DashboardScreen> {
             ...filteredTransactions.map((t) => {'type': 'do', 'data': t, 'id': 'do_${t.id}', 'time': t.tanggal}),
             ...filteredPengajuan.map((p) => {'type': 'pengajuan', 'data': p, 'id': 'pengajuan_${p.id}', 'time': p.tanggal}),
             ...filteredOperasional.map((o) => {'type': 'operasional', 'data': o, 'id': 'operasional_${o.id}', 'time': o.tanggal}),
-            ...filteredPenjuals.map((p) => {'type': 'penjual', 'data': p, 'id': 'penjual_${p.id}', 'time': DateTime.now()}),
-            ...filteredSupirs.map((s) => {'type': 'supir', 'data': s, 'id': 'supir_${s.id}', 'time': DateTime.now()}),
-            ...filteredPekerjas.map((pk) => {'type': 'pekerja', 'data': pk, 'id': 'pekerja_${pk.id}', 'time': DateTime.now()}),
+            ...filteredPenjuals.map((p) => {'type': 'penjual', 'data': p, 'id': 'penjual_${p.id}', 'time': p.createdAt ?? DateTime.now()}),
+            ...filteredSupirs.map((s) => {'type': 'supir', 'data': s, 'id': 'supir_${s.id}', 'time': s.createdAt ?? DateTime.now()}),
+            ...filteredPekerjas.map((pk) => {'type': 'pekerja', 'data': pk, 'id': 'pekerja_${pk.id}', 'time': pk.createdAt ?? DateTime.now()}),
             ...filteredJurnal.map((j) => {'type': 'jurnal_keuangan', 'data': j, 'id': 'jurnal_${j.id}', 'time': j.tanggal}),
           ]..sort((a, b) => (b['time'] as DateTime).compareTo(a['time'] as DateTime));
 
@@ -691,21 +691,21 @@ class DashboardScreenState extends State<DashboardScreen> {
       titleText = 'Pendaftaran Penjual';
       bodyText = 'Penjual baru: ${data.nama} (${data.telepon ?? 'No Telp -'})';
       amount = 0;
-      date = DateTime.now();
+      date = data.createdAt ?? DateTime.now();
       detailScreen = const ResourceListScreen(title: 'Master Penjual', resourceType: 'penjual');
     } else if (isSupir) {
       iconWidget = const Icon(Icons.person_rounded, color: Color(0xFF00897B), size: 20);
       titleText = 'Pendaftaran Supir';
       bodyText = 'Supir baru: ${data.nama} (${data.telepon ?? 'No Telp -'})';
       amount = 0;
-      date = DateTime.now();
+      date = data.createdAt ?? DateTime.now();
       detailScreen = const ResourceListScreen(title: 'Master Supir', resourceType: 'supir');
     } else if (isPekerja) {
       iconWidget = const Icon(Icons.engineering_rounded, color: Color(0xFF7B1FA2), size: 20);
       titleText = 'Pendaftaran Pekerja';
       bodyText = 'Pekerja baru: ${data.nama} (${data.posisi})';
       amount = 0;
-      date = DateTime.now();
+      date = data.createdAt ?? DateTime.now();
       detailScreen = const ResourceListScreen(title: 'Master Pekerja', resourceType: 'pekerja');
     } else { // Jurnal Keuangan
       iconWidget = Icon(
