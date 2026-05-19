@@ -6,6 +6,7 @@ import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.d
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/add_transaksi_do_screen.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_detail_screen.dart';
+import 'package:sawitappmobile/features/transaksi_do/screens/edit_transaksi_do_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/shared/widgets/active_company_header.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
@@ -669,96 +670,287 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
     );
   }
 
-  Widget _buildTransactionCard(dynamic tx) {
-    final isTunai = tx.caraBayar?.toLowerCase() == 'tunai';
-    
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+  Future<void> _confirmDelete(dynamic tx) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
+            const SizedBox(width: 12),
+            const Text(
+              'Hapus Transaksi',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+          ],
+        ),
+        content: Text(
+          'Apakah Anda yakin ingin menghapus transaksi DO #${tx.nomor} senilai ${CurrencyFormatter.formatRupiah(tx.subTotal)}?',
+          style: const TextStyle(fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Hapus', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TransaksiDoDetailScreen(transaction: tx),
+    );
+
+    if (confirmed == true && mounted) {
+      final provider = context.read<TransaksiDoProvider>();
+      final scaffoldMessenger = ScaffoldMessenger.of(context);
+      final success = await provider.deleteTransaction(tx.id);
+      
+      if (mounted) {
+        if (success) {
+          scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content: Text('Transaksi DO #${tx.nomor} berhasil dihapus'),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
             ),
-          ),
-          borderRadius: BorderRadius.circular(20),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
+          );
+          context.read<DashboardProvider>().fetchSummary();
+        } else {
+          scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content: Text(provider.errorMessage ?? 'Gagal menghapus transaksi'),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Widget _buildTransactionCard(dynamic tx) {
+    final isTunai = tx.caraBayar?.toLowerCase() == 'tunai';
+    
+    return Dismissible(
+      key: Key('dismiss_do_${tx.id}'),
+      direction: DismissDirection.endToStart, // Hanya geser ke kiri
+      confirmDismiss: (direction) async {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: (isTunai ? Colors.green : Colors.blue).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Icon(
-                    isTunai ? Icons.payments_rounded : Icons.account_balance_rounded,
-                    color: isTunai ? Colors.green[700] : Colors.blue[700],
-                    size: 24,
-                  ),
+                const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
+                const SizedBox(width: 12),
+                const Text(
+                  'Hapus Transaksi',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              ],
+            ),
+            content: Text(
+              'Apakah Anda yakin ingin menghapus transaksi DO #${tx.nomor} senilai ${CurrencyFormatter.formatRupiah(tx.subTotal)}?',
+              style: const TextStyle(fontSize: 14),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Batal', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Hapus', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        );
+        return confirmed ?? false;
+      },
+      onDismissed: (direction) async {
+        final provider = context.read<TransaksiDoProvider>();
+        final scaffoldMessenger = ScaffoldMessenger.of(context);
+        final success = await provider.deleteTransaction(tx.id);
+        
+        if (mounted) {
+          if (success) {
+            scaffoldMessenger.showSnackBar(
+              SnackBar(
+                content: Text('Transaksi DO #${tx.nomor} berhasil dihapus'),
+                backgroundColor: Colors.green,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+            context.read<DashboardProvider>().fetchSummary();
+          } else {
+            scaffoldMessenger.showSnackBar(
+              SnackBar(
+                content: Text(provider.errorMessage ?? 'Gagal menghapus transaksi'),
+                backgroundColor: Colors.red,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        }
+      },
+      background: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        decoration: BoxDecoration(
+          color: Colors.redAccent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        alignment: Alignment.centerRight,
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              'Geser untuk Hapus',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
+            ),
+            SizedBox(width: 8),
+            Icon(Icons.delete_sweep_rounded, color: Colors.white, size: 24),
+          ],
+        ),
+      ),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EditTransaksiDoScreen(transaction: tx, popParent: false),
+                ),
+              );
+              if (context.mounted) {
+                context.read<TransaksiDoProvider>().fetchTransactions();
+                context.read<DashboardProvider>().fetchSummary();
+              }
+            },
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: (isTunai ? Colors.green : Colors.blue).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(
+                      isTunai ? Icons.payments_rounded : Icons.account_balance_rounded,
+                      color: isTunai ? Colors.green[700] : Colors.blue[700],
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          tx.nomor,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${tx.penjualNama} • ${tx.displaySupirNama}',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        tx.nomor,
+                        CurrencyFormatter.formatRupiah(tx.subTotal),
                         style: const TextStyle(
                           fontSize: 15,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w900,
                           color: Color(0xFF1E293B),
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${tx.penjualNama} • ${tx.displaySupirNama}',
+                        DateFormat('dd MMM yyyy • HH:mm', 'id_ID').format(tx.tanggal),
                         style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
+                          fontSize: 10,
+                          color: Colors.grey[500],
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      CurrencyFormatter.formatRupiah(tx.subTotal),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFF1E293B),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      DateFormat('dd MMM yyyy • HH:mm', 'id_ID').format(tx.tanggal),
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey[500],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.edit_outlined, color: Colors.blueAccent, size: 20),
+                    onPressed: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditTransaksiDoScreen(transaction: tx, popParent: false),
+                        ),
+                      );
+                      if (context.mounted) {
+                        context.read<TransaksiDoProvider>().fetchTransactions();
+                        context.read<DashboardProvider>().fetchSummary();
+                      }
+                    },
+                    tooltip: 'Edit Transaksi',
+                    constraints: const BoxConstraints(),
+                    padding: const EdgeInsets.all(4),
+                  ),
+                  const SizedBox(width: 4),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
+                    onPressed: () => _confirmDelete(tx),
+                    tooltip: 'Hapus Transaksi',
+                    constraints: const BoxConstraints(),
+                    padding: const EdgeInsets.all(4),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

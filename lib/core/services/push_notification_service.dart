@@ -144,13 +144,7 @@ class PushNotificationService {
       }
 
       final prefs = await SharedPreferences.getInstance();
-      final savedToken = prefs.getString('fcm_token');
-
-      // Hanya daftarkan ulang jika token berubah
-      if (savedToken == fcmToken) {
-        debugPrint('FCM: Token tidak berubah, skip');
-        return;
-      }
+      // Selalu daftarkan ke backend untuk memastikan token sinkron di database backend
 
       final deviceId = Platform.isAndroid
           ? 'android_${fcmToken.substring(0, 16)}'

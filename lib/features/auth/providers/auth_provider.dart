@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sawitappmobile/features/auth/models/user_model.dart';
 import 'package:sawitappmobile/shared/repositories/auth_repository.dart';
+import 'package:sawitappmobile/core/services/push_notification_service.dart';
 
 class AuthProvider with ChangeNotifier {
   final AuthRepository _authRepository;
@@ -94,6 +95,9 @@ class AuthProvider with ChangeNotifier {
         // Coba ambil dari cache dulu agar cepat
         _user = await _authRepository.getCachedUser();
         notifyListeners();
+
+        // Daftarkan FCM token ke backend agar selalu sinkron jika database dibersihkan
+        PushNotificationService.registerTokenToBackend(token).catchError((e) => null);
 
         // Refresh data dari server di background (opsional, tapi bagus untuk update info terbaru)
         try {

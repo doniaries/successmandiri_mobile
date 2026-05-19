@@ -19,8 +19,13 @@ import 'package:sawitappmobile/core/constants/api_constants.dart';
 
 class EditTransaksiDoScreen extends StatefulWidget {
   final TransaksiDo transaction;
+  final bool popParent;
 
-  const EditTransaksiDoScreen({super.key, required this.transaction});
+  const EditTransaksiDoScreen({
+    super.key,
+    required this.transaction,
+    this.popParent = true,
+  });
 
   @override
   State<EditTransaksiDoScreen> createState() => _EditTransaksiDoScreenState();
@@ -1093,8 +1098,10 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
             onConfirm: () {
               // Pop edit screen
               Navigator.of(context).pop();
-              // Pop detail screen so the list/parent can reload properly
-              Navigator.of(context).pop();
+              // Pop detail screen jika popParent bernilai true
+              if (widget.popParent) {
+                Navigator.of(context).pop();
+              }
             },
           );
         } else {
