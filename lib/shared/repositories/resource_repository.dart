@@ -44,7 +44,10 @@ class ResourceRepository {
         return localData.map((e) => Penjual.fromJson(e)).toList();
       }
 
-      final response = await _apiClient.dio.get(ApiConstants.penjual);
+      final response = await _apiClient.dio.get(
+        ApiConstants.penjual,
+        queryParameters: {'all': true},
+      );
       final List<dynamic> data = _extractListData(response.data);
 
       syncService.cacheData('penjual', data);
@@ -112,7 +115,10 @@ class ResourceRepository {
         return localData.map((e) => Supir.fromJson(e)).toList();
       }
 
-      final response = await _apiClient.dio.get(ApiConstants.supir);
+      final response = await _apiClient.dio.get(
+        ApiConstants.supir,
+        queryParameters: {'all': true},
+      );
       final List<dynamic> data = _extractListData(response.data);
 
       syncService.cacheData('supir', data);
@@ -180,7 +186,10 @@ class ResourceRepository {
         return localData.map((e) => Pekerja.fromJson(e)).toList();
       }
 
-      final response = await _apiClient.dio.get(ApiConstants.pekerja);
+      final response = await _apiClient.dio.get(
+        ApiConstants.pekerja,
+        queryParameters: {'all': true},
+      );
       final List<dynamic> data = _extractListData(response.data);
 
       syncService.cacheData('pekerja', data);
@@ -248,7 +257,10 @@ class ResourceRepository {
         return localData.map((e) => Kendaraan.fromJson(e)).toList();
       }
 
-      final response = await _apiClient.dio.get(ApiConstants.kendaraan);
+      final response = await _apiClient.dio.get(
+        ApiConstants.kendaraan,
+        queryParameters: {'all': true},
+      );
       final List<dynamic> data = _extractListData(response.data);
 
       syncService.cacheData('kendaraan', data);

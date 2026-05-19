@@ -26,7 +26,10 @@ class TransaksiDoRepository {
 
   Future<List<dynamic>> getPenjuals() async {
     try {
-      final response = await _apiClient.dio.get(ApiConstants.penjual);
+      final response = await _apiClient.dio.get(
+        ApiConstants.penjual,
+        queryParameters: {'all': true},
+      );
       return _extractListData(response.data);
     } catch (e) {
       rethrow;
@@ -35,7 +38,10 @@ class TransaksiDoRepository {
 
   Future<List<dynamic>> getSupirs() async {
     try {
-      final response = await _apiClient.dio.get(ApiConstants.supir);
+      final response = await _apiClient.dio.get(
+        ApiConstants.supir,
+        queryParameters: {'all': true},
+      );
       return _extractListData(response.data);
     } catch (e) {
       rethrow;
@@ -44,7 +50,10 @@ class TransaksiDoRepository {
 
   Future<List<dynamic>> getKendaraans() async {
     try {
-      final response = await _apiClient.dio.get(ApiConstants.kendaraan);
+      final response = await _apiClient.dio.get(
+        ApiConstants.kendaraan,
+        queryParameters: {'all': true},
+      );
       return _extractListData(response.data);
     } catch (e) {
       rethrow;
