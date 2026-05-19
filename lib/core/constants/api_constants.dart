@@ -2,14 +2,14 @@ import 'package:flutter/foundation.dart';
 
 class ApiConstants {
   // Set true untuk mengarahkan ke local server saat didebug, atau false untuk selalu ke produksi
-  static const bool useLocalInDebug = true;
+  static const bool useLocalInDebug = false;
 
   static String get baseUrl {
     if (kDebugMode && useLocalInDebug) {
       // Pilihlah salah satu URL di bawah ini sesuai setup Anda:
-      
+
       // Karena Anda menggunakan HP asli, kita akan gunakan IP Wi-Fi lokal komputer Anda.
-      return 'http://192.168.1.8:8000/api';
+      return 'http://192.168.1.8/successmandiri_laravel/public/api';
     }
 
     // Produksi (Online)
@@ -22,16 +22,16 @@ class ApiConstants {
 
   static String? normalizeUrl(String? url) {
     if (url == null || url.isEmpty) return null;
-    
+
     if (!url.startsWith('http')) {
       final base = baseUrl.replaceAll('/api', '');
       return '$base/storage/$url';
     }
-    
+
     try {
       final uri = Uri.parse(url);
       final apiUri = Uri.parse(baseUrl);
-      
+
       final newUri = uri.replace(
         scheme: apiUri.scheme,
         host: apiUri.host,
