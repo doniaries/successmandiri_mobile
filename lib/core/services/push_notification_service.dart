@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -53,10 +52,19 @@ class PushNotificationService {
         settings: initSettings,
         onDidReceiveNotificationResponse: _onNotificationTap,
       );
-      debugPrint('FCM DEBUG: flutter_local_notifications diinisialisasi. Status: $initResult');
+      debugPrint(
+        'FCM DEBUG: flutter_local_notifications diinisialisasi. Status: $initResult',
+      );
 
       // Pola getar kuat: Jeda 0ms, Getar 1 detik, Jeda 0.5 detik, Getar 1 detik, Jeda 0.5 detik, Getar 1.5 detik
-      final Int64List vibrationPattern = Int64List.fromList([0, 1000, 500, 1000, 500, 1500]);
+      final Int64List vibrationPattern = Int64List.fromList([
+        0,
+        1000,
+        500,
+        1000,
+        500,
+        1500,
+      ]);
 
       // Buat notification channel dengan suara default dan kepentingan maksimal
       final AndroidNotificationChannel channel = AndroidNotificationChannel(
@@ -71,13 +79,18 @@ class PushNotificationService {
 
       final androidPlugin = _localNotifications
           .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>();
+            AndroidFlutterLocalNotificationsPlugin
+          >();
 
       if (androidPlugin != null) {
         await androidPlugin.createNotificationChannel(channel);
-        debugPrint('FCM DEBUG: Berhasil membuat AndroidNotificationChannel: $_channelId');
+        debugPrint(
+          'FCM DEBUG: Berhasil membuat AndroidNotificationChannel: $_channelId',
+        );
       } else {
-        debugPrint('FCM DEBUG WARNING: AndroidFlutterLocalNotificationsPlugin NULL, tidak dapat membuat saluran!');
+        debugPrint(
+          'FCM DEBUG WARNING: AndroidFlutterLocalNotificationsPlugin NULL, tidak dapat membuat saluran!',
+        );
       }
     } catch (e) {
       debugPrint('FCM DEBUG ERROR: Gagal inisialisasi notifikasi lokal: $e');
@@ -94,26 +107,34 @@ class PushNotificationService {
         badge: true,
         sound: true,
       );
-      debugPrint('FCM DEBUG: Status Izin Notifikasi: ${settings.authorizationStatus}');
+      debugPrint(
+        'FCM DEBUG: Status Izin Notifikasi: ${settings.authorizationStatus}',
+      );
 
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
         debugPrint('FCM DEBUG: Izin notifikasi resmi diberikan oleh user.');
       } else {
-        debugPrint('FCM DEBUG WARNING: Izin notifikasi DITOLAK atau belum disetujui!');
+        debugPrint(
+          'FCM DEBUG WARNING: Izin notifikasi DITOLAK atau belum disetujui!',
+        );
       }
 
       // Handler saat app di foreground — tampilkan notifikasi lokal
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        debugPrint('FCM DEBUG foreground: Pesan masuk! Judul: "${message.notification?.title}", Isi: "${message.notification?.body}"');
+        debugPrint(
+          'FCM DEBUG foreground: Pesan masuk! Judul: "${message.notification?.title}", Isi: "${message.notification?.body}"',
+        );
         _showLocalNotification(message);
-        
+
         // Sinkronisasi data di background agar UI (seperti bell count) langsung update
         SyncService().syncNow();
       });
 
       // Handler saat user tap notifikasi dari background
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-        debugPrint('FCM DEBUG onMessageOpenedApp: User mengetuk notifikasi! Data: ${message.data}');
+        debugPrint(
+          'FCM DEBUG onMessageOpenedApp: User mengetuk notifikasi! Data: ${message.data}',
+        );
         SyncService().syncNow();
       });
 
@@ -123,7 +144,9 @@ class PushNotificationService {
       // Cek apakah app dibuka dari terminated state
       final initialMessage = await messaging.getInitialMessage();
       if (initialMessage != null) {
-        debugPrint('FCM DEBUG initial message: Aplikasi dibuka dari posisi mati melalui notifikasi! Data: ${initialMessage.data}');
+        debugPrint(
+          'FCM DEBUG initial message: Aplikasi dibuka dari posisi mati melalui notifikasi! Data: ${initialMessage.data}',
+        );
       }
     } catch (e) {
       debugPrint('FCM DEBUG ERROR: Gagal setup FCM: $e');
@@ -140,29 +163,42 @@ class PushNotificationService {
       if (title == null || body == null) {
         title = message.data['title'];
         body = message.data['body'];
-        debugPrint('FCM DEBUG: Menggunakan fallback title/body dari data payload: Title: "$title", Body: "$body"');
+        debugPrint(
+          'FCM DEBUG: Menggunakan fallback title/body dari data payload: Title: "$title", Body: "$body"',
+        );
       }
 
       if (title == null || body == null) {
-        debugPrint('FCM DEBUG: Judul dan Isi notifikasi kosong (null), lewati.');
+        debugPrint(
+          'FCM DEBUG: Judul dan Isi notifikasi kosong (null), lewati.',
+        );
         return;
       }
 
-      debugPrint('FCM DEBUG: Mempersiapkan untuk menampilkan local notification...');
-      final Int64List vibrationPattern = Int64List.fromList([0, 1000, 500, 1000, 500, 1500]);
+      debugPrint(
+        'FCM DEBUG: Mempersiapkan untuk menampilkan local notification...',
+      );
+      final Int64List vibrationPattern = Int64List.fromList([
+        0,
+        1000,
+        500,
+        1000,
+        500,
+        1500,
+      ]);
 
       final AndroidNotificationDetails androidDetails =
           AndroidNotificationDetails(
-        _channelId,
-        _channelName,
-        channelDescription: _channelDesc,
-        importance: Importance.max,
-        priority: Priority.high,
-        playSound: true,
-        enableVibration: true,
-        vibrationPattern: vibrationPattern,
-        icon: '@mipmap/ic_launcher',
-      );
+            _channelId,
+            _channelName,
+            channelDescription: _channelDesc,
+            importance: Importance.max,
+            priority: Priority.high,
+            playSound: true,
+            enableVibration: true,
+            vibrationPattern: vibrationPattern,
+            icon: '@mipmap/ic_launcher',
+          );
 
       final NotificationDetails details = NotificationDetails(
         android: androidDetails,
@@ -175,9 +211,13 @@ class PushNotificationService {
         notificationDetails: details,
         payload: jsonEncode(message.data),
       );
-      debugPrint('FCM DEBUG: Berhasil menampilkan local notification ke layar!');
+      debugPrint(
+        'FCM DEBUG: Berhasil menampilkan local notification ke layar!',
+      );
     } catch (e) {
-      debugPrint('FCM DEBUG ERROR: Gagal memanggil _localNotifications.show: $e');
+      debugPrint(
+        'FCM DEBUG ERROR: Gagal memanggil _localNotifications.show: $e',
+      );
     }
   }
 
@@ -185,7 +225,9 @@ class PushNotificationService {
     if (response.payload != null) {
       try {
         final data = jsonDecode(response.payload!) as Map<String, dynamic>;
-        debugPrint('FCM DEBUG: Notifikasi diketuk oleh pengguna. Type: ${data['type']}');
+        debugPrint(
+          'FCM DEBUG: Notifikasi diketuk oleh pengguna. Type: ${data['type']}',
+        );
       } catch (e) {
         debugPrint('FCM DEBUG ERROR: Gagal parsing payload tap notifikasi: $e');
       }
@@ -196,9 +238,12 @@ class PushNotificationService {
   static Future<void> registerTokenToBackend(String authToken) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
+      final notificationsEnabled =
+          prefs.getBool('notifications_enabled') ?? true;
       if (!notificationsEnabled) {
-        debugPrint('FCM: Notifikasi dinonaktifkan oleh user, skip register token');
+        debugPrint(
+          'FCM: Notifikasi dinonaktifkan oleh user, skip register token',
+        );
         return;
       }
 
@@ -223,10 +268,12 @@ class PushNotificationService {
           'device_id': deviceId,
           'platform': Platform.isAndroid ? 'android' : 'ios',
         },
-        options: Options(headers: {
-          'Authorization': 'Bearer $authToken',
-          'Accept': 'application/json',
-        }),
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $authToken',
+            'Accept': 'application/json',
+          },
+        ),
       );
 
       if (response.statusCode == 200) {
@@ -249,10 +296,12 @@ class PushNotificationService {
       await dio.delete(
         '${ApiConstants.baseUrl}/fcm/token',
         data: {'token': fcmToken},
-        options: Options(headers: {
-          'Authorization': 'Bearer $authToken',
-          'Accept': 'application/json',
-        }),
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $authToken',
+            'Accept': 'application/json',
+          },
+        ),
       );
 
       await prefs.remove('fcm_token');
