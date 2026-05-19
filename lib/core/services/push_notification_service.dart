@@ -22,7 +22,7 @@ class PushNotificationService {
   static final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
-  static const String _channelId = 'transaksi_channel_v2';
+  static const String _channelId = 'transaksi_channel_v3';
   static const String _channelName = 'Notifikasi Transaksi';
   static const String _channelDesc =
       'Notifikasi transaksi DO, saldo, dan operasional';
