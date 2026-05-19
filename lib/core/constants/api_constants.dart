@@ -2,19 +2,14 @@ import 'package:flutter/foundation.dart';
 
 class ApiConstants {
   // Set true untuk mengarahkan ke local server saat didebug, atau false untuk selalu ke produksi
-  static const bool useLocalInDebug = false;
+  static const bool useLocalInDebug = true;
 
   static String get baseUrl {
     if (kDebugMode && useLocalInDebug) {
       // Pilihlah salah satu URL di bawah ini sesuai setup Anda:
       
-      // A. Menggunakan kabel USB + ADB Reverse (Jauh lebih stabil):
-      //    Jalankan perintah ini di CMD/Terminal PC Anda sebelum me-run app:
-      //    adb reverse tcp:8000 tcp:8000
-      return 'http://127.0.0.1:8000/api';
-
-      // B. Menggunakan satu jaringan Wi-Fi (Ganti 192.168.100.16 dengan IP lokal komputer Anda):
-      // return 'http://192.168.100.16:8000/api';
+      // Karena Anda menggunakan HP asli, kita akan gunakan IP Wi-Fi lokal komputer Anda.
+      return 'http://192.168.1.8:8000/api';
     }
 
     // Produksi (Online)
