@@ -6,6 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:sawitappmobile/core/constants/api_constants.dart';
+import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Handler notifikasi saat app di background/terminated (top-level function wajib)
@@ -79,11 +80,16 @@ class PushNotificationService {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       debugPrint('FCM foreground: ${message.notification?.title}');
       _showLocalNotification(message);
+      
+      // Sinkronisasi data di background agar UI (seperti bell count) langsung update
+      SyncService().syncNow();
     });
 
     // Handler saat user tap notifikasi dari background
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       debugPrint('FCM onMessageOpenedApp: ${message.data}');
+      // Sinkronisasi data saat user tap notifikasi untuk memastikan data terbaru dimuat
+      SyncService().syncNow();
     });
 
     // Handler background (top-level function)
