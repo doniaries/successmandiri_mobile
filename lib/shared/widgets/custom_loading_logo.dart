@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 
 class AnimatedPulsingLogo extends StatefulWidget {
@@ -25,18 +24,45 @@ class _AnimatedPulsingLogoState extends State<AnimatedPulsingLogo>
       vsync: this,
       duration: const Duration(milliseconds: 2000),
     )..repeat();
-    
+
     _pulseAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 1.1).chain(CurveTween(curve: Curves.easeInOut)), weight: 50),
-      TweenSequenceItem(tween: Tween<double>(begin: 1.1, end: 1.0).chain(CurveTween(curve: Curves.easeInOut)), weight: 50),
+      TweenSequenceItem(
+        tween: Tween<double>(
+          begin: 1.0,
+          end: 1.1,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 50,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(
+          begin: 1.1,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 50,
+      ),
     ]).animate(_controller);
 
     _floatAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween<double>(begin: 0, end: -10).chain(CurveTween(curve: Curves.easeInOut)), weight: 50),
-      TweenSequenceItem(tween: Tween<double>(begin: -10, end: 0).chain(CurveTween(curve: Curves.easeInOut)), weight: 50),
+      TweenSequenceItem(
+        tween: Tween<double>(
+          begin: 0,
+          end: -10,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 50,
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(
+          begin: -10,
+          end: 0,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
+        weight: 50,
+      ),
     ]).animate(_controller);
 
-    _shimmerAnimation = Tween<double>(begin: -2.0, end: 2.0).animate(_controller);
+    _shimmerAnimation = Tween<double>(
+      begin: -2.0,
+      end: 2.0,
+    ).animate(_controller);
   }
 
   @override
@@ -72,7 +98,9 @@ class _AnimatedPulsingLogoState extends State<AnimatedPulsingLogo>
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        const Color(0xFF01579B).withValues(alpha: 0.2 * colorProgress),
+                        const Color(
+                          0xFF01579B,
+                        ).withValues(alpha: 0.2 * colorProgress),
                         Colors.transparent,
                       ],
                     ),
@@ -115,4 +143,3 @@ class _AnimatedPulsingLogoState extends State<AnimatedPulsingLogo>
     );
   }
 }
-
