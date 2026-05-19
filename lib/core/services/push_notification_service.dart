@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -22,7 +23,7 @@ class PushNotificationService {
   static final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
-  static const String _channelId = 'transaksi_channel_v3';
+  static const String _channelId = 'transaksi_channel_v4';
   static const String _channelName = 'Notifikasi Transaksi';
   static const String _channelDesc =
       'Notifikasi transaksi DO, saldo, dan operasional';
@@ -54,14 +55,18 @@ class PushNotificationService {
       );
       debugPrint('FCM DEBUG: flutter_local_notifications diinisialisasi. Status: $initResult');
 
+      // Pola getar kuat: Jeda 0ms, Getar 1 detik, Jeda 0.5 detik, Getar 1 detik, Jeda 0.5 detik, Getar 1.5 detik
+      final Int64List vibrationPattern = Int64List.fromList([0, 1000, 500, 1000, 500, 1500]);
+
       // Buat notification channel dengan suara default dan kepentingan maksimal
-      const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      final AndroidNotificationChannel channel = AndroidNotificationChannel(
         _channelId,
         _channelName,
         description: _channelDesc,
         importance: Importance.max,
         playSound: true,
         enableVibration: true,
+        vibrationPattern: vibrationPattern,
       );
 
       final androidPlugin = _localNotifications
@@ -135,7 +140,9 @@ class PushNotificationService {
       }
 
       debugPrint('FCM DEBUG: Mempersiapkan untuk menampilkan local notification...');
-      const AndroidNotificationDetails androidDetails =
+      final Int64List vibrationPattern = Int64List.fromList([0, 1000, 500, 1000, 500, 1500]);
+
+      final AndroidNotificationDetails androidDetails =
           AndroidNotificationDetails(
         _channelId,
         _channelName,
@@ -144,6 +151,7 @@ class PushNotificationService {
         priority: Priority.high,
         playSound: true,
         enableVibration: true,
+        vibrationPattern: vibrationPattern,
         icon: '@mipmap/ic_launcher',
       );
 
