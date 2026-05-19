@@ -25,6 +25,8 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
   final List<String> _filters = ['Semua', 'Pemasukan', 'Pengeluaran'];
   final ScrollController _scrollController = ScrollController();
   DateTime? _selectedSingleDate;
+  DateTime? _lastDashboardFilterDate;
+  bool _hasInitializedFilterDate = false;
 
   @override
   void initState() {
@@ -144,6 +146,30 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final dashboardProvider = context.watch<DashboardProvider>();
+    final dashboardFilterDate = dashboardProvider.filterDate;
+    
+    if (!_hasInitializedFilterDate || _lastDashboardFilterDate != dashboardFilterDate) {
+      _hasInitializedFilterDate = true;
+      _lastDashboardFilterDate = dashboardFilterDate;
+      
+      final activeDateStr = dashboardProvider.summary?.systemActiveDate;
+      final systemActiveDate = activeDateStr != null
+          ? DateTime.parse(activeDateStr)
+          : DateTime.now();
+          
+      _selectedSingleDate = dashboardFilterDate ?? systemActiveDate;
+      
+      // Trigger fetch for this new date!
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.read<ResourceProvider>().fetchResources(
+          'jurnal_keuangan',
+          refresh: true,
+          filters: _buildApiFilters(),
+        );
+      });
+    }
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(

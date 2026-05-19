@@ -21,6 +21,8 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   final ScrollController _scrollController = ScrollController();
   DateTime? _selectedSingleDate;
   bool _isManualSyncing = false;
+  DateTime? _lastDashboardFilterDate;
+  bool _hasInitializedFilterDate = false;
   bool _isSearching = false;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
@@ -109,6 +111,21 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final dashboardProvider = context.watch<DashboardProvider>();
+    final dashboardFilterDate = dashboardProvider.filterDate;
+    
+    if (!_hasInitializedFilterDate || _lastDashboardFilterDate != dashboardFilterDate) {
+      _hasInitializedFilterDate = true;
+      _lastDashboardFilterDate = dashboardFilterDate;
+      
+      final activeDateStr = dashboardProvider.summary?.systemActiveDate;
+      final systemActiveDate = activeDateStr != null
+          ? DateTime.parse(activeDateStr)
+          : DateTime.now();
+          
+      _selectedSingleDate = dashboardFilterDate ?? systemActiveDate;
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       body: RefreshIndicator(

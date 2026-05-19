@@ -1093,14 +1093,7 @@ class _NotificationButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Selector4<TransaksiDoProvider, TambahSaldoProvider, ResourceProvider, DashboardProvider, Map<String, dynamic>>(
       selector: (_, p1, p2, p3, p4) {
-        int total = 0;
-        if (p1.hasNewData) total++;
-        if (p2.hasNewData) total++;
-        if (p3.hasNewDataFor('operasional')) total++;
-        if (p3.hasNewDataFor('penjual')) total++;
-        if (p3.hasNewDataFor('supir')) total++;
-        if (p3.hasNewDataFor('pekerja')) total++;
-        if (p3.hasNewDataFor('jurnal_keuangan')) total++;
+        final total = p1.unreadCount + p2.unreadCount + p3.totalUnreadCount;
         return {'total': total};
       },
       builder: (context, data, _) => Stack(

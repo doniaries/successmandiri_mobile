@@ -32,13 +32,15 @@ class AuthProvider with ChangeNotifier {
       );
       _user = result['user'];
       
-      if (_user != null) {
-        // SessionService().start(onTimeout: handleAutoLogout); // REMOVED: Session restriction
-      }
-      
       // Simpan user ke cache
       if (_user != null) {
         await _authRepository.saveUser(_user!);
+        
+        // Daftarkan FCM token ke backend segera setelah login berhasil
+        final token = await _authRepository.getToken();
+        if (token != null) {
+          PushNotificationService.registerTokenToBackend(token).catchError((e) => null);
+        }
       }
 
       if (isRememberMe) {
@@ -77,6 +79,15 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> logout() async {
+    try {
+      final token = await _authRepository.getToken();
+      if (token != null) {
+        await PushNotificationService.unregisterTokenFromBackend(token);
+      }
+    } catch (e) {
+      debugPrint('Error unregistering FCM token on logout: $e');
+    }
+
     await _authRepository.logout();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('cached_user');

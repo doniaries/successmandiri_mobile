@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:sawitappmobile/features/tambah_saldo/models/tambah_saldo_model.dart';
 import 'package:sawitappmobile/shared/repositories/tambah_saldo_repository.dart';
-
 import 'package:sawitappmobile/core/services/seen_state_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TambahSaldoProvider with ChangeNotifier {
   final TambahSaldoRepository _repository;
@@ -10,6 +10,7 @@ class TambahSaldoProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   bool _hasNewData = false;
+  int _unreadCount = 0;
 
   TambahSaldoProvider(this._repository);
 
@@ -17,12 +18,14 @@ class TambahSaldoProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get hasNewData => _hasNewData;
+  int get unreadCount => _unreadCount;
   int get totalCount => _requests.length;
 
   void clearData() {
     _requests.clear();
     _errorMessage = null;
     _hasNewData = false;
+    _unreadCount = 0;
     notifyListeners();
   }
 
@@ -36,8 +39,12 @@ class TambahSaldoProvider with ChangeNotifier {
       _isLoading = false;
       
       if (_requests.isNotEmpty) {
-        _hasNewData = !await SeenStateService.isSeen('tambah_saldo', _requests.first.id.toString());
+        final prefs = await SharedPreferences.getInstance();
+        final lastSeenId = int.tryParse(prefs.getString('seen_state_tambah_saldo') ?? '0') ?? 0;
+        _unreadCount = _requests.where((r) => (r.id ?? 0) > lastSeenId).length;
+        _hasNewData = _unreadCount > 0;
       } else {
+        _unreadCount = 0;
         _hasNewData = false;
       }
       
@@ -52,6 +59,7 @@ class TambahSaldoProvider with ChangeNotifier {
   Future<void> markAsSeen() async {
     if (_requests.isNotEmpty) {
       await SeenStateService.markAsSeen('tambah_saldo', _requests.first.id.toString());
+      _unreadCount = 0;
       _hasNewData = false;
       notifyListeners();
     }

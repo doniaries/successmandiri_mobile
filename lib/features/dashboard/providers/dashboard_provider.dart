@@ -8,14 +8,22 @@ class DashboardProvider with ChangeNotifier {
   DashboardSummary? _summary;
   bool _isLoading = false;
   String? _error;
+  DateTime? _filterDate;
 
   DashboardSummary? get summary => _summary;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  DateTime? get filterDate => _filterDate;
 
   Future<void> fetchSummary({String? date}) async {
     if (_summary == null || date != null) _isLoading = true;
     _error = null;
+    
+    if (date != null) {
+      _filterDate = DateTime.parse(date);
+    } else {
+      _filterDate = null;
+    }
     notifyListeners();
 
     try {
@@ -31,6 +39,7 @@ class DashboardProvider with ChangeNotifier {
   void clearData() {
     _summary = null;
     _error = null;
+    _filterDate = null;
     notifyListeners();
   }
 }

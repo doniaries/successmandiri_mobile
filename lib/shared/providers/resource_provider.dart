@@ -10,6 +10,7 @@ import 'package:sawitappmobile/features/auth/models/user_model.dart';
 import 'package:sawitappmobile/shared/repositories/resource_repository.dart';
 import 'package:sawitappmobile/core/services/seen_state_service.dart';
 import 'package:sawitappmobile/core/constants/api_constants.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ResourceProvider with ChangeNotifier {
   final ResourceRepository _repository;
@@ -39,6 +40,24 @@ class ResourceProvider with ChangeNotifier {
     'jurnal_keuangan': false,
     'user': false,
   };
+
+  final Map<String, int> _unreadCounts = {
+    'penjual': 0,
+    'supir': 0,
+    'pekerja': 0,
+    'kendaraan': 0,
+    'operasional': 0,
+    'jurnal_keuangan': 0,
+    'user': 0,
+  };
+
+  int get totalUnreadCount {
+    int sum = 0;
+    _unreadCounts.forEach((key, val) {
+      sum += val;
+    });
+    return sum;
+  }
 
   // Pagination state for each resource
   final Map<String, int> _currentPage = {};
@@ -383,39 +402,36 @@ class ResourceProvider with ChangeNotifier {
   }
 
   Future<void> _checkNewDataFor(String type) async {
-    String latestId = "";
+    final prefs = await SharedPreferences.getInstance();
+    final lastSeenId = int.tryParse(prefs.getString('seen_state_$type') ?? '0') ?? 0;
+    
+    int count = 0;
     switch (type) {
       case 'penjual':
-        latestId = _penjuals.isNotEmpty ? _penjuals.first.id.toString() : "";
+        count = _penjuals.where((item) => (item.id ?? 0) > lastSeenId).length;
         break;
       case 'supir':
-        latestId = _supirs.isNotEmpty ? _supirs.first.id.toString() : "";
+        count = _supirs.where((item) => (item.id ?? 0) > lastSeenId).length;
         break;
       case 'pekerja':
-        latestId = _pekerjas.isNotEmpty ? _pekerjas.first.id.toString() : "";
+        count = _pekerjas.where((item) => (item.id ?? 0) > lastSeenId).length;
         break;
       case 'kendaraan':
-        latestId = _kendaraans.isNotEmpty
-            ? _kendaraans.first.id.toString()
-            : "";
+        count = _kendaraans.where((item) => (item.id ?? 0) > lastSeenId).length;
         break;
       case 'operasional':
-        latestId = _operasionals.isNotEmpty
-            ? _operasionals.first.id.toString()
-            : "";
+        count = _operasionals.where((item) => (item.id ?? 0) > lastSeenId).length;
         break;
       case 'jurnal_keuangan':
-        latestId = _jurnalKeuangans.isNotEmpty
-            ? _jurnalKeuangans.first.id.toString()
-            : "";
+        count = _jurnalKeuangans.where((item) => (item.id ?? 0) > lastSeenId).length;
         break;
       case 'user':
-        latestId = _users.isNotEmpty ? _users.first.id.toString() : "";
+        count = _users.where((item) => (item.id ?? 0) > lastSeenId).length;
         break;
     }
-    if (latestId.isNotEmpty) {
-      _hasNewData[type] = !await SeenStateService.isSeen(type, latestId);
-    }
+    
+    _unreadCounts[type] = count;
+    _hasNewData[type] = count > 0;
   }
 
   Future<void> fetchAllResources() async {
@@ -463,6 +479,7 @@ class ResourceProvider with ChangeNotifier {
 
     if (latestId.isNotEmpty) {
       await SeenStateService.markAsSeen(type, latestId);
+      _unreadCounts[type] = 0;
       _hasNewData[type] = false;
       notifyListeners();
     }
@@ -502,6 +519,7 @@ class ResourceProvider with ChangeNotifier {
       }
       if (latestId.isNotEmpty) {
         await SeenStateService.markAsSeen(type, latestId);
+        _unreadCounts[type] = 0;
         _hasNewData[type] = false;
       }
     }
@@ -516,6 +534,7 @@ class ResourceProvider with ChangeNotifier {
     _operasionals.clear();
     _jurnalKeuangans.clear();
     _hasNewData.updateAll((key, value) => false);
+    _unreadCounts.updateAll((key, value) => 0);
     notifyListeners();
   }
 

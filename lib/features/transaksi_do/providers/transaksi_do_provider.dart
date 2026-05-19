@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:sawitappmobile/features/transaksi_do/models/transaksi_do_model.dart';
 import 'package:sawitappmobile/shared/repositories/transaksi_do_repository.dart';
 import 'package:sawitappmobile/core/services/seen_state_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TransaksiDoProvider with ChangeNotifier {
   final TransaksiDoRepository _repository;
@@ -20,6 +21,8 @@ class TransaksiDoProvider with ChangeNotifier {
   bool _isSaving = false;
   bool _isRefreshing = false;
 
+  int _unreadCount = 0;
+
   TransaksiDoProvider(this._repository);
 
   List<TransaksiDo> get transactions => _transactions;
@@ -33,6 +36,7 @@ class TransaksiDoProvider with ChangeNotifier {
   bool get hasMore => _hasMore;
   String? get errorMessage => _errorMessage;
   bool get hasNewData => _hasNewData;
+  int get unreadCount => _unreadCount;
   int get totalTransactions => _transactions.length;
 
   void clearData() {
@@ -42,6 +46,7 @@ class TransaksiDoProvider with ChangeNotifier {
     _kendaraans.clear();
     _errorMessage = null;
     _hasNewData = false;
+    _unreadCount = 0;
     _currentPage = 1;
     _hasMore = true;
     notifyListeners();
@@ -74,7 +79,13 @@ class TransaksiDoProvider with ChangeNotifier {
       _isLoading = false;
       
       if (_transactions.isNotEmpty) {
-        _hasNewData = !await SeenStateService.isSeen('transaksi_do', _transactions.first.id.toString());
+        final prefs = await SharedPreferences.getInstance();
+        final lastSeenId = int.tryParse(prefs.getString('seen_state_transaksi_do') ?? '0') ?? 0;
+        _unreadCount = _transactions.where((t) => (t.id ?? 0) > lastSeenId).length;
+        _hasNewData = _unreadCount > 0;
+      } else {
+        _unreadCount = 0;
+        _hasNewData = false;
       }
       
       notifyListeners();
@@ -117,6 +128,13 @@ class TransaksiDoProvider with ChangeNotifier {
           _transactions.add(item);
         }
       }
+
+      // Re-evaluate unreadCount after fetching more items
+      final prefs = await SharedPreferences.getInstance();
+      final lastSeenId = int.tryParse(prefs.getString('seen_state_transaksi_do') ?? '0') ?? 0;
+      _unreadCount = _transactions.where((t) => (t.id ?? 0) > lastSeenId).length;
+      _hasNewData = _unreadCount > 0;
+
       _isFetchingMore = false;
       notifyListeners();
     } catch (e) {
@@ -129,6 +147,7 @@ class TransaksiDoProvider with ChangeNotifier {
   Future<void> markAsSeen() async {
     if (_transactions.isNotEmpty) {
       await SeenStateService.markAsSeen('transaksi_do', _transactions.first.id.toString());
+      _unreadCount = 0;
       _hasNewData = false;
       notifyListeners();
     }
