@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sawitappmobile/features/auth/providers/auth_provider.dart';
@@ -10,9 +11,11 @@ import 'package:sawitappmobile/features/profile/screens/role_menu_settings_scree
 import 'package:sawitappmobile/features/profile/screens/app_version_setting_screen.dart';
 import 'package:sawitappmobile/shared/widgets/change_password_dialog.dart';
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
-
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sawitappmobile/core/services/push_notification_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:dio/dio.dart';
+import 'package:sawitappmobile/core/constants/api_constants.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -24,6 +27,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final ImagePicker _picker = ImagePicker();
   bool _notificationsEnabled = true;
+  String _fcmStatus = 'Ketuk untuk mulai cek koneksi FCM';
 
   @override
   void initState() {
@@ -39,13 +43,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _toggleNotifications(bool value) async {
+    final authProvider = context.read<AuthProvider>();
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _notificationsEnabled = value;
     });
     await prefs.setBool('notifications_enabled', value);
 
-    final authProvider = context.read<AuthProvider>();
     final token = await authProvider.getAuthToken();
     if (token != null) {
       if (value) {
@@ -53,6 +57,115 @@ class _ProfileScreenState extends State<ProfileScreen> {
       } else {
         await PushNotificationService.unregisterTokenFromBackend(token);
       }
+    }
+  }
+
+  Future<void> _testFcmRegistration() async {
+    final authProvider = context.read<AuthProvider>();
+    setState(() {
+      _fcmStatus = '1. Mengambil token FCM...';
+    });
+
+    try {
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken == null) {
+        setState(() {
+          _fcmStatus = 'Error: Token FCM null. Cek Google Play Services.';
+        });
+        return;
+      }
+
+      setState(() {
+        _fcmStatus = '2. Menghubungkan ke API...';
+      });
+
+      final authToken = await authProvider.getAuthToken();
+      if (authToken == null) {
+        setState(() {
+          _fcmStatus = 'Error: Sesi login tidak ditemukan.';
+        });
+        return;
+      }
+
+      final deviceId = Platform.isAndroid
+          ? 'android_${fcmToken.substring(0, fcmToken.length > 16 ? 16 : fcmToken.length)}'
+          : 'ios_${fcmToken.substring(0, fcmToken.length > 16 ? 16 : fcmToken.length)}';
+
+      final dio = Dio();
+      final response = await dio.post(
+        '${ApiConstants.baseUrl}/fcm/token',
+        data: {
+          'token': fcmToken,
+          'device_id': deviceId,
+          'platform': Platform.isAndroid ? 'android' : 'ios',
+        },
+        options: Options(headers: {
+          'Authorization': 'Bearer $authToken',
+          'Accept': 'application/json',
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _fcmStatus = 'Sukses terdaftar!\nFCM: ${fcmToken.substring(0, 15)}... (Ketuk untuk salin)';
+        });
+        
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('fcm_token', fcmToken);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Registrasi Token FCM Berhasil!\nTarget API: ${ApiConstants.baseUrl}'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        setState(() {
+          _fcmStatus = 'Server error code: ${response.statusCode}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _fcmStatus = 'Koneksi error: $e';
+      });
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Detail Error FCM'),
+            content: SingleChildScrollView(
+              child: Text('Target API: ${ApiConstants.baseUrl}\n\nDetail: $e'),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Tutup'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleFcmTileTap() async {
+    if (_fcmStatus.contains('Sukses terdaftar')) {
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        await Clipboard.setData(ClipboardData(text: token));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('FCM Token berhasil disalin ke clipboard!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    } else {
+      await _testFcmRegistration();
     }
   }
 
@@ -262,8 +375,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   trailing: Switch(
                     value: _notificationsEnabled,
                     onChanged: _toggleNotifications,
-                    activeColor: const Color(0xFF01579B),
+                    activeThumbColor: const Color(0xFF01579B),
                   ),
+                ),
+                
+                _buildInfoTile(
+                  const Icon(Icons.bug_report_outlined, color: Color(0xFF01579B)), 
+                  'Diagnostik FCM (Debug)', 
+                  _fcmStatus,
+                  onTap: _handleFcmTileTap,
+                  trailing: const Icon(Icons.play_arrow_rounded, color: Color(0xFF01579B)),
                 ),
                 
                 if (user?.isSuperAdmin == true) ...[

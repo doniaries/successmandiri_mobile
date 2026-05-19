@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 
 class AnimatedPulsingLogo extends StatefulWidget {
   final double size;
@@ -79,9 +77,6 @@ class _AnimatedPulsingLogoState extends State<AnimatedPulsingLogo>
         final t = _controller.value;
         // Color transition logic (0.0 to 1.0 to 0.0)
         final colorProgress = (t < 0.5 ? t * 2 : (1 - t) * 2);
-
-        final resourceProvider = context.watch<ResourceProvider>();
-        final appLogo = resourceProvider.appLogoUrl;
 
         return Transform.translate(
           offset: Offset(0, _floatAnimation.value),
