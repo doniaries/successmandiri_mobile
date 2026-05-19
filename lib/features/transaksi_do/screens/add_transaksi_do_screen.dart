@@ -348,8 +348,11 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                       labelKey: 'nama',
                                       subLabelKey: 'sisa_hutang',
                                       hint: 'Cari nama penjual...',
+                                      addNewScreen: const AddPenjualScreen(),
+                                      addNewLabel: 'TAMBAH PENJUAL BARU',
                                     );
                                 if (result != null) {
+                                  await provider.fetchFormData();
                                   _onPenjualChanged(result, provider);
                                 }
                               },
@@ -505,8 +508,11 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                         labelKey: 'nama',
                                         subLabelKey: 'sisa_hutang',
                                         hint: 'Cari nama supir...',
+                                        addNewScreen: const AddSupirScreen(),
+                                        addNewLabel: 'TAMBAH SUPIR BARU',
                                       );
                                   if (result != null) {
+                                    await provider.fetchFormData();
                                     setState(() {
                                       _selectedSupirId = result;
                                     });

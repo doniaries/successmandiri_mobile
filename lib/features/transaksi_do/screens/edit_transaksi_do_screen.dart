@@ -425,18 +425,21 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                             child: InkWell(
                               onTap: () async {
                                 final result =
-                                    await SearchableSelectionModal.show(
-                                      context: context,
-                                      title: 'Pilih Penjual',
-                                      items: provider.penjuals,
-                                      selectedId: _selectedPenjualId,
-                                      labelKey: 'nama',
-                                      subLabelKey: 'sisa_hutang',
-                                      hint: 'Cari nama penjual...',
-                                    );
+                                     await SearchableSelectionModal.show(
+                                       context: context,
+                                       title: 'Pilih Penjual',
+                                       items: provider.penjuals,
+                                       selectedId: _selectedPenjualId,
+                                       labelKey: 'nama',
+                                       subLabelKey: 'sisa_hutang',
+                                       hint: 'Cari nama penjual...',
+                                       addNewScreen: const AddPenjualScreen(),
+                                       addNewLabel: 'TAMBAH PENJUAL BARU',
+                                     );
                                 if (result != null) {
-                                  _onPenjualChanged(result, provider);
-                                }
+                                   await provider.fetchFormData();
+                                   _onPenjualChanged(result, provider);
+                                 }
                               },
                               child: IgnorePointer(
                                 child: TextFormField(
@@ -582,21 +585,24 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                               child: InkWell(
                                 onTap: () async {
                                   final result =
-                                      await SearchableSelectionModal.show(
-                                        context: context,
-                                        title: 'Pilih Supir',
-                                        items: provider.supirs,
-                                        selectedId: _selectedSupirId,
-                                        labelKey: 'nama',
-                                        subLabelKey: 'sisa_hutang',
-                                        hint: 'Cari nama supir...',
-                                      );
+                                       await SearchableSelectionModal.show(
+                                         context: context,
+                                         title: 'Pilih Supir',
+                                         items: provider.supirs,
+                                         selectedId: _selectedSupirId,
+                                         labelKey: 'nama',
+                                         subLabelKey: 'sisa_hutang',
+                                         hint: 'Cari nama supir...',
+                                         addNewScreen: const AddSupirScreen(),
+                                         addNewLabel: 'TAMBAH SUPIR BARU',
+                                       );
                                   if (result != null) {
-                                    setState(() {
-                                      _selectedSupirId = result;
-                                    });
-                                    _onFieldChanged();
-                                  }
+                                     await provider.fetchFormData();
+                                     setState(() {
+                                       _selectedSupirId = result;
+                                     });
+                                     _onFieldChanged();
+                                   }
                                 },
                                 child: IgnorePointer(
                                   child: TextFormField(

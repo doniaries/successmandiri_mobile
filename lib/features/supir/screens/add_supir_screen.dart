@@ -73,7 +73,7 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
               : 'Data supir ${_namaController.text} telah berhasil didaftarkan ke sistem.',
           isOffline: isOffline,
           onConfirm: () {
-            Navigator.of(context).pop();
+            Navigator.of(context).pop(result);
           },
         );
       } else {

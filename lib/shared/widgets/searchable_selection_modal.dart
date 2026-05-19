@@ -8,6 +8,8 @@ class SearchableSelectionModal extends StatefulWidget {
   final String labelKey;
   final String? subLabelKey;
   final String? hint;
+  final Widget? addNewScreen;
+  final String? addNewLabel;
 
   const SearchableSelectionModal({
     super.key,
@@ -17,6 +19,8 @@ class SearchableSelectionModal extends StatefulWidget {
     required this.labelKey,
     this.subLabelKey,
     this.hint,
+    this.addNewScreen,
+    this.addNewLabel,
   });
 
   static Future<int?> show({
@@ -27,6 +31,8 @@ class SearchableSelectionModal extends StatefulWidget {
     required String labelKey,
     String? subLabelKey,
     String? hint,
+    Widget? addNewScreen,
+    String? addNewLabel,
   }) {
     return showModalBottomSheet<int>(
       context: context,
@@ -39,6 +45,8 @@ class SearchableSelectionModal extends StatefulWidget {
         labelKey: labelKey,
         subLabelKey: subLabelKey,
         hint: hint,
+        addNewScreen: addNewScreen,
+        addNewLabel: addNewLabel,
       ),
     );
   }
@@ -158,6 +166,45 @@ class _SearchableSelectionModalState extends State<SearchableSelectionModal> {
                               'Data tidak ditemukan',
                               style: TextStyle(color: Colors.grey[600]),
                             ),
+                            if (widget.addNewScreen != null) ...[
+                              const SizedBox(height: 24),
+                              ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF01579B),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                  elevation: 2,
+                                ),
+                                icon: const Icon(Icons.add_rounded, size: 20),
+                                label: Text(
+                                  widget.addNewLabel ?? 'TAMBAH BARU',
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                onPressed: () async {
+                                  FocusScope.of(context).unfocus();
+                                  final newRecord = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => widget.addNewScreen!),
+                                  );
+                                  if (newRecord != null && mounted) {
+                                    int? newId;
+                                    if (newRecord is Map) {
+                                      newId = newRecord['id'] as int?;
+                                    } else {
+                                      try {
+                                        newId = (newRecord as dynamic).id as int?;
+                                      } catch (_) {}
+                                    }
+                                    if (newId != null) {
+                                      Navigator.pop(context, newId);
+                                    }
+                                  }
+                                },
+                              ),
+                            ],
                           ],
                         ),
                       )
