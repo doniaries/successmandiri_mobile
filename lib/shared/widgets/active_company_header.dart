@@ -30,6 +30,7 @@ class _ActiveCompanyHeaderState extends State<ActiveCompanyHeader> {
     
     final summary = dashboardProvider.summary;
     final String companyName = summary?.perusahaanName ?? authProvider.user?.perusahaanName ?? '-';
+    final String cashierName = summary?.namaKasir ?? authProvider.user?.perusahaanKasir ?? 'Kasir Utama';
     final double saldo = summary?.saldo ?? 0.0;
     
     return Container(
@@ -90,6 +91,29 @@ class _ActiveCompanyHeaderState extends State<ActiveCompanyHeader> {
                     fontWeight: FontWeight.bold,
                     overflow: TextOverflow.ellipsis,
                   ),
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.person_outline_rounded,
+                      color: Colors.white.withAlpha(204),
+                      size: 11,
+                    ),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        'Kasir: $cashierName',
+                        style: TextStyle(
+                          color: Colors.white.withAlpha(204),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w500,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

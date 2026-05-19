@@ -6,6 +6,7 @@ class User {
   final String email;
   final int? perusahaanId;
   final String? perusahaanName;
+  final String? perusahaanKasir;
   final bool? isActive;
 
   final String? photo;
@@ -20,6 +21,7 @@ class User {
     required this.email,
     this.perusahaanId,
     this.perusahaanName,
+    this.perusahaanKasir,
     this.isActive,
     this.photo,
     this.photoUrl,
@@ -57,6 +59,7 @@ class User {
       email: json['email'] ?? '',
       perusahaanId: (json['perusahaan_id'] is int) ? json['perusahaan_id'] : int.tryParse(json['perusahaan_id']?.toString() ?? ''),
       perusahaanName: json['perusahaan_name'],
+      perusahaanKasir: json['perusahaan_kasir'] ?? json['nama_kasir'],
       isActive: (json['is_active'] is bool) ? json['is_active'] : (json['is_active']?.toString() == '1' || json['is_active']?.toString() == 'true'),
       photo: json['photo'] ?? json['avatar'],
       photoUrl: _parsePhotoUrl(json),
@@ -114,6 +117,7 @@ class User {
       'email': email,
       'perusahaan_id': perusahaanId,
       'perusahaan_name': perusahaanName,
+      'perusahaan_kasir': perusahaanKasir,
       'is_active': isActive,
       'photo': photo,
       'photo_url': photoUrl,
@@ -128,17 +132,24 @@ class UserCompany {
   final int id;
   final String name;
   final String? logoUrl;
+  final String? namaKasir;
 
-  UserCompany({required this.id, required this.name, this.logoUrl});
+  UserCompany({required this.id, required this.name, this.logoUrl, this.namaKasir});
 
   factory UserCompany.fromJson(Map<String, dynamic> json) {
     return UserCompany(
       id: json['id'] is int ? json['id'] : int.parse(json['id'].toString()),
       name: json['name'] ?? '',
       logoUrl: ApiConstants.normalizeUrl(json['logo_url'] ?? json['logo_path']),
+      namaKasir: json['nama_kasir'] ?? json['kasir_name'],
     );
   }
 
-  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'logo_url': logoUrl};
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'logo_url': logoUrl,
+    'nama_kasir': namaKasir,
+  };
 }
 
