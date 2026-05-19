@@ -133,9 +133,18 @@ class PushNotificationService {
   /// Tampilkan notifikasi lokal dengan suara (untuk pesan foreground)
   static Future<void> _showLocalNotification(RemoteMessage message) async {
     try {
-      final notification = message.notification;
-      if (notification == null) {
-        debugPrint('FCM DEBUG: RemoteMessage tidak memiliki payload notification, lewati.');
+      String? title = message.notification?.title;
+      String? body = message.notification?.body;
+
+      // Fallback ke data payload jika notification null (sangat penting untuk kestabilan di beberapa tipe OS)
+      if (title == null || body == null) {
+        title = message.data['title'];
+        body = message.data['body'];
+        debugPrint('FCM DEBUG: Menggunakan fallback title/body dari data payload: Title: "$title", Body: "$body"');
+      }
+
+      if (title == null || body == null) {
+        debugPrint('FCM DEBUG: Judul dan Isi notifikasi kosong (null), lewati.');
         return;
       }
 
@@ -155,14 +164,14 @@ class PushNotificationService {
         icon: '@mipmap/ic_launcher',
       );
 
-      const NotificationDetails details = NotificationDetails(
+      final NotificationDetails details = NotificationDetails(
         android: androidDetails,
       );
 
       await _localNotifications.show(
-        id: notification.hashCode,
-        title: notification.title,
-        body: notification.body,
+        id: title.hashCode,
+        title: title,
+        body: body,
         notificationDetails: details,
         payload: jsonEncode(message.data),
       );
