@@ -470,24 +470,32 @@ class DashboardScreenState extends State<DashboardScreen> {
 
   void _showNotifications(BuildContext context) {
     final role = context.read<AuthProvider>().user?.role?.toLowerCase();
-    final bool isLeader = role == 'admin' || role == 'super_admin';
-    final transactions = context.read<TransaksiDoProvider>().transactions;
-    final List<TambahSaldoModel> pengajuanRequests = isLeader 
-        ? context.read<TambahSaldoProvider>().requests.where((req) => req.status.toLowerCase() == 'pending').toList() 
-        : [];
-    final latestOperasional = context.read<DashboardProvider>().summary?.latestOperasional ?? [];
+    final bool isLeader = role == 'admin' || role == 'super_admin' || role == 'pimpinan';
     
-    // Master data resources for Admin/Super Admin
-    final resourceProvider = context.read<ResourceProvider>();
-    final penjuals = isLeader ? resourceProvider.penjuals : <Penjual>[];
-    final supirs = isLeader ? resourceProvider.supirs : <Supir>[];
-    final pekerjas = isLeader ? resourceProvider.pekerjas : <Pekerja>[];
-    final jurnalKeuangans = isLeader ? resourceProvider.jurnalKeuangans : <JurnalKeuangan>[];
+    final txProvider = context.read<TransaksiDoProvider>();
+    final saldoProvider = context.read<TambahSaldoProvider>();
+    final resProvider = context.read<ResourceProvider>();
 
     showModalBottomSheet(
       context: context, backgroundColor: Colors.transparent, isScrollControlled: true,
-      builder: (context) => FutureBuilder<Map<String, String>>(
+      builder: (context) => FutureBuilder<Map<String, dynamic>>(
         future: () async {
+          // Trigger asynchronous parallel fetching
+          final List<Future> fetches = [
+            txProvider.fetchTransactions().catchError((e) => null),
+            resProvider.fetchResources('operasional', refresh: true).catchError((e) => null),
+          ];
+          if (isLeader) {
+            fetches.addAll([
+              saldoProvider.fetchRequests().catchError((e) => null),
+              resProvider.fetchResources('penjual', refresh: true).catchError((e) => null),
+              resProvider.fetchResources('supir', refresh: true).catchError((e) => null),
+              resProvider.fetchResources('pekerja', refresh: true).catchError((e) => null),
+              resProvider.fetchResources('jurnal_keuangan', refresh: true).catchError((e) => null),
+            ]);
+          }
+          await Future.wait(fetches);
+
           final prefs = await SharedPreferences.getInstance();
           return {
             'transaksi_do': prefs.getString('seen_state_transaksi_do') ?? '',
@@ -507,7 +515,16 @@ class DashboardScreenState extends State<DashboardScreen> {
                 color: Colors.white,
                 borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
               ),
-              child: const Center(child: CircularProgressIndicator()),
+              child: const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(color: Color(0xFF01579B)),
+                    SizedBox(height: 16),
+                    Text('Memuat notifikasi terbaru...', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
             );
           }
 
@@ -519,6 +536,16 @@ class DashboardScreenState extends State<DashboardScreen> {
           final lastSeenSupirId = int.tryParse(seenStates['supir'] ?? '0') ?? 0;
           final lastSeenPekerjaId = int.tryParse(seenStates['pekerja'] ?? '0') ?? 0;
           final lastSeenJurnalId = int.tryParse(seenStates['jurnal_keuangan'] ?? '0') ?? 0;
+
+          final transactions = txProvider.transactions;
+          final List<TambahSaldoModel> pengajuanRequests = isLeader 
+              ? saldoProvider.requests.where((req) => req.status.toLowerCase() == 'pending').toList() 
+              : [];
+          final latestOperasional = resProvider.operasionals;
+          final penjuals = isLeader ? resProvider.penjuals : <Penjual>[];
+          final supirs = isLeader ? resProvider.supirs : <Supir>[];
+          final pekerjas = isLeader ? resProvider.pekerjas : <Pekerja>[];
+          final jurnalKeuangans = isLeader ? resProvider.jurnalKeuangans : <JurnalKeuangan>[];
 
           final filteredTransactions = transactions.where((t) => t.id > lastSeenDoId).toList();
           final filteredPengajuan = pengajuanRequests.where((p) => p.id > lastSeenSaldoId).toList();
@@ -1094,7 +1121,7 @@ class _NotificationButton extends StatelessWidget {
     return Selector5<AuthProvider, TransaksiDoProvider, TambahSaldoProvider, ResourceProvider, DashboardProvider, Map<String, dynamic>>(
       selector: (_, auth, p1, p2, p3, p4) {
         final role = auth.user?.role?.toLowerCase();
-        final bool isLeader = role == 'admin' || role == 'super_admin';
+        final bool isLeader = role == 'admin' || role == 'super_admin' || role == 'pimpinan';
         
         int total = 0;
         // Transaksi DO & Operasional are visible to both
