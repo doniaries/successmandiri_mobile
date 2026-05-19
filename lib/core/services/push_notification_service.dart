@@ -12,14 +12,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 @pragma('vm:entry-point')
 Future<void> firebaseBackgroundMessageHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  await PushNotificationService._showLocalNotification(message);
+  // Catatan: Jangan panggil _showLocalNotification di background handler jika payload FCM memiliki objek 'notification'.
+  // Firebase SDK secara otomatis menampilkan notifikasi sistem ketika aplikasi berada di background/terminated.
+  // Memanggil _showLocalNotification di sini akan menyebabkan notifikasi ganda (duplicate).
 }
 
 class PushNotificationService {
   static final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
 
-  static const String _channelId = 'transaksi_channel';
+  static const String _channelId = 'transaksi_channel_v2';
   static const String _channelName = 'Notifikasi Transaksi';
   static const String _channelDesc =
       'Notifikasi transaksi DO, saldo, dan operasional';
