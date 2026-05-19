@@ -118,10 +118,13 @@ class DashboardScreenState extends State<DashboardScreen> {
             // 1. Process offline queue
             await SyncService().syncNow();
             
-            // 2. Fetch latest master data from web
+            // 2. Fetch latest user & company details from server
+            await context.read<AuthProvider>().checkAuthStatus();
+            
+            // 3. Fetch latest master data from web
             await resourceProvider.syncMasterData();
             
-            // 3. Fetch latest summary for dashboard
+            // 4. Fetch latest summary for dashboard
             await dashboardProvider.fetchSummary();
             
             if (!mounted) return;
