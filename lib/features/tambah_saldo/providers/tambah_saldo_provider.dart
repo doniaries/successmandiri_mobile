@@ -41,7 +41,7 @@ class TambahSaldoProvider with ChangeNotifier {
       if (_requests.isNotEmpty) {
         final prefs = await SharedPreferences.getInstance();
         final lastSeenId = int.tryParse(prefs.getString('seen_state_tambah_saldo') ?? '0') ?? 0;
-        _unreadCount = _requests.where((r) => (r.id ?? 0) > lastSeenId).length;
+        _unreadCount = _requests.where((r) => r.id > lastSeenId).length;
         _hasNewData = _unreadCount > 0;
       } else {
         _unreadCount = 0;

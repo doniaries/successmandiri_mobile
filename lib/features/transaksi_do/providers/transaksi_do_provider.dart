@@ -81,7 +81,7 @@ class TransaksiDoProvider with ChangeNotifier {
       if (_transactions.isNotEmpty) {
         final prefs = await SharedPreferences.getInstance();
         final lastSeenId = int.tryParse(prefs.getString('seen_state_transaksi_do') ?? '0') ?? 0;
-        _unreadCount = _transactions.where((t) => (t.id ?? 0) > lastSeenId).length;
+        _unreadCount = _transactions.where((t) => t.id > lastSeenId).length;
         _hasNewData = _unreadCount > 0;
       } else {
         _unreadCount = 0;
@@ -132,7 +132,7 @@ class TransaksiDoProvider with ChangeNotifier {
       // Re-evaluate unreadCount after fetching more items
       final prefs = await SharedPreferences.getInstance();
       final lastSeenId = int.tryParse(prefs.getString('seen_state_transaksi_do') ?? '0') ?? 0;
-      _unreadCount = _transactions.where((t) => (t.id ?? 0) > lastSeenId).length;
+      _unreadCount = _transactions.where((t) => t.id > lastSeenId).length;
       _hasNewData = _unreadCount > 0;
 
       _isFetchingMore = false;

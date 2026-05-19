@@ -1091,9 +1091,24 @@ class _NotificationButton extends StatelessWidget {
   const _NotificationButton();
   @override
   Widget build(BuildContext context) {
-    return Selector4<TransaksiDoProvider, TambahSaldoProvider, ResourceProvider, DashboardProvider, Map<String, dynamic>>(
-      selector: (_, p1, p2, p3, p4) {
-        final total = p1.unreadCount + p2.unreadCount + p3.totalUnreadCount;
+    return Selector5<AuthProvider, TransaksiDoProvider, TambahSaldoProvider, ResourceProvider, DashboardProvider, Map<String, dynamic>>(
+      selector: (_, auth, p1, p2, p3, p4) {
+        final role = auth.user?.role?.toLowerCase();
+        final bool isLeader = role == 'admin' || role == 'super_admin';
+        
+        int total = 0;
+        // Transaksi DO & Operasional are visible to both
+        total += p1.unreadCount;
+        total += p3.getUnreadCountFor('operasional');
+        
+        if (isLeader) {
+          // Tambah Saldo and master data are only visible to Leaders
+          total += p2.unreadCount;
+          total += p3.getUnreadCountFor('penjual');
+          total += p3.getUnreadCountFor('supir');
+          total += p3.getUnreadCountFor('pekerja');
+          total += p3.getUnreadCountFor('jurnal_keuangan');
+        }
         return {'total': total};
       },
       builder: (context, data, _) => Stack(

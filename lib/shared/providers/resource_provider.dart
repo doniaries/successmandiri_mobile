@@ -59,6 +59,8 @@ class ResourceProvider with ChangeNotifier {
     return sum;
   }
 
+  int getUnreadCountFor(String type) => _unreadCounts[type] ?? 0;
+
   // Pagination state for each resource
   final Map<String, int> _currentPage = {};
   final Map<String, bool> _hasMore = {};
@@ -408,25 +410,25 @@ class ResourceProvider with ChangeNotifier {
     int count = 0;
     switch (type) {
       case 'penjual':
-        count = _penjuals.where((item) => (item.id ?? 0) > lastSeenId).length;
+        count = _penjuals.where((item) => item.id > lastSeenId).length;
         break;
       case 'supir':
-        count = _supirs.where((item) => (item.id ?? 0) > lastSeenId).length;
+        count = _supirs.where((item) => item.id > lastSeenId).length;
         break;
       case 'pekerja':
-        count = _pekerjas.where((item) => (item.id ?? 0) > lastSeenId).length;
+        count = _pekerjas.where((item) => item.id > lastSeenId).length;
         break;
       case 'kendaraan':
-        count = _kendaraans.where((item) => (item.id ?? 0) > lastSeenId).length;
+        count = _kendaraans.where((item) => item.id > lastSeenId).length;
         break;
       case 'operasional':
-        count = _operasionals.where((item) => (item.id ?? 0) > lastSeenId).length;
+        count = _operasionals.where((item) => item.id > lastSeenId).length;
         break;
       case 'jurnal_keuangan':
-        count = _jurnalKeuangans.where((item) => (item.id ?? 0) > lastSeenId).length;
+        count = _jurnalKeuangans.where((item) => item.id > lastSeenId).length;
         break;
       case 'user':
-        count = _users.where((item) => (item.id ?? 0) > lastSeenId).length;
+        count = _users.where((item) => item.id > lastSeenId).length;
         break;
     }
     
