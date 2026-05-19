@@ -106,6 +106,7 @@ class DashboardScreenState extends State<DashboardScreen> {
           final scaffoldMessenger = ScaffoldMessenger.of(context);
           final dashboardProvider = context.read<DashboardProvider>();
           final resourceProvider = context.read<ResourceProvider>();
+          final authProvider = context.read<AuthProvider>();
           
           scaffoldMessenger.showSnackBar(
             const SnackBar(
@@ -119,7 +120,7 @@ class DashboardScreenState extends State<DashboardScreen> {
             await SyncService().syncNow();
             
             // 2. Fetch latest user & company details from server
-            await context.read<AuthProvider>().checkAuthStatus();
+            await authProvider.checkAuthStatus();
             
             // 3. Fetch latest master data from web
             await resourceProvider.syncMasterData();

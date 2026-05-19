@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:dio/dio.dart';
 import 'package:sawitappmobile/features/penjual/models/penjual_model.dart';
 import 'package:sawitappmobile/features/supir/models/supir_model.dart';
@@ -30,6 +31,7 @@ class ResourceProvider with ChangeNotifier {
   String _appVersion = '1.0.0';
   String _appCreator = 'Don Borland';
   String? _appLogoUrl;
+  String _changelog = 'Riwayat perubahan aplikasi.';
 
   // Track new data for each resource type
   final Map<String, bool> _hasNewData = {
@@ -100,6 +102,7 @@ class ResourceProvider with ChangeNotifier {
   String get appVersion => _appVersion;
   String get appCreator => _appCreator;
   String? get appLogoUrl => _appLogoUrl;
+  String get changelog => _changelog;
 
   bool hasNewDataFor(String type) => _hasNewData[type] ?? false;
 
@@ -111,12 +114,14 @@ class ResourceProvider with ChangeNotifier {
       _appVersion = settings['app_version'] ?? '1.0.0';
       _appCreator = settings['app_creator'] ?? 'Don Borland';
       _appLogoUrl = ApiConstants.normalizeUrl(settings['app_logo_url']);
+      _changelog = settings['changelog'] ?? 'Riwayat perubahan aplikasi.';
     } catch (e) {
       debugPrint('ResourceProvider.fetchAppSettings error: $e');
       // Safely apply fallback values
       _appVersion = '1.0.0';
       _appCreator = 'Don Borland';
       _appLogoUrl = null;
+      _changelog = 'Riwayat perubahan aplikasi.';
     } finally {
       notifyListeners();
     }
@@ -736,15 +741,22 @@ class ResourceProvider with ChangeNotifier {
     return await _repository.getPekerjaDetail(id);
   }
 
-  Future<bool> updateAppSettings(String version, String creator) async {
+  Future<bool> updateAppSettings(String version, String creator, {String? changelog}) async {
     _isLoading = true;
     notifyListeners();
     try {
-      final data = {'app_version': version, 'app_creator': creator};
+      final Map<String, dynamic> data = {
+        'app_version': version, 
+        'app_creator': creator,
+      };
+      if (changelog != null) {
+        data['changelog'] = changelog;
+      }
       final settings = await _repository.updateAppSettings(data);
       _appVersion = settings['app_version'] ?? version;
       _appCreator = settings['app_creator'] ?? creator;
       _appLogoUrl = ApiConstants.normalizeUrl(settings['app_logo_url']);
+      _changelog = settings['changelog'] ?? changelog ?? _changelog;
       return true;
     } catch (e) {
       debugPrint('Error updating app settings: $e');
@@ -905,6 +917,17 @@ class ResourceProvider with ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  @override
+  void notifyListeners() {
+    if (WidgetsBinding.instance.schedulerPhase == SchedulerPhase.persistentCallbacks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        super.notifyListeners();
+      });
+    } else {
+      super.notifyListeners();
     }
   }
 }

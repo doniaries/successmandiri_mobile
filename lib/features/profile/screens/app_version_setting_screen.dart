@@ -15,6 +15,7 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _versionController;
   late TextEditingController _creatorController;
+  late TextEditingController _changelogController;
   bool _isSaving = false;
 
   @override
@@ -23,12 +24,14 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
     final provider = context.read<ResourceProvider>();
     _versionController = TextEditingController(text: provider.appVersion);
     _creatorController = TextEditingController(text: provider.appCreator);
+    _changelogController = TextEditingController(text: provider.changelog);
   }
 
   @override
   void dispose() {
     _versionController.dispose();
     _creatorController.dispose();
+    _changelogController.dispose();
     super.dispose();
   }
 
@@ -44,6 +47,7 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
     final success = await provider.updateAppSettings(
       _versionController.text.trim(),
       _creatorController.text.trim(),
+      changelog: _changelogController.text.trim(),
     );
 
     if (mounted) {
@@ -125,6 +129,18 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
                     v!.isEmpty ? 'Nama pembuat tidak boleh kosong' : null,
                 enabled: !_isSaving,
               ),
+              const SizedBox(height: 20),
+
+              _buildTextField(
+                label: 'Riwayat Update / Changelog',
+                controller: _changelogController,
+                hint: 'Masukkan riwayat perubahan aplikasi...',
+                icon: Icons.history_rounded,
+                maxLines: 4,
+                validator: (v) =>
+                    v!.isEmpty ? 'Changelog tidak boleh kosong' : null,
+                enabled: !_isSaving,
+              ),
 
               const SizedBox(height: 48),
 
@@ -147,6 +163,7 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
     required IconData icon,
     String? Function(String?)? validator,
     bool enabled = true,
+    int maxLines = 1,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,6 +181,7 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
           controller: controller,
           validator: validator,
           enabled: enabled,
+          maxLines: maxLines,
           decoration: InputDecoration(
             hintText: hint,
             prefixIcon: Icon(icon, color: const Color(0xFF01579B)),

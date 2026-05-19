@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sawitappmobile/features/auth/providers/auth_provider.dart';
@@ -13,9 +12,6 @@ import 'package:sawitappmobile/shared/widgets/change_password_dialog.dart';
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sawitappmobile/core/services/push_notification_service.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:dio/dio.dart';
-import 'package:sawitappmobile/core/constants/api_constants.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -344,6 +340,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           'Dibuat oleh ${resProvider.appCreator}',
                           style: TextStyle(color: Colors.grey[400], fontSize: 10),
                         ),
+                        if (resProvider.changelog.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          InkWell(
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  title: const Row(
+                                    children: [
+                                      Icon(Icons.history_rounded, color: Color(0xFF01579B)),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        'Riwayat Update',
+                                        style: TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                  content: SingleChildScrollView(
+                                    child: Text(
+                                      resProvider.changelog,
+                                      style: const TextStyle(fontSize: 14, height: 1.5),
+                                    ),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text(
+                                        'Tutup',
+                                        style: TextStyle(
+                                          color: Color(0xFF01579B),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              'Lihat Riwayat Update',
+                              style: TextStyle(
+                                color: Color(0xFF01579B),
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     );
                   },

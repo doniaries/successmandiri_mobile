@@ -185,11 +185,12 @@ class _SearchableSelectionModalState extends State<SearchableSelectionModal> {
                                 ),
                                 onPressed: () async {
                                   FocusScope.of(context).unfocus();
+                                  final navigator = Navigator.of(context);
                                   final newRecord = await Navigator.push(
                                     context,
                                     MaterialPageRoute(builder: (context) => widget.addNewScreen!),
                                   );
-                                  if (newRecord != null && mounted) {
+                                  if (newRecord != null) {
                                     int? newId;
                                     if (newRecord is Map) {
                                       newId = newRecord['id'] as int?;
@@ -199,7 +200,7 @@ class _SearchableSelectionModalState extends State<SearchableSelectionModal> {
                                       } catch (_) {}
                                     }
                                     if (newId != null) {
-                                      Navigator.pop(context, newId);
+                                      navigator.pop(newId);
                                     }
                                   }
                                 },
