@@ -725,6 +725,12 @@ class DashboardScreenState extends State<DashboardScreen> {
       perusahaanNama = data.perusahaanNama;
     } catch (_) {}
 
+    if (perusahaanNama == null || perusahaanNama.isEmpty) {
+      try {
+        perusahaanNama = context.read<AuthProvider>().user?.perusahaanName;
+      } catch (_) {}
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.grey[100]!)),
