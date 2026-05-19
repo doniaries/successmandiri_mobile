@@ -906,7 +906,7 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
 
                       // Cara Bayar
                       DropdownButtonFormField<String>(
-                        value:
+                        initialValue:
                             _currentCaraBayarOptions.contains(
                               _selectedCaraBayar,
                             )
@@ -982,7 +982,7 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(12),
                                     child: Image.network(
-                                      '${ApiConstants.storageUrl}/${_existingBuktiTransferUrl}',
+                                      '${ApiConstants.storageUrl}/$_existingBuktiTransferUrl',
                                       height: 200,
                                       width: double.infinity,
                                       fit: BoxFit.cover,

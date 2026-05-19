@@ -186,6 +186,8 @@ class TransaksiDoRepository {
     } catch (e) {
       return 'OTOMATIS (SISTEM)';
     }
+  }
+
   Future<dynamic> updateTransaksiDo(
     int id, {
     required String tanggal,
