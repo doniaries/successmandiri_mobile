@@ -29,9 +29,16 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<TransaksiDoProvider>().fetchTransactions();
-      context.read<DashboardProvider>().fetchSummary();
-      context.read<TransaksiDoProvider>().markAsSeen();
+      final txProvider = context.read<TransaksiDoProvider>();
+      final dashboardProvider = context.read<DashboardProvider>();
+
+      if (txProvider.transactions.isEmpty) {
+        txProvider.fetchTransactions();
+      }
+      if (dashboardProvider.summary == null) {
+        dashboardProvider.fetchSummary();
+      }
+      txProvider.markAsSeen();
     });
 
     _scrollController.addListener(() {

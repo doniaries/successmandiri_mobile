@@ -99,29 +99,12 @@ class _AnimatedPulsingLogoState extends State<AnimatedPulsingLogo>
                   blendMode: BlendMode.srcATop,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: appLogo != null && appLogo.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: appLogo,
-                            width: widget.size,
-                            height: widget.size,
-                            fit: BoxFit.contain,
-                            placeholder: (context, url) => Image.asset(
-                              'assets/images/logo.png',
-                              width: widget.size,
-                              height: widget.size,
-                            ),
-                            errorWidget: (context, url, error) => Image.asset(
-                              'assets/images/logo.png',
-                              width: widget.size,
-                              height: widget.size,
-                            ),
-                          )
-                        : Image.asset(
-                            'assets/images/logo.png',
-                            width: widget.size,
-                            height: widget.size,
-                            fit: BoxFit.contain,
-                          ),
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      width: widget.size,
+                      height: widget.size,
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
               ],

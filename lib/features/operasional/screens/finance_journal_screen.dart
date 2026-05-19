@@ -44,7 +44,16 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
           _selectedSingleDate = DateTime.now();
         });
       }
-      _refreshData();
+      
+      final provider = context.read<ResourceProvider>();
+      if (provider.jurnalKeuangans.isEmpty) {
+        _refreshData();
+      } else {
+        final dashboardProvider = context.read<DashboardProvider>();
+        if (dashboardProvider.summary == null) {
+          dashboardProvider.fetchSummary();
+        }
+      }
     });
   }
 

@@ -56,10 +56,14 @@ class DashboardScreenState extends State<DashboardScreen> {
       final dashboardProvider = context.read<DashboardProvider>();
       final resourceProvider = context.read<ResourceProvider>();
       
-      // Sync master data in background
-      resourceProvider.syncMasterData();
+      // Sync master data in background only if local list is empty
+      if (resourceProvider.penjuals.isEmpty) {
+        resourceProvider.syncMasterData();
+      }
       
-      await dashboardProvider.fetchSummary();
+      if (dashboardProvider.summary == null) {
+        await dashboardProvider.fetchSummary();
+      }
 
       if (!mounted) return;
       if (dashboardProvider.summary != null) {

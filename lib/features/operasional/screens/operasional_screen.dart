@@ -40,8 +40,16 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
           _selectedSingleDate = DateTime.now();
         });
       }
-      _refreshData();
-      context.read<DashboardProvider>().fetchSummary();
+      
+      final provider = context.read<ResourceProvider>();
+      if (provider.operasionals.isEmpty) {
+        _refreshData();
+      } else {
+        final dashboardProvider = context.read<DashboardProvider>();
+        if (dashboardProvider.summary == null) {
+          dashboardProvider.fetchSummary();
+        }
+      }
     });
   }
 
