@@ -481,6 +481,9 @@ class DashboardScreenState extends State<DashboardScreen> {
       context: context, backgroundColor: Colors.transparent, isScrollControlled: true,
       builder: (context) => FutureBuilder<Map<String, dynamic>>(
         future: () async {
+          // Yield execution to the next event loop cycle to avoid notifyListeners() during build phase
+          await Future.delayed(Duration.zero);
+          
           // Trigger asynchronous parallel fetching
           final List<Future> fetches = [
             txProvider.fetchTransactions().catchError((e) => null),
