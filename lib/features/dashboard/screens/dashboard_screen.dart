@@ -28,6 +28,10 @@ import 'package:sawitappmobile/features/operasional/screens/operasional_detail_s
 import 'package:sawitappmobile/features/operasional/screens/finance_journal_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/features/operasional/models/operasional_model.dart';
+import 'package:sawitappmobile/features/penjual/models/penjual_model.dart';
+import 'package:sawitappmobile/features/supir/models/supir_model.dart';
+import 'package:sawitappmobile/features/pekerja/models/pekerja_model.dart';
+import 'package:sawitappmobile/features/jurnal_keuangan/models/jurnal_keuangan_model.dart';
 import 'package:sawitappmobile/shared/providers/navigation_provider.dart';
 import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 import 'package:sawitappmobile/shared/widgets/custom_loading_logo.dart';
@@ -1235,10 +1239,11 @@ class _StatCardsState extends State<_StatCards> {
     final subtitleStr = isToday 
         ? 'Hari ini' 
         : (_selectedDate != null 
-            ? DateFormat('dd MMM', 'id_ID').format(_selectedDate!) 
+            ? DateFormat('dd MMM yyyy', 'id_ID').format(_selectedDate!) 
             : 'Tanggal terpilih');
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
@@ -1246,47 +1251,262 @@ class _StatCardsState extends State<_StatCards> {
             _buildPeriodToggle(),
           ],
         ),
-        const SizedBox(height: 8),
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: _StatCard(
-                  label: 'Transaksi DO', 
-                  value: '${stats.transaksi.today.count}', 
-                  icon: Icons.local_shipping_rounded, 
-                  color: const Color(0xFF01579B), 
-                  subtitle: subtitleStr, 
-                  onTap: () => context.read<MainNavigationProvider>().setIndex(1)
-                )
+        const SizedBox(height: 12),
+        // 1. Transaksi DO Card - Elegant Full-Width Horizontal Card
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => context.read<MainNavigationProvider>().setIndex(1),
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFF01579B).withValues(alpha: 0.1), width: 1),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF01579B).withValues(alpha: 0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _StatCard(
-                  label: 'Pemasukan', 
-                  value: CurrencyFormatter.formatCompactRupiah(stats.pemasukan.today.total), 
-                  icon: Icons.trending_up_rounded, 
-                  color: const Color(0xFF2E7D32), 
-                  subtitle: subtitleStr, 
-                  isCurrency: true, 
-                  onTap: () => context.read<MainNavigationProvider>().setIndex(3)
-                )
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF01579B).withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.local_shipping_rounded,
+                      color: Color(0xFF01579B),
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Transaksi DO Sawit',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFF1A1A1A),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitleStr,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[500],
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${stats.transaksi.today.count}',
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF01579B),
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        'DO',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: Colors.grey,
+                        size: 20,
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _StatCard(
-                  label: 'Pengeluaran', 
-                  value: CurrencyFormatter.formatCompactRupiah(stats.pengeluaran.today.total), 
-                  icon: Icons.trending_down_rounded, 
-                  color: const Color(0xFFC62828), 
-                  subtitle: subtitleStr, 
-                  isCurrency: true, 
-                  onTap: () => context.read<MainNavigationProvider>().setIndex(3)
-                )
-              ),
-            ],
+            ),
           ),
+        ),
+        const SizedBox(height: 12),
+        // 2. Pemasukan & Pengeluaran Side-by-Side with Full Rupiah
+        Row(
+          children: [
+            Expanded(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => context.read<MainNavigationProvider>().setIndex(3),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFF2E7D32).withValues(alpha: 0.1), width: 1),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF2E7D32).withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF2E7D32).withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.trending_up_rounded,
+                                color: Color(0xFF2E7D32),
+                                size: 18,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Pemasukan',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF1A1A1A),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            CurrencyFormatter.formatRupiah(stats.pemasukan.today.total),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFF2E7D32),
+                              letterSpacing: -0.5,
+                            ),
+                            maxLines: 1,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          subtitleStr,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey[500],
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => context.read<MainNavigationProvider>().setIndex(3),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFC62828).withValues(alpha: 0.1), width: 1),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFC62828).withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFC62828).withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.trending_down_rounded,
+                                color: Color(0xFFC62828),
+                                size: 18,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Pengeluaran',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF1A1A1A),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            CurrencyFormatter.formatRupiah(stats.pengeluaran.today.total),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFFC62828),
+                              letterSpacing: -0.5,
+                            ),
+                            maxLines: 1,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          subtitleStr,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey[500],
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -1347,101 +1567,7 @@ class _StatCardsState extends State<_StatCards> {
   }
 }
 
-class _StatCard extends StatelessWidget {
-  final String label, value, subtitle;
-  final IconData icon;
-  final Color color;
-  final bool isCurrency;
-  final VoidCallback? onTap;
-  const _StatCard({required this.label, required this.value, required this.icon, required this.color, required this.subtitle, this.isCurrency = false, this.onTap});
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 125),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: color.withValues(alpha: 0.1), width: 1),
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              // Large Background Icon
-              Positioned(
-                right: -12,
-                bottom: -12,
-                child: Icon(
-                  icon,
-                  size: 56,
-                  color: color.withValues(alpha: 0.06),
-                ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(icon, size: 20, color: color),
-                      ),
-                      const SizedBox(height: 12),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          value, 
-                          style: TextStyle(
-                            fontSize: isCurrency ? 20 : 34, 
-                            fontWeight: FontWeight.w900, 
-                            color: color.withValues(alpha: 0.95),
-                            letterSpacing: -0.8,
-                          ), 
-                          maxLines: 1
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    label, 
-                    style: TextStyle(
-                      fontSize: 11, 
-                      color: Colors.grey[700], 
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.2,
-                    ), 
-                    maxLines: 1, 
-                    overflow: TextOverflow.ellipsis
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+
 
 class _MenuGrid extends StatelessWidget {
   const _MenuGrid();
@@ -1529,13 +1655,13 @@ class _SkeletonStats extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Column(
       children: [
-        SkeletonLoader(width: double.infinity, height: 110, borderRadius: 16),
+        SkeletonLoader(width: double.infinity, height: 80, borderRadius: 16),
         SizedBox(height: 12),
         Row(
           children: [
-            Expanded(child: SkeletonLoader(width: double.infinity, height: 75, borderRadius: 14)), SizedBox(width: 8),
-            Expanded(child: SkeletonLoader(width: double.infinity, height: 75, borderRadius: 14)), SizedBox(width: 8),
-            Expanded(child: SkeletonLoader(width: double.infinity, height: 75, borderRadius: 14)),
+            Expanded(child: SkeletonLoader(width: double.infinity, height: 105, borderRadius: 16)),
+            SizedBox(width: 12),
+            Expanded(child: SkeletonLoader(width: double.infinity, height: 105, borderRadius: 16)),
           ],
         ),
       ],

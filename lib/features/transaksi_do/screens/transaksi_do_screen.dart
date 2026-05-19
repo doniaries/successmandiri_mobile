@@ -438,55 +438,10 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildSummaryItemInsideCard(
-                      'Saldo Saat Ini',
-                      CurrencyFormatter.formatRupiah(dashboardProvider.summary?.saldo ?? 0),
-                      Icons.account_balance_wallet_rounded,
-                      Colors.greenAccent,
-                    ),
-                  ),
-                ],
-              ),
             ],
           ),
         );
       },
-    );
-  }
-
-  Widget _buildSummaryItemInsideCard(
-    String label,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 16),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: const TextStyle(color: Colors.white70, fontSize: 12),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-          ),
-        ),
-      ],
     );
   }
 
