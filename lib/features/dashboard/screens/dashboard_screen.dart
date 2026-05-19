@@ -560,6 +560,42 @@ class DashboardScreenState extends State<DashboardScreen> {
           final filteredJurnal = jurnalKeuangans.where((j) => j.id > lastSeenJurnalId).toList();
 
           final allNotifications = [
+            {
+              'type': 'pekerja',
+              'data': Pekerja(
+                id: -999,
+                nama: 'Budi Santoso (DEMO)',
+                telepon: '08123456789',
+                posisi: 'Operator Timbangan',
+                hutang: 0,
+                sisaHutang: 0,
+                perusahaanId: 1,
+                isActive: true,
+              ),
+              'id': 'pekerja_mock_demo',
+              'time': DateTime.now(),
+            },
+            {
+              'type': 'do',
+              'data': TransaksiDo(
+                id: -998,
+                nomor: 'DO/DEMO/2026/0001',
+                tanggal: DateTime.now().subtract(const Duration(minutes: 5)),
+                tonase: 12.5,
+                hargaSatuan: 2400,
+                subTotal: 30000000,
+                upahBongkar: 150000,
+                biayaLain: 50000,
+                sisaBayar: 0,
+                penjualNama: 'CV Berkah Tani (DEMO)',
+                hutangAwal: 0,
+                pembayaranHutang: 0,
+                sisaHutangPenjual: 0,
+                perusahaanNama: 'PT Success Mandiri Utama',
+              ),
+              'id': 'do_mock_demo',
+              'time': DateTime.now().subtract(const Duration(minutes: 5)),
+            },
             ...filteredTransactions.map((t) => {'type': 'do', 'data': t, 'id': 'do_${t.id}', 'time': t.tanggal}),
             ...filteredPengajuan.map((p) => {'type': 'pengajuan', 'data': p, 'id': 'pengajuan_${p.id}', 'time': p.tanggal}),
             ...filteredOperasional.map((o) => {'type': 'operasional', 'data': o, 'id': 'operasional_${o.id}', 'time': o.tanggal}),
