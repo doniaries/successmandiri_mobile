@@ -64,17 +64,20 @@ class AuthRepository {
 
   Future<void> logout() async {
     try {
-      // Hapus FCM token dari backend sebelum logout
       final prefs = await SharedPreferences.getInstance();
       final authToken = prefs.getString('auth_token');
+      
+      // Jalankan penghapusan FCM token dan pencabutan token di backend secara asynchronous (background)
+      // agar proses logout di sisi user langsung instan tanpa menunggu jaringan
       if (authToken != null) {
-        await PushNotificationService.unregisterTokenFromBackend(authToken)
-            .catchError((e) => null);
+        PushNotificationService.unregisterTokenFromBackend(authToken).then((_) {
+          _apiClient.dio.post(ApiConstants.logout).catchError((e) => Response(requestOptions: RequestOptions()));
+        }).catchError((e) => null);
       }
-      await _apiClient.dio.post(ApiConstants.logout);
-    } catch (e) {
-      // Abaikan error saat logout (misal 401) agar tetap bisa membersihkan data lokal
+    } catch (_) {
+      // Abaikan jika terjadi error inisialisasi awal
     } finally {
+      // Bersihkan penyimpanan lokal secara instan
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('auth_token');
       await prefs.remove('cached_user');
