@@ -440,7 +440,30 @@ class DashboardScreenState extends State<DashboardScreen> {
                         ),
                         title: Text(company['name'] ?? 'Tanpa Nama', style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: isSelected ? const Color(0xFF01579B) : Colors.black87)),
                         subtitle: Text('Kasir: ${company['nama_kasir'] ?? 'Kasir Utama'}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                        trailing: isSelected ? const Icon(Icons.check_circle_rounded, color: Color(0xFF01579B)) : null,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: isSelected ? const Color(0xFF01579B).withValues(alpha: 0.1) : Colors.grey[100],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                '${company['transaksi_do_count'] ?? 0} DO',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: isSelected ? const Color(0xFF01579B) : Colors.grey[700],
+                                ),
+                              ),
+                            ),
+                            if (isSelected) ...[
+                              const SizedBox(width: 8),
+                              const Icon(Icons.check_circle_rounded, color: Color(0xFF01579B)),
+                            ],
+                          ],
+                        ),
                         onTap: () async {
                           final dashboardProvider = context.read<DashboardProvider>();
                           final txProvider = context.read<TransaksiDoProvider>();
