@@ -115,8 +115,15 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
     }
   }
 
-  Widget _buildSummaryCards(List<dynamic> items) {
-    final int totalCount = items.length;
+  Widget _buildSummaryCards(ResourceProvider provider, List<dynamic> items) {
+    int totalCount = items.length;
+    if (widget.resourceType == 'penjual') {
+      totalCount = provider.penjualCount;
+    } else if (widget.resourceType == 'supir') {
+      totalCount = provider.supirCount;
+    } else if (widget.resourceType == 'pekerja') {
+      totalCount = provider.pekerjaCount;
+    }
     final double totalHutang = items.fold(0.0, (sum, item) {
       if (item is Penjual) return sum + (item.sisaHutang ?? 0.0);
       if (item is Supir) return sum + (item.sisaHutang ?? 0.0);
@@ -347,7 +354,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
     if (showCards) {
       return Column(
         children: [
-          _buildSummaryCards(items),
+          _buildSummaryCards(provider, items),
           Expanded(child: scrollableList),
         ],
       );
