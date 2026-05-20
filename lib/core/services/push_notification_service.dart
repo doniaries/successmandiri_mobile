@@ -56,8 +56,8 @@ class PushNotificationService {
         'FCM DEBUG: flutter_local_notifications diinisialisasi. Status: $initResult',
       );
 
-      // Getar 1 kali singkat: jeda 0ms, getar 300ms
-      final Int64List vibrationPattern = Int64List.fromList([0, 300]);
+      // Getar 1 kali singkat: jeda 0ms, getar 100ms
+      final Int64List vibrationPattern = Int64List.fromList([0, 100]);
 
       // Buat notification channel dengan suara default dan kepentingan maksimal
       final AndroidNotificationChannel channel = AndroidNotificationChannel(
@@ -171,8 +171,8 @@ class PushNotificationService {
       debugPrint(
         'FCM DEBUG: Mempersiapkan untuk menampilkan local notification...',
       );
-      // Getar 1 kali singkat: jeda 0ms, getar 300ms
-      final Int64List vibrationPattern = Int64List.fromList([0, 300]);
+      // Getar 1 kali singkat: jeda 0ms, getar 100ms
+      final Int64List vibrationPattern = Int64List.fromList([0, 100]);
 
       final AndroidNotificationDetails androidDetails =
           AndroidNotificationDetails(
