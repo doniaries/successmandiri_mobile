@@ -124,12 +124,21 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
     } else if (widget.resourceType == 'pekerja') {
       totalCount = provider.pekerjaCount;
     }
-    final double totalHutang = items.fold(0.0, (sum, item) {
-      if (item is Penjual) return sum + (item.sisaHutang ?? 0.0);
-      if (item is Supir) return sum + (item.sisaHutang ?? 0.0);
-      if (item is Pekerja) return sum + item.sisaHutang;
-      return sum;
-    });
+    double totalHutang = 0.0;
+    if (widget.resourceType == 'penjual') {
+      totalHutang = provider.totalHutangPenjual;
+    } else if (widget.resourceType == 'supir') {
+      totalHutang = provider.totalHutangSupir;
+    } else if (widget.resourceType == 'pekerja') {
+      totalHutang = provider.totalHutangPekerja;
+    } else {
+      totalHutang = items.fold(0.0, (sum, item) {
+        if (item is Penjual) return sum + (item.sisaHutang ?? 0.0);
+        if (item is Supir) return sum + (item.sisaHutang ?? 0.0);
+        if (item is Pekerja) return sum + item.sisaHutang;
+        return sum;
+      });
+    }
 
     String titleLabel = 'Total';
     IconData countIcon = Icons.people_alt_rounded;

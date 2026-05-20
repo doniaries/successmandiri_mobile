@@ -87,6 +87,14 @@ class ResourceProvider with ChangeNotifier {
   double _serverTotalPemasukan = 0;
   double _serverTotalPengeluaran = 0;
 
+  double _totalHutangPenjual = 0.0;
+  double _totalHutangSupir = 0.0;
+  double _totalHutangPekerja = 0.0;
+
+  double get totalHutangPenjual => _totalHutangPenjual;
+  double get totalHutangSupir => _totalHutangSupir;
+  double get totalHutangPekerja => _totalHutangPekerja;
+
   ResourceProvider(this._repository);
 
   bool get isLoading => _isLoading;
@@ -297,6 +305,23 @@ class ResourceProvider with ChangeNotifier {
                 response['summary']['total_pengeluaran']?.toString() ?? '0',
               ) ??
               0;
+
+          double totalHutang =
+              double.tryParse(
+                response['summary']['total_hutang']?.toString() ?? '0.0',
+              ) ??
+              0.0;
+          switch (type) {
+            case 'penjual':
+              _totalHutangPenjual = totalHutang;
+              break;
+            case 'supir':
+              _totalHutangSupir = totalHutang;
+              break;
+            case 'pekerja':
+              _totalHutangPekerja = totalHutang;
+              break;
+          }
         }
       } else if (response is List) {
         rawData = response;
