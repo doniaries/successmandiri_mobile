@@ -32,6 +32,11 @@ class DashboardRepository {
           var summary = DashboardSummary.fromJson(jsonDecode(cachedDataStr));
           final syncService = SyncService();
 
+          double totalOfflinePengeluaran = 0;
+          int countOfflinePengeluaran = 0;
+          double totalOfflinePemasukan = 0;
+          int countOfflinePemasukan = 0;
+
           // 1. Pending Operasional
           final pendingOperasional = await syncService.getMergedOfflineData('operasional', ApiConstants.operasional);
           if (pendingOperasional.isNotEmpty) {
@@ -39,14 +44,15 @@ class DashboardRepository {
              
              double totalOps = 0;
              for (var op in ops) {
-                totalOps += (op.nominal ?? 0).toDouble();
+                totalOps += op.nominal.toDouble();
              }
+             totalOfflinePengeluaran += totalOps;
+             countOfflinePengeluaran += ops.length;
              
              final mergedOps = [...ops, ...summary.latestOperasional];
              if (mergedOps.length > 5) mergedOps.length = 5;
              
              summary = summary.copyWith(
-                saldo: summary.saldo - totalOps,
                 totalOperasional: summary.totalOperasional + ops.length,
                 latestOperasional: mergedOps,
              );
@@ -56,6 +62,14 @@ class DashboardRepository {
           final pendingDo = await syncService.getMergedOfflineData('transaksi_do', ApiConstants.transaksiDo);
           if (pendingDo.isNotEmpty) {
              final dos = pendingDo.map((e) => TransaksiDo.fromJson(e)).toList();
+             
+             for (var d in dos) {
+               if (d.caraBayar == 'tunai') {
+                 totalOfflinePengeluaran += d.sisaBayar ?? 0;
+                 countOfflinePengeluaran++;
+               }
+             }
+
              final mergedDos = [...dos, ...summary.transactions];
              if (mergedDos.length > 10) mergedDos.length = 10;
              
@@ -64,60 +78,53 @@ class DashboardRepository {
              );
           }
           
-          // 3. Pending Jurnal Keuangan (Pemasukan / Pengeluaran)
+          // 3. Pending Jurnal Keuangan (Pemasukan / Pengeluaran / Tambah Saldo)
           final pendingJurnal = await syncService.getMergedOfflineData('jurnal_keuangan', ApiConstants.jurnalKeuangan);
           if (pendingJurnal.isNotEmpty) {
-             double additionalPemasukan = 0;
-             int additionalPemasukanCount = 0;
-             double additionalPengeluaran = 0;
-             int additionalPengeluaranCount = 0;
-             
              for (var j in pendingJurnal) {
                final double nominal = double.tryParse(j['nominal']?.toString() ?? '0') ?? 0;
                if (j['jenis_transaksi'] == 'Pemasukan') {
-                 additionalPemasukan += nominal;
-                 additionalPemasukanCount++;
+                 totalOfflinePemasukan += nominal;
+                 countOfflinePemasukan++;
                } else if (j['jenis_transaksi'] == 'Pengeluaran') {
-                 additionalPengeluaran += nominal;
-                 additionalPengeluaranCount++;
+                 totalOfflinePengeluaran += nominal;
+                 countOfflinePengeluaran++;
                }
              }
-             
-             // Update saldo
-             double newSaldo = summary.saldo + additionalPemasukan - additionalPengeluaran;
-             
-             // Update stats
-             final oldStats = summary.stats;
-             final newStats = DashboardStats(
-               pemasukan: PemasukanStats(
-                 today: StatDetail(
-                   total: oldStats.pemasukan.today.total + additionalPemasukan,
-                   count: oldStats.pemasukan.today.count + additionalPemasukanCount,
-                 ),
-                 month: StatDetail(
-                   total: oldStats.pemasukan.month.total + additionalPemasukan,
-                   count: oldStats.pemasukan.month.count + additionalPemasukanCount,
-                 ),
-               ),
-               pengeluaran: PengeluaranStats(
-                 today: StatDetail(
-                   total: oldStats.pengeluaran.today.total + additionalPengeluaran,
-                   count: oldStats.pengeluaran.today.count + additionalPengeluaranCount,
-                 ),
-                 month: StatDetail(
-                   total: oldStats.pengeluaran.month.total + additionalPengeluaran,
-                   count: oldStats.pengeluaran.month.count + additionalPengeluaranCount,
-                 ),
-               ),
-               transaksi: oldStats.transaksi, // retain other stats
-             );
-             
-             summary = summary.copyWith(
-               saldo: newSaldo,
-               totalJurnalKeuangan: summary.totalJurnalKeuangan + pendingJurnal.length,
-               stats: newStats,
-             );
           }
+
+          // Update saldo dan stats
+          double newSaldo = summary.saldo + totalOfflinePemasukan - totalOfflinePengeluaran;
+          final oldStats = summary.stats;
+          final newStats = DashboardStats(
+            pemasukan: PemasukanStats(
+              today: StatDetail(
+                total: oldStats.pemasukan.today.total + totalOfflinePemasukan,
+                count: oldStats.pemasukan.today.count + countOfflinePemasukan,
+              ),
+              month: StatDetail(
+                total: oldStats.pemasukan.month.total + totalOfflinePemasukan,
+                count: oldStats.pemasukan.month.count + countOfflinePemasukan,
+              ),
+            ),
+            pengeluaran: PengeluaranStats(
+              today: StatDetail(
+                total: oldStats.pengeluaran.today.total + totalOfflinePengeluaran,
+                count: oldStats.pengeluaran.today.count + countOfflinePengeluaran,
+              ),
+              month: StatDetail(
+                total: oldStats.pengeluaran.month.total + totalOfflinePengeluaran,
+                count: oldStats.pengeluaran.month.count + countOfflinePengeluaran,
+              ),
+            ),
+            transaksi: oldStats.transaksi, // retain other stats
+          );
+          
+          summary = summary.copyWith(
+            saldo: newSaldo,
+            totalJurnalKeuangan: summary.totalJurnalKeuangan + pendingJurnal.length,
+            stats: newStats,
+          );
           
           return summary;
         } catch (_) {}

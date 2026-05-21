@@ -183,14 +183,15 @@ class SyncService {
     }
   }
 
-  Future<void> addToQueue(String endpoint, String method, Map<String, dynamic> data) async {
-    await _db.insert('offline_queue', {
+  Future<int> addToQueue(String endpoint, String method, Map<String, dynamic> data) async {
+    final id = await _db.insert('offline_queue', {
       'endpoint': endpoint,
       'method': method,
       'data': jsonEncode(data),
     });
     await updatePendingCount();
     syncNow();
+    return id;
   }
 
   Future<void> syncNow() async {

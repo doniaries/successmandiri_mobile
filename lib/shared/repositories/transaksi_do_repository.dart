@@ -9,6 +9,8 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:developer' as dev;
 import 'dart:convert';
+import 'dart:math';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sawitappmobile/core/services/database_service.dart';
 
@@ -135,7 +137,9 @@ class TransaksiDoRepository {
   Future<dynamic> createTransaksiDo({
     required String tanggal,
     required int penjualId,
+    String? penjualNama,
     int? supirId,
+    String? supirNama,
     String? noPolisi,
     required double tonase,
     required double hargaSatuan,
@@ -153,7 +157,9 @@ class TransaksiDoRepository {
       'tanggal': tanggal,
       'nomor_do': nomorDo,
       'penjual_id': penjualId,
+      'penjual_nama': penjualNama,
       'supir_id': supirId,
+      'supir_nama': supirNama,
       'no_polisi': noPolisi,
       'tonase': tonase,
       'harga_satuan': hargaSatuan,
@@ -242,7 +248,9 @@ class TransaksiDoRepository {
 
       return response.data['data'] ?? 'OTOMATIS (SISTEM)';
     } catch (e) {
-      return 'OTOMATIS (SISTEM)';
+      final dateStr = tanggal != null ? tanggal.replaceAll('-', '') : DateFormat('yyyyMMdd').format(DateTime.now());
+      final randomStr = (1000 + Random().nextInt(9000)).toString();
+      return 'KSSM-PENDING-$dateStr-$randomStr';
     }
   }
 

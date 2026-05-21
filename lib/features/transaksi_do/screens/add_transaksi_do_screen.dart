@@ -409,7 +409,8 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                 );
                                 if (mounted && newPenjual != null) {
                                   await provider.fetchFormData();
-                                  _onPenjualChanged(newPenjual['id'], provider);
+                                  final newId = newPenjual is Map ? newPenjual['id'] : newPenjual.id;
+                                  _onPenjualChanged(newId, provider);
                                 }
                               },
                             ),
@@ -563,14 +564,21 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                   color: Color(0xFF01579B),
                                 ),
                                 onPressed: () async {
-                                  await Navigator.push(
+                                  final newSupir = await Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) =>
                                           const AddSupirScreen(),
                                     ),
                                   );
-                                  if (mounted) provider.fetchFormData();
+                                  if (mounted && newSupir != null) {
+                                    await provider.fetchFormData();
+                                    final newId = newSupir is Map ? newSupir['id'] : newSupir.id;
+                                    setState(() {
+                                      _selectedSupirId = newId;
+                                    });
+                                    _onFieldChanged();
+                                  }
                                 },
                               ),
                             ),
@@ -920,8 +928,18 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
         return;
       }
 
-      final success = await context
-          .read<TransaksiDoProvider>()
+      final provider = context.read<TransaksiDoProvider>();
+      final penjualNama = provider.penjuals.firstWhere(
+        (p) => p['id'] == _selectedPenjualId,
+        orElse: () => {'nama': ''},
+      )['nama'];
+      
+      final supirNama = _penjualSebagaiSupir ? penjualNama : provider.supirs.firstWhere(
+        (s) => s['id'] == _selectedSupirId,
+        orElse: () => {'nama': ''},
+      )['nama'];
+
+      final success = await provider
           .createTransaction(
             tanggal: (() {
               final now = DateTime.now();
@@ -937,7 +955,9 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
             })(),
             nomorDo: _nomorDoController.text,
             penjualId: _selectedPenjualId!,
+            penjualNama: penjualNama,
             supirId: _penjualSebagaiSupir ? null : _selectedSupirId,
+            supirNama: supirNama,
             noPolisi: _noPolisiController.text,
             tonase: CurrencyInputFormatter.parse(_tonaseController.text),
             hargaSatuan: CurrencyInputFormatter.parse(

@@ -184,7 +184,9 @@ class TransaksiDoProvider with ChangeNotifier {
   Future<bool> createTransaction({
     required String tanggal,
     required int penjualId,
+    String? penjualNama,
     int? supirId,
+    String? supirNama,
     String? noPolisi,
     required double tonase,
     required double hargaSatuan,
@@ -205,7 +207,9 @@ class TransaksiDoProvider with ChangeNotifier {
       final result = await _repository.createTransaksiDo(
         tanggal: tanggal,
         penjualId: penjualId,
+        penjualNama: penjualNama,
         supirId: supirId,
+        supirNama: supirNama,
         noPolisi: noPolisi,
         tonase: tonase,
         hargaSatuan: hargaSatuan,

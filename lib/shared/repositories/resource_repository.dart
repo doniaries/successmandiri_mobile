@@ -68,8 +68,9 @@ class ResourceRepository {
     final connectivity = await Connectivity().checkConnectivity();
     final isOffline = connectivity.every((r) => r == ConnectivityResult.none);
     if (isOffline) {
-      await syncService.addToQueue(ApiConstants.penjual, 'POST', data);
-      return {'offline': true};
+      final qId = await syncService.addToQueue(ApiConstants.penjual, 'POST', data);
+      data['id'] = -1 * qId;
+      return data;
     }
     try {
       final response = await _apiClient.dio.post(
@@ -83,8 +84,9 @@ class ResourceRepository {
           (e.response!.statusCode ?? 0) < 500) {
         rethrow; // Validation/client error — jangan queue
       }
-      await syncService.addToQueue(ApiConstants.penjual, 'POST', data);
-      return {'offline': true};
+      final qId = await syncService.addToQueue(ApiConstants.penjual, 'POST', data);
+      data['id'] = -1 * qId;
+      return data;
     }
   }
 
