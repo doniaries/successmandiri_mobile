@@ -45,3 +45,55 @@ flutter pub get
 
 ## 📱 Dokumen Terkait
 - [PROGRESS.md](file:///c:/laragon/www/successmandiri_mobile/PROGRESS.md) - Laporan riwayat implementasi multi-tenancy & autentikasi.
+
+---
+
+## 📋 Checklist Sebelum Build / Debug Flutter
+
+Agar semua perubahan dapat diterapkan pada APK baru atau saat proses debugging berjalan dengan lancar, pastikan Anda melakukan hal-hal berikut:
+
+### 1. Bersihkan Cache Flutter
+Wajib dilakukan setelah perubahan signifikan pada dependencies atau widget struktur.
+```bash
+flutter clean
+```
+
+### 2. Install Ulang Dependencies
+Pastikan semua package ter-install dengan benar setelah melakukan `flutter clean`.
+```bash
+flutter pub get
+```
+
+### 3. Jalankan Code Generation (Opsional)
+Jika ada model yang menggunakan `@JsonSerializable` atau `@freezed`.
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+### 4. Untuk Build APK
+File APK akan berada di: `build/app/outputs/flutter-apk/`
+
+**APK Debug** (ukuran besar, untuk testing internal):
+```bash
+flutter build apk --debug
+```
+
+**APK Release** (ukuran kecil, untuk distribusi):
+```bash
+flutter build apk --release
+```
+
+**APK per ABI** (lebih kecil, pilih sesuai arsitektur CPU device):
+```bash
+flutter build apk --release --split-per-abi
+```
+
+### 5. Pastikan Backend Laravel Siap
+Lakukan ini di folder backend (`successmandiri_laravel`):
+```bash
+php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+```
+
+> **Catatan:** Setelah melakukan `flutter clean` + `flutter pub get`, pastikan melakukan **Hot Restart** (bukan Hot Reload) saat debugging agar semua perubahan pada provider atau state ter-apply dengan benar.
