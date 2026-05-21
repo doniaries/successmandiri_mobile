@@ -8,14 +8,12 @@ import 'package:sawitappmobile/features/kendaraan/models/kendaraan_model.dart';
 import 'package:sawitappmobile/features/operasional/models/operasional_model.dart';
 import 'package:sawitappmobile/features/jurnal_keuangan/models/jurnal_keuangan_model.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
-import 'package:sawitappmobile/core/services/database_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:uuid/uuid.dart';
 
 class ResourceRepository {
   final ApiClient _apiClient;
   final SyncService syncService = SyncService();
-  final DatabaseService _db = DatabaseService();
 
   ResourceRepository(this._apiClient);
 
@@ -40,7 +38,10 @@ class ResourceRepository {
     try {
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
-        final mergedData = await syncService.getMergedOfflineData('penjual', ApiConstants.penjual);
+        final mergedData = await syncService.getMergedOfflineData(
+          'penjual',
+          ApiConstants.penjual,
+        );
         return mergedData.map((e) => Penjual.fromJson(e)).toList();
       }
 
@@ -53,7 +54,10 @@ class ResourceRepository {
       syncService.cacheData('penjual', data);
       return data.map((e) => Penjual.fromJson(e)).toList();
     } catch (e) {
-      final mergedData = await syncService.getMergedOfflineData('penjual', ApiConstants.penjual);
+      final mergedData = await syncService.getMergedOfflineData(
+        'penjual',
+        ApiConstants.penjual,
+      );
       return mergedData.map((e) => Penjual.fromJson(e)).toList();
     }
   }
@@ -66,10 +70,15 @@ class ResourceRepository {
       return {'offline': true};
     }
     try {
-      final response = await _apiClient.dio.post(ApiConstants.penjual, data: data);
+      final response = await _apiClient.dio.post(
+        ApiConstants.penjual,
+        data: data,
+      );
       return Penjual.fromJson(response.data);
     } on DioException catch (e) {
-      if (e.response != null && (e.response!.statusCode ?? 0) >= 400 && (e.response!.statusCode ?? 0) < 500) {
+      if (e.response != null &&
+          (e.response!.statusCode ?? 0) >= 400 &&
+          (e.response!.statusCode ?? 0) < 500) {
         rethrow; // Validation/client error — jangan queue
       }
       await syncService.addToQueue(ApiConstants.penjual, 'POST', data);
@@ -87,7 +96,9 @@ class ResourceRepository {
     try {
       await _apiClient.dio.put(url, data: data);
     } on DioException catch (e) {
-      if (e.response != null && (e.response!.statusCode ?? 0) >= 400 && (e.response!.statusCode ?? 0) < 500) {
+      if (e.response != null &&
+          (e.response!.statusCode ?? 0) >= 400 &&
+          (e.response!.statusCode ?? 0) < 500) {
         rethrow;
       }
       await syncService.addToQueue(url, 'PUT', data);
@@ -111,7 +122,10 @@ class ResourceRepository {
     try {
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
-        final mergedData = await syncService.getMergedOfflineData('supir', ApiConstants.supir);
+        final mergedData = await syncService.getMergedOfflineData(
+          'supir',
+          ApiConstants.supir,
+        );
         return mergedData.map((e) => Supir.fromJson(e)).toList();
       }
 
@@ -124,7 +138,10 @@ class ResourceRepository {
       syncService.cacheData('supir', data);
       return data.map((e) => Supir.fromJson(e)).toList();
     } catch (e) {
-      final mergedData = await syncService.getMergedOfflineData('supir', ApiConstants.supir);
+      final mergedData = await syncService.getMergedOfflineData(
+        'supir',
+        ApiConstants.supir,
+      );
       return mergedData.map((e) => Supir.fromJson(e)).toList();
     }
   }
@@ -137,10 +154,15 @@ class ResourceRepository {
       return {'offline': true};
     }
     try {
-      final response = await _apiClient.dio.post(ApiConstants.supir, data: data);
+      final response = await _apiClient.dio.post(
+        ApiConstants.supir,
+        data: data,
+      );
       return Supir.fromJson(response.data);
     } on DioException catch (e) {
-      if (e.response != null && (e.response!.statusCode ?? 0) >= 400 && (e.response!.statusCode ?? 0) < 500) {
+      if (e.response != null &&
+          (e.response!.statusCode ?? 0) >= 400 &&
+          (e.response!.statusCode ?? 0) < 500) {
         rethrow;
       }
       await syncService.addToQueue(ApiConstants.supir, 'POST', data);
@@ -158,7 +180,9 @@ class ResourceRepository {
     try {
       await _apiClient.dio.put(url, data: data);
     } on DioException catch (e) {
-      if (e.response != null && (e.response!.statusCode ?? 0) >= 400 && (e.response!.statusCode ?? 0) < 500) {
+      if (e.response != null &&
+          (e.response!.statusCode ?? 0) >= 400 &&
+          (e.response!.statusCode ?? 0) < 500) {
         rethrow;
       }
       await syncService.addToQueue(url, 'PUT', data);
@@ -182,7 +206,10 @@ class ResourceRepository {
     try {
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
-        final mergedData = await syncService.getMergedOfflineData('pekerja', ApiConstants.pekerja);
+        final mergedData = await syncService.getMergedOfflineData(
+          'pekerja',
+          ApiConstants.pekerja,
+        );
         return mergedData.map((e) => Pekerja.fromJson(e)).toList();
       }
 
@@ -195,7 +222,10 @@ class ResourceRepository {
       syncService.cacheData('pekerja', data);
       return data.map((e) => Pekerja.fromJson(e)).toList();
     } catch (e) {
-      final mergedData = await syncService.getMergedOfflineData('pekerja', ApiConstants.pekerja);
+      final mergedData = await syncService.getMergedOfflineData(
+        'pekerja',
+        ApiConstants.pekerja,
+      );
       return mergedData.map((e) => Pekerja.fromJson(e)).toList();
     }
   }
@@ -208,10 +238,15 @@ class ResourceRepository {
       return {'offline': true};
     }
     try {
-      final response = await _apiClient.dio.post(ApiConstants.pekerja, data: data);
+      final response = await _apiClient.dio.post(
+        ApiConstants.pekerja,
+        data: data,
+      );
       return Pekerja.fromJson(response.data);
     } on DioException catch (e) {
-      if (e.response != null && (e.response!.statusCode ?? 0) >= 400 && (e.response!.statusCode ?? 0) < 500) {
+      if (e.response != null &&
+          (e.response!.statusCode ?? 0) >= 400 &&
+          (e.response!.statusCode ?? 0) < 500) {
         rethrow;
       }
       await syncService.addToQueue(ApiConstants.pekerja, 'POST', data);
@@ -229,7 +264,9 @@ class ResourceRepository {
     try {
       await _apiClient.dio.put(url, data: data);
     } on DioException catch (e) {
-      if (e.response != null && (e.response!.statusCode ?? 0) >= 400 && (e.response!.statusCode ?? 0) < 500) {
+      if (e.response != null &&
+          (e.response!.statusCode ?? 0) >= 400 &&
+          (e.response!.statusCode ?? 0) < 500) {
         rethrow;
       }
       await syncService.addToQueue(url, 'PUT', data);
@@ -253,7 +290,10 @@ class ResourceRepository {
     try {
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
-        final mergedData = await syncService.getMergedOfflineData('kendaraan', ApiConstants.kendaraan);
+        final mergedData = await syncService.getMergedOfflineData(
+          'kendaraan',
+          ApiConstants.kendaraan,
+        );
         return mergedData.map((e) => Kendaraan.fromJson(e)).toList();
       }
 
@@ -266,7 +306,10 @@ class ResourceRepository {
       syncService.cacheData('kendaraan', data);
       return data.map((e) => Kendaraan.fromJson(e)).toList();
     } catch (e) {
-      final mergedData = await syncService.getMergedOfflineData('kendaraan', ApiConstants.kendaraan);
+      final mergedData = await syncService.getMergedOfflineData(
+        'kendaraan',
+        ApiConstants.kendaraan,
+      );
       return mergedData.map((e) => Kendaraan.fromJson(e)).toList();
     }
   }
@@ -279,10 +322,15 @@ class ResourceRepository {
       return {'offline': true};
     }
     try {
-      final response = await _apiClient.dio.post(ApiConstants.kendaraan, data: data);
+      final response = await _apiClient.dio.post(
+        ApiConstants.kendaraan,
+        data: data,
+      );
       return Kendaraan.fromJson(response.data);
     } on DioException catch (e) {
-      if (e.response != null && (e.response!.statusCode ?? 0) >= 400 && (e.response!.statusCode ?? 0) < 500) {
+      if (e.response != null &&
+          (e.response!.statusCode ?? 0) >= 400 &&
+          (e.response!.statusCode ?? 0) < 500) {
         rethrow;
       }
       await syncService.addToQueue(ApiConstants.kendaraan, 'POST', data);
@@ -383,10 +431,15 @@ class ResourceRepository {
       return {'offline': true};
     }
     try {
-      final response = await _apiClient.dio.post(ApiConstants.operasional, data: data);
+      final response = await _apiClient.dio.post(
+        ApiConstants.operasional,
+        data: data,
+      );
       return Operasional.fromJson(response.data);
     } on DioException catch (e) {
-      if (e.response != null && (e.response!.statusCode ?? 0) >= 400 && (e.response!.statusCode ?? 0) < 500) {
+      if (e.response != null &&
+          (e.response!.statusCode ?? 0) >= 400 &&
+          (e.response!.statusCode ?? 0) < 500) {
         rethrow;
       }
       await syncService.addToQueue(ApiConstants.operasional, 'POST', data);

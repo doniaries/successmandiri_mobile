@@ -47,6 +47,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
   final ScrollController _scrollController = ScrollController();
   final ScrollController _activeScrollController = ScrollController();
   final ScrollController _inactiveScrollController = ScrollController();
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -280,9 +281,6 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
       return _buildSkeletons();
     }
 
-    final bool showCards = widget.resourceType == 'penjual' ||
-        widget.resourceType == 'supir' ||
-        widget.resourceType == 'pekerja';
 
     Widget listBody = items.isEmpty
         ? Stack(
@@ -345,15 +343,6 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
       child: listBody,
     );
 
-    if (showCards) {
-      return Column(
-        children: [
-          _buildSummaryCards(provider, items),
-          Expanded(child: scrollableList),
-        ],
-      );
-    }
-
     return scrollableList;
   }
 
@@ -398,6 +387,25 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
       body: Column(
         children: [
           const ActiveCompanyHeader(),
+          if (hasTabs || widget.resourceType == 'kendaraan' || widget.resourceType == 'user')
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: 'Cari...',
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    _searchQuery = value;
+                  });
+                },
+              ),
+            ),
           Expanded(
             child: Consumer<ResourceProvider>(
               builder: (context, provider, child) {
@@ -447,6 +455,22 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                   }
                 }
 
+                if (_searchQuery.isNotEmpty) {
+                  final query = _searchQuery.toLowerCase();
+                  items = items.where((i) {
+                    if (i is Penjual) return i.nama.toLowerCase().contains(query);
+                    if (i is Supir) return i.nama.toLowerCase().contains(query);
+                    if (i is Pekerja) return i.nama.toLowerCase().contains(query);
+                    if (i is Kendaraan) {
+                      final nopol = i.nopol.toLowerCase();
+                      final jenis = (i.jenis ?? '').toLowerCase();
+                      return nopol.contains(query) || jenis.contains(query);
+                    }
+                    if (i is User) return i.name.toLowerCase().contains(query);
+                    return true;
+                  }).toList();
+                }
+
                 if (hasTabs) {
                   final activeItems = items.where((i) {
                     if (i is Penjual) return i.isActive;
@@ -462,10 +486,17 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                     return false;
                   }).toList();
 
-                  return TabBarView(
+                  return Column(
                     children: [
-                      _buildListContent(provider, activeItems, _activeScrollController),
-                      _buildListContent(provider, inactiveItems, _inactiveScrollController),
+                      _buildSummaryCards(provider, items),
+                      Expanded(
+                        child: TabBarView(
+                          children: [
+                            _buildListContent(provider, activeItems, _activeScrollController),
+                            _buildListContent(provider, inactiveItems, _inactiveScrollController),
+                          ],
+                        ),
+                      ),
                     ],
                   );
                 }

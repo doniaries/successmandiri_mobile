@@ -263,7 +263,7 @@ class SyncService {
     List<Map<String, dynamic>> mappedList = [];
     
     for (var item in list) {
-      if (item is Map<String, dynamic>) {
+      if (item is Map) {
         try {
           Map<String, dynamic> mappedData = {};
           
@@ -274,6 +274,7 @@ class SyncService {
               'telepon': item['telepon'],
               'alamat': item['alamat'],
               'sisa_hutang': double.tryParse(item['sisa_hutang']?.toString() ?? '0'),
+              'is_active': (item['is_active'] == true || item['is_active'] == 1 || item['is_active'] == '1') ? 1 : 0,
             };
           } else if (table == 'supir') {
             mappedData = {
@@ -282,6 +283,7 @@ class SyncService {
               'telepon': item['telepon'],
               'sim': item['sim'],
               'sisa_hutang': double.tryParse(item['sisa_hutang']?.toString() ?? '0'),
+              'is_active': (item['is_active'] == true || item['is_active'] == 1 || item['is_active'] == '1') ? 1 : 0,
             };
           } else if (table == 'pekerja') {
             mappedData = {
@@ -290,6 +292,7 @@ class SyncService {
               'telepon': item['telepon'],
               'sisa_hutang': double.tryParse(item['sisa_hutang']?.toString() ?? '0'),
               'perusahaan_id': item['perusahaan_id'],
+              'is_active': (item['is_active'] == true || item['is_active'] == 1 || item['is_active'] == '1') ? 1 : 0,
             };
           } else if (table == 'kendaraan') {
             mappedData = {

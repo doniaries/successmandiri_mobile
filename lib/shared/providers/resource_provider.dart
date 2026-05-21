@@ -164,8 +164,6 @@ class ResourceProvider with ChangeNotifier {
   }
 
   Future<void> syncMasterData() async {
-    final isLeader = await _isUserLeader();
-    if (!isLeader) return;
     await _repository.syncService.performFullSync(_repository);
     notifyListeners();
   }
@@ -487,17 +485,16 @@ class ResourceProvider with ChangeNotifier {
 
   Future<void> fetchAllResources() async {
     // Sequential fetching to prevent local dev server request queuing timeout
+    syncMasterData();
+    await fetchResources('penjual', refresh: true);
+    await fetchResources('supir', refresh: true);
+    await fetchResources('pekerja', refresh: true);
+    await fetchResources('kendaraan', refresh: true);
+    await fetchResources('operasional', refresh: true);
+
     final isLeader = await _isUserLeader();
     if (isLeader) {
-      syncMasterData();
-      await fetchResources('penjual', refresh: true);
-      await fetchResources('supir', refresh: true);
-      await fetchResources('pekerja', refresh: true);
-      await fetchResources('kendaraan', refresh: true);
-      await fetchResources('operasional', refresh: true);
       await fetchResources('jurnal_keuangan', refresh: true);
-    } else {
-      await fetchResources('operasional', refresh: true);
     }
   }
 

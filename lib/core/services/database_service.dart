@@ -20,7 +20,20 @@ class DatabaseService {
 
   Future<Database> _initDatabase() async {
     String path = join(await getDatabasesPath(), 'successmandiri.db');
-    return await openDatabase(path, version: 1, onCreate: _onCreate);
+    return await openDatabase(
+      path, 
+      version: 2, 
+      onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
+    );
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('ALTER TABLE penjual ADD COLUMN is_active INTEGER DEFAULT 1');
+      await db.execute('ALTER TABLE supir ADD COLUMN is_active INTEGER DEFAULT 1');
+      await db.execute('ALTER TABLE pekerja ADD COLUMN is_active INTEGER DEFAULT 1');
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -34,13 +47,13 @@ class DatabaseService {
       )
     ''');
     await db.execute('''
-      CREATE TABLE penjual (id INTEGER PRIMARY KEY, nama TEXT, telepon TEXT, alamat TEXT, sisa_hutang REAL DEFAULT 0)
+      CREATE TABLE penjual (id INTEGER PRIMARY KEY, nama TEXT, telepon TEXT, alamat TEXT, sisa_hutang REAL DEFAULT 0, is_active INTEGER DEFAULT 1)
     ''');
     await db.execute('''
-      CREATE TABLE supir (id INTEGER PRIMARY KEY, nama TEXT, telepon TEXT, sim TEXT, sisa_hutang REAL DEFAULT 0)
+      CREATE TABLE supir (id INTEGER PRIMARY KEY, nama TEXT, telepon TEXT, sim TEXT, sisa_hutang REAL DEFAULT 0, is_active INTEGER DEFAULT 1)
     ''');
     await db.execute('''
-      CREATE TABLE pekerja (id INTEGER PRIMARY KEY, nama TEXT, telepon TEXT, sisa_hutang REAL DEFAULT 0, perusahaan_id INTEGER)
+      CREATE TABLE pekerja (id INTEGER PRIMARY KEY, nama TEXT, telepon TEXT, sisa_hutang REAL DEFAULT 0, perusahaan_id INTEGER, is_active INTEGER DEFAULT 1)
     ''');
     await db.execute('''
       CREATE TABLE kendaraan (id INTEGER PRIMARY KEY, no_polisi TEXT, merk TEXT, tipe TEXT)
@@ -81,6 +94,19 @@ class DatabaseService {
     if (kIsWeb) return;
     final db = await database;
     await db!.delete(table);
+  }
+
+  Future<void> clearAllTables() async {
+    if (kIsWeb) return;
+    final db = await database;
+    await db!.delete('penjual');
+    await db.delete('supir');
+    await db.delete('pekerja');
+    await db.delete('kendaraan');
+    await db.delete('transaksi_do');
+    await db.delete('users');
+    await db.delete('perusahaans');
+    // We intentionally keep offline_queue
   }
 
   Future<void> batchInsert(String table, List<Map<String, dynamic>> list) async {

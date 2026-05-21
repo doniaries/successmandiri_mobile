@@ -6,6 +6,7 @@ import 'package:sawitappmobile/features/auth/models/user_model.dart';
 import 'package:sawitappmobile/shared/repositories/auth_repository.dart';
 import 'package:sawitappmobile/core/services/push_notification_service.dart';
 
+import 'package:sawitappmobile/core/services/database_service.dart';
 class AuthProvider with ChangeNotifier {
   final AuthRepository _authRepository;
   User? _user;
@@ -93,6 +94,10 @@ class AuthProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('cached_user');
     _user = null;
+    
+    // Clear local data to prevent leak between accounts/companies
+    await DatabaseService().clearAllTables();
+    
     // SessionService().stop(); // REMOVED: Session restriction
     notifyListeners();
   }
@@ -154,6 +159,9 @@ class AuthProvider with ChangeNotifier {
         _user = freshUser;
         await _authRepository.saveUser(freshUser);
       }
+      
+      // Clear local data to ensure next sync pulls the new company's data
+      await DatabaseService().clearAllTables();
       
       _isLoading = false;
       _isSwitchingCompany = false;
