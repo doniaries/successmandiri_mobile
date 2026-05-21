@@ -6,7 +6,6 @@ import 'package:sawitappmobile/features/auth/providers/auth_provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/shared/widgets/custom_loading_logo.dart';
 import 'package:sawitappmobile/features/auth/screens/login_screen.dart';
-import 'package:sawitappmobile/features/profile/screens/role_menu_settings_screen.dart';
 import 'package:sawitappmobile/features/profile/screens/app_version_setting_screen.dart';
 import 'package:sawitappmobile/features/profile/screens/company_settings_screen.dart';
 import 'package:sawitappmobile/shared/widgets/change_password_dialog.dart';
@@ -308,25 +307,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       MaterialPageRoute(builder: (context) => const AppVersionSettingScreen())
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Manajemen Menu per Role',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  _buildRoleMenuTile(
-                    'Admin', 
-                    'Semua Fitur, Kelola User, Transaksi, Laporan',
-                    onTap: () => _openRoleSettings(context, 'admin'),
-                  ),
-                  _buildRoleMenuTile(
-                    'Kasir', 
-                    'Transaksi DO, Penjual, Supir, Jurnal (Internal)',
-                    onTap: () => _openRoleSettings(context, 'kasir'),
-                  ),
+
 
                 ],
                 
@@ -425,20 +406,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _openRoleSettings(BuildContext context, String roleSlug) {
-    String roleName = roleSlug == 'admin' ? 'Administrator' : 'Kasir';
-
-                     
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => RoleMenuSettingsScreen(
-          roleName: roleName,
-          roleSlug: roleSlug,
-        ),
-      ),
-    );
-  }
 
   String _formatRole(String? role) {
     if (role == null) return '-';

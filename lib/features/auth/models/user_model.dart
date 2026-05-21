@@ -13,6 +13,7 @@ class User {
   final String? photoUrl;
   final String? perusahaanLogoUrl;
   final List<String> roles;
+  final List<String> permissions;
   final List<UserCompany> perusahaans;
 
   User({
@@ -27,10 +28,13 @@ class User {
     this.photoUrl,
     this.perusahaanLogoUrl,
     this.roles = const [],
+    this.permissions = const [],
     this.perusahaans = const [],
   });
 
   String? get role => roles.isNotEmpty ? roles.first : null;
+
+  bool can(String permissionName) => permissions.contains(permissionName);
 
   bool get isSuperAdmin => roles.any((r) {
     final lower = r.toLowerCase();
@@ -65,6 +69,7 @@ class User {
       photoUrl: _parsePhotoUrl(json),
       perusahaanLogoUrl: ApiConstants.normalizeUrl(json['perusahaan_logo_url']),
       roles: _parseRoles(json),
+      permissions: _parsePermissions(json),
       perusahaans: (json['perusahaans'] is List)
           ? (json['perusahaans'] as List)
               .map((p) => UserCompany.fromJson(p as Map<String, dynamic>))
@@ -79,6 +84,15 @@ class User {
            json['profile_photo_url'] ?? 
            json['photo'] ?? 
            json['avatar'];
+  }
+
+  static List<String> _parsePermissions(Map<String, dynamic> json) {
+    final data = json['permissions'];
+    if (data == null) return [];
+    if (data is List) {
+      return data.map((p) => p.toString()).toList();
+    }
+    return [];
   }
 
   static List<String> _parseRoles(Map<String, dynamic> json) {
@@ -123,6 +137,7 @@ class User {
       'photo_url': photoUrl,
       'perusahaan_logo_url': perusahaanLogoUrl,
       'roles': roles,
+      'permissions': permissions,
       'perusahaans': perusahaans.map((p) => p.toJson()).toList(),
     };
   }
