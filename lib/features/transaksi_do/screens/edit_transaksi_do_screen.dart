@@ -356,11 +356,6 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<TransaksiDoProvider>(context);
-    final currencyFormat = NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: 'Rp ',
-      decimalDigits: 0,
-    );
 
     return AppLoadingOverlay(
       isLoading: provider.isSaving,
