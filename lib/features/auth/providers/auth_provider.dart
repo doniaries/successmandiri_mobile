@@ -100,6 +100,8 @@ class AuthProvider with ChangeNotifier {
             "name": "Taufik",
             "email": "taufik@gmail.com",
             "perusahaan_id": 3,
+            "perusahaan_name": "Koperasi Sijunjung Success Mandiri",
+            "perusahaan_kasir": "Kasir Utama",
             "roles": ["admin"],
             "is_active": true
           }''';
@@ -112,6 +114,13 @@ class AuthProvider with ChangeNotifier {
             '7|e6q5r9GBGT6J24IpupNCJcBu6CpADLt75OkM50Zue4745edc',
           );
           await _authRepository.saveUser(_user!);
+          if (isRememberMe) {
+            await _authRepository.saveRememberMe(email, password);
+          } else {
+            await _authRepository.clearRememberMe();
+          }
+          await _authRepository.saveLastEmail(email);
+
           _isLoading = false;
           notifyListeners();
           return true;
@@ -197,6 +206,8 @@ class AuthProvider with ChangeNotifier {
             .catchError((e) {
               debugPrint('Silent refresh failed: $e. Using cached user.');
             });
+      } else {
+        _user = null;
       }
     } catch (e) {
       debugPrint('CheckAuthStatus Error: $e');

@@ -7,6 +7,7 @@ import 'package:sawitappmobile/features/auth/screens/login_screen.dart';
 
 class ApiClient {
   late Dio _dio;
+  static bool _isRedirecting = false;
 
   ApiClient() {
     _dio = Dio(BaseOptions(
@@ -36,7 +37,8 @@ class ApiClient {
           final prefs = await SharedPreferences.getInstance();
           final currentToken = prefs.getString('auth_token');
           
-          if (currentToken != null) {
+          if (currentToken != null && !_isRedirecting) {
+            _isRedirecting = true;
             await prefs.remove('auth_token');
             await prefs.remove('cached_user');
             
@@ -44,7 +46,9 @@ class ApiClient {
             NavigationService.navigatorKey.currentState?.pushAndRemoveUntil(
               MaterialPageRoute(builder: (context) => const LoginScreen()),
               (route) => false,
-            );
+            ).then((_) {
+              _isRedirecting = false;
+            });
           }
         }
         return handler.next(e);

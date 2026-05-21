@@ -28,7 +28,7 @@ class TambahSaldoRepository {
       final isOffline = connectivity.every((r) => r == ConnectivityResult.none);
 
       if (!isOffline) {
-        final response = await _apiClient.dio.get(ApiConstants.tambahSaldo);
+        final response = await _apiClient.dio.get(ApiConstants.tambahSaldo).timeout(const Duration(seconds: 15));
         final List<dynamic> data = _extractListData(response.data);
         models = data.map((json) => TambahSaldoModel.fromJson(json)).toList();
       }

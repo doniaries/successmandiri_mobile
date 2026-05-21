@@ -673,7 +673,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (!context.mounted) return;
       await authProvider.logout();
       if (context.mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
+        Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const LoginScreen()),
           (route) => false,
         );

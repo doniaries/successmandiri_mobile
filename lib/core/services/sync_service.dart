@@ -203,7 +203,7 @@ class SyncService {
     final List<String> syncedEndpoints = [];
 
     try {
-      for (var item in queue) {
+      final syncTasks = queue.map((item) async {
         final id = item['id'] as int;
         final endpoint = item['endpoint'] as String;
         final method = item['method'] as String;
@@ -218,11 +218,19 @@ class SyncService {
             await _apiClient.dio.delete(endpoint);
           }
           await _db.deleteQueue(id);
-          successCount++;
-          syncedEndpoints.add(_getProcessName(endpoint)); // ← catat endpoint yang sukses
+          return _getProcessName(endpoint); // sukses
         } catch (e) {
-          dev.log('Sync failed for item ${item['id']}: $e');
-          continue;
+          dev.log('Sync failed for item $id: $e');
+          return null; // gagal
+        }
+      });
+
+      final results = await Future.wait(syncTasks);
+      
+      for (var res in results) {
+        if (res != null) {
+          successCount++;
+          syncedEndpoints.add(res);
         }
       }
 
@@ -362,20 +370,11 @@ class SyncService {
     if (connectivity.contains(ConnectivityResult.none)) return;
 
     try {
-      // Sync Penjual
-      await repository.getPenjuals();
-      // getPenjuals already calls cacheData, but we can be explicit if needed
+      // Sesuai permintaan: Hanya sinkronkan data yang dibutuhkan di awal (Dashboard, DO, Laporan)
+      // Master data (Supir, Penjual, Pekerja, Kendaraan) akan dimuat per halaman saat dibutuhkan.
       
-      // Sync Supir
-      await repository.getSupirs();
-      
-      // Sync Pekerja
-      await repository.getPekerjas();
-      
-      // Sync Kendaraan
-      await repository.getKendaraans();
+      // Sync Users (Karyawan) - Biasanya datanya kecil dan sering dibutuhkan
 
-      // Sync Users (Karyawan)
       try {
         final response = await _apiClient.dio.get('/users');
         if (response.data != null) {

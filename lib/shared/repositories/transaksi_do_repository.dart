@@ -84,7 +84,7 @@ class TransaksiDoRepository {
       final response = await _apiClient.dio.get(
         ApiConstants.transaksiDo,
         queryParameters: queryParams,
-      );
+      ).timeout(const Duration(seconds: 15));
 
       return response.data;
     } catch (e) {
@@ -173,7 +173,7 @@ class TransaksiDoRepository {
         final response = await _apiClient.dio.post(
           ApiConstants.transaksiDo,
           data: formData,
-        );
+        ).timeout(const Duration(seconds: 15));
         return response.data;
       } else {
         // Jika tidak ada file, kirim sebagai JSON biasa (Map)
@@ -181,7 +181,7 @@ class TransaksiDoRepository {
         final response = await _apiClient.dio.post(
           ApiConstants.transaksiDo,
           data: postData,
-        );
+        ).timeout(const Duration(seconds: 15));
         return response.data;
       }
     } on DioException catch (e) {
@@ -199,6 +199,11 @@ class TransaksiDoRepository {
       await _syncService.addToQueue(ApiConstants.transaksiDo, 'POST', data);
       return {'offline': true, 'client_uuid': clientUuid};
     } catch (e) {
+      if (e.toString().contains('TimeoutException')) {
+        dev.log('Timeout creating TransaksiDo, queueing offline...');
+        await _syncService.addToQueue(ApiConstants.transaksiDo, 'POST', data);
+        return {'offline': true, 'client_uuid': clientUuid};
+      }
       dev.log('Unexpected Error creating TransaksiDo: $e');
       rethrow;
     }

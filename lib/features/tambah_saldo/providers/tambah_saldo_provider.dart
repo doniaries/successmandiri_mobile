@@ -35,7 +35,7 @@ class TambahSaldoProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _requests = await _repository.getTambahSaldo().timeout(const Duration(seconds: 15));
+      _requests = await _repository.getTambahSaldo();
       _isLoading = false;
       
       if (_requests.isNotEmpty) {

@@ -1367,7 +1367,7 @@ class DashboardScreenState extends State<DashboardScreen> {
     if (confirmed == true && context.mounted) {
       await authProvider.logout();
       if (!context.mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
+      Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const LoginScreen()),
         (route) => false,
       );

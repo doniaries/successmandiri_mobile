@@ -194,15 +194,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'fab_transaksi_do',
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const AddTransaksiDoScreen()),
-        ),
-        backgroundColor: const Color(0xFF0D47A1),
-        child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
-      ),
+
     );
   }
 

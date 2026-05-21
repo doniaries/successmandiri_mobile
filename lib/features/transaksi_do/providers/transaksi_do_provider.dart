@@ -63,8 +63,7 @@ class TransaksiDoProvider with ChangeNotifier {
 
     try {
       final dynamic response = await _repository
-          .getTransaksiDo(tanggal: tanggal, page: _currentPage)
-          .timeout(const Duration(seconds: 15));
+          .getTransaksiDo(tanggal: tanggal, page: _currentPage);
       
       List<dynamic> rawData = [];
       if (response is Map) {
@@ -113,8 +112,7 @@ class TransaksiDoProvider with ChangeNotifier {
     try {
       _currentPage++;
       final dynamic response = await _repository
-          .getTransaksiDo(tanggal: tanggal, page: _currentPage)
-          .timeout(const Duration(seconds: 15));
+          .getTransaksiDo(tanggal: tanggal, page: _currentPage);
       
       List<dynamic> rawData = [];
       if (response is Map) {
