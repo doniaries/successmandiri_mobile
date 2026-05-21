@@ -292,6 +292,7 @@ class SyncService {
       }
     }
 
+    await _db.clearTable(table);
     if (mappedList.isNotEmpty) {
       await _db.batchInsert(table, mappedList);
     }
