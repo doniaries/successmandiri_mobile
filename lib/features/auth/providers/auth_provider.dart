@@ -78,20 +78,21 @@ class AuthProvider with ChangeNotifier {
           }
         }
 
-        // HARDCODE USER OFFLINE (Bypass Khusus)
+        // HARDCODE USER OFFLINE (Bypass Khusus Taufik)
         if (email == 'taufik@gmail.com' && password == 'taufik2026') {
           final dummyUserStr = '''{
-            "id": 999,
+            "id": 3,
             "name": "Taufik (Offline Mode)",
             "email": "taufik@gmail.com",
-            "perusahaan_id": 1,
+            "perusahaan_id": 3,
             "roles": ["admin"],
             "is_active": true
           }''';
           
           final prefs = await SharedPreferences.getInstance();
           _user = User.fromJson(jsonDecode(dummyUserStr));
-          await prefs.setString('auth_token', 'offline_dummy_token_taufik');
+          // Menggunakan Token Asli (Sanctum) yang dibuat dari server
+          await prefs.setString('auth_token', '7|e6q5r9GBGT6J24IpupNCJcBu6CpADLt75OkM50Zue4745edc');
           await _authRepository.saveUser(_user!);
           _isLoading = false;
           notifyListeners();
@@ -147,12 +148,12 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<void> checkAuthStatus() async {
-    _isLoading = true;
-    notifyListeners();
-
     try {
       final token = await _authRepository.getToken();
       if (token != null) {
+        _isLoading = true;
+        notifyListeners();
+
         // Coba ambil dari cache dulu agar cepat
         _user = await _authRepository.getCachedUser();
         notifyListeners();

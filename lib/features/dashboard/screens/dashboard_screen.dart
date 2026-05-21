@@ -141,6 +141,7 @@ class DashboardScreenState extends State<DashboardScreen> {
               );
             }
 
+            if (!mounted) return;
             scaffoldMessenger.showSnackBar(
               const SnackBar(
                 content: Text('Sinkronisasi Data Selesai'),
@@ -1355,11 +1356,6 @@ class DashboardScreenState extends State<DashboardScreen> {
     );
 
     if (confirmed == true && context.mounted) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(child: AnimatedPulsingLogo()),
-      );
       await authProvider.logout();
       if (!context.mounted) return;
       Navigator.of(context).pushAndRemoveUntil(

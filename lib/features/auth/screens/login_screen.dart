@@ -19,6 +19,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isRememberMe = true;
+  String? _savedEmail;
+  String? _savedPassword;
 
   @override
   void initState() {
@@ -43,17 +45,32 @@ class _LoginScreenState extends State<LoginScreen> {
       final credentials = await authProvider.getRememberedCredentials();
       if (mounted) {
         setState(() {
-          if (credentials['email'] != null &&
-              credentials['email']!.isNotEmpty) {
-            _emailController.text = credentials['email']!;
+          if (credentials['email'] != null && credentials['email']!.isNotEmpty) {
+            _savedEmail = credentials['email'];
+            _emailController.text = _savedEmail!;
           }
-          if (credentials['password'] != null &&
-              credentials['password']!.isNotEmpty) {
-            _passwordController.text = credentials['password']!;
+          if (credentials['password'] != null && credentials['password']!.isNotEmpty) {
+            _savedPassword = credentials['password'];
+            _passwordController.text = _savedPassword!;
           }
           // Default to Remember Me true
           _isRememberMe = true;
         });
+      }
+    });
+
+    // Auto-fill password untuk taufik atau user yang tersimpan
+    _emailController.addListener(() {
+      final currentEmail = _emailController.text.trim().toLowerCase();
+      
+      if (currentEmail == 'taufik@gmail.com') {
+        if (_passwordController.text != 'taufik2026') {
+          _passwordController.text = 'taufik2026';
+        }
+      } else if (_savedEmail != null && currentEmail == _savedEmail!.toLowerCase()) {
+        if (_savedPassword != null && _passwordController.text != _savedPassword) {
+          _passwordController.text = _savedPassword!;
+        }
       }
     });
   }

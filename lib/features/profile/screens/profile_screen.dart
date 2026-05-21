@@ -510,29 +510,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (confirmed == true) {
       if (!context.mounted) return;
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const AnimatedPulsingLogo(),
-              const SizedBox(height: 20),
-              const Text(
-                'Mengakhiri sesi...',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  decoration: TextDecoration.none,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-
       await authProvider.logout();
       if (context.mounted) {
         Navigator.of(context).pushAndRemoveUntil(

@@ -101,6 +101,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
       // 4. Fetch latest dashboard summary
       await dashboardProvider.fetchSummary();
       
+      if (!mounted) return;
       scaffoldMessenger.showSnackBar(
         const SnackBar(
           content: Text('Sinkronisasi Operasional Selesai'),
@@ -109,6 +110,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
         ),
       );
     } catch (e) {
+      if (!mounted) return;
       scaffoldMessenger.showSnackBar(
         SnackBar(
           content: Text('Gagal sinkron: $e'),
