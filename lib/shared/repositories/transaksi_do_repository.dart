@@ -8,6 +8,8 @@ import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:developer' as dev;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sawitappmobile/core/services/database_service.dart';
 
 class TransaksiDoRepository {
@@ -86,17 +88,36 @@ class TransaksiDoRepository {
         queryParameters: queryParams,
       ).timeout(const Duration(seconds: 15));
 
+      // Cache halaman pertama (atau semua jika tidak ada filter) untuk mode offline
+      if (page == 1 && tanggal == null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('cache_transaksi_do', jsonEncode(response.data));
+      }
+
       return response.data;
     } catch (e) {
       try {
-        final db = DatabaseService();
-        final localData = await db.query('transaksi_do');
-        return {
-          'data': localData.isNotEmpty ? localData : [],
-          'current_page': 1,
-          'last_page': 1,
-          'total': localData.length
-        };
+        final prefs = await SharedPreferences.getInstance();
+        final cachedDataStr = prefs.getString('cache_transaksi_do');
+        if (cachedDataStr != null) {
+          final cachedData = jsonDecode(cachedDataStr);
+          
+          // Gabungkan dengan data antrean offline (POST)
+          final pendingData = await _syncService.getMergedOfflineData('transaksi_do', ApiConstants.transaksiDo);
+          
+          if (pendingData.isNotEmpty) {
+            final List existingList = _extractListData(cachedData);
+            // Tambahkan data offline pending di bagian atas
+            final combinedList = [...pendingData, ...existingList];
+            
+            if (cachedData is Map) {
+              cachedData['data'] = combinedList;
+            } else {
+              return combinedList;
+            }
+          }
+          return cachedData;
+        }
       } catch (_) {}
       rethrow;
     }

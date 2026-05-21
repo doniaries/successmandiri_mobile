@@ -10,6 +10,8 @@ import 'package:sawitappmobile/features/jurnal_keuangan/models/jurnal_keuangan_m
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:uuid/uuid.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ResourceRepository {
   final ApiClient _apiClient;
@@ -339,11 +341,39 @@ class ResourceRepository {
   }
 
   Future<dynamic> getOperasionalPaginated({int page = 1}) async {
-    final response = await _apiClient.dio.get(
-      ApiConstants.operasional,
-      queryParameters: {'page': page, 'per_page': 10},
-    );
-    return response.data;
+    try {
+      final response = await _apiClient.dio.get(
+        ApiConstants.operasional,
+        queryParameters: {'page': page, 'per_page': 10},
+      ).timeout(const Duration(seconds: 15));
+
+      if (page == 1) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('cache_operasional_list', jsonEncode(response.data));
+      }
+
+      return response.data;
+    } catch (e) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final cachedStr = prefs.getString('cache_operasional_list');
+        if (cachedStr != null) {
+          final cachedData = jsonDecode(cachedStr);
+          final pendingData = await syncService.getMergedOfflineData('operasional', ApiConstants.operasional);
+          if (pendingData.isNotEmpty) {
+             final List existingList = _extractListData(cachedData);
+             final combinedList = [...pendingData, ...existingList];
+             if (cachedData is Map) {
+                cachedData['data'] = combinedList;
+             } else {
+                return combinedList;
+             }
+          }
+          return cachedData;
+        }
+      } catch (_) {}
+      rethrow;
+    }
   }
 
   Future<List<Operasional>> getOperasionals() async {
@@ -373,16 +403,32 @@ class ResourceRepository {
     String? endDate,
     String? jenisTransaksi,
   }) async {
-    final Map<String, dynamic> params = {'page': page, 'per_page': 10};
-    if (startDate != null) params['start_date'] = startDate;
-    if (endDate != null) params['end_date'] = endDate;
-    if (jenisTransaksi != null) params['jenis_transaksi'] = jenisTransaksi;
+    try {
+      final Map<String, dynamic> params = {'page': page, 'per_page': 10};
+      if (startDate != null) params['start_date'] = startDate;
+      if (endDate != null) params['end_date'] = endDate;
+      if (jenisTransaksi != null) params['jenis_transaksi'] = jenisTransaksi;
 
-    final response = await _apiClient.dio.get(
-      ApiConstants.jurnalKeuangan,
-      queryParameters: params,
-    );
-    return response.data;
+      final response = await _apiClient.dio.get(
+        ApiConstants.jurnalKeuangan,
+        queryParameters: params,
+      ).timeout(const Duration(seconds: 15));
+
+      if (page == 1 && startDate == null && endDate == null && jenisTransaksi == null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('cache_jurnal_list', jsonEncode(response.data));
+      }
+      return response.data;
+    } catch (e) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final cachedStr = prefs.getString('cache_jurnal_list');
+        if (cachedStr != null) {
+          return jsonDecode(cachedStr);
+        }
+      } catch (_) {}
+      rethrow;
+    }
   }
 
   Future<List<JurnalKeuangan>> getJurnalKeuangan({

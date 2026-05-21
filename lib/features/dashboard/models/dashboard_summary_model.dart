@@ -40,6 +40,46 @@ class DashboardSummary {
     required this.stats,
   });
 
+  DashboardSummary copyWith({
+    double? saldo,
+    int? totalPenjual,
+    int? totalSupir,
+    int? totalPekerja,
+    int? totalKendaraan,
+    int? totalJurnalKeuangan,
+    int? totalOperasional,
+    int? totalUser,
+    double? totalPengajuanDana,
+    int? totalPengajuanCount,
+    int? tambahSaldoTodayCount,
+    String? perusahaanName,
+    String? namaKasir,
+    String? systemActiveDate,
+    List<TransaksiDo>? transactions,
+    List<Operasional>? latestOperasional,
+    DashboardStats? stats,
+  }) {
+    return DashboardSummary(
+      saldo: saldo ?? this.saldo,
+      totalPenjual: totalPenjual ?? this.totalPenjual,
+      totalSupir: totalSupir ?? this.totalSupir,
+      totalPekerja: totalPekerja ?? this.totalPekerja,
+      totalKendaraan: totalKendaraan ?? this.totalKendaraan,
+      totalJurnalKeuangan: totalJurnalKeuangan ?? this.totalJurnalKeuangan,
+      totalOperasional: totalOperasional ?? this.totalOperasional,
+      totalUser: totalUser ?? this.totalUser,
+      totalPengajuanDana: totalPengajuanDana ?? this.totalPengajuanDana,
+      totalPengajuanCount: totalPengajuanCount ?? this.totalPengajuanCount,
+      tambahSaldoTodayCount: tambahSaldoTodayCount ?? this.tambahSaldoTodayCount,
+      perusahaanName: perusahaanName ?? this.perusahaanName,
+      namaKasir: namaKasir ?? this.namaKasir,
+      systemActiveDate: systemActiveDate ?? this.systemActiveDate,
+      transactions: transactions ?? this.transactions,
+      latestOperasional: latestOperasional ?? this.latestOperasional,
+      stats: stats ?? this.stats,
+    );
+  }
+
   factory DashboardSummary.fromJson(Map<String, dynamic> json) {
     final statsJson = json['stats'];
     return DashboardSummary(

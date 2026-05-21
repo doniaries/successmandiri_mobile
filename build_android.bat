@@ -26,7 +26,14 @@ if %ERRORLEVEL% NEQ 0 goto GAGAL
 
 echo.
 echo 6. Menyalin dan mengubah nama APK...
-copy build\app\outputs\flutter-apk\app-release.apk "mysawit_v%BUILD_NAME%_%BUILD_NUMBER%.apk" /Y
+if exist "build\app\outputs\flutter-apk\app-release.apk" (
+    copy "build\app\outputs\flutter-apk\app-release.apk" "mysawit_v%BUILD_NAME%_%BUILD_NUMBER%.apk" /Y
+) else if exist "build\app\outputs\apk\release\app-release.apk" (
+    copy "build\app\outputs\apk\release\app-release.apk" "mysawit_v%BUILD_NAME%_%BUILD_NUMBER%.apk" /Y
+) else (
+    echo [ERROR] File APK tidak ditemukan di folder build!
+    goto GAGAL
+)
 if %ERRORLEVEL% NEQ 0 goto GAGAL
 
 :SUKSES

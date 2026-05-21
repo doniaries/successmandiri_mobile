@@ -1426,11 +1426,11 @@ class _DashboardHeader extends StatelessWidget {
                 _HeaderTopRow(),
                 LiveDateTimeWidget(),
                 SizedBox(height: 12),
+                _OfflineIndicator(),
                 _CompanySelector(),
                 SizedBox(height: 12),
                 _BalanceCard(),
                 SizedBox(height: 12),
-                _OfflineIndicator(), // <--- NEW WIDGET HERE
                 _StatCardsSection(),
               ],
             ),
