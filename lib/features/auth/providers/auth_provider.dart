@@ -119,18 +119,17 @@ class AuthProvider with ChangeNotifier {
         PushNotificationService.registerTokenToBackend(token).catchError((e) => null);
 
         // Refresh data dari server di background (opsional, tapi bagus untuk update info terbaru)
-        try {
-          final freshUser = await _authRepository.getCurrentUser().timeout(
-            const Duration(seconds: 15),
-          );
+        _authRepository.getCurrentUser().timeout(
+          const Duration(seconds: 15),
+        ).then((freshUser) async {
           if (freshUser != null) {
             _user = freshUser;
             await _authRepository.saveUser(freshUser);
-            // SessionService().start(onTimeout: handleAutoLogout); // REMOVED: Session restriction
+            notifyListeners();
           }
-        } catch (e) {
+        }).catchError((e) {
           debugPrint('Silent refresh failed: $e. Using cached user.');
-        }
+        });
       }
     } catch (e) {
       debugPrint('CheckAuthStatus Error: $e');
