@@ -1424,7 +1424,10 @@ class _DashboardHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _HeaderTopRow(),
-                LiveDateTimeWidget(),
+                LiveDateTimeWidget(
+                  color: Colors.white,
+                  isTransparentBg: true,
+                ),
                 SizedBox(height: 12),
                 _OfflineIndicator(),
                 _CompanySelector(),

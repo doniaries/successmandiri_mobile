@@ -104,6 +104,9 @@ class TransaksiDoRepository {
         await prefs.setString(cacheKey, jsonEncode(response.data));
       }
 
+      final data = _extractListData(response.data);
+      await _syncService.cacheData('transaksi_do', data);
+
       return response.data;
     } catch (e) {
       try {
@@ -275,8 +278,48 @@ class TransaksiDoRepository {
       final dateStr = tanggal != null
           ? tanggal.replaceAll('-', '')
           : DateFormat('yyyyMMdd').format(DateTime.now());
-      final randomStr = (1000 + Random().nextInt(9000)).toString();
-      return 'KSSM-PENDING-$dateStr-$randomStr';
+          
+      try {
+        final pendingData = await _syncService.getMergedOfflineData(
+          'transaksi_do',
+          ApiConstants.transaksiDo,
+        );
+
+        int maxSeq = 0;
+        for (var item in pendingData) {
+          String? noDo = item['nomor'] ?? item['nomor_do'];
+          if (noDo != null && noDo.contains(dateStr)) {
+            final regex = RegExp(r'DO-(?:P\d+-)?' + dateStr + r'-(\d+)');
+            final match = regex.firstMatch(noDo);
+            if (match != null) {
+              final seq = int.parse(match.group(1)!);
+              if (seq > maxSeq) {
+                maxSeq = seq;
+              }
+            }
+          }
+        }
+
+        final prefs = await SharedPreferences.getInstance();
+        final userStr = prefs.getString('cached_user');
+        String companyPrefix = '';
+        if (userStr != null) {
+          try {
+            final userData = jsonDecode(userStr);
+            if (userData['perusahaan_id'] != null) {
+              companyPrefix = 'P${userData['perusahaan_id']}-';
+            }
+          } catch (_) {}
+        }
+
+        int nextSeq = maxSeq + 1;
+        final seqStr = nextSeq.toString().padLeft(4, '0');
+        
+        return 'DO-$companyPrefix$dateStr-$seqStr';
+      } catch (_) {
+        final randomStr = (1000 + Random().nextInt(9000)).toString();
+        return 'DO-PENDING-$dateStr-$randomStr';
+      }
     }
   }
 

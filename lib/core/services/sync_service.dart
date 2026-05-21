@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as dev;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
@@ -113,7 +114,14 @@ class SyncService {
       List<Map<String, dynamic>> list = [];
       try {
         final localData = await _db.query(table);
-        list = List<Map<String, dynamic>>.from(localData.map((e) => Map<String, dynamic>.from(e)));
+        list = List<Map<String, dynamic>>.from(
+          localData
+              .where((e) {
+                final id = e['id'];
+                return id == null || id is! int || id > 0; // Filter out id < 0
+              })
+              .map((e) => Map<String, dynamic>.from(e))
+        );
       } catch (e) {
         // Table doesn't exist (e.g. operasional, transaksi_do), it's fine, we just want the offline queue
       }
@@ -255,6 +263,12 @@ class SyncService {
           title: title,
           body: body,
         );
+
+        // Clear cached dashboard summary agar refresh dari server tanpa offline data
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('cached_dashboard_summary');
+        } catch (_) {}
 
         // Auto-refresh UI jika aplikasi sedang terbuka
         try {

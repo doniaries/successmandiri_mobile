@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:sawitappmobile/core/network/api_client.dart';
 import 'package:sawitappmobile/core/constants/api_constants.dart';
 import 'package:sawitappmobile/features/dashboard/models/dashboard_summary_model.dart';
@@ -41,6 +42,14 @@ class DashboardRepository {
       
       try {
         final syncService = SyncService();
+        
+        final connectivity = await Connectivity().checkConnectivity();
+        final isTrulyOffline = connectivity.contains(ConnectivityResult.none);
+        
+        if (!isTrulyOffline) {
+          // Jika ada koneksi tapi gagal API (timeout), return cached data saja
+          return summary;
+        }
 
         double totalOfflinePengeluaran = 0;
         int countOfflinePengeluaran = 0;
@@ -49,8 +58,13 @@ class DashboardRepository {
 
         // 1. Pending Operasional
         final pendingOperasional = await syncService.getMergedOfflineData('operasional', ApiConstants.operasional);
-        if (pendingOperasional.isNotEmpty) {
-           final ops = pendingOperasional.map((e) => Operasional.fromJson(e)).toList();
+        final offlineOps = pendingOperasional.where((e) {
+          final id = e['id'] as int?;
+          return id != null && id < 0; // Hanya ID negatif = truly offline/pending
+        }).toList();
+
+        if (offlineOps.isNotEmpty) {
+           final ops = offlineOps.map((e) => Operasional.fromJson(e)).toList();
            
            double totalOps = 0;
            for (var op in ops) {
@@ -70,8 +84,13 @@ class DashboardRepository {
 
         // 2. Pending Transaksi DO
         final pendingDo = await syncService.getMergedOfflineData('transaksi_do', ApiConstants.transaksiDo);
-        if (pendingDo.isNotEmpty) {
-           final dos = pendingDo.map((e) => TransaksiDo.fromJson(e)).toList();
+        final offlineDo = pendingDo.where((e) {
+          final id = e['id'] as int?;
+          return id != null && id < 0;
+        }).toList();
+
+        if (offlineDo.isNotEmpty) {
+           final dos = offlineDo.map((e) => TransaksiDo.fromJson(e)).toList();
            
            for (var d in dos) {
              if (d.caraBayar == 'tunai') {
@@ -90,8 +109,13 @@ class DashboardRepository {
         
         // 3. Pending Jurnal Keuangan (Pemasukan / Pengeluaran / Tambah Saldo)
         final pendingJurnal = await syncService.getMergedOfflineData('jurnal_keuangan', ApiConstants.jurnalKeuangan);
-        if (pendingJurnal.isNotEmpty) {
-           for (var j in pendingJurnal) {
+        final offlineJurnal = pendingJurnal.where((e) {
+          final id = e['id'] as int?;
+          return id != null && id < 0;
+        }).toList();
+
+        if (offlineJurnal.isNotEmpty) {
+           for (var j in offlineJurnal) {
              final double nominal = double.tryParse(j['nominal']?.toString() ?? '0') ?? 0;
              if (j['jenis_transaksi'] == 'Pemasukan') {
                totalOfflinePemasukan += nominal;
@@ -103,38 +127,40 @@ class DashboardRepository {
            }
         }
 
-        // Update saldo dan stats
-        double newSaldo = summary.saldo + totalOfflinePemasukan - totalOfflinePengeluaran;
-        final oldStats = summary.stats;
-        final newStats = DashboardStats(
-          pemasukan: PemasukanStats(
-            today: StatDetail(
-              total: oldStats.pemasukan.today.total + totalOfflinePemasukan,
-              count: oldStats.pemasukan.today.count + countOfflinePemasukan,
+        // Update saldo dan stats HANYA jika ada offline data
+        if (countOfflinePemasukan > 0 || countOfflinePengeluaran > 0) {
+          double newSaldo = summary.saldo + totalOfflinePemasukan - totalOfflinePengeluaran;
+          final oldStats = summary.stats;
+          final newStats = DashboardStats(
+            pemasukan: PemasukanStats(
+              today: StatDetail(
+                total: oldStats.pemasukan.today.total + totalOfflinePemasukan,
+                count: oldStats.pemasukan.today.count + countOfflinePemasukan,
+              ),
+              month: StatDetail(
+                total: oldStats.pemasukan.month.total + totalOfflinePemasukan,
+                count: oldStats.pemasukan.month.count + countOfflinePemasukan,
+              ),
             ),
-            month: StatDetail(
-              total: oldStats.pemasukan.month.total + totalOfflinePemasukan,
-              count: oldStats.pemasukan.month.count + countOfflinePemasukan,
+            pengeluaran: PengeluaranStats(
+              today: StatDetail(
+                total: oldStats.pengeluaran.today.total + totalOfflinePengeluaran,
+                count: oldStats.pengeluaran.today.count + countOfflinePengeluaran,
+              ),
+              month: StatDetail(
+                total: oldStats.pengeluaran.month.total + totalOfflinePengeluaran,
+                count: oldStats.pengeluaran.month.count + countOfflinePengeluaran,
+              ),
             ),
-          ),
-          pengeluaran: PengeluaranStats(
-            today: StatDetail(
-              total: oldStats.pengeluaran.today.total + totalOfflinePengeluaran,
-              count: oldStats.pengeluaran.today.count + countOfflinePengeluaran,
-            ),
-            month: StatDetail(
-              total: oldStats.pengeluaran.month.total + totalOfflinePengeluaran,
-              count: oldStats.pengeluaran.month.count + countOfflinePengeluaran,
-            ),
-          ),
-          transaksi: oldStats.transaksi, // retain other stats
-        );
-        
-        summary = summary.copyWith(
-          saldo: newSaldo,
-          totalJurnalKeuangan: summary.totalJurnalKeuangan + pendingJurnal.length,
-          stats: newStats,
-        );
+            transaksi: oldStats.transaksi, // retain other stats
+          );
+          
+          summary = summary.copyWith(
+            saldo: newSaldo,
+            totalJurnalKeuangan: summary.totalJurnalKeuangan + offlineJurnal.length,
+            stats: newStats,
+          );
+        }
         
         return summary;
       } catch (_) {}
