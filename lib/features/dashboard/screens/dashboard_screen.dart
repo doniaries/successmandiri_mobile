@@ -164,6 +164,39 @@ class DashboardScreenState extends State<DashboardScreen> {
           slivers: [
             const SliverToBoxAdapter(child: _DashboardHeader()),
             SliverToBoxAdapter(
+              child: ValueListenableBuilder<int>(
+                valueListenable: SyncService().pendingSyncCount,
+                builder: (context, count, child) {
+                  if (count == 0) return const SizedBox.shrink();
+                  return Container(
+                    margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.orange[50],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.orange[200]!),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.cloud_upload_rounded, color: Colors.orange, size: 24),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Ada $count Data Belum Tersinkron', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.deepOrange)),
+                              const SizedBox(height: 2),
+                              const Text('Data akan otomatis dikirim saat perangkat kembali terhubung ke internet.', style: TextStyle(fontSize: 11, color: Colors.black87)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+            SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
                 child: Column(
@@ -331,7 +364,16 @@ class DashboardScreenState extends State<DashboardScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(6)),
-                    child: Text(DateFormat('dd MMM, HH:mm', 'id_ID').format(tx.tanggal), style: TextStyle(fontSize: 10, color: Colors.grey[600], fontWeight: FontWeight.w700)),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (tx.id < 0) ...[
+                          const Icon(Icons.access_time_rounded, size: 10, color: Colors.orange),
+                          const SizedBox(width: 4),
+                        ],
+                        Text(DateFormat('dd MMM, HH:mm', 'id_ID').format(tx.tanggal), style: TextStyle(fontSize: 10, color: Colors.grey[600], fontWeight: FontWeight.w700)),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -382,7 +424,15 @@ class DashboardScreenState extends State<DashboardScreen> {
                       style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 2),
-                    Text(DateFormat('dd MMM yyyy • HH:mm', 'id_ID').format(item.tanggal), style: TextStyle(fontSize: 10, color: Colors.grey[400])),
+                    Row(
+                      children: [
+                        if (item.id < 0) ...[
+                          const Icon(Icons.access_time_rounded, size: 10, color: Colors.orange),
+                          const SizedBox(width: 4),
+                        ],
+                        Text(DateFormat('dd MMM yyyy • HH:mm', 'id_ID').format(item.tanggal), style: TextStyle(fontSize: 10, color: Colors.grey[400])),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -1302,7 +1352,19 @@ class _StatCardsSection extends StatelessWidget {
     final isLoading = context.select<DashboardProvider, bool>((p) => p.isLoading);
     final error = context.select<DashboardProvider, String?>((p) => p.error);
     if (isLoading) return const _SkeletonStats();
-    if (error != null) return Center(child: Text('Gagal: $error', style: const TextStyle(color: Colors.white, fontSize: 11)));
+    if (error != null) {
+      bool isOfflineError = error.toLowerCase().contains('dioexception') || error.toLowerCase().contains('socketexception') || error.toLowerCase().contains('connection');
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            isOfflineError ? 'Data tidak tersedia saat offline.' : 'Gagal memuat data: $error',
+            style: const TextStyle(color: Colors.white, fontSize: 11),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
     return const _StatCards();
   }
 }

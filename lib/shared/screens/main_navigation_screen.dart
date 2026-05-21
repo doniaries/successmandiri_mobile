@@ -267,9 +267,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             children: [
               Icon(Icons.wifi_off_rounded, color: Colors.white, size: 14),
               SizedBox(width: 8),
-              Text(
-                'Mode Offline: Data akan disimpan lokal & sinkron otomatis saat ada sinyal',
-                style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+              Expanded(
+                child: Text(
+                  'Mode Offline: Data akan disimpan lokal & sinkron otomatis saat ada sinyal',
+                  style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),

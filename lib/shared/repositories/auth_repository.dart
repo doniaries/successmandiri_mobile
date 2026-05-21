@@ -6,6 +6,7 @@ import 'package:sawitappmobile/core/constants/api_constants.dart';
 import 'package:sawitappmobile/core/network/api_client.dart';
 import 'package:sawitappmobile/core/services/push_notification_service.dart';
 import 'package:sawitappmobile/features/auth/models/user_model.dart';
+import 'package:sawitappmobile/core/services/database_service.dart';
 
 class AuthRepository {
   final ApiClient _apiClient;
@@ -199,6 +200,14 @@ class AuthRepository {
       _cachedPerusahaans = response.data;
       return _cachedPerusahaans!;
     } catch (e) {
+      try {
+        final db = DatabaseService();
+        final localData = await db.query('perusahaans');
+        if (localData.isNotEmpty) {
+          _cachedPerusahaans = localData;
+          return _cachedPerusahaans!;
+        }
+      } catch (_) {}
       rethrow;
     }
   }
