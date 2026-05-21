@@ -34,11 +34,6 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
     if (authProvider.user != null) {
       _nameController.text = authProvider.user!.perusahaanName ?? '';
       
-      // Attempt to find the user's company and kasir_id from perusahaans list if available
-      final currentPerusahaan = authProvider.user!.perusahaans.firstWhere(
-        (p) => p.id == authProvider.user!.perusahaanId,
-        orElse: () => UserCompany(id: 0, name: ''),
-      );
       // Not storing alamat in user model, so it's empty by default unless we fetch the exact Perusahaan.
       // But we can just leave it empty if not available in current context.
     }
@@ -183,7 +178,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                   const SizedBox(height: 15),
                   DropdownButtonFormField<int>(
                     isExpanded: true,
-                    value: _selectedKasirId,
+                    initialValue: _selectedKasirId,
                     decoration: InputDecoration(
                       labelText: 'Pilih Kasir',
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),

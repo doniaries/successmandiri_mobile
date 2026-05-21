@@ -48,6 +48,8 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
       _isSaving = true;
     });
 
+    final provider = context.read<ResourceProvider>();
+
     // Auto-increment version (patch version bump)
     String currentVersion = _versionController.text.trim();
     String newVersion = currentVersion;
