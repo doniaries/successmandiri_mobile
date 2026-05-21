@@ -182,6 +182,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                   ),
                   const SizedBox(height: 15),
                   DropdownButtonFormField<int>(
+                    isExpanded: true,
                     value: _selectedKasirId,
                     decoration: InputDecoration(
                       labelText: 'Pilih Kasir',
@@ -191,7 +192,11 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                     items: _users.map((u) {
                       return DropdownMenuItem<int>(
                         value: u['id'],
-                        child: Text('${u['name']} (${u['email']})'),
+                        child: Text(
+                          '${u['name']} (${u['email']})',
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
                       );
                     }).toList(),
                     onChanged: (value) {
