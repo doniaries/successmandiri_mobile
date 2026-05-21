@@ -1429,7 +1429,6 @@ class _DashboardHeader extends StatelessWidget {
                   isTransparentBg: true,
                 ),
                 SizedBox(height: 12),
-                _OfflineIndicator(),
                 _CompanySelector(),
                 SizedBox(height: 12),
                 _BalanceCard(),
@@ -1444,59 +1443,7 @@ class _DashboardHeader extends StatelessWidget {
   }
 }
 
-class _OfflineIndicator extends StatelessWidget {
-  const _OfflineIndicator();
-
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<bool>(
-      stream: SyncService().connectivityStream,
-      initialData: !SyncService().isOffline,
-      builder: (context, snapshot) {
-        final isOnline = snapshot.data ?? true;
-        if (isOnline) return const SizedBox.shrink();
-
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-          decoration: BoxDecoration(
-            color: Colors.orange[800]?.withValues(alpha: 0.9),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Colors.orange[400]!.withValues(alpha: 0.5),
-            ),
-          ),
-          child: const Row(
-            children: [
-              Icon(Icons.wifi_off_rounded, color: Colors.white, size: 18),
-              SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Mode Offline Aktif',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      'Data disimpan lokal. Akan sinkron otomatis saat online.',
-                      style: TextStyle(color: Colors.white70, fontSize: 11),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
+// _OfflineIndicator removed - replaced by wifi icon in _SyncButton
 
 class _BalanceCard extends StatelessWidget {
   const _BalanceCard();
@@ -1703,48 +1650,107 @@ class _SyncButton extends StatelessWidget {
   const _SyncButton();
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<int>(
-      valueListenable: SyncService().pendingSyncCount,
-      builder: (context, count, _) => Stack(
-        clipBehavior: Clip.none,
-        children: [
-          _CircleIconBtn(
-            icon: count > 0
-                ? Icons.recycling_rounded
-                : Icons.cloud_done_rounded,
-            color: count > 0 ? Colors.orange : Colors.white,
-            onTap: () async {
-              final scaffoldMessenger = ScaffoldMessenger.of(context);
-              scaffoldMessenger.showSnackBar(
-                const SnackBar(
-                  content: Text('Memulai Sinkronisasi Data...'),
-                  duration: Duration(seconds: 1),
-                ),
-              );
+    return StreamBuilder<bool>(
+      stream: SyncService().connectivityStream,
+      initialData: !SyncService().isOffline,
+      builder: (context, connectivitySnapshot) {
+        final isOnline = connectivitySnapshot.data ?? true;
 
-              // 1. Process offline queue
-              await SyncService().syncNow();
+        return ValueListenableBuilder<int>(
+          valueListenable: SyncService().pendingSyncCount,
+          builder: (context, count, _) {
+            // Tentukan icon, warna, dan tooltip berdasarkan status
+            final IconData wifiIcon;
+            final Color iconColor;
+            final String tooltipMsg;
 
-              // 2. Fetch latest master data from web
-              if (context.mounted) {
-                await context.read<ResourceProvider>().syncMasterData();
-                scaffoldMessenger.showSnackBar(
-                  const SnackBar(
-                    content: Text('Sinkronisasi Data Selesai'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
+            if (!isOnline) {
+              wifiIcon = Icons.wifi_off_rounded;
+              iconColor = Colors.redAccent[100]!;
+              tooltipMsg = count > 0
+                  ? '$count data menunggu sinkronisasi.\nAkan otomatis dikirim saat online.'
+                  : 'Tidak ada koneksi internet.\nData tersimpan secara lokal.';
+            } else {
+              if (count > 0) {
+                wifiIcon = Icons.sync_rounded;
+                iconColor = Colors.orangeAccent;
+                tooltipMsg = 'Sedang menyinkronkan $count data ke server...';
+              } else {
+                wifiIcon = Icons.wifi_rounded;
+                iconColor = Colors.greenAccent;
+                tooltipMsg = 'Terhubung ke server.\nSemua data sudah sinkron.';
               }
-            },
-          ),
-          if (count > 0)
-            Positioned(
-              top: -2,
-              right: -2,
-              child: _CountBadge(count: count, color: Colors.orange),
-            ),
-        ],
-      ),
+            }
+
+            return Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Tooltip(
+                  message: tooltipMsg,
+                  preferBelow: false,
+                  textStyle: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black87,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: _CircleIconBtn(
+                    icon: wifiIcon,
+                    color: iconColor,
+                    onTap: () async {
+                      final scaffoldMessenger = ScaffoldMessenger.of(context);
+
+                      if (!isOnline) {
+                        scaffoldMessenger.showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              count > 0
+                                  ? '$count data tersimpan lokal. Akan otomatis sinkron saat online.'
+                                  : 'Tidak ada koneksi. Data tersimpan secara lokal.',
+                            ),
+                            backgroundColor: Colors.orange[800],
+                            duration: const Duration(seconds: 3),
+                          ),
+                        );
+                        return;
+                      }
+
+                      scaffoldMessenger.showSnackBar(
+                        const SnackBar(
+                          content: Text('Memulai sinkronisasi data...'),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+
+                      // 1. Process offline queue
+                      await SyncService().syncNow();
+
+                      // 2. Fetch latest master data from web
+                      if (context.mounted) {
+                        await context.read<ResourceProvider>().syncMasterData();
+                        scaffoldMessenger.showSnackBar(
+                          const SnackBar(
+                            content: Text('Sinkronisasi data selesai ✓'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
+                if (count > 0)
+                  Positioned(
+                    top: -2,
+                    right: -2,
+                    child: _CountBadge(count: count, color: isOnline ? Colors.orange : Colors.red),
+                  ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }
