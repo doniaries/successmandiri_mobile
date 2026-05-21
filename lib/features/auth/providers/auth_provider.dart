@@ -84,10 +84,12 @@ class AuthProvider with ChangeNotifier {
     try {
       final token = await _authRepository.getToken();
       if (token != null) {
-        await PushNotificationService.unregisterTokenFromBackend(token);
+        PushNotificationService.unregisterTokenFromBackend(token).catchError((e) {
+          debugPrint('Error unregistering FCM token on logout: $e');
+        });
       }
     } catch (e) {
-      debugPrint('Error unregistering FCM token on logout: $e');
+      debugPrint('Error getting token on logout: $e');
     }
 
     await _authRepository.logout();

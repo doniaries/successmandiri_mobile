@@ -709,30 +709,6 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                             val == null || val.isEmpty ? 'Isi tonase' : null,
                       ),
                       const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _upahBongkarController,
-                        decoration: _getInputDecoration(
-                          label: 'Upah Bongkar',
-                          icon: Icons.handyman_outlined,
-                          hint: '0',
-                        ).copyWith(prefixText: 'Rp '),
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [CurrencyInputFormatter()],
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _biayaLainController,
-                        decoration: _getInputDecoration(
-                          label: 'Biaya Lain/Pengambilan',
-                          icon: Icons.more_horiz_rounded,
-                          hint: '0',
-                        ).copyWith(prefixText: 'Rp '),
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [CurrencyInputFormatter()],
-                      ),
-                      const SizedBox(height: 16),
 
                       // Sub Total (Read Only)
                       TextFormField(
@@ -755,6 +731,30 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                           color: Colors.black,
                           fontSize: 20,
                         ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _upahBongkarController,
+                        decoration: _getInputDecoration(
+                          label: 'Upah Bongkar',
+                          icon: Icons.handyman_outlined,
+                          hint: '0',
+                        ).copyWith(prefixText: 'Rp '),
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [CurrencyInputFormatter()],
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _biayaLainController,
+                        decoration: _getInputDecoration(
+                          label: 'Biaya Lain/Pengambilan',
+                          icon: Icons.more_horiz_rounded,
+                          hint: '0',
+                        ).copyWith(prefixText: 'Rp '),
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [CurrencyInputFormatter()],
                       ),
                       const SizedBox(height: 16),
 
