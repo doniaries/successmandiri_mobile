@@ -50,17 +50,8 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
 
     final provider = context.read<ResourceProvider>();
 
-    // Auto-increment version (patch version bump)
-    String currentVersion = _versionController.text.trim();
-    String newVersion = currentVersion;
-    List<String> versionParts = currentVersion.split('.');
-    if (versionParts.length == 3) {
-      int patch = int.tryParse(versionParts[2]) ?? 0;
-      newVersion = '${versionParts[0]}.${versionParts[1]}.${patch + 1}';
-    }
-
     final success = await provider.updateAppSettings(
-      newVersion,
+      _versionController.text.trim(),
       _creatorController.text.trim(),
       changelog: _changelogController.text.trim(),
     );
@@ -131,7 +122,7 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
                 icon: Icons.update_rounded,
                 validator: (v) =>
                     v!.isEmpty ? 'Versi tidak boleh kosong' : null,
-                enabled: false,
+                enabled: !_isSaving,
               ),
               const SizedBox(height: 20),
 
@@ -149,7 +140,7 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
               _buildTextField(
                 label: 'Riwayat Update / Changelog',
                 controller: _changelogController,
-                hint: '1. Perbaikan bug A\\n2. Penambahan fitur B',
+                hint: '',
                 icon: Icons.history_rounded,
                 maxLines: 4,
                 validator: (v) =>
