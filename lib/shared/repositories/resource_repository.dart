@@ -45,33 +45,16 @@ class ResourceRepository {
       return response.data;
     } catch (e) {
       try {
-        final prefs = await SharedPreferences.getInstance();
-        final cachedStr = prefs.getString('cache_penjual_list');
         final pendingData = await syncService.getMergedOfflineData(
           'penjual',
           ApiConstants.penjual,
         );
-
-        if (cachedStr != null) {
-          final cachedData = jsonDecode(cachedStr);
-          if (pendingData.isNotEmpty) {
-            final List existingList = _extractListData(cachedData);
-            final combinedList = [...pendingData, ...existingList];
-            if (cachedData is Map) {
-              cachedData['data'] = combinedList;
-            } else {
-              return combinedList;
-            }
-          }
-          return cachedData;
-        } else if (pendingData.isNotEmpty) {
-          return {
-            'data': pendingData,
-            'current_page': 1,
-            'last_page': 1,
-            'total': pendingData.length,
-          };
-        }
+        return {
+          'data': pendingData,
+          'current_page': 1,
+          'last_page': 1,
+          'total': pendingData.length,
+        };
       } catch (_) {}
       rethrow;
     }
@@ -179,33 +162,16 @@ class ResourceRepository {
       return response.data;
     } catch (e) {
       try {
-        final prefs = await SharedPreferences.getInstance();
-        final cachedStr = prefs.getString('cache_supir_list');
         final pendingData = await syncService.getMergedOfflineData(
-          'supir',
-          ApiConstants.supir,
+          'penjual',
+          ApiConstants.penjual,
         );
-
-        if (cachedStr != null) {
-          final cachedData = jsonDecode(cachedStr);
-          if (pendingData.isNotEmpty) {
-            final List existingList = _extractListData(cachedData);
-            final combinedList = [...pendingData, ...existingList];
-            if (cachedData is Map) {
-              cachedData['data'] = combinedList;
-            } else {
-              return combinedList;
-            }
-          }
-          return cachedData;
-        } else if (pendingData.isNotEmpty) {
-          return {
-            'data': pendingData,
-            'current_page': 1,
-            'last_page': 1,
-            'total': pendingData.length,
-          };
-        }
+        return {
+          'data': pendingData,
+          'current_page': 1,
+          'last_page': 1,
+          'total': pendingData.length,
+        };
       } catch (_) {}
       rethrow;
     }
@@ -303,33 +269,16 @@ class ResourceRepository {
       return response.data;
     } catch (e) {
       try {
-        final prefs = await SharedPreferences.getInstance();
-        final cachedStr = prefs.getString('cache_pekerja_list');
         final pendingData = await syncService.getMergedOfflineData(
-          'pekerja',
-          ApiConstants.pekerja,
+          'penjual',
+          ApiConstants.penjual,
         );
-
-        if (cachedStr != null) {
-          final cachedData = jsonDecode(cachedStr);
-          if (pendingData.isNotEmpty) {
-            final List existingList = _extractListData(cachedData);
-            final combinedList = [...pendingData, ...existingList];
-            if (cachedData is Map) {
-              cachedData['data'] = combinedList;
-            } else {
-              return combinedList;
-            }
-          }
-          return cachedData;
-        } else if (pendingData.isNotEmpty) {
-          return {
-            'data': pendingData,
-            'current_page': 1,
-            'last_page': 1,
-            'total': pendingData.length,
-          };
-        }
+        return {
+          'data': pendingData,
+          'current_page': 1,
+          'last_page': 1,
+          'total': pendingData.length,
+        };
       } catch (_) {}
       rethrow;
     }
@@ -430,33 +379,16 @@ class ResourceRepository {
       return response.data;
     } catch (e) {
       try {
-        final prefs = await SharedPreferences.getInstance();
-        final cachedStr = prefs.getString('cache_kendaraan_list');
         final pendingData = await syncService.getMergedOfflineData(
-          'kendaraan',
-          ApiConstants.kendaraan,
+          'penjual',
+          ApiConstants.penjual,
         );
-
-        if (cachedStr != null) {
-          final cachedData = jsonDecode(cachedStr);
-          if (pendingData.isNotEmpty) {
-            final List existingList = _extractListData(cachedData);
-            final combinedList = [...pendingData, ...existingList];
-            if (cachedData is Map) {
-              cachedData['data'] = combinedList;
-            } else {
-              return combinedList;
-            }
-          }
-          return cachedData;
-        } else if (pendingData.isNotEmpty) {
-          return {
-            'data': pendingData,
-            'current_page': 1,
-            'last_page': 1,
-            'total': pendingData.length,
-          };
-        }
+        return {
+          'data': pendingData,
+          'current_page': 1,
+          'last_page': 1,
+          'total': pendingData.length,
+        };
       } catch (_) {}
       rethrow;
     }
@@ -533,33 +465,16 @@ class ResourceRepository {
       return response.data;
     } catch (e) {
       try {
-        final prefs = await SharedPreferences.getInstance();
-        final cachedStr = prefs.getString('cache_operasional_list');
         final pendingData = await syncService.getMergedOfflineData(
-          'operasional',
-          ApiConstants.operasional,
+          'penjual',
+          ApiConstants.penjual,
         );
-
-        if (cachedStr != null) {
-          final cachedData = jsonDecode(cachedStr);
-          if (pendingData.isNotEmpty) {
-            final List existingList = _extractListData(cachedData);
-            final combinedList = [...pendingData, ...existingList];
-            if (cachedData is Map) {
-              cachedData['data'] = combinedList;
-            } else {
-              return combinedList;
-            }
-          }
-          return cachedData;
-        } else if (pendingData.isNotEmpty) {
-          return {
-            'data': pendingData,
-            'current_page': 1,
-            'last_page': 1,
-            'total': pendingData.length,
-          };
-        }
+        return {
+          'data': pendingData,
+          'current_page': 1,
+          'last_page': 1,
+          'total': pendingData.length,
+        };
       } catch (_) {}
       rethrow;
     }
@@ -568,7 +483,8 @@ class ResourceRepository {
   Future<List<Operasional>> getOperasionals() async {
     final response = await _apiClient.dio.get(ApiConstants.operasional);
     final List<dynamic> data = _extractListData(response.data);
-    return data.map((e) => Operasional.fromJson(e)).toList();
+    syncService.cacheData('operasional', data);
+      return data.map((e) => Operasional.fromJson(e)).toList();
   }
 
   Future<Operasional> getOperasionalDetail(int id) async {

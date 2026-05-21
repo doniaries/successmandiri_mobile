@@ -22,7 +22,7 @@ class DatabaseService {
     String path = join(await getDatabasesPath(), 'successmandiri.db');
     return await openDatabase(
       path, 
-      version: 2, 
+      version: 3, 
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -30,9 +30,22 @@ class DatabaseService {
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
-      await db.execute('ALTER TABLE penjual ADD COLUMN is_active INTEGER DEFAULT 1');
-      await db.execute('ALTER TABLE supir ADD COLUMN is_active INTEGER DEFAULT 1');
-      await db.execute('ALTER TABLE pekerja ADD COLUMN is_active INTEGER DEFAULT 1');
+      try { await db.execute('ALTER TABLE penjual ADD COLUMN is_active INTEGER DEFAULT 1'); } catch (_) {}
+      try { await db.execute('ALTER TABLE supir ADD COLUMN is_active INTEGER DEFAULT 1'); } catch (_) {}
+      try { await db.execute('ALTER TABLE pekerja ADD COLUMN is_active INTEGER DEFAULT 1'); } catch (_) {}
+    }
+    if (oldVersion < 3) {
+      final oldTables = [
+        'penjual', 'supir', 'pekerja', 'kendaraan', 'users', 'perusahaans', 'transaksi_do'
+      ];
+      for (var table in oldTables) {
+        await db.execute('DROP TABLE IF EXISTS $table');
+        await db.execute('CREATE TABLE $table (id INTEGER PRIMARY KEY, data TEXT)');
+      }
+      final newTables = ['operasional', 'jurnal_keuangan', 'tambah_saldo', 'pengajuan_dana'];
+      for (var table in newTables) {
+        await db.execute('CREATE TABLE IF NOT EXISTS $table (id INTEGER PRIMARY KEY, data TEXT)');
+      }
     }
   }
 
@@ -46,30 +59,14 @@ class DatabaseService {
         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     ''');
-    await db.execute('''
-      CREATE TABLE penjual (id INTEGER PRIMARY KEY, nama TEXT, telepon TEXT, alamat TEXT, sisa_hutang REAL DEFAULT 0, is_active INTEGER DEFAULT 1)
-    ''');
-    await db.execute('''
-      CREATE TABLE supir (id INTEGER PRIMARY KEY, nama TEXT, telepon TEXT, sim TEXT, sisa_hutang REAL DEFAULT 0, is_active INTEGER DEFAULT 1)
-    ''');
-    await db.execute('''
-      CREATE TABLE pekerja (id INTEGER PRIMARY KEY, nama TEXT, telepon TEXT, sisa_hutang REAL DEFAULT 0, perusahaan_id INTEGER, is_active INTEGER DEFAULT 1)
-    ''');
-    await db.execute('''
-      CREATE TABLE kendaraan (id INTEGER PRIMARY KEY, no_polisi TEXT, merk TEXT, tipe TEXT)
-    ''');
-    await db.execute('''
-      CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, email TEXT, role TEXT)
-    ''');
-    await db.execute('''
-      CREATE TABLE perusahaans (id INTEGER PRIMARY KEY, name TEXT, logo_url TEXT)
-    ''');
-    await db.execute('''
-      CREATE TABLE transaksi_do (
-        id INTEGER PRIMARY KEY, nomor TEXT, tanggal TEXT,
-        penjual_nama TEXT, supir_nama TEXT, sub_total REAL, sisa_bayar REAL
-      )
-    ''');
+    
+    final tables = [
+      'penjual', 'supir', 'pekerja', 'kendaraan', 'users', 'perusahaans', 'transaksi_do',
+      'operasional', 'jurnal_keuangan', 'tambah_saldo', 'pengajuan_dana'
+    ];
+    for (var table in tables) {
+      await db.execute('CREATE TABLE $table (id INTEGER PRIMARY KEY, data TEXT)');
+    }
   }
 
   Future<int> insert(String table, Map<String, dynamic> data) async {
@@ -99,13 +96,13 @@ class DatabaseService {
   Future<void> clearAllTables() async {
     if (kIsWeb) return;
     final db = await database;
-    await db!.delete('penjual');
-    await db.delete('supir');
-    await db.delete('pekerja');
-    await db.delete('kendaraan');
-    await db.delete('transaksi_do');
-    await db.delete('users');
-    await db.delete('perusahaans');
+    final tables = [
+      'penjual', 'supir', 'pekerja', 'kendaraan', 'users', 'perusahaans', 'transaksi_do',
+      'operasional', 'jurnal_keuangan', 'tambah_saldo', 'pengajuan_dana'
+    ];
+    for (var table in tables) {
+      await db!.delete(table);
+    }
     // We intentionally keep offline_queue
   }
 

@@ -21,41 +21,27 @@ class TambahSaldoRepository {
   }
 
   Future<List<TambahSaldoModel>> getTambahSaldo({String? status}) async {
-    List<TambahSaldoModel> models = [];
-
     try {
       final connectivity = await Connectivity().checkConnectivity();
-      final isOffline = connectivity.every((r) => r == ConnectivityResult.none);
-
-      if (!isOffline) {
-        final response = await _apiClient.dio.get(ApiConstants.tambahSaldo).timeout(const Duration(seconds: 15));
-        final List<dynamic> data = _extractListData(response.data);
-        models = data.map((json) => TambahSaldoModel.fromJson(json)).toList();
+      if (connectivity.every((r) => r == ConnectivityResult.none)) {
+        final mergedData = await _syncService.getMergedOfflineData(
+          'tambah_saldo',
+          ApiConstants.tambahSaldo,
+        );
+        return mergedData.map((e) => TambahSaldoModel.fromJson(e)).toList();
       }
-    } catch (e) {
-      // Abaikan jika error jaringan
-    }
 
-    try {
-      final offlineQueue = await _syncService.getOfflineQueueForEndpoint(ApiConstants.tambahSaldo);
-      for (var item in offlineQueue) {
-        final data = item['data'] as Map<String, dynamic>;
-        models.insert(0, TambahSaldoModel(
-          id: item['id'],
-          perusahaanId: 0,
-          userId: 0,
-          tanggal: DateTime.tryParse(data['tanggal']?.toString() ?? '') ?? DateTime.now(),
-          nominal: double.tryParse(data['nominal'].toString()) ?? 0.0,
-          keterangan: data['keterangan'] ?? 'Menunggu Sinkronisasi...',
-          status: 'pending',
-          userName: 'Data Offline (Lokal)',
-        ));
-      }
+      final response = await _apiClient.dio.get(ApiConstants.tambahSaldo).timeout(const Duration(seconds: 15));
+      final List<dynamic> data = _extractListData(response.data);
+      _syncService.cacheData('tambah_saldo', data);
+      return data.map((json) => TambahSaldoModel.fromJson(json)).toList();
     } catch (e) {
-      // Abaikan jika gagal load queue
+      final mergedData = await _syncService.getMergedOfflineData(
+        'tambah_saldo',
+        ApiConstants.tambahSaldo,
+      );
+      return mergedData.map((e) => TambahSaldoModel.fromJson(e)).toList();
     }
-
-    return models;
   }
 
   Future<dynamic> createTambahSaldo({

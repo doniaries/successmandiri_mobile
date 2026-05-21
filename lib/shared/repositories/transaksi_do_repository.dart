@@ -95,56 +95,30 @@ class TransaksiDoRepository {
           .get(ApiConstants.transaksiDo, queryParameters: queryParams)
           .timeout(const Duration(seconds: 15));
 
-      // Cache halaman pertama (atau semua jika tidak ada filter) untuk mode offline
-      if (page == 1) {
-        final prefs = await SharedPreferences.getInstance();
-        final cacheKey = tanggal != null
-            ? 'cache_transaksi_do_$tanggal'
-            : 'cache_transaksi_do';
-        await prefs.setString(cacheKey, jsonEncode(response.data));
-      }
-
       final data = _extractListData(response.data);
-      await _syncService.cacheData('transaksi_do', data);
+      if (page == 1) {
+        await _syncService.cacheData('transaksi_do', data);
+      }
 
       return response.data;
     } catch (e) {
       try {
-        final prefs = await SharedPreferences.getInstance();
-        final cacheKey = tanggal != null
-            ? 'cache_transaksi_do_$tanggal'
-            : 'cache_transaksi_do';
-        final cachedDataStr = prefs.getString(cacheKey);
-
-        // Gabungkan dengan data antrean offline (POST)
         final pendingData = await _syncService.getMergedOfflineData(
           'transaksi_do',
           ApiConstants.transaksiDo,
         );
 
-        if (cachedDataStr != null) {
-          final cachedData = jsonDecode(cachedDataStr);
+        final filteredPending = pendingData.where((item) {
+          if (tanggal != null && item['tanggal'] != tanggal) return false;
+          return true;
+        }).toList();
 
-          if (pendingData.isNotEmpty) {
-            final List existingList = _extractListData(cachedData);
-            // Tambahkan data offline pending di bagian atas
-            final combinedList = [...pendingData, ...existingList];
-
-            if (cachedData is Map) {
-              cachedData['data'] = combinedList;
-            } else {
-              return combinedList;
-            }
-          }
-          return cachedData;
-        } else if (pendingData.isNotEmpty) {
-          return {
-            'data': pendingData,
-            'current_page': 1,
-            'last_page': 1,
-            'total': pendingData.length,
-          };
-        }
+        return {
+          'data': filteredPending,
+          'current_page': 1,
+          'last_page': 1,
+          'total': filteredPending.length,
+        };
       } catch (_) {}
       rethrow;
     }

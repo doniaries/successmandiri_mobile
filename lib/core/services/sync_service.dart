@@ -114,14 +114,16 @@ class SyncService {
       List<Map<String, dynamic>> list = [];
       try {
         final localData = await _db.query(table);
-        list = List<Map<String, dynamic>>.from(
-          localData
-              .where((e) {
-                final id = e['id'];
-                return id == null || id is! int || id > 0; // Filter out id < 0
-              })
-              .map((e) => Map<String, dynamic>.from(e))
-        );
+        for (var e in localData) {
+          final id = e['id'];
+          if (id != null && id is int && id <= 0) continue; // Filter out id <= 0
+          if (e['data'] != null) {
+            try {
+              final parsed = jsonDecode(e['data'] as String) as Map<String, dynamic>;
+              list.add(parsed);
+            } catch (_) {}
+          }
+        }
       } catch (e) {
         // Table doesn't exist (e.g. operasional, transaksi_do), it's fine, we just want the offline queue
       }
@@ -308,68 +310,11 @@ class SyncService {
     for (var item in list) {
       if (item is Map) {
         try {
-          Map<String, dynamic> mappedData = {};
-          
-          if (table == 'penjual') {
-            mappedData = {
-              'id': item['id'],
-              'nama': item['nama'],
-              'telepon': item['telepon'],
-              'alamat': item['alamat'],
-              'sisa_hutang': double.tryParse(item['sisa_hutang']?.toString() ?? '0'),
-              'is_active': (item['is_active'] == true || item['is_active'] == 1 || item['is_active'] == '1') ? 1 : 0,
-            };
-          } else if (table == 'supir') {
-            mappedData = {
-              'id': item['id'],
-              'nama': item['nama'],
-              'telepon': item['telepon'],
-              'sim': item['sim'],
-              'sisa_hutang': double.tryParse(item['sisa_hutang']?.toString() ?? '0'),
-              'is_active': (item['is_active'] == true || item['is_active'] == 1 || item['is_active'] == '1') ? 1 : 0,
-            };
-          } else if (table == 'pekerja') {
-            mappedData = {
-              'id': item['id'],
-              'nama': item['nama'],
-              'telepon': item['telepon'],
-              'sisa_hutang': double.tryParse(item['sisa_hutang']?.toString() ?? '0'),
-              'perusahaan_id': item['perusahaan_id'],
-              'is_active': (item['is_active'] == true || item['is_active'] == 1 || item['is_active'] == '1') ? 1 : 0,
-            };
-          } else if (table == 'kendaraan') {
-            mappedData = {
-              'id': item['id'],
-              'no_polisi': item['no_polisi'],
-              'merk': item['merk'],
-              'tipe': item['tipe'],
-            };
-          } else if (table == 'users') {
-            mappedData = {
-              'id': item['id'],
-              'name': item['name'],
-              'email': item['email'],
-              'role': item['role'],
-            };
-          } else if (table == 'perusahaans') {
-            mappedData = {
-              'id': item['id'],
-              'name': item['name'],
-              'logo_url': item['logo_url'],
-            };
-          } else if (table == 'transaksi_do') {
-            mappedData = {
-              'id': item['id'],
-              'nomor': item['nomor'],
-              'tanggal': item['tanggal'],
-              'penjual_nama': item['penjual_nama'] ?? item['penjual']?['nama'],
-              'supir_nama': item['supir_nama'] ?? item['supir']?['nama'],
-              'sub_total': double.tryParse(item['sub_total']?.toString() ?? '0'),
-              'sisa_bayar': double.tryParse(item['sisa_bayar']?.toString() ?? '0'),
-            };
-          }
-
-          if (mappedData.isNotEmpty) {
+          Map<String, dynamic> mappedData = {
+            'id': item['id'],
+            'data': jsonEncode(item),
+          };
+          if (mappedData['id'] != null) {
             mappedList.add(mappedData);
           }
         } catch (e) {
