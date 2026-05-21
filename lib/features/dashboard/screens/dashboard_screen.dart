@@ -33,7 +33,6 @@ import 'package:sawitappmobile/features/supir/models/supir_model.dart';
 
 import 'package:sawitappmobile/shared/providers/navigation_provider.dart';
 import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
-import 'package:sawitappmobile/shared/widgets/custom_loading_logo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -167,8 +166,17 @@ class DashboardScreenState extends State<DashboardScreen> {
               child: ValueListenableBuilder<int>(
                 valueListenable: SyncService().pendingSyncCount,
                 builder: (context, count, child) {
-                  if (count == 0) return const SizedBox.shrink();
-                  return Container(
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    transitionBuilder: (child, animation) => SizeTransition(
+                      sizeFactor: animation,
+                      axisAlignment: -1.0,
+                      child: FadeTransition(opacity: animation, child: child),
+                    ),
+                    child: count == 0
+                        ? const SizedBox.shrink(key: ValueKey('empty'))
+                        : Container(
+                            key: const ValueKey('banner'),
                     margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -209,6 +217,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                         ),
                       ],
                     ),
+                  ),
                   );
                 },
               ),

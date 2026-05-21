@@ -34,14 +34,18 @@ class ApiClient {
       onError: (DioException e, handler) async {
         if (e.response?.statusCode == 401) {
           final prefs = await SharedPreferences.getInstance();
-          await prefs.remove('auth_token');
-          await prefs.remove('cached_user');
+          final currentToken = prefs.getString('auth_token');
           
-          // Redirect ke Login jika tidak di halaman login
-          NavigationService.navigatorKey.currentState?.pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const LoginScreen()),
-            (route) => false,
-          );
+          if (currentToken != null) {
+            await prefs.remove('auth_token');
+            await prefs.remove('cached_user');
+            
+            // Redirect ke Login jika tidak di halaman login
+            NavigationService.navigatorKey.currentState?.pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
+              (route) => false,
+            );
+          }
         }
         return handler.next(e);
       },

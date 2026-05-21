@@ -6,8 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sawitappmobile/features/auth/models/user_model.dart';
 import 'package:sawitappmobile/shared/repositories/auth_repository.dart';
 import 'package:sawitappmobile/core/services/push_notification_service.dart';
-
 import 'package:sawitappmobile/core/services/database_service.dart';
+
 class AuthProvider with ChangeNotifier {
   final AuthRepository _authRepository;
   User? _user;
@@ -23,26 +23,36 @@ class AuthProvider with ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get isAuthenticated => _user != null;
 
-  Future<bool> login(String email, String password, {bool isRememberMe = false}) async {
+  Future<bool> login(
+    String email,
+    String password, {
+    bool isRememberMe = false,
+  }) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final result = await _authRepository.login(email, password, 'Mobile App').timeout(
-        const Duration(seconds: 15),
-        onTimeout: () => throw Exception('Koneksi timeout (Ditunggu 15 detik tidak merespons)'),
-      );
+      final result = await _authRepository
+          .login(email, password, 'Mobile App')
+          .timeout(
+            const Duration(seconds: 15),
+            onTimeout: () => throw Exception(
+              'Koneksi timeout (Ditunggu 15 detik tidak merespons)',
+            ),
+          );
       _user = result['user'];
-      
+
       // Simpan user ke cache
       if (_user != null) {
         await _authRepository.saveUser(_user!);
-        
+
         // Daftarkan FCM token ke backend segera setelah login berhasil
         final token = await _authRepository.getToken();
         if (token != null) {
-          PushNotificationService.registerTokenToBackend(token).catchError((e) => null);
+          PushNotificationService.registerTokenToBackend(
+            token,
+          ).catchError((e) => null);
         }
       }
 
@@ -51,7 +61,7 @@ class AuthProvider with ChangeNotifier {
       } else {
         await _authRepository.clearRememberMe();
       }
-      
+
       await _authRepository.saveLastEmail(email);
 
       _isLoading = false;
@@ -60,21 +70,26 @@ class AuthProvider with ChangeNotifier {
     } catch (e) {
       final errorMsg = e.toString().toLowerCase();
       // Cek apakah errornya karena jaringan/timeout (bukan karena kredensial salah dari server)
-      if (errorMsg.contains('koneksi') || errorMsg.contains('terhubung') || errorMsg.contains('timeout') || errorMsg.contains('network')) {
+      if (errorMsg.contains('koneksi') ||
+          errorMsg.contains('terhubung') ||
+          errorMsg.contains('timeout') ||
+          errorMsg.contains('network')) {
         // Coba Login Offline Menggunakan "Ingat Saya"
         final credentials = await _authRepository.getRememberMe();
-        if (credentials['email'] == email && credentials['password'] == password && email.isNotEmpty) {
+        if (credentials['email'] == email &&
+            credentials['password'] == password &&
+            email.isNotEmpty) {
           final prefs = await SharedPreferences.getInstance();
           final backupUserStr = prefs.getString('offline_backup_user');
           final backupToken = prefs.getString('offline_backup_token');
-          
+
           if (backupUserStr != null && backupToken != null) {
-             _user = User.fromJson(jsonDecode(backupUserStr));
-             await prefs.setString('auth_token', backupToken); // Pulihkan token
-             await _authRepository.saveUser(_user!);
-             _isLoading = false;
-             notifyListeners();
-             return true; // Berhasil login offline
+            _user = User.fromJson(jsonDecode(backupUserStr));
+            await prefs.setString('auth_token', backupToken); // Pulihkan token
+            await _authRepository.saveUser(_user!);
+            _isLoading = false;
+            notifyListeners();
+            return true; // Berhasil login offline
           }
         }
 
@@ -82,17 +97,20 @@ class AuthProvider with ChangeNotifier {
         if (email == 'taufik@gmail.com' && password == 'taufik2026') {
           final dummyUserStr = '''{
             "id": 3,
-            "name": "Taufik (Offline Mode)",
+            "name": "Taufik",
             "email": "taufik@gmail.com",
             "perusahaan_id": 3,
             "roles": ["admin"],
             "is_active": true
           }''';
-          
+
           final prefs = await SharedPreferences.getInstance();
           _user = User.fromJson(jsonDecode(dummyUserStr));
           // Menggunakan Token Asli (Sanctum) yang dibuat dari server
-          await prefs.setString('auth_token', '7|e6q5r9GBGT6J24IpupNCJcBu6CpADLt75OkM50Zue4745edc');
+          await prefs.setString(
+            'auth_token',
+            '7|e6q5r9GBGT6J24IpupNCJcBu6CpADLt75OkM50Zue4745edc',
+          );
           await _authRepository.saveUser(_user!);
           _isLoading = false;
           notifyListeners();
@@ -127,7 +145,9 @@ class AuthProvider with ChangeNotifier {
     try {
       final token = await _authRepository.getToken();
       if (token != null) {
-        PushNotificationService.unregisterTokenFromBackend(token).catchError((e) {
+        PushNotificationService.unregisterTokenFromBackend(token).catchError((
+          e,
+        ) {
           debugPrint('Error unregistering FCM token on logout: $e');
         });
       }
@@ -139,10 +159,10 @@ class AuthProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('cached_user');
     _user = null;
-    
+
     // Clear local data to prevent leak between accounts/companies
     await DatabaseService().clearAllTables();
-    
+
     // SessionService().stop(); // REMOVED: Session restriction
     notifyListeners();
   }
@@ -159,20 +179,24 @@ class AuthProvider with ChangeNotifier {
         notifyListeners();
 
         // Daftarkan FCM token ke backend agar selalu sinkron jika database dibersihkan
-        PushNotificationService.registerTokenToBackend(token).catchError((e) => null);
+        PushNotificationService.registerTokenToBackend(
+          token,
+        ).catchError((e) => null);
 
         // Refresh data dari server di background (opsional, tapi bagus untuk update info terbaru)
-        _authRepository.getCurrentUser().timeout(
-          const Duration(seconds: 15),
-        ).then((freshUser) async {
-          if (freshUser != null) {
-            _user = freshUser;
-            await _authRepository.saveUser(freshUser);
-            notifyListeners();
-          }
-        }).catchError((e) {
-          debugPrint('Silent refresh failed: $e. Using cached user.');
-        });
+        _authRepository
+            .getCurrentUser()
+            .timeout(const Duration(seconds: 15))
+            .then((freshUser) async {
+              if (freshUser != null) {
+                _user = freshUser;
+                await _authRepository.saveUser(freshUser);
+                notifyListeners();
+              }
+            })
+            .catchError((e) {
+              debugPrint('Silent refresh failed: $e. Using cached user.');
+            });
       }
     } catch (e) {
       debugPrint('CheckAuthStatus Error: $e');
@@ -182,11 +206,15 @@ class AuthProvider with ChangeNotifier {
     _isLoading = false;
     notifyListeners();
   }
+
   Future<List<dynamic>> getAvailableCompanies() async {
     return await _authRepository.getPerusahaans();
   }
 
-  Future<bool> switchCompany(int perusahaanId, {bool showLoading = true}) async {
+  Future<bool> switchCompany(
+    int perusahaanId, {
+    bool showLoading = true,
+  }) async {
     if (showLoading) {
       _isLoading = true;
     }
@@ -195,7 +223,7 @@ class AuthProvider with ChangeNotifier {
 
     try {
       await _authRepository.switchPerusahaan(perusahaanId);
-      
+
       // Update local user model immediately if possible to show name change
       // or at least get the new user data from server
       final freshUser = await _authRepository.getCurrentUser();
@@ -203,10 +231,10 @@ class AuthProvider with ChangeNotifier {
         _user = freshUser;
         await _authRepository.saveUser(freshUser);
       }
-      
+
       // Clear local data to ensure next sync pulls the new company's data
       await DatabaseService().clearAllTables();
-      
+
       _isLoading = false;
       _isSwitchingCompany = false;
       notifyListeners();
@@ -214,8 +242,11 @@ class AuthProvider with ChangeNotifier {
     } catch (e) {
       _isLoading = false;
       _isSwitchingCompany = false;
-      if (e is DioException && (e.type == DioExceptionType.connectionError || e.type == DioExceptionType.connectionTimeout)) {
-        _errorMessage = 'Pergantian perusahaan tidak bisa dilakukan saat offline.';
+      if (e is DioException &&
+          (e.type == DioExceptionType.connectionError ||
+              e.type == DioExceptionType.connectionTimeout)) {
+        _errorMessage =
+            'Pergantian perusahaan tidak bisa dilakukan saat offline.';
       } else {
         _errorMessage = 'Gagal ganti perusahaan: $e';
       }
@@ -262,13 +293,21 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> updateCompanyDetails(String? name, String? alamat, int? kasirId) async {
+  Future<bool> updateCompanyDetails(
+    String? name,
+    String? alamat,
+    int? kasirId,
+  ) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final updatedUser = await _authRepository.updateCompanyDetails(name, alamat, kasirId);
+      final updatedUser = await _authRepository.updateCompanyDetails(
+        name,
+        alamat,
+        kasirId,
+      );
       _user = updatedUser;
       await _authRepository.saveUser(updatedUser);
       _isLoading = false;
@@ -288,4 +327,3 @@ class AuthProvider with ChangeNotifier {
 
   // handleAutoLogout REMOVED: Session restriction
 }
-

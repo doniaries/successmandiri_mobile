@@ -597,11 +597,19 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
     return ValueListenableBuilder<int>(
       valueListenable: SyncService().pendingSyncCount,
       builder: (context, count, _) {
-        if (count == 0) return const SliverToBoxAdapter(child: SizedBox.shrink());
-        
         return SliverToBoxAdapter(
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (child, animation) => SizeTransition(
+              sizeFactor: animation,
+              axisAlignment: -1.0,
+              child: FadeTransition(opacity: animation, child: child),
+            ),
+            child: count == 0
+                ? const SizedBox.shrink(key: ValueKey('empty'))
+                : Container(
+                    key: const ValueKey('banner'),
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: Colors.orange[50],
@@ -632,6 +640,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                 ),
               ],
             ),
+          ),
           ),
         );
       },

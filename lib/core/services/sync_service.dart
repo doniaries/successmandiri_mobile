@@ -3,9 +3,13 @@ import 'dart:convert';
 import 'dart:developer' as dev;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
+import 'package:sawitappmobile/core/navigation/navigation_service.dart';
 import 'package:sawitappmobile/core/network/api_client.dart';
 import 'package:sawitappmobile/core/services/database_service.dart';
 import 'package:sawitappmobile/core/services/notification_service.dart';
+import 'package:sawitappmobile/shared/providers/resource_provider.dart';
+import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 
 class SyncService {
   static final SyncService _instance = SyncService._internal();
@@ -237,6 +241,17 @@ class SyncService {
           title: title,
           body: body,
         );
+
+        // Auto-refresh UI jika aplikasi sedang terbuka
+        try {
+          final context = NavigationService.navigatorKey.currentContext;
+          if (context != null && context.mounted) {
+            final rp = Provider.of<ResourceProvider>(context, listen: false);
+            final dp = Provider.of<DashboardProvider>(context, listen: false);
+            rp.fetchAllResources();
+            dp.fetchSummary();
+          }
+        } catch (_) {}
       }
     } finally {
       _isSyncing = false;
