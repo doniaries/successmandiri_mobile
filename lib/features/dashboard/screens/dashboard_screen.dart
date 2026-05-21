@@ -472,9 +472,10 @@ class DashboardScreenState extends State<DashboardScreen> {
                           
                           Navigator.pop(context);
                           final success = await authProvider.switchCompany(company['id']);
-                          
+
                           if (success) {
-                            await dashboardProvider.fetchSummary();
+                            // clearAndFetch() → reset summary dulu agar nama perusahaan lama tidak tampil
+                            await dashboardProvider.clearAndFetch();
                             txProvider.fetchTransactions();
                             saldoProvider.fetchRequests();
                             resProvider.fetchAllResources();

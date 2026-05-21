@@ -1,5 +1,4 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:sawitappmobile/core/navigation/navigation_service.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -19,7 +18,7 @@ class NotificationService {
 
     await _notificationsPlugin.initialize(settings: initializationSettings);
   }
-  
+
   Future<void> showNotification({
     required int id,
     required String title,
@@ -45,8 +44,32 @@ class NotificationService {
       body: body,
       notificationDetails: platformChannelSpecifics,
     );
+    // popToHome() dihapus — user tidak boleh dipaksa kembali ke home setiap sync
+  }
 
-    // Auto return to index on notification
-    await NavigationService.popToHome();
+  /// Notifikasi khusus saat offline dan ada data pending yang belum tersync
+  Future<void> showOfflineNotification({
+    required int pendingCount,
+    required String processNames,
+  }) async {
+    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'offline_sync_channel',
+      'Sinkronisasi Offline',
+      channelDescription: 'Pemberitahuan data yang menunggu sinkronisasi saat online',
+      importance: Importance.defaultImportance,
+      priority: Priority.defaultPriority,
+      showWhen: true,
+      ongoing: false,
+      icon: '@mipmap/ic_launcher',
+    );
+
+    const NotificationDetails details = NotificationDetails(android: androidDetails);
+
+    await _notificationsPlugin.show(
+      id: 998,
+      title: '📶 Anda Sedang Offline',
+      body: '$pendingCount data ($processNames) akan dikirim otomatis saat sinyal kembali.',
+      notificationDetails: details,
+    );
   }
 }

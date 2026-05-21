@@ -18,12 +18,29 @@ class DashboardProvider with ChangeNotifier {
   Future<void> fetchSummary({String? date}) async {
     if (_summary == null || date != null) _isLoading = true;
     _error = null;
-    
+
     if (date != null) {
       _filterDate = DateTime.parse(date);
     } else {
       _filterDate = null;
     }
+    notifyListeners();
+
+    try {
+      _summary = await _repository.getSummary(date: date);
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Gunakan ini saat switch perusahaan agar nama perusahaan lama tidak tampil
+  Future<void> clearAndFetch({String? date}) async {
+    _summary = null;
+    _isLoading = true;
+    _error = null;
     notifyListeners();
 
     try {

@@ -27,11 +27,16 @@ class SyncService {
     updatePendingCount();
     // Listen for connectivity changes
     Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) {
+      final wasOffline = _isOffline;
       _isOffline = results.any((r) => r == ConnectivityResult.none);
       _connectivityController.add(!_isOffline);
-      
+
       if (!_isOffline) {
+        // Koneksi kembali → sync data yang tertunda
         syncNow();
+      } else if (!wasOffline && _isOffline) {
+        // Baru saja offline → cek apakah ada data pending
+        _notifyOfflineIfHasPending();
       }
     });
 
@@ -39,7 +44,32 @@ class SyncService {
     Connectivity().checkConnectivity().then((results) {
       _isOffline = results.any((r) => r == ConnectivityResult.none);
       _connectivityController.add(!_isOffline);
+      // Jika langsung offline saat app dibuka dan ada pending, beri tahu user
+      if (_isOffline) {
+        _notifyOfflineIfHasPending();
+      }
     });
+  }
+
+  /// Tampilkan notifikasi lokal jika ada data pending saat offline
+  Future<void> _notifyOfflineIfHasPending() async {
+    try {
+      final queue = await _db.query('offline_queue');
+      if (queue.isEmpty) return;
+
+      final endpoints = queue
+          .map((item) => _getProcessName(item['endpoint'] as String))
+          .toSet()
+          .toList();
+      final processNames = endpoints.join(', ');
+
+      await _notificationService.showOfflineNotification(
+        pendingCount: queue.length,
+        processNames: processNames,
+      );
+    } catch (e) {
+      debugPrint('Error notifying offline pending: \$e');
+    }
   }
 
   Future<void> updatePendingCount() async {
@@ -125,7 +155,9 @@ class SyncService {
 
     _isSyncing = true;
     int successCount = 0;
-    
+    // Kumpulkan endpoints yang BENAR-BENAR berhasil (fix bug take(successCount))
+    final List<String> syncedEndpoints = [];
+
     try {
       for (var item in queue) {
         final id = item['id'] as int;
@@ -138,9 +170,12 @@ class SyncService {
             await _apiClient.dio.post(endpoint, data: data);
           } else if (method == 'PUT') {
             await _apiClient.dio.put(endpoint, data: data);
+          } else if (method == 'DELETE') {
+            await _apiClient.dio.delete(endpoint);
           }
           await _db.deleteQueue(id);
           successCount++;
+          syncedEndpoints.add(_getProcessName(endpoint)); // ← catat endpoint yang sukses
         } catch (e) {
           dev.log('Sync failed for item ${item['id']}: $e');
           continue;
@@ -148,18 +183,12 @@ class SyncService {
       }
 
       if (successCount > 0) {
-        // Buat pesan notifikasi berdasarkan endpoint yang berhasil disinkronkan
-        final syncedEndpoints = queue
-            .take(successCount)
-            .map((item) => _getProcessName(item['endpoint'] as String))
-            .toSet()
-            .toList();
-
-        final processNames = syncedEndpoints.join(', ');
-        final title = syncedEndpoints.length == 1
-            ? '✅ ${syncedEndpoints.first} Berhasil'
+        final uniqueEndpoints = syncedEndpoints.toSet().toList();
+        final processNames = uniqueEndpoints.join(', ');
+        final title = uniqueEndpoints.length == 1
+            ? '✅ ${uniqueEndpoints.first} Berhasil'
             : '✅ Sinkronisasi Berhasil';
-        final body = syncedEndpoints.length == 1
+        final body = uniqueEndpoints.length == 1
             ? '$successCount data $processNames telah dikirim ke server.'
             : '$successCount data ($processNames) berhasil disinkronkan.';
 
