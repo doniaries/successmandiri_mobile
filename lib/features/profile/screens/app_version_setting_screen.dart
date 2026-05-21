@@ -24,7 +24,13 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
     final provider = context.read<ResourceProvider>();
     _versionController = TextEditingController(text: provider.appVersion);
     _creatorController = TextEditingController(text: provider.appCreator);
-    _changelogController = TextEditingController(text: provider.changelog);
+    
+    // Set default numbering if changelog is empty or placeholder
+    String initialChangelog = provider.changelog;
+    if (initialChangelog.isEmpty || initialChangelog == 'Riwayat perubahan aplikasi.') {
+      initialChangelog = '1. ';
+    }
+    _changelogController = TextEditingController(text: initialChangelog);
   }
 
   @override
@@ -42,10 +48,17 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
       _isSaving = true;
     });
 
-    final provider = context.read<ResourceProvider>();
+    // Auto-increment version (patch version bump)
+    String currentVersion = _versionController.text.trim();
+    String newVersion = currentVersion;
+    List<String> versionParts = currentVersion.split('.');
+    if (versionParts.length == 3) {
+      int patch = int.tryParse(versionParts[2]) ?? 0;
+      newVersion = '${versionParts[0]}.${versionParts[1]}.${patch + 1}';
+    }
 
     final success = await provider.updateAppSettings(
-      _versionController.text.trim(),
+      newVersion,
       _creatorController.text.trim(),
       changelog: _changelogController.text.trim(),
     );
@@ -116,7 +129,7 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
                 icon: Icons.update_rounded,
                 validator: (v) =>
                     v!.isEmpty ? 'Versi tidak boleh kosong' : null,
-                enabled: !_isSaving,
+                enabled: false,
               ),
               const SizedBox(height: 20),
 
@@ -134,7 +147,7 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
               _buildTextField(
                 label: 'Riwayat Update / Changelog',
                 controller: _changelogController,
-                hint: 'Masukkan riwayat perubahan aplikasi...',
+                hint: '1. Perbaikan bug A\\n2. Penambahan fitur B',
                 icon: Icons.history_rounded,
                 maxLines: 4,
                 validator: (v) =>
