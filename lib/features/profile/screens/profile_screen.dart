@@ -8,6 +8,7 @@ import 'package:sawitappmobile/shared/widgets/custom_loading_logo.dart';
 import 'package:sawitappmobile/features/auth/screens/login_screen.dart';
 import 'package:sawitappmobile/features/profile/screens/role_menu_settings_screen.dart';
 import 'package:sawitappmobile/features/profile/screens/app_version_setting_screen.dart';
+import 'package:sawitappmobile/features/profile/screens/company_settings_screen.dart';
 import 'package:sawitappmobile/shared/widgets/change_password_dialog.dart';
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -265,8 +266,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     activeThumbColor: const Color(0xFF01579B),
                   ),
                 ),
-                
-                
+                if (user?.isAdmin == true || user?.isSuperAdmin == true) ...[
+                  const SizedBox(height: 20),
+                  const Divider(),
+                  const SizedBox(height: 10),
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Unit Bisnis & Perusahaan',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  _buildRoleMenuTile(
+                    'Pengaturan Perusahaan', 
+                    'Edit nama, alamat, dan kasir aktif',
+                    onTap: () => Navigator.push(
+                      context, 
+                      MaterialPageRoute(builder: (context) => const CompanySettingsScreen())
+                    ),
+                  ),
+                ],
+
                 if (user?.isSuperAdmin == true) ...[
                   const SizedBox(height: 20),
                   const Divider(),

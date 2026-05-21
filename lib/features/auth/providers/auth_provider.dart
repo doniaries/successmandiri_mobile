@@ -205,6 +205,30 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> updateCompanyDetails(String? name, String? alamat, int? kasirId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final updatedUser = await _authRepository.updateCompanyDetails(name, alamat, kasirId);
+      _user = updatedUser;
+      await _authRepository.saveUser(updatedUser);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<List<dynamic>> getUsers() async {
+    return await _authRepository.getUsers();
+  }
+
   // handleAutoLogout REMOVED: Session restriction
 }
 

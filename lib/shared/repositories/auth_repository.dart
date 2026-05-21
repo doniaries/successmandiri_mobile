@@ -269,5 +269,49 @@ class AuthRepository {
       rethrow;
     }
   }
+
+  Future<User> updateCompanyDetails(String? name, String? alamat, int? kasirId) async {
+    try {
+      final response = await _apiClient.dio.post(
+        '/perusahaan/update',
+        data: {
+          'name': name,
+          'alamat': alamat,
+          'kasir_id': kasirId,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        _cachedPerusahaans = null;
+        final dynamic rawUserData = response.data['user'];
+        final Map<String, dynamic> userData = (rawUserData is Map && rawUserData.containsKey('data'))
+            ? Map<String, dynamic>.from(rawUserData['data'])
+            : Map<String, dynamic>.from(rawUserData);
+                
+        return User.fromJson(userData);
+      }
+      throw Exception('Gagal memperbarui pengaturan perusahaan');
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+         throw Exception(e.response?.data['message'] ?? 'Gagal memperbarui perusahaan');
+      }
+      rethrow;
+    }
+  }
+
+  Future<List<dynamic>> getUsers() async {
+    try {
+      final response = await _apiClient.dio.get('/users?per_page=100');
+      if (response.statusCode == 200) {
+        if (response.data is Map && response.data.containsKey('data')) {
+           return response.data['data'];
+        }
+        return response.data;
+      }
+      return [];
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
 
