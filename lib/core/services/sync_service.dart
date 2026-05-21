@@ -18,12 +18,13 @@ class SyncService {
   final ApiClient _apiClient = ApiClient();
   final NotificationService _notificationService = NotificationService();
   bool _isSyncing = false;
-  
+
   final ValueNotifier<int> pendingSyncCount = ValueNotifier(0);
 
   factory SyncService() => _instance;
 
-  final StreamController<bool> _connectivityController = StreamController<bool>.broadcast();
+  final StreamController<bool> _connectivityController =
+      StreamController<bool>.broadcast();
   Stream<bool> get connectivityStream => _connectivityController.stream;
   bool _isOffline = false;
   bool get isOffline => _isOffline;
@@ -31,7 +32,9 @@ class SyncService {
   SyncService._internal() {
     updatePendingCount();
     // Listen for connectivity changes
-    Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) {
+    Connectivity().onConnectivityChanged.listen((
+      List<ConnectivityResult> results,
+    ) {
       final wasOffline = _isOffline;
       _isOffline = results.any((r) => r == ConnectivityResult.none);
       _connectivityController.add(!_isOffline);
@@ -86,7 +89,9 @@ class SyncService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getOfflineQueueForEndpoint(String endpointMatch) async {
+  Future<List<Map<String, dynamic>>> getOfflineQueueForEndpoint(
+    String endpointMatch,
+  ) async {
     try {
       final queue = await _db.query('offline_queue');
       List<Map<String, dynamic>> results = [];
@@ -94,10 +99,7 @@ class SyncService {
         final endpoint = item['endpoint'] as String;
         if (endpoint.contains(endpointMatch)) {
           final data = jsonDecode(item['data'] as String);
-          results.add({
-            'id': -1 * (item['id'] as int),
-            'data': data,
-          });
+          results.add({'id': -1 * (item['id'] as int), 'data': data});
         }
       }
       return results;
@@ -109,17 +111,22 @@ class SyncService {
 
   /// Menggabungkan data dari tabel lokal dengan data yang masih ada di antrean offline (offline_queue).
   /// Ini memastikan item yang baru ditambahkan secara offline langsung muncul di daftar saat offline.
-  Future<List<Map<String, dynamic>>> getMergedOfflineData(String table, String endpoint) async {
+  Future<List<Map<String, dynamic>>> getMergedOfflineData(
+    String table,
+    String endpoint,
+  ) async {
     try {
       List<Map<String, dynamic>> list = [];
       try {
         final localData = await _db.query(table);
         for (var e in localData) {
           final id = e['id'];
-          if (id != null && id is int && id <= 0) continue; // Filter out id <= 0
+          if (id != null && id is int && id <= 0)
+            continue; // Filter out id <= 0
           if (e['data'] != null) {
             try {
-              final parsed = jsonDecode(e['data'] as String) as Map<String, dynamic>;
+              final parsed =
+                  jsonDecode(e['data'] as String) as Map<String, dynamic>;
               list.add(parsed);
             } catch (_) {}
           }
@@ -136,22 +143,23 @@ class SyncService {
 
         if (qEndpoint == endpoint && method == 'POST') {
           try {
-            final data = jsonDecode(item['data'] as String) as Map<String, dynamic>;
+            final data =
+                jsonDecode(item['data'] as String) as Map<String, dynamic>;
             data['id'] = -1 * qId; // ID negatif sementara untuk offline
-            list.add(data);
-          } catch (_) {}
-        } else if (qEndpoint.startsWith('$endpoint/') && method == 'PUT') {
-          try {
-            final data = jsonDecode(item['data'] as String) as Map<String, dynamic>;
-            final idStr = qEndpoint.split('/').last;
-            final id = int.tryParse(idStr);
-            if (id != null) {
-              final index = list.indexWhere((p) => p['id'] == id);
-              if (index != -1) {
-                list[index].addAll(data);
-              }
-            }
-          } catch (_) {}
+
+            // --- 1. BERIKAN NILAI DEFAULT ---
+            // Mencegah model .fromJson() error karena field backend tidak ada di form POST
+            data['sisa_hutang'] ??= 0;
+            data['is_active'] ??= 1;
+            if (endpoint.contains('supir')) data['status_supir'] ??= 'Tersedia';
+            if (endpoint.contains('operasional')) data['status'] ??= 'pending';
+
+            // --- 2. UBAH .add MENJADI .insert ---
+            // Agar data offline baru selalu muncul di urutan PALING ATAS list
+            list.insert(0, data);
+          } catch (e) {
+            debugPrint('Error parsing offline queue item: $e');
+          }
         }
       }
       return list;
@@ -175,9 +183,10 @@ class SyncService {
       final queue = await _db.query('offline_queue');
       final item = queue.firstWhere((q) => q['id'] == id, orElse: () => {});
       if (item.isNotEmpty) {
-        final existingData = jsonDecode(item['data'] as String) as Map<String, dynamic>;
+        final existingData =
+            jsonDecode(item['data'] as String) as Map<String, dynamic>;
         existingData.addAll(newData);
-        
+
         final db = await DatabaseService().database;
         if (db != null) {
           await db.update(
@@ -193,7 +202,11 @@ class SyncService {
     }
   }
 
-  Future<int> addToQueue(String endpoint, String method, Map<String, dynamic> data) async {
+  Future<int> addToQueue(
+    String endpoint,
+    String method,
+    Map<String, dynamic> data,
+  ) async {
     final id = await _db.insert('offline_queue', {
       'endpoint': endpoint,
       'method': method,
@@ -206,7 +219,7 @@ class SyncService {
 
   Future<void> syncNow() async {
     if (_isSyncing) return;
-    
+
     final connectivity = await Connectivity().checkConnectivity();
     if (connectivity.contains(ConnectivityResult.none)) return;
 
@@ -242,7 +255,7 @@ class SyncService {
       });
 
       final results = await Future.wait(syncTasks);
-      
+
       for (var res in results) {
         if (res != null) {
           successCount++;
@@ -303,10 +316,9 @@ class SyncService {
     return 'Data';
   }
 
-
   Future<void> cacheData(String table, List<dynamic> list) async {
     List<Map<String, dynamic>> mappedList = [];
-    
+
     for (var item in list) {
       if (item is Map) {
         try {
@@ -337,13 +349,15 @@ class SyncService {
     try {
       // Sesuai permintaan: Hanya sinkronkan data yang dibutuhkan di awal (Dashboard, DO, Laporan)
       // Master data (Supir, Penjual, Pekerja, Kendaraan) akan dimuat per halaman saat dibutuhkan.
-      
+
       // Sync Users (Karyawan) - Biasanya datanya kecil dan sering dibutuhkan
 
       try {
         final response = await _apiClient.dio.get('/users');
         if (response.data != null) {
-          final List<dynamic> userData = response.data is List ? response.data : (response.data['data'] ?? []);
+          final List<dynamic> userData = response.data is List
+              ? response.data
+              : (response.data['data'] ?? []);
           await cacheData('users', userData);
         }
       } catch (e) {
@@ -354,7 +368,9 @@ class SyncService {
       try {
         final response = await _apiClient.dio.get('/perusahaans');
         if (response.data != null) {
-          final List<dynamic> compData = response.data is List ? response.data : (response.data['data'] ?? []);
+          final List<dynamic> compData = response.data is List
+              ? response.data
+              : (response.data['data'] ?? []);
           await cacheData('perusahaans', compData);
         }
       } catch (e) {
@@ -367,4 +383,3 @@ class SyncService {
     }
   }
 }
-

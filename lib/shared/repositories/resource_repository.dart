@@ -163,8 +163,8 @@ class ResourceRepository {
     } catch (e) {
       try {
         final pendingData = await syncService.getMergedOfflineData(
-          'penjual',
-          ApiConstants.penjual,
+          'supir', // <-- UBAH DARI 'penjual'
+          ApiConstants.supir, // <-- UBAH DARI ApiConstants.penjual
         );
         return {
           'data': pendingData,
@@ -270,8 +270,8 @@ class ResourceRepository {
     } catch (e) {
       try {
         final pendingData = await syncService.getMergedOfflineData(
-          'penjual',
-          ApiConstants.penjual,
+          'pekerja',
+          ApiConstants.pekerja,
         );
         return {
           'data': pendingData,
@@ -380,8 +380,8 @@ class ResourceRepository {
     } catch (e) {
       try {
         final pendingData = await syncService.getMergedOfflineData(
-          'penjual',
-          ApiConstants.penjual,
+          'kendaraan',
+          ApiConstants.kendaraan,
         );
         return {
           'data': pendingData,
@@ -466,8 +466,8 @@ class ResourceRepository {
     } catch (e) {
       try {
         final pendingData = await syncService.getMergedOfflineData(
-          'penjual',
-          ApiConstants.penjual,
+          'operasional',
+          ApiConstants.operasional,
         );
         return {
           'data': pendingData,
@@ -484,7 +484,7 @@ class ResourceRepository {
     final response = await _apiClient.dio.get(ApiConstants.operasional);
     final List<dynamic> data = _extractListData(response.data);
     syncService.cacheData('operasional', data);
-      return data.map((e) => Operasional.fromJson(e)).toList();
+    return data.map((e) => Operasional.fromJson(e)).toList();
   }
 
   Future<Operasional> getOperasionalDetail(int id) async {

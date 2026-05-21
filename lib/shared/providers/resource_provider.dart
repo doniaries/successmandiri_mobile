@@ -246,7 +246,10 @@ class ResourceProvider with ChangeNotifier {
       }
       notifyListeners();
     } else {
-      if (_isFetchingMore[type] == true || _isRefreshing[type] == true || _hasMore[type] == false) return;
+      if (_isFetchingMore[type] == true ||
+          _isRefreshing[type] == true ||
+          _hasMore[type] == false)
+        return;
       _isFetchingMore[type] = true;
       notifyListeners();
     }
@@ -436,8 +439,9 @@ class ResourceProvider with ChangeNotifier {
 
   Future<void> _checkNewDataFor(String type) async {
     final prefs = await SharedPreferences.getInstance();
-    final lastSeenId = int.tryParse(prefs.getString('seen_state_$type') ?? '0') ?? 0;
-    
+    final lastSeenId =
+        int.tryParse(prefs.getString('seen_state_$type') ?? '0') ?? 0;
+
     int count = 0;
     switch (type) {
       case 'penjual':
@@ -462,7 +466,7 @@ class ResourceProvider with ChangeNotifier {
         count = _users.where((item) => item.id > lastSeenId).length;
         break;
     }
-    
+
     _unreadCounts[type] = count;
     _hasNewData[type] = count > 0;
   }
@@ -502,38 +506,59 @@ class ResourceProvider with ChangeNotifier {
     String latestId = "";
     switch (type) {
       case 'penjual':
-        latestId = _penjuals.isNotEmpty 
-            ? _penjuals.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString() 
+        latestId = _penjuals.isNotEmpty
+            ? _penjuals
+                  .map((e) => e.id)
+                  .reduce((curr, next) => curr > next ? curr : next)
+                  .toString()
             : "";
         break;
       case 'supir':
-        latestId = _supirs.isNotEmpty 
-            ? _supirs.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString() 
+        latestId = _supirs.isNotEmpty
+            ? _supirs
+                  .map((e) => e.id)
+                  .reduce((curr, next) => curr > next ? curr : next)
+                  .toString()
             : "";
         break;
       case 'pekerja':
-        latestId = _pekerjas.isNotEmpty 
-            ? _pekerjas.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString() 
+        latestId = _pekerjas.isNotEmpty
+            ? _pekerjas
+                  .map((e) => e.id)
+                  .reduce((curr, next) => curr > next ? curr : next)
+                  .toString()
             : "";
         break;
       case 'kendaraan':
         latestId = _kendaraans.isNotEmpty
-            ? _kendaraans.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString()
+            ? _kendaraans
+                  .map((e) => e.id)
+                  .reduce((curr, next) => curr > next ? curr : next)
+                  .toString()
             : "";
         break;
       case 'operasional':
         latestId = _operasionals.isNotEmpty
-            ? _operasionals.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString()
+            ? _operasionals
+                  .map((e) => e.id)
+                  .reduce((curr, next) => curr > next ? curr : next)
+                  .toString()
             : "";
         break;
       case 'jurnal_keuangan':
         latestId = _jurnalKeuangans.isNotEmpty
-            ? _jurnalKeuangans.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString()
+            ? _jurnalKeuangans
+                  .map((e) => e.id)
+                  .reduce((curr, next) => curr > next ? curr : next)
+                  .toString()
             : "";
         break;
       case 'user':
-        latestId = _users.isNotEmpty 
-            ? _users.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString() 
+        latestId = _users.isNotEmpty
+            ? _users
+                  .map((e) => e.id)
+                  .reduce((curr, next) => curr > next ? curr : next)
+                  .toString()
             : "";
         break;
     }
@@ -551,38 +576,59 @@ class ResourceProvider with ChangeNotifier {
       String latestId = "";
       switch (type) {
         case 'penjual':
-          latestId = _penjuals.isNotEmpty 
-              ? _penjuals.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString() 
+          latestId = _penjuals.isNotEmpty
+              ? _penjuals
+                    .map((e) => e.id)
+                    .reduce((curr, next) => curr > next ? curr : next)
+                    .toString()
               : "";
           break;
         case 'supir':
-          latestId = _supirs.isNotEmpty 
-              ? _supirs.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString() 
+          latestId = _supirs.isNotEmpty
+              ? _supirs
+                    .map((e) => e.id)
+                    .reduce((curr, next) => curr > next ? curr : next)
+                    .toString()
               : "";
           break;
         case 'pekerja':
-          latestId = _pekerjas.isNotEmpty 
-              ? _pekerjas.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString() 
+          latestId = _pekerjas.isNotEmpty
+              ? _pekerjas
+                    .map((e) => e.id)
+                    .reduce((curr, next) => curr > next ? curr : next)
+                    .toString()
               : "";
           break;
         case 'kendaraan':
           latestId = _kendaraans.isNotEmpty
-              ? _kendaraans.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString()
+              ? _kendaraans
+                    .map((e) => e.id)
+                    .reduce((curr, next) => curr > next ? curr : next)
+                    .toString()
               : "";
           break;
         case 'operasional':
           latestId = _operasionals.isNotEmpty
-              ? _operasionals.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString()
+              ? _operasionals
+                    .map((e) => e.id)
+                    .reduce((curr, next) => curr > next ? curr : next)
+                    .toString()
               : "";
           break;
         case 'jurnal_keuangan':
           latestId = _jurnalKeuangans.isNotEmpty
-              ? _jurnalKeuangans.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString()
+              ? _jurnalKeuangans
+                    .map((e) => e.id)
+                    .reduce((curr, next) => curr > next ? curr : next)
+                    .toString()
               : "";
           break;
         case 'user':
-          latestId = _users.isNotEmpty 
-              ? _users.map((e) => e.id).reduce((curr, next) => curr > next ? curr : next).toString() 
+          latestId = _users.isNotEmpty
+              ? _users
+                    .map((e) => e.id)
+                    .reduce((curr, next) => curr > next ? curr : next)
+                    .toString()
               : "";
           break;
       }
@@ -611,10 +657,13 @@ class ResourceProvider with ChangeNotifier {
     _errorMessage = null;
     try {
       final result = await _repository.storePenjual(data);
+
+      // ✅ PANGGIL REFRESH DI SINI (DI LUAR ELSE)
+      // Ini akan memicu pengambilan data (cache + queue offline terbaru)
+      await fetchResources('penjual', refresh: true);
+
       if (result is Map && result['offline'] == true) {
         _errorMessage = 'offline';
-      } else {
-        await fetchResources('penjual', refresh: true);
       }
       return result;
     } catch (e) {
@@ -628,10 +677,12 @@ class ResourceProvider with ChangeNotifier {
     _errorMessage = null;
     try {
       final result = await _repository.storeSupir(data);
+
+      // ✅ SELALU refresh data agar data dari offline_queue langsung muncul
+      await fetchResources('supir', refresh: true);
+
       if (result is Map && result['offline'] == true) {
         _errorMessage = 'offline';
-      } else {
-        await fetchResources('supir', refresh: true);
       }
       return result;
     } catch (e) {
@@ -667,10 +718,12 @@ class ResourceProvider with ChangeNotifier {
     _errorMessage = null;
     try {
       final result = await _repository.storePekerja(data);
+
+      // ✅ SELALU refresh data agar data dari offline_queue langsung muncul
+      await fetchResources('pekerja', refresh: true);
+
       if (result is Map && result['offline'] == true) {
         _errorMessage = 'offline';
-      } else {
-        await fetchResources('pekerja', refresh: true);
       }
       return result;
     } catch (e) {
@@ -695,10 +748,12 @@ class ResourceProvider with ChangeNotifier {
     _errorMessage = null;
     try {
       final result = await _repository.storeKendaraan(data);
+
+      // ✅ SELALU refresh data agar data dari offline_queue langsung muncul
+      await fetchResources('kendaraan', refresh: true);
+
       if (result is Map && result['offline'] == true) {
         _errorMessage = 'offline';
-      } else {
-        await fetchAllResources();
       }
       return result;
     } catch (e) {
@@ -712,10 +767,12 @@ class ResourceProvider with ChangeNotifier {
     _errorMessage = null;
     try {
       final result = await _repository.storeOperasional(data);
+
+      // ✅ SELALU refresh data agar data dari offline_queue langsung muncul
+      await fetchResources('operasional', refresh: true);
+
       if (result is Map && result['offline'] == true) {
         _errorMessage = 'offline';
-      } else {
-        await fetchAllResources();
       }
       return result;
     } catch (e) {
@@ -763,7 +820,11 @@ class ResourceProvider with ChangeNotifier {
     return await _repository.getPekerjaDetail(id);
   }
 
-  Future<bool> updateAppSettings(String version, String creator, {String? changelog}) async {
+  Future<bool> updateAppSettings(
+    String version,
+    String creator, {
+    String? changelog,
+  }) async {
     _isLoading = true;
     notifyListeners();
     try {
@@ -777,7 +838,9 @@ class ResourceProvider with ChangeNotifier {
       _appCreator = settings['app_creator'] ?? creator;
       // Null-safe: logo bisa null jika belum diupload
       final logoUrl = settings['app_logo_url'];
-      _appLogoUrl = logoUrl != null ? ApiConstants.normalizeUrl(logoUrl as String) : null;
+      _appLogoUrl = logoUrl != null
+          ? ApiConstants.normalizeUrl(logoUrl as String)
+          : null;
       _changelog = settings['changelog'] ?? changelog ?? _changelog;
       return true;
     } catch (e) {
@@ -944,7 +1007,8 @@ class ResourceProvider with ChangeNotifier {
 
   @override
   void notifyListeners() {
-    if (WidgetsBinding.instance.schedulerPhase == SchedulerPhase.persistentCallbacks) {
+    if (WidgetsBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         super.notifyListeners();
       });
