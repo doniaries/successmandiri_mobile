@@ -102,6 +102,46 @@ class SyncService {
     }
   }
 
+  /// Menggabungkan data dari tabel lokal dengan data yang masih ada di antrean offline (offline_queue).
+  /// Ini memastikan item yang baru ditambahkan secara offline langsung muncul di daftar saat offline.
+  Future<List<Map<String, dynamic>>> getMergedOfflineData(String table, String endpoint) async {
+    try {
+      final localData = await _db.query(table);
+      final list = List<Map<String, dynamic>>.from(localData.map((e) => Map<String, dynamic>.from(e)));
+
+      final queue = await _db.query('offline_queue');
+      for (var item in queue) {
+        final qEndpoint = item['endpoint'].toString();
+        final method = item['method'].toString();
+        final qId = item['id'] as int;
+
+        if (qEndpoint == endpoint && method == 'POST') {
+          try {
+            final data = jsonDecode(item['data'] as String) as Map<String, dynamic>;
+            data['id'] = -1 * qId; // ID negatif sementara untuk offline
+            list.add(data);
+          } catch (_) {}
+        } else if (qEndpoint.startsWith('$endpoint/') && method == 'PUT') {
+          try {
+            final data = jsonDecode(item['data'] as String) as Map<String, dynamic>;
+            final idStr = qEndpoint.split('/').last;
+            final id = int.tryParse(idStr);
+            if (id != null) {
+              final index = list.indexWhere((p) => p['id'] == id);
+              if (index != -1) {
+                list[index].addAll(data);
+              }
+            }
+          } catch (_) {}
+        }
+      }
+      return list;
+    } catch (e) {
+      debugPrint('Error merging offline data for $table: $e');
+      return [];
+    }
+  }
+
   Future<void> deleteFromQueue(int id) async {
     try {
       await _db.deleteQueue(id);

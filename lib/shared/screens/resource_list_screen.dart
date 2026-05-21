@@ -117,28 +117,13 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
 
   Widget _buildSummaryCards(ResourceProvider provider, List<dynamic> items) {
     int totalCount = items.length;
-    if (widget.resourceType == 'penjual') {
-      totalCount = provider.penjualCount;
-    } else if (widget.resourceType == 'supir') {
-      totalCount = provider.supirCount;
-    } else if (widget.resourceType == 'pekerja') {
-      totalCount = provider.pekerjaCount;
-    }
-    double totalHutang = 0.0;
-    if (widget.resourceType == 'penjual') {
-      totalHutang = provider.totalHutangPenjual;
-    } else if (widget.resourceType == 'supir') {
-      totalHutang = provider.totalHutangSupir;
-    } else if (widget.resourceType == 'pekerja') {
-      totalHutang = provider.totalHutangPekerja;
-    } else {
-      totalHutang = items.fold(0.0, (sum, item) {
-        if (item is Penjual) return sum + (item.sisaHutang ?? 0.0);
-        if (item is Supir) return sum + (item.sisaHutang ?? 0.0);
-        if (item is Pekerja) return sum + item.sisaHutang;
-        return sum;
-      });
-    }
+    
+    double totalHutang = items.fold(0.0, (sum, item) {
+      if (item is Penjual) return sum + (item.sisaHutang ?? 0.0);
+      if (item is Supir) return sum + (item.sisaHutang ?? 0.0);
+      if (item is Pekerja) return sum + item.sisaHutang;
+      return sum;
+    });
 
     String titleLabel = 'Total';
     IconData countIcon = Icons.people_alt_rounded;

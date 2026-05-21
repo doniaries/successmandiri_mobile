@@ -40,8 +40,8 @@ class ResourceRepository {
     try {
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
-        final localData = await _db.query('penjual');
-        return localData.map((e) => Penjual.fromJson(e)).toList();
+        final mergedData = await syncService.getMergedOfflineData('penjual', ApiConstants.penjual);
+        return mergedData.map((e) => Penjual.fromJson(e)).toList();
       }
 
       final response = await _apiClient.dio.get(
@@ -53,8 +53,8 @@ class ResourceRepository {
       syncService.cacheData('penjual', data);
       return data.map((e) => Penjual.fromJson(e)).toList();
     } catch (e) {
-      final localData = await _db.query('penjual');
-      return localData.map((e) => Penjual.fromJson(e)).toList();
+      final mergedData = await syncService.getMergedOfflineData('penjual', ApiConstants.penjual);
+      return mergedData.map((e) => Penjual.fromJson(e)).toList();
     }
   }
 
@@ -111,8 +111,8 @@ class ResourceRepository {
     try {
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
-        final localData = await _db.query('supir');
-        return localData.map((e) => Supir.fromJson(e)).toList();
+        final mergedData = await syncService.getMergedOfflineData('supir', ApiConstants.supir);
+        return mergedData.map((e) => Supir.fromJson(e)).toList();
       }
 
       final response = await _apiClient.dio.get(
@@ -124,8 +124,8 @@ class ResourceRepository {
       syncService.cacheData('supir', data);
       return data.map((e) => Supir.fromJson(e)).toList();
     } catch (e) {
-      final localData = await _db.query('supir');
-      return localData.map((e) => Supir.fromJson(e)).toList();
+      final mergedData = await syncService.getMergedOfflineData('supir', ApiConstants.supir);
+      return mergedData.map((e) => Supir.fromJson(e)).toList();
     }
   }
 
@@ -182,8 +182,8 @@ class ResourceRepository {
     try {
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
-        final localData = await _db.query('pekerja');
-        return localData.map((e) => Pekerja.fromJson(e)).toList();
+        final mergedData = await syncService.getMergedOfflineData('pekerja', ApiConstants.pekerja);
+        return mergedData.map((e) => Pekerja.fromJson(e)).toList();
       }
 
       final response = await _apiClient.dio.get(
@@ -195,8 +195,8 @@ class ResourceRepository {
       syncService.cacheData('pekerja', data);
       return data.map((e) => Pekerja.fromJson(e)).toList();
     } catch (e) {
-      final localData = await _db.query('pekerja');
-      return localData.map((e) => Pekerja.fromJson(e)).toList();
+      final mergedData = await syncService.getMergedOfflineData('pekerja', ApiConstants.pekerja);
+      return mergedData.map((e) => Pekerja.fromJson(e)).toList();
     }
   }
 
@@ -253,8 +253,8 @@ class ResourceRepository {
     try {
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
-        final localData = await _db.query('kendaraan');
-        return localData.map((e) => Kendaraan.fromJson(e)).toList();
+        final mergedData = await syncService.getMergedOfflineData('kendaraan', ApiConstants.kendaraan);
+        return mergedData.map((e) => Kendaraan.fromJson(e)).toList();
       }
 
       final response = await _apiClient.dio.get(
@@ -266,8 +266,8 @@ class ResourceRepository {
       syncService.cacheData('kendaraan', data);
       return data.map((e) => Kendaraan.fromJson(e)).toList();
     } catch (e) {
-      final localData = await _db.query('kendaraan');
-      return localData.map((e) => Kendaraan.fromJson(e)).toList();
+      final mergedData = await syncService.getMergedOfflineData('kendaraan', ApiConstants.kendaraan);
+      return mergedData.map((e) => Kendaraan.fromJson(e)).toList();
     }
   }
 

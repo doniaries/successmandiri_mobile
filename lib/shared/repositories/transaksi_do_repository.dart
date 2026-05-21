@@ -34,9 +34,8 @@ class TransaksiDoRepository {
       return _extractListData(response.data);
     } catch (e) {
       try {
-        final db = DatabaseService();
-        final localData = await db.query('penjual');
-        return localData.isNotEmpty ? localData : [];
+        final mergedData = await _syncService.getMergedOfflineData('penjual', ApiConstants.penjual);
+        return mergedData.isNotEmpty ? mergedData : [];
       } catch (_) {}
       rethrow;
     }
@@ -51,9 +50,8 @@ class TransaksiDoRepository {
       return _extractListData(response.data);
     } catch (e) {
       try {
-        final db = DatabaseService();
-        final localData = await db.query('supir');
-        return localData.isNotEmpty ? localData : [];
+        final mergedData = await _syncService.getMergedOfflineData('supir', ApiConstants.supir);
+        return mergedData.isNotEmpty ? mergedData : [];
       } catch (_) {}
       rethrow;
     }
@@ -68,9 +66,8 @@ class TransaksiDoRepository {
       return _extractListData(response.data);
     } catch (e) {
       try {
-        final db = DatabaseService();
-        final localData = await db.query('kendaraan');
-        return localData.isNotEmpty ? localData : [];
+        final mergedData = await _syncService.getMergedOfflineData('kendaraan', ApiConstants.kendaraan);
+        return mergedData.isNotEmpty ? mergedData : [];
       } catch (_) {}
       rethrow;
     }
