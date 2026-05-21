@@ -6,14 +6,14 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:sawitappmobile/features/auth/providers/auth_provider.dart';
 import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_provider.dart';
 import 'package:sawitappmobile/features/tambah_saldo/providers/tambah_saldo_provider.dart';
-import 'package:sawitappmobile/features/tambah_saldo/screens/tambah_saldo_detail_screen.dart';
+
 import 'package:sawitappmobile/shared/screens/resource_list_screen.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:sawitappmobile/features/transaksi_do/models/transaksi_do_model.dart';
 import 'package:sawitappmobile/features/dashboard/models/dashboard_summary_model.dart';
 import 'package:sawitappmobile/shared/widgets/balance_validation_modal.dart';
-import 'package:sawitappmobile/features/tambah_saldo/models/tambah_saldo_model.dart';
+
 import 'package:sawitappmobile/features/auth/models/user_model.dart';
 import 'package:sawitappmobile/features/auth/screens/login_screen.dart';
 import 'package:sawitappmobile/features/tambah_saldo/screens/tambah_saldo_list_screen.dart';
@@ -30,8 +30,7 @@ import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/features/operasional/models/operasional_model.dart';
 import 'package:sawitappmobile/features/penjual/models/penjual_model.dart';
 import 'package:sawitappmobile/features/supir/models/supir_model.dart';
-import 'package:sawitappmobile/features/pekerja/models/pekerja_model.dart';
-import 'package:sawitappmobile/features/jurnal_keuangan/models/jurnal_keuangan_model.dart';
+
 import 'package:sawitappmobile/shared/providers/navigation_provider.dart';
 import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 import 'package:sawitappmobile/shared/widgets/custom_loading_logo.dart';
@@ -55,12 +54,12 @@ class DashboardScreenState extends State<DashboardScreen> {
       if (!mounted) return;
       final dashboardProvider = context.read<DashboardProvider>();
       final resourceProvider = context.read<ResourceProvider>();
-      
+
       // Sync master data in background only if local list is empty
       if (resourceProvider.penjuals.isEmpty) {
         resourceProvider.syncMasterData();
       }
-      
+
       if (dashboardProvider.summary == null) {
         await dashboardProvider.fetchSummary();
       }
@@ -107,29 +106,29 @@ class DashboardScreenState extends State<DashboardScreen> {
           final dashboardProvider = context.read<DashboardProvider>();
           final resourceProvider = context.read<ResourceProvider>();
           final authProvider = context.read<AuthProvider>();
-          
+
           scaffoldMessenger.showSnackBar(
             const SnackBar(
               content: Text('Memulai Sinkronisasi Data...'),
               duration: Duration(seconds: 1),
             ),
           );
-          
+
           try {
             // 1. Process offline queue
             await SyncService().syncNow();
-            
+
             // 2. Fetch latest user & company details from server
             await authProvider.checkAuthStatus();
-            
+
             // 3. Fetch latest master data from web
             await resourceProvider.syncMasterData();
-            
+
             // 4. Fetch latest summary for dashboard
             await dashboardProvider.fetchSummary();
-            
+
             if (!mounted) return;
-            
+
             if (dashboardProvider.summary != null) {
               final s = dashboardProvider.summary!;
               resourceProvider.updateTotalCounts(
@@ -141,7 +140,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                 jurnal: s.totalJurnalKeuangan,
               );
             }
-            
+
             scaffoldMessenger.showSnackBar(
               const SnackBar(
                 content: Text('Sinkronisasi Data Selesai'),
@@ -178,15 +177,32 @@ class DashboardScreenState extends State<DashboardScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.cloud_upload_rounded, color: Colors.orange, size: 24),
+                        const Icon(
+                          Icons.cloud_upload_rounded,
+                          color: Colors.orange,
+                          size: 24,
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Ada $count Data Belum Tersinkron', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.deepOrange)),
+                              Text(
+                                'Ada $count Data Belum Tersinkron',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: Colors.deepOrange,
+                                ),
+                              ),
                               const SizedBox(height: 2),
-                              const Text('Data akan otomatis dikirim saat perangkat kembali terhubung ke internet.', style: TextStyle(fontSize: 11, color: Colors.black87)),
+                              const Text(
+                                'Data akan otomatis dikirim saat perangkat kembali terhubung ke internet.',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.black87,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -202,7 +218,10 @@ class DashboardScreenState extends State<DashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildSectionHeader('Layanan Utama', 'Akses cepat layanan dan transaksi Anda'),
+                    _buildSectionHeader(
+                      'Layanan Utama',
+                      'Akses cepat layanan dan transaksi Anda',
+                    ),
                     const SizedBox(height: 8),
                     const _MenuGrid(),
                     const SizedBox(height: 16),
@@ -210,9 +229,17 @@ class DashboardScreenState extends State<DashboardScreen> {
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        _buildTabButton(0, 'DO Sawit', Icons.local_shipping_rounded),
+                        _buildTabButton(
+                          0,
+                          'DO Sawit',
+                          Icons.local_shipping_rounded,
+                        ),
                         const SizedBox(width: 12),
-                        _buildTabButton(1, 'Operasional', Icons.payments_rounded),
+                        _buildTabButton(
+                          1,
+                          'Operasional',
+                          Icons.payments_rounded,
+                        ),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -232,15 +259,34 @@ class DashboardScreenState extends State<DashboardScreen> {
     return Row(
       children: [
         Container(
-          width: 4, height: 18,
-          decoration: BoxDecoration(color: const Color(0xFF01579B), borderRadius: BorderRadius.circular(2)),
+          width: 4,
+          height: 18,
+          decoration: BoxDecoration(
+            color: const Color(0xFF01579B),
+            borderRadius: BorderRadius.circular(2),
+          ),
         ),
         const SizedBox(width: 8),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF1A1A1A), letterSpacing: -0.5)),
-            Text(subtitle, style: TextStyle(fontSize: 12, color: Colors.grey[600], fontWeight: FontWeight.w500)),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                color: Color(0xFF1A1A1A),
+                letterSpacing: -0.5,
+              ),
+            ),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
         ),
       ],
@@ -251,12 +297,27 @@ class DashboardScreenState extends State<DashboardScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text('Transaksi Terkini', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.black87)),
+        const Text(
+          'Transaksi Terkini',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: Colors.black87,
+          ),
+        ),
         TextButton(
           onPressed: () {
-            context.read<MainNavigationProvider>().setIndex(_selectedTransactionTab == 0 ? 1 : 2);
+            context.read<MainNavigationProvider>().setIndex(
+              _selectedTransactionTab == 0 ? 1 : 2,
+            );
           },
-          child: const Text('Lihat Semua', style: TextStyle(color: Color(0xFF01579B), fontWeight: FontWeight.w600)),
+          child: const Text(
+            'Lihat Semua',
+            style: TextStyle(
+              color: Color(0xFF01579B),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
       ],
     );
@@ -272,14 +333,35 @@ class DashboardScreenState extends State<DashboardScreen> {
         decoration: BoxDecoration(
           color: isActive ? const Color(0xFF01579B) : Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: isActive ? const Color(0xFF01579B) : Colors.grey[300]!),
-          boxShadow: isActive ? [BoxShadow(color: const Color(0xFF01579B).withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4))] : null,
+          border: Border.all(
+            color: isActive ? const Color(0xFF01579B) : Colors.grey[300]!,
+          ),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF01579B).withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           children: [
-            Icon(icon, size: 16, color: isActive ? Colors.white : Colors.grey[600]),
+            Icon(
+              icon,
+              size: 16,
+              color: isActive ? Colors.white : Colors.grey[600],
+            ),
             const SizedBox(width: 8),
-            Text(label, style: TextStyle(fontSize: 12, fontWeight: isActive ? FontWeight.bold : FontWeight.w500, color: isActive ? Colors.white : Colors.grey[600])),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+                color: isActive ? Colors.white : Colors.grey[600],
+              ),
+            ),
           ],
         ),
       ),
@@ -292,7 +374,11 @@ class DashboardScreenState extends State<DashboardScreen> {
         delegate: SliverChildBuilderDelegate(
           (context, index) => const Padding(
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            child: SkeletonLoader(height: 80, width: double.infinity, borderRadius: 16),
+            child: SkeletonLoader(
+              height: 80,
+              width: double.infinity,
+              borderRadius: 16,
+            ),
           ),
           childCount: 3,
         ),
@@ -305,7 +391,9 @@ class DashboardScreenState extends State<DashboardScreen> {
           padding: const EdgeInsets.all(40),
           child: Center(
             child: Text(
-              _selectedTransactionTab == 0 ? 'Tidak ada transaksi DO' : 'Tidak ada transaksi operasional',
+              _selectedTransactionTab == 0
+                  ? 'Tidak ada transaksi DO'
+                  : 'Tidak ada transaksi operasional',
               style: TextStyle(color: Colors.grey[400]),
             ),
           ),
@@ -314,15 +402,16 @@ class DashboardScreenState extends State<DashboardScreen> {
     }
 
     return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final item = items[index];
-          if (_selectedTransactionTab == 0 && item is TransaksiDo) return _buildPremiumTransactionItem(item);
-          if (_selectedTransactionTab == 1 && item is Operasional) return _buildOperasionalItem(item);
-          return const SizedBox.shrink();
-        },
-        childCount: items.length,
-      ),
+      delegate: SliverChildBuilderDelegate((context, index) {
+        final item = items[index];
+        if (_selectedTransactionTab == 0 && item is TransaksiDo) {
+          return _buildPremiumTransactionItem(item);
+        }
+        if (_selectedTransactionTab == 1 && item is Operasional) {
+          return _buildOperasionalItem(item);
+        }
+        return const SizedBox.shrink();
+      }, childCount: items.length),
     );
   }
 
@@ -330,11 +419,23 @@ class DashboardScreenState extends State<DashboardScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white, borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 8))],
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: InkWell(
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => TransaksiDoDetailScreen(transaction: tx))),
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TransaksiDoDetailScreen(transaction: tx),
+          ),
+        ),
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -342,36 +443,84 @@ class DashboardScreenState extends State<DashboardScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: const Color(0xFFEBF5FB), borderRadius: BorderRadius.circular(15)),
-                child: const Icon(Icons.receipt_long_rounded, color: Color(0xFF2980B9), size: 22),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEBF5FB),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: const Icon(
+                  Icons.receipt_long_rounded,
+                  color: Color(0xFF2980B9),
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(tx.nomor, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: Color(0xFF1A1A1A))),
+                    Text(
+                      tx.nomor,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 15,
+                        color: Color(0xFF1A1A1A),
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text(tx.penjualNama ?? 'Tanpa Nama', style: TextStyle(color: Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w500)),
+                    Text(
+                      tx.penjualNama ?? 'Tanpa Nama',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ],
                 ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(CurrencyFormatter.formatRupiah(tx.subTotal), style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF2980B9), fontSize: 16)),
+                  Text(
+                    CurrencyFormatter.formatRupiah(tx.subTotal),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF2980B9),
+                      fontSize: 16,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(6)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(6),
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (tx.id < 0) ...[
-                          const Icon(Icons.access_time_rounded, size: 10, color: Colors.orange),
+                          const Icon(
+                            Icons.access_time_rounded,
+                            size: 10,
+                            color: Colors.orange,
+                          ),
                           const SizedBox(width: 4),
                         ],
-                        Text(DateFormat('dd MMM, HH:mm', 'id_ID').format(tx.tanggal), style: TextStyle(fontSize: 10, color: Colors.grey[600], fontWeight: FontWeight.w700)),
+                        Text(
+                          DateFormat(
+                            'dd MMM, HH:mm',
+                            'id_ID',
+                          ).format(tx.tanggal),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -386,16 +535,30 @@ class DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildOperasionalItem(Operasional item) {
     final bool isPengeluaran = item.operasional.toLowerCase() == 'pengeluaran';
-    final Color color = isPengeluaran ? const Color(0xFFC62828) : const Color(0xFF2E7D32);
+    final Color color = isPengeluaran
+        ? const Color(0xFFC62828)
+        : const Color(0xFF2E7D32);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white, borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: InkWell(
-        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => OperasionalDetailScreen(operasional: item))),
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OperasionalDetailScreen(operasional: item),
+          ),
+        ),
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -403,21 +566,41 @@ class DashboardScreenState extends State<DashboardScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
-                child: Icon(isPengeluaran ? Icons.trending_down_rounded : Icons.trending_up_rounded, color: color, size: 24),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isPengeluaran
+                      ? Icons.trending_down_rounded
+                      : Icons.trending_up_rounded,
+                  color: color,
+                  size: 24,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(item.kategoriLabel ?? item.kategori, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2C3E50))),
+                    Text(
+                      item.kategoriLabel ?? item.kategori,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2C3E50),
+                      ),
+                    ),
                     const SizedBox(height: 4),
                     Text(
-                      item.namaPihak != null && item.namaPihak!.isNotEmpty && item.namaPihak != '-'
-                          ? (item.keterangan != null && item.keterangan!.isNotEmpty && item.keterangan != '-'
-                              ? '${item.namaPihak} (${item.keterangan})'
-                              : item.namaPihak!)
+                      item.namaPihak != null &&
+                              item.namaPihak!.isNotEmpty &&
+                              item.namaPihak != '-'
+                          ? (item.keterangan != null &&
+                                    item.keterangan!.isNotEmpty &&
+                                    item.keterangan != '-'
+                                ? '${item.namaPihak} (${item.keterangan})'
+                                : item.namaPihak!)
                           : (item.keterangan ?? '-'),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -427,10 +610,23 @@ class DashboardScreenState extends State<DashboardScreen> {
                     Row(
                       children: [
                         if (item.id < 0) ...[
-                          const Icon(Icons.access_time_rounded, size: 10, color: Colors.orange),
+                          const Icon(
+                            Icons.access_time_rounded,
+                            size: 10,
+                            color: Colors.orange,
+                          ),
                           const SizedBox(width: 4),
                         ],
-                        Text(DateFormat('dd MMM yyyy • HH:mm', 'id_ID').format(item.tanggal), style: TextStyle(fontSize: 10, color: Colors.grey[400])),
+                        Text(
+                          DateFormat(
+                            'dd MMM yyyy • HH:mm',
+                            'id_ID',
+                          ).format(item.tanggal),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey[400],
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -439,12 +635,32 @@ class DashboardScreenState extends State<DashboardScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(CurrencyFormatter.formatRupiah(item.nominal), style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: color)),
+                  Text(
+                    CurrencyFormatter.formatRupiah(item.nominal),
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      color: color,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
-                    child: Text(item.operasional, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: color)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      item.operasional,
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w800,
+                        color: color,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -457,48 +673,118 @@ class DashboardScreenState extends State<DashboardScreen> {
 
   void _showCompanySelector(BuildContext context, AuthProvider authProvider) {
     showModalBottomSheet(
-      context: context, backgroundColor: Colors.transparent,
+      context: context,
+      backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        ),
         padding: const EdgeInsets.symmetric(vertical: 20),
         child: FutureBuilder<List<dynamic>>(
           future: authProvider.getAvailableCompanies(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const SizedBox(height: 200, child: Center(child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF01579B))));
+              return const SizedBox(
+                height: 200,
+                child: Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Color(0xFF01579B),
+                  ),
+                ),
+              );
             }
             final companies = snapshot.data ?? [];
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
                 const SizedBox(height: 20),
-                const Text('Ganti Perusahaan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                const Text(
+                  'Ganti Perusahaan',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                ),
                 const SizedBox(height: 20),
                 Flexible(
                   child: ListView.builder(
-                    shrinkWrap: true, itemCount: companies.length,
+                    shrinkWrap: true,
+                    itemCount: companies.length,
                     itemBuilder: (context, index) {
                       final company = companies[index];
-                      final bool isSelected = authProvider.user?.perusahaanId == company['id'];
+                      final bool isSelected =
+                          authProvider.user?.perusahaanId == company['id'];
                       return ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 25, vertical: 4),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 25,
+                          vertical: 4,
+                        ),
                         leading: Container(
                           padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(color: isSelected ? Colors.blue[900]?.withValues(alpha: 0.1) : Colors.grey[50], borderRadius: BorderRadius.circular(10)),
-                          child: company['logo_url'] != null ? CachedNetworkImage(imageUrl: company['logo_url'], width: 24, height: 24, fit: BoxFit.contain) : Icon(Icons.business_rounded, color: isSelected ? const Color(0xFF01579B) : Colors.grey[400]),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? Colors.blue[900]?.withValues(alpha: 0.1)
+                                : Colors.grey[50],
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: company['logo_url'] != null
+                              ? CachedNetworkImage(
+                                  imageUrl: company['logo_url'],
+                                  width: 24,
+                                  height: 24,
+                                  fit: BoxFit.contain,
+                                )
+                              : Icon(
+                                  Icons.business_rounded,
+                                  color: isSelected
+                                      ? const Color(0xFF01579B)
+                                      : Colors.grey[400],
+                                ),
                         ),
-                        title: Text(company['name'] ?? 'Tanpa Nama', style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: isSelected ? const Color(0xFF01579B) : Colors.black87)),
-                        subtitle: Text('Kasir: ${company['nama_kasir'] ?? 'Kasir Utama'}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                        trailing: isSelected ? const Icon(Icons.check_circle_rounded, color: Color(0xFF01579B)) : null,
+                        title: Text(
+                          company['name'] ?? 'Tanpa Nama',
+                          style: TextStyle(
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            color: isSelected
+                                ? const Color(0xFF01579B)
+                                : Colors.black87,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Kasir: ${company['nama_kasir'] ?? 'Kasir Utama'}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        trailing: isSelected
+                            ? const Icon(
+                                Icons.check_circle_rounded,
+                                color: Color(0xFF01579B),
+                              )
+                            : null,
                         onTap: () async {
-                          final dashboardProvider = context.read<DashboardProvider>();
-                          final txProvider = context.read<TransaksiDoProvider>();
-                          final saldoProvider = context.read<TambahSaldoProvider>();
+                          final dashboardProvider = context
+                              .read<DashboardProvider>();
+                          final txProvider = context
+                              .read<TransaksiDoProvider>();
+                          final saldoProvider = context
+                              .read<TambahSaldoProvider>();
                           final resProvider = context.read<ResourceProvider>();
-                          
+
                           Navigator.pop(context);
-                          final success = await authProvider.switchCompany(company['id']);
+                          final success = await authProvider.switchCompany(
+                            company['id'],
+                          );
 
                           if (success) {
                             // clearAndFetch() → reset summary dulu agar nama perusahaan lama tidak tampil
@@ -522,31 +808,36 @@ class DashboardScreenState extends State<DashboardScreen> {
 
   void _showNotifications(BuildContext context) {
     final role = context.read<AuthProvider>().user?.role?.toLowerCase();
-    final bool isLeader = role == 'admin' || role == 'super_admin' || role == 'pimpinan';
-    
+    final bool isLeader =
+        role == 'admin' || role == 'super_admin' || role == 'pimpinan';
+
     final txProvider = context.read<TransaksiDoProvider>();
-    final saldoProvider = context.read<TambahSaldoProvider>();
     final resProvider = context.read<ResourceProvider>();
 
     showModalBottomSheet(
-      context: context, backgroundColor: Colors.transparent, isScrollControlled: true,
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) => FutureBuilder<Map<String, dynamic>>(
         future: () async {
           // Yield execution to the next event loop cycle to avoid notifyListeners() during build phase
           await Future.delayed(Duration.zero);
-          
+
           // Trigger asynchronous parallel fetching
           final List<Future> fetches = [
             txProvider.fetchTransactions().catchError((e) => null),
-            resProvider.fetchResources('operasional', refresh: true).catchError((e) => null),
+            resProvider
+                .fetchResources('operasional', refresh: true)
+                .catchError((e) => null),
           ];
           if (isLeader) {
             fetches.addAll([
-              saldoProvider.fetchRequests().catchError((e) => null),
-              resProvider.fetchResources('penjual', refresh: true).catchError((e) => null),
-              resProvider.fetchResources('supir', refresh: true).catchError((e) => null),
-              resProvider.fetchResources('pekerja', refresh: true).catchError((e) => null),
-              resProvider.fetchResources('jurnal_keuangan', refresh: true).catchError((e) => null),
+              resProvider
+                  .fetchResources('penjual', refresh: true)
+                  .catchError((e) => null),
+              resProvider
+                  .fetchResources('supir', refresh: true)
+                  .catchError((e) => null),
             ]);
           }
           await Future.wait(fetches);
@@ -554,12 +845,9 @@ class DashboardScreenState extends State<DashboardScreen> {
           final prefs = await SharedPreferences.getInstance();
           return {
             'transaksi_do': prefs.getString('seen_state_transaksi_do') ?? '',
-            'tambah_saldo': prefs.getString('seen_state_tambah_saldo') ?? '',
             'operasional': prefs.getString('seen_state_operasional') ?? '',
             'penjual': prefs.getString('seen_state_penjual') ?? '',
             'supir': prefs.getString('seen_state_supir') ?? '',
-            'pekerja': prefs.getString('seen_state_pekerja') ?? '',
-            'jurnal_keuangan': prefs.getString('seen_state_jurnal_keuangan') ?? '',
           };
         }(),
         builder: (context, snapshot) {
@@ -568,7 +856,10 @@ class DashboardScreenState extends State<DashboardScreen> {
               height: MediaQuery.of(context).size.height * 0.7,
               decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
+                ),
               ),
               child: const Center(
                 child: Column(
@@ -576,7 +867,13 @@ class DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     CircularProgressIndicator(color: Color(0xFF01579B)),
                     SizedBox(height: 16),
-                    Text('Memuat notifikasi terbaru...', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600)),
+                    Text(
+                      'Memuat notifikasi terbaru...',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -584,64 +881,113 @@ class DashboardScreenState extends State<DashboardScreen> {
           }
 
           final seenStates = snapshot.data!;
-          final lastSeenDoId = int.tryParse(seenStates['transaksi_do'] ?? '0') ?? 0;
-          final lastSeenSaldoId = int.tryParse(seenStates['tambah_saldo'] ?? '0') ?? 0;
-          final lastSeenOperasionalId = int.tryParse(seenStates['operasional'] ?? '0') ?? 0;
-          final lastSeenPenjualId = int.tryParse(seenStates['penjual'] ?? '0') ?? 0;
+          final lastSeenDoId =
+              int.tryParse(seenStates['transaksi_do'] ?? '0') ?? 0;
+          final lastSeenOperasionalId =
+              int.tryParse(seenStates['operasional'] ?? '0') ?? 0;
+          final lastSeenPenjualId =
+              int.tryParse(seenStates['penjual'] ?? '0') ?? 0;
           final lastSeenSupirId = int.tryParse(seenStates['supir'] ?? '0') ?? 0;
-          final lastSeenPekerjaId = int.tryParse(seenStates['pekerja'] ?? '0') ?? 0;
-          final lastSeenJurnalId = int.tryParse(seenStates['jurnal_keuangan'] ?? '0') ?? 0;
 
           final transactions = txProvider.transactions;
-          final List<TambahSaldoModel> pengajuanRequests = isLeader 
-              ? saldoProvider.requests.where((req) => req.status.toLowerCase() == 'pending').toList() 
-              : [];
           final latestOperasional = resProvider.operasionals;
           final penjuals = isLeader ? resProvider.penjuals : <Penjual>[];
           final supirs = isLeader ? resProvider.supirs : <Supir>[];
-          final pekerjas = isLeader ? resProvider.pekerjas : <Pekerja>[];
-          final jurnalKeuangans = isLeader ? resProvider.jurnalKeuangans : <JurnalKeuangan>[];
 
-          final filteredTransactions = transactions.where((t) => t.id > lastSeenDoId).toList();
-          final filteredPengajuan = pengajuanRequests.where((p) => p.id > lastSeenSaldoId).toList();
-          final filteredOperasional = latestOperasional.where((o) => o.id > lastSeenOperasionalId).toList();
-          final filteredPenjuals = penjuals.where((p) => p.id > lastSeenPenjualId).toList();
-          final filteredSupirs = supirs.where((s) => s.id > lastSeenSupirId).toList();
-          final filteredPekerjas = pekerjas.where((pk) => pk.id > lastSeenPekerjaId).toList();
-          final filteredJurnal = jurnalKeuangans.where((j) => j.id > lastSeenJurnalId).toList();
+          final filteredTransactions = transactions
+              .where((t) => t.id > lastSeenDoId)
+              .toList();
+          final filteredOperasional = latestOperasional
+              .where((o) => o.id > lastSeenOperasionalId)
+              .toList();
+          final filteredPenjuals = penjuals
+              .where((p) => p.id > lastSeenPenjualId)
+              .toList();
+          final filteredSupirs = supirs
+              .where((s) => s.id > lastSeenSupirId)
+              .toList();
 
-          final allNotifications = [
-            ...filteredTransactions.map((t) => {'type': 'do', 'data': t, 'id': 'do_${t.id}', 'time': t.tanggal}),
-            ...filteredPengajuan.map((p) => {'type': 'pengajuan', 'data': p, 'id': 'pengajuan_${p.id}', 'time': p.tanggal}),
-            ...filteredOperasional.map((o) => {'type': 'operasional', 'data': o, 'id': 'operasional_${o.id}', 'time': o.tanggal}),
-            ...filteredPenjuals.map((p) => {'type': 'penjual', 'data': p, 'id': 'penjual_${p.id}', 'time': p.createdAt ?? DateTime.now()}),
-            ...filteredSupirs.map((s) => {'type': 'supir', 'data': s, 'id': 'supir_${s.id}', 'time': s.createdAt ?? DateTime.now()}),
-            ...filteredPekerjas.map((pk) => {'type': 'pekerja', 'data': pk, 'id': 'pekerja_${pk.id}', 'time': pk.createdAt ?? DateTime.now()}),
-            ...filteredJurnal.map((j) => {'type': 'jurnal_keuangan', 'data': j, 'id': 'jurnal_${j.id}', 'time': j.tanggal}),
-          ]..sort((a, b) => (b['time'] as DateTime).compareTo(a['time'] as DateTime));
+          final allNotifications =
+              [
+                ...filteredTransactions.map(
+                  (t) => {
+                    'type': 'do',
+                    'data': t,
+                    'id': 'do_${t.id}',
+                    'time': t.tanggal,
+                  },
+                ),
+                ...filteredOperasional.map(
+                  (o) => {
+                    'type': 'operasional',
+                    'data': o,
+                    'id': 'operasional_${o.id}',
+                    'time': o.tanggal,
+                  },
+                ),
+                ...filteredPenjuals.map(
+                  (p) => {
+                    'type': 'penjual',
+                    'data': p,
+                    'id': 'penjual_${p.id}',
+                    'time': p.createdAt ?? DateTime.now(),
+                  },
+                ),
+                ...filteredSupirs.map(
+                  (s) => {
+                    'type': 'supir',
+                    'data': s,
+                    'id': 'supir_${s.id}',
+                    'time': s.createdAt ?? DateTime.now(),
+                  },
+                ),
+              ]..sort(
+                (a, b) =>
+                    (b['time'] as DateTime).compareTo(a['time'] as DateTime),
+              );
 
           return Container(
             height: MediaQuery.of(context).size.height * 0.7,
             decoration: const BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30),
+                topRight: Radius.circular(30),
+              ),
             ),
             child: Column(
               children: [
                 const SizedBox(height: 12),
-                Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.all(24),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Informasi Terbaru', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF2C3E50))),
-                      if (allNotifications.isNotEmpty) 
+                      const Text(
+                        'Informasi Terbaru',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF2C3E50),
+                        ),
+                      ),
+                      if (allNotifications.isNotEmpty)
                         TextButton.icon(
                           onPressed: () async {
-                            final txProvider = context.read<TransaksiDoProvider>();
-                            final saldoProvider = context.read<TambahSaldoProvider>();
-                            final resProvider = context.read<ResourceProvider>();
+                            final txProvider = context
+                                .read<TransaksiDoProvider>();
+                            final saldoProvider = context
+                                .read<TambahSaldoProvider>();
+                            final resProvider = context
+                                .read<ResourceProvider>();
                             await txProvider.markAsSeen();
                             await saldoProvider.markAsSeen();
                             await resProvider.markAllAsSeen();
@@ -655,15 +1001,25 @@ class DashboardScreenState extends State<DashboardScreen> {
                                 ),
                               );
                             }
-                          }, 
-                          icon: const Icon(Icons.done_all_rounded, size: 18, color: Colors.redAccent), 
-                          label: const Text('Bersihkan', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                          },
+                          icon: const Icon(
+                            Icons.done_all_rounded,
+                            size: 18,
+                            color: Colors.redAccent,
+                          ),
+                          label: const Text(
+                            'Bersihkan',
+                            style: TextStyle(
+                              color: Colors.redAccent,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                     ],
                   ),
                 ),
                 Expanded(
-                  child: allNotifications.isEmpty 
+                  child: allNotifications.isEmpty
                       ? const Center(child: Text('Belum ada aktivitas terbaru'))
                       : ListView.builder(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -684,14 +1040,15 @@ class DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildNotificationItem(BuildContext context, String type, dynamic data) {
+  Widget _buildNotificationItem(
+    BuildContext context,
+    String type,
+    dynamic data,
+  ) {
     final bool isDo = type == 'do';
-    final bool isPengajuan = type == 'pengajuan';
     final bool isOperasional = type == 'operasional';
     final bool isPenjual = type == 'penjual';
     final bool isSupir = type == 'supir';
-    final bool isPekerja = type == 'pekerja';
-    final bool isJurnal = type == 'jurnal_keuangan';
 
     Widget iconWidget;
     String titleText = '';
@@ -701,74 +1058,81 @@ class DashboardScreenState extends State<DashboardScreen> {
     Widget? detailScreen;
 
     if (isDo) {
-      iconWidget = const Icon(Icons.local_shipping_rounded, color: Color(0xFF01579B), size: 20);
+      iconWidget = const Icon(
+        Icons.local_shipping_rounded,
+        color: Color(0xFF01579B),
+        size: 20,
+      );
       titleText = data.nomor;
       bodyText = data.penjualNama ?? '-';
       amount = data.subTotal;
       date = data.tanggal;
       detailScreen = TransaksiDoDetailScreen(transaction: data);
-    } else if (isPengajuan) {
-      iconWidget = Icon(Icons.pending_actions_rounded, color: Colors.amber[900], size: 20);
-      titleText = 'Tambah Saldo';
-      bodyText = data.keterangan ?? '-';
-      amount = data.nominal;
-      date = data.tanggal;
-      detailScreen = TambahSaldoDetailScreen(request: data);
     } else if (isOperasional) {
-      final bool isPengeluaran = data.operasional.toLowerCase() == 'pengeluaran';
+      final bool isPengeluaran =
+          data.operasional.toLowerCase() == 'pengeluaran';
       iconWidget = Icon(
-        isPengeluaran ? Icons.trending_down_rounded : Icons.trending_up_rounded, 
-        color: isPengeluaran ? const Color(0xFFC62828) : const Color(0xFF2E7D32), 
-        size: 20
+        isPengeluaran ? Icons.trending_down_rounded : Icons.trending_up_rounded,
+        color: isPengeluaran
+            ? const Color(0xFFC62828)
+            : const Color(0xFF2E7D32),
+        size: 20,
       );
       titleText = data.kategoriLabel ?? data.kategori;
-      
-      final creator = data.userName != null && data.userName!.isNotEmpty && data.userName != '-' 
-          ? 'Oleh: ${data.userName}' 
+
+      final creator =
+          data.userName != null &&
+              data.userName!.isNotEmpty &&
+              data.userName != '-'
+          ? 'Oleh: ${data.userName}'
           : 'Oleh: -';
-      final pihak = data.namaPihak != null && data.namaPihak!.isNotEmpty && data.namaPihak != '-' 
-          ? ' • Pihak: ${data.namaPihak}' 
+      final pihak =
+          data.namaPihak != null &&
+              data.namaPihak!.isNotEmpty &&
+              data.namaPihak != '-'
+          ? ' • Pihak: ${data.namaPihak}'
           : '';
-      final ket = data.keterangan != null && data.keterangan!.isNotEmpty && data.keterangan != '-' 
-          ? ' (${data.keterangan})' 
+      final ket =
+          data.keterangan != null &&
+              data.keterangan!.isNotEmpty &&
+              data.keterangan != '-'
+          ? ' (${data.keterangan})'
           : '';
       bodyText = '$creator$pihak$ket';
-      
+
       amount = data.nominal;
       date = data.tanggal;
       detailScreen = OperasionalDetailScreen(operasional: data);
     } else if (isPenjual) {
-      iconWidget = const Icon(Icons.store_rounded, color: Color(0xFF0288D1), size: 20);
+      iconWidget = const Icon(
+        Icons.store_rounded,
+        color: Color(0xFF0288D1),
+        size: 20,
+      );
       titleText = 'Pendaftaran Penjual';
       bodyText = 'Penjual baru: ${data.nama} (${data.telepon ?? 'No Telp -'})';
       amount = 0;
       date = data.createdAt ?? DateTime.now();
-      detailScreen = const ResourceListScreen(title: 'Master Penjual', resourceType: 'penjual');
+      detailScreen = const ResourceListScreen(
+        title: 'Master Penjual',
+        resourceType: 'penjual',
+      );
     } else if (isSupir) {
-      iconWidget = const Icon(Icons.person_rounded, color: Color(0xFF00897B), size: 20);
+      iconWidget = const Icon(
+        Icons.person_rounded,
+        color: Color(0xFF00897B),
+        size: 20,
+      );
       titleText = 'Pendaftaran Supir';
       bodyText = 'Supir baru: ${data.nama} (${data.telepon ?? 'No Telp -'})';
       amount = 0;
       date = data.createdAt ?? DateTime.now();
-      detailScreen = const ResourceListScreen(title: 'Master Supir', resourceType: 'supir');
-    } else if (isPekerja) {
-      iconWidget = const Icon(Icons.engineering_rounded, color: Color(0xFF7B1FA2), size: 20);
-      titleText = 'Pendaftaran Pekerja';
-      bodyText = 'Pekerja baru: ${data.nama} (${data.posisi})';
-      amount = 0;
-      date = data.createdAt ?? DateTime.now();
-      detailScreen = const ResourceListScreen(title: 'Master Pekerja', resourceType: 'pekerja');
-    } else { // Jurnal Keuangan
-      iconWidget = Icon(
-        data.jenisTransaksi == 'Pemasukan' ? Icons.trending_up_rounded : Icons.trending_down_rounded, 
-        color: data.jenisTransaksi == 'Pemasukan' ? const Color(0xFF2E7D32) : const Color(0xFFC62828), 
-        size: 20
+      detailScreen = const ResourceListScreen(
+        title: 'Master Supir',
+        resourceType: 'supir',
       );
-      titleText = 'Jurnal Keuangan Baru';
-      bodyText = '${data.jenisTransaksi}: ${data.subKategori} - ${data.pihakTerkait ?? '-'}';
-      amount = data.nominal;
-      date = data.tanggal;
-      detailScreen = const ResourceListScreen(title: 'Laporan Keuangan', resourceType: 'jurnal_keuangan');
+    } else {
+      iconWidget = const SizedBox.shrink();
     }
 
     String? perusahaanNama;
@@ -784,12 +1148,19 @@ class DashboardScreenState extends State<DashboardScreen> {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.grey[100]!)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey[100]!),
+      ),
       child: InkWell(
         onTap: () {
           Navigator.pop(context);
           if (detailScreen != null) {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => detailScreen!));
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => detailScreen!),
+            );
           }
         },
         borderRadius: BorderRadius.circular(20),
@@ -801,20 +1172,16 @@ class DashboardScreenState extends State<DashboardScreen> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: isDo 
-                      ? const Color(0xFFE3F2FD) 
-                      : isPengajuan 
-                          ? Colors.amber[100] 
-                          : isPenjual
-                              ? const Color(0xFFE3F2FD)
-                              : isSupir
-                                  ? const Color(0xFFE0F2F1)
-                                  : isPekerja
-                                      ? const Color(0xFFF3E5F5)
-                                      : isJurnal
-                                          ? (data.jenisTransaksi == 'Pemasukan' ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE))
-                                          : (data.operasional.toLowerCase() == 'pengeluaran' ? const Color(0xFFFFEBEE) : const Color(0xFFE8F5E9)), 
-                  shape: BoxShape.circle
+                  color: isDo
+                      ? const Color(0xFFE3F2FD)
+                      : isPenjual
+                      ? const Color(0xFFE3F2FD)
+                      : isSupir
+                      ? const Color(0xFFE0F2F1)
+                      : (data.operasional.toLowerCase() == 'pengeluaran'
+                            ? const Color(0xFFFFEBEE)
+                            : const Color(0xFFE8F5E9)),
+                  shape: BoxShape.circle,
                 ),
                 child: iconWidget,
               ),
@@ -829,9 +1196,9 @@ class DashboardScreenState extends State<DashboardScreen> {
                       children: [
                         Expanded(
                           child: Text(
-                            titleText, 
+                            titleText,
                             style: const TextStyle(
-                              fontWeight: FontWeight.w800, 
+                              fontWeight: FontWeight.w800,
                               fontSize: 14,
                               color: Color(0xFF2C3E50),
                             ),
@@ -839,19 +1206,23 @@ class DashboardScreenState extends State<DashboardScreen> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          DateFormat('dd MMM, HH:mm', 'id_ID').format(date), 
+                          DateFormat('dd MMM, HH:mm', 'id_ID').format(date),
                           style: TextStyle(
-                            color: Colors.grey[400], 
-                            fontSize: 10, 
+                            color: Colors.grey[400],
+                            fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
                     ),
-                    if (perusahaanNama != null && perusahaanNama.isNotEmpty) ...[
+                    if (perusahaanNama != null &&
+                        perusahaanNama.isNotEmpty) ...[
                       const SizedBox(height: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFE8F5E9),
                           borderRadius: BorderRadius.circular(6),
@@ -860,7 +1231,11 @@ class DashboardScreenState extends State<DashboardScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.business_rounded, size: 10, color: Color(0xFF2E7D32)),
+                            const Icon(
+                              Icons.business_rounded,
+                              size: 10,
+                              color: Color(0xFF2E7D32),
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               perusahaanNama,
@@ -876,9 +1251,9 @@ class DashboardScreenState extends State<DashboardScreen> {
                     ],
                     const SizedBox(height: 6),
                     Text(
-                      bodyText, 
+                      bodyText,
                       style: TextStyle(
-                        color: Colors.grey[600], 
+                        color: Colors.grey[600],
                         fontSize: 12,
                         height: 1.3,
                       ),
@@ -889,28 +1264,29 @@ class DashboardScreenState extends State<DashboardScreen> {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
-                              color: isDo 
-                                  ? const Color(0xFFE3F2FD) 
-                                  : isPengajuan 
-                                      ? Colors.amber[50] 
-                                      : isJurnal
-                                          ? (data.jenisTransaksi == 'Pemasukan' ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE))
-                                          : (data.operasional.toLowerCase() == 'pengeluaran' ? const Color(0xFFFFEBEE) : const Color(0xFFE8F5E9)),
+                              color: isDo
+                                  ? const Color(0xFFE3F2FD)
+                                  : (data.operasional.toLowerCase() ==
+                                            'pengeluaran'
+                                        ? const Color(0xFFFFEBEE)
+                                        : const Color(0xFFE8F5E9)),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              CurrencyFormatter.formatRupiah(amount), 
+                              CurrencyFormatter.formatRupiah(amount),
                               style: TextStyle(
-                                fontWeight: FontWeight.w900, 
-                                color: isDo 
-                                    ? const Color(0xFF01579B) 
-                                    : isPengajuan 
-                                        ? Colors.amber[900] 
-                                        : isJurnal
-                                            ? (data.jenisTransaksi == 'Pemasukan' ? const Color(0xFF2E7D32) : const Color(0xFFC62828))
-                                            : (data.operasional.toLowerCase() == 'pengeluaran' ? const Color(0xFFC62828) : const Color(0xFF2E7D32)), 
+                                fontWeight: FontWeight.w900,
+                                color: isDo
+                                    ? const Color(0xFF01579B)
+                                    : (data.operasional.toLowerCase() ==
+                                              'pengeluaran'
+                                          ? const Color(0xFFC62828)
+                                          : const Color(0xFF2E7D32)),
                                 fontSize: 12,
                               ),
                             ),
@@ -923,7 +1299,10 @@ class DashboardScreenState extends State<DashboardScreen> {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: const Color(0xFFE3F2FD),
                               borderRadius: BorderRadius.circular(8),
@@ -950,24 +1329,43 @@ class DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Future<void> _handleLogout(BuildContext context, AuthProvider authProvider) async {
+  Future<void> _handleLogout(
+    BuildContext context,
+    AuthProvider authProvider,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Konfirmasi Logout'),
         content: const Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Ya, Keluar', style: TextStyle(color: Color(0xFF01579B)))),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Ya, Keluar',
+              style: TextStyle(color: Color(0xFF01579B)),
+            ),
+          ),
         ],
       ),
     );
 
     if (confirmed == true && context.mounted) {
-      showDialog(context: context, barrierDismissible: false, builder: (context) => const Center(child: AnimatedPulsingLogo()));
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: AnimatedPulsingLogo()),
+      );
       await authProvider.logout();
       if (!context.mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => const LoginScreen()), (route) => false);
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        (route) => false,
+      );
     }
   }
 }
@@ -980,14 +1378,41 @@ class _DashboardHeader extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft, end: Alignment.bottomRight,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
           colors: [Color(0xFF01579B), Color(0xFF0D47A1), Color(0xFF002F6C)],
         ),
       ),
       child: Stack(
         children: [
-          Positioned(top: -100, right: -50, child: IgnorePointer(child: Container(width: 250, height: 250, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.05))))),
-          Positioned(bottom: -20, left: -30, child: IgnorePointer(child: Container(width: 150, height: 150, decoration: BoxDecoration(shape: BoxShape.circle, color: const Color(0xFF01579B).withValues(alpha: 0.08))))),
+          Positioned(
+            top: -100,
+            right: -50,
+            child: IgnorePointer(
+              child: Container(
+                width: 250,
+                height: 250,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.05),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -20,
+            left: -30,
+            child: IgnorePointer(
+              child: Container(
+                width: 150,
+                height: 150,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF01579B).withValues(alpha: 0.08),
+                ),
+              ),
+            ),
+          ),
           const Padding(
             padding: EdgeInsets.fromLTRB(20, 50, 20, 20),
             child: Column(
@@ -1000,6 +1425,7 @@ class _DashboardHeader extends StatelessWidget {
                 SizedBox(height: 12),
                 _BalanceCard(),
                 SizedBox(height: 12),
+                _OfflineIndicator(), // <--- NEW WIDGET HERE
                 _StatCardsSection(),
               ],
             ),
@@ -1010,12 +1436,68 @@ class _DashboardHeader extends StatelessWidget {
   }
 }
 
+class _OfflineIndicator extends StatelessWidget {
+  const _OfflineIndicator();
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<bool>(
+      stream: SyncService().connectivityStream,
+      initialData: !SyncService().isOffline,
+      builder: (context, snapshot) {
+        final isOnline = snapshot.data ?? true;
+        if (isOnline) return const SizedBox.shrink();
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.orange[800]?.withValues(alpha: 0.9),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.orange[400]!.withValues(alpha: 0.5),
+            ),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.wifi_off_rounded, color: Colors.white, size: 18),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mode Offline Aktif',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Data disimpan lokal. Akan sinkron otomatis saat online.',
+                      style: TextStyle(color: Colors.white70, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
 class _BalanceCard extends StatelessWidget {
   const _BalanceCard();
 
   @override
   Widget build(BuildContext context) {
-    final double saldo = context.select<DashboardProvider, double>((p) => p.summary?.saldo ?? 0);
+    final double saldo = context.select<DashboardProvider, double>(
+      (p) => p.summary?.saldo ?? 0,
+    );
     final bool isLow = saldo < 500000;
 
     return Container(
@@ -1038,11 +1520,15 @@ class _BalanceCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: isLow ? Colors.redAccent.withValues(alpha: 0.2) : Colors.amberAccent.withValues(alpha: 0.2),
+              color: isLow
+                  ? Colors.redAccent.withValues(alpha: 0.2)
+                  : Colors.amberAccent.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: Icon(
-              isLow ? Icons.warning_amber_rounded : Icons.account_balance_wallet_rounded,
+              isLow
+                  ? Icons.warning_amber_rounded
+                  : Icons.account_balance_wallet_rounded,
               color: isLow ? Colors.redAccent : Colors.amberAccent,
               size: 28,
             ),
@@ -1110,7 +1596,12 @@ class _HeaderTopRow extends StatelessWidget {
           child: Row(
             children: [
               GestureDetector(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileScreen())),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProfileScreen(),
+                  ),
+                ),
                 child: const _UserAvatar(),
               ),
               const SizedBox(width: 12),
@@ -1136,21 +1627,30 @@ class _UserAvatar extends StatelessWidget {
   const _UserAvatar();
   @override
   Widget build(BuildContext context) {
-    final photoUrl = context.select<AuthProvider, String?>((a) => a.user?.fullPhotoUrl);
+    final photoUrl = context.select<AuthProvider, String?>(
+      (a) => a.user?.fullPhotoUrl,
+    );
     return Container(
       width: 48,
       height: 48,
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.2),
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 2),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.3),
+          width: 2,
+        ),
       ),
       child: photoUrl != null
           ? ClipOval(
               child: Image.network(
                 photoUrl,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => const Icon(Icons.person_rounded, color: Colors.white, size: 30),
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.person_rounded,
+                  color: Colors.white,
+                  size: 30,
+                ),
               ),
             )
           : const Icon(Icons.person_rounded, color: Colors.white, size: 30),
@@ -1162,12 +1662,30 @@ class _WelcomeSection extends StatelessWidget {
   const _WelcomeSection();
   @override
   Widget build(BuildContext context) {
-    final name = context.select<AuthProvider, String>((a) => a.user?.name ?? 'User');
+    final name = context.select<AuthProvider, String>(
+      (a) => a.user?.name ?? 'User',
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Selamat Datang,', style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 12, fontWeight: FontWeight.w500)),
-        Text(name, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+        Text(
+          'Selamat Datang,',
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.7),
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Text(
+          name,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -0.5,
+          ),
+        ),
       ],
     );
   }
@@ -1183,23 +1701,40 @@ class _SyncButton extends StatelessWidget {
         clipBehavior: Clip.none,
         children: [
           _CircleIconBtn(
-            icon: count > 0 ? Icons.recycling_rounded : Icons.cloud_done_rounded,
+            icon: count > 0
+                ? Icons.recycling_rounded
+                : Icons.cloud_done_rounded,
             color: count > 0 ? Colors.orange : Colors.white,
             onTap: () async {
               final scaffoldMessenger = ScaffoldMessenger.of(context);
-              scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Memulai Sinkronisasi Data...'), duration: Duration(seconds: 1)));
-              
+              scaffoldMessenger.showSnackBar(
+                const SnackBar(
+                  content: Text('Memulai Sinkronisasi Data...'),
+                  duration: Duration(seconds: 1),
+                ),
+              );
+
               // 1. Process offline queue
               await SyncService().syncNow();
-              
+
               // 2. Fetch latest master data from web
               if (context.mounted) {
                 await context.read<ResourceProvider>().syncMasterData();
-                scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Sinkronisasi Data Selesai'), backgroundColor: Colors.green));
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('Sinkronisasi Data Selesai'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
               }
             },
           ),
-          if (count > 0) Positioned(top: -2, right: -2, child: _CountBadge(count: count, color: Colors.orange)),
+          if (count > 0)
+            Positioned(
+              top: -2,
+              right: -2,
+              child: _CountBadge(count: count, color: Colors.orange),
+            ),
         ],
       ),
     );
@@ -1210,23 +1745,28 @@ class _NotificationButton extends StatelessWidget {
   const _NotificationButton();
   @override
   Widget build(BuildContext context) {
-    return Selector5<AuthProvider, TransaksiDoProvider, TambahSaldoProvider, ResourceProvider, DashboardProvider, Map<String, dynamic>>(
+    return Selector5<
+      AuthProvider,
+      TransaksiDoProvider,
+      TambahSaldoProvider,
+      ResourceProvider,
+      DashboardProvider,
+      Map<String, dynamic>
+    >(
       selector: (_, auth, p1, p2, p3, p4) {
         final role = auth.user?.role?.toLowerCase();
-        final bool isLeader = role == 'admin' || role == 'super_admin' || role == 'pimpinan';
-        
+        final bool isLeader =
+            role == 'admin' || role == 'super_admin' || role == 'pimpinan';
+
         int total = 0;
         // Transaksi DO & Operasional are visible to both
         total += p1.unreadCount;
         total += p3.getUnreadCountFor('operasional');
-        
+
         if (isLeader) {
-          // Tambah Saldo and master data are only visible to Leaders
-          total += p2.unreadCount;
+          // Hanya Penjual dan Supir yang ditampilkan untuk Leaders
           total += p3.getUnreadCountFor('penjual');
           total += p3.getUnreadCountFor('supir');
-          total += p3.getUnreadCountFor('pekerja');
-          total += p3.getUnreadCountFor('jurnal_keuangan');
         }
         return {'total': total};
       },
@@ -1235,7 +1775,9 @@ class _NotificationButton extends StatelessWidget {
         children: [
           _CircleIconBtn(
             icon: Icons.notifications_none_rounded,
-            onTap: () => context.findAncestorStateOfType<DashboardScreenState>()?._showNotifications(context),
+            onTap: () => context
+                .findAncestorStateOfType<DashboardScreenState>()
+                ?._showNotifications(context),
           ),
           if (data['total'] > 0)
             Positioned(
@@ -1255,7 +1797,9 @@ class _LogoutButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return _CircleIconBtn(
       icon: Icons.power_settings_new_rounded,
-      onTap: () => context.findAncestorStateOfType<DashboardScreenState>()?._handleLogout(context, context.read<AuthProvider>()),
+      onTap: () => context
+          .findAncestorStateOfType<DashboardScreenState>()
+          ?._handleLogout(context, context.read<AuthProvider>()),
     );
   }
 }
@@ -1264,13 +1808,26 @@ class _CircleIconBtn extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
   final Color color;
-  const _CircleIconBtn({required this.icon, required this.onTap, this.color = Colors.white});
+  const _CircleIconBtn({
+    required this.icon,
+    required this.onTap,
+    this.color = Colors.white,
+  });
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 36, width: 36,
-      decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.white10)),
-      child: IconButton(padding: EdgeInsets.zero, icon: Icon(icon, color: color, size: 20), onPressed: onTap),
+      height: 36,
+      width: 36,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: IconButton(
+        padding: EdgeInsets.zero,
+        icon: Icon(icon, color: color, size: 20),
+        onPressed: onTap,
+      ),
     );
   }
 }
@@ -1284,13 +1841,24 @@ class _CountBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color, 
+        color: color,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 6, offset: const Offset(0, 3))],
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.4),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Text(
-        count > 99 ? '99+' : '$count', 
-        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900, height: 1.1),
+        count > 99 ? '99+' : '$count',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+          height: 1.1,
+        ),
       ),
     );
   }
@@ -1300,23 +1868,51 @@ class _CompanySelector extends StatelessWidget {
   const _CompanySelector();
   @override
   Widget build(BuildContext context) {
-    final bool isSwitching = context.select<AuthProvider, bool>((a) => a.isSwitchingCompany);
-    final String name = context.select<AuthProvider, String>((a) => a.user?.perusahaanName ?? 'Pilih Unit Bisnis');
-    final String? logo = context.select<AuthProvider, String?>((a) => a.user?.perusahaanLogoUrl);
-    final String cashier = context.select<AuthProvider, String>((a) => a.user?.perusahaanKasir ?? 'Kasir Utama');
+    final bool isSwitching = context.select<AuthProvider, bool>(
+      (a) => a.isSwitchingCompany,
+    );
+    final String name = context.select<AuthProvider, String>(
+      (a) => a.user?.perusahaanName ?? 'Pilih Unit Bisnis',
+    );
+    final String? logo = context.select<AuthProvider, String?>(
+      (a) => a.user?.perusahaanLogoUrl,
+    );
+    final String cashier = context.select<AuthProvider, String>(
+      (a) => a.user?.perusahaanKasir ?? 'Kasir Utama',
+    );
 
     return GestureDetector(
-      onTap: isSwitching ? null : () => context.findAncestorStateOfType<DashboardScreenState>()?._showCompanySelector(context, context.read<AuthProvider>()),
+      onTap: isSwitching
+          ? null
+          : () => context
+                .findAncestorStateOfType<DashboardScreenState>()
+                ?._showCompanySelector(context, context.read<AuthProvider>()),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: isSwitching ? 0.1 : 0.2), borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: Colors.white.withValues(alpha: isSwitching ? 0.05 : 0.15)),
+          color: Colors.white.withValues(alpha: isSwitching ? 0.1 : 0.2),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: isSwitching ? 0.05 : 0.15),
+          ),
         ),
         child: Row(
           children: [
-            if (logo != null) ClipOval(child: CachedNetworkImage(imageUrl: logo, width: 28, height: 28, fit: BoxFit.contain))
-            else const Icon(Icons.business_rounded, color: Colors.amberAccent, size: 20),
+            if (logo != null)
+              ClipOval(
+                child: CachedNetworkImage(
+                  imageUrl: logo,
+                  width: 28,
+                  height: 28,
+                  fit: BoxFit.contain,
+                ),
+              )
+            else
+              const Icon(
+                Icons.business_rounded,
+                color: Colors.amberAccent,
+                size: 20,
+              ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -1325,19 +1921,54 @@ class _CompanySelector extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Unit Bisnis Aktif', style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 1)),
+                      Text(
+                        'Unit Bisnis Aktif',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 1,
+                        ),
+                      ),
                       Padding(
                         padding: const EdgeInsets.only(right: 8.0),
-                        child: Text('Kasir: $cashier', style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 10, fontWeight: FontWeight.bold)),
+                        child: Text(
+                          'Kasir: $cashier',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.7),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  Text(name, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w900)),
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                 ],
               ),
             ),
-            if (isSwitching) const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-            else const Icon(Icons.unfold_more_rounded, color: Colors.white70, size: 20),
+            if (isSwitching)
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            else
+              const Icon(
+                Icons.unfold_more_rounded,
+                color: Colors.white70,
+                size: 20,
+              ),
           ],
         ),
       ),
@@ -1349,16 +1980,23 @@ class _StatCardsSection extends StatelessWidget {
   const _StatCardsSection();
   @override
   Widget build(BuildContext context) {
-    final isLoading = context.select<DashboardProvider, bool>((p) => p.isLoading);
+    final isLoading = context.select<DashboardProvider, bool>(
+      (p) => p.isLoading,
+    );
     final error = context.select<DashboardProvider, String?>((p) => p.error);
     if (isLoading) return const _SkeletonStats();
     if (error != null) {
-      bool isOfflineError = error.toLowerCase().contains('dioexception') || error.toLowerCase().contains('socketexception') || error.toLowerCase().contains('connection');
+      bool isOfflineError =
+          error.toLowerCase().contains('dioexception') ||
+          error.toLowerCase().contains('socketexception') ||
+          error.toLowerCase().contains('connection');
       return Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
-            isOfflineError ? 'Data tidak tersedia saat offline.' : 'Gagal memuat data: $error',
+            isOfflineError
+                ? 'Data tetap masuk saat offline.'
+                : 'Gagal memuat data: $error',
             style: const TextStyle(color: Colors.white, fontSize: 11),
             textAlign: TextAlign.center,
           ),
@@ -1368,7 +2006,6 @@ class _StatCardsSection extends StatelessWidget {
     return const _StatCards();
   }
 }
-
 
 class _StatCards extends StatefulWidget {
   const _StatCards();
@@ -1417,26 +2054,27 @@ class _StatCardsState extends State<_StatCards> {
 
   @override
   Widget build(BuildContext context) {
-    final summary = context.select<DashboardProvider, DashboardSummary?>((p) => p.summary);
-    final filterDate = context.select<DashboardProvider, DateTime?>((p) => p.filterDate);
+    final summary = context.select<DashboardProvider, DashboardSummary?>(
+      (p) => p.summary,
+    );
+    final filterDate = context.select<DashboardProvider, DateTime?>(
+      (p) => p.filterDate,
+    );
     if (summary == null) return const SizedBox.shrink();
 
     final isToday = filterDate == null;
     final stats = summary.stats;
 
-    final subtitleStr = isToday 
-        ? 'Hari ini' 
+    final subtitleStr = isToday
+        ? 'Hari ini'
         : DateFormat('dd MMM yyyy', 'id_ID').format(filterDate);
-
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            _buildPeriodToggle(filterDate),
-          ],
+          children: [_buildPeriodToggle(filterDate)],
         ),
         const SizedBox(height: 12),
         // 1. Transaksi DO Card - Elegant Full-Width Horizontal Card
@@ -1450,7 +2088,10 @@ class _StatCardsState extends State<_StatCards> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFF01579B).withValues(alpha: 0.1), width: 1),
+                border: Border.all(
+                  color: const Color(0xFF01579B).withValues(alpha: 0.1),
+                  width: 1,
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: const Color(0xFF01579B).withValues(alpha: 0.05),
@@ -1540,17 +2181,26 @@ class _StatCardsState extends State<_StatCards> {
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () => context.read<MainNavigationProvider>().setIndex(3),
+                  onTap: () =>
+                      context.read<MainNavigationProvider>().setIndex(3),
                   borderRadius: BorderRadius.circular(16),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 16,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF2E7D32).withValues(alpha: 0.1), width: 1),
+                      border: Border.all(
+                        color: const Color(0xFF2E7D32).withValues(alpha: 0.1),
+                        width: 1,
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF2E7D32).withValues(alpha: 0.05),
+                          color: const Color(
+                            0xFF2E7D32,
+                          ).withValues(alpha: 0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -1564,7 +2214,9 @@ class _StatCardsState extends State<_StatCards> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF2E7D32).withValues(alpha: 0.08),
+                                color: const Color(
+                                  0xFF2E7D32,
+                                ).withValues(alpha: 0.08),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: const Icon(
@@ -1589,7 +2241,9 @@ class _StatCardsState extends State<_StatCards> {
                           fit: BoxFit.scaleDown,
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            CurrencyFormatter.formatRupiah(stats.pemasukan.today.total),
+                            CurrencyFormatter.formatRupiah(
+                              stats.pemasukan.today.total,
+                            ),
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w900,
@@ -1619,17 +2273,26 @@ class _StatCardsState extends State<_StatCards> {
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () => context.read<MainNavigationProvider>().setIndex(3),
+                  onTap: () =>
+                      context.read<MainNavigationProvider>().setIndex(3),
                   borderRadius: BorderRadius.circular(16),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 16,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFC62828).withValues(alpha: 0.1), width: 1),
+                      border: Border.all(
+                        color: const Color(0xFFC62828).withValues(alpha: 0.1),
+                        width: 1,
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFC62828).withValues(alpha: 0.05),
+                          color: const Color(
+                            0xFFC62828,
+                          ).withValues(alpha: 0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -1643,7 +2306,9 @@ class _StatCardsState extends State<_StatCards> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFC62828).withValues(alpha: 0.08),
+                                color: const Color(
+                                  0xFFC62828,
+                                ).withValues(alpha: 0.08),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: const Icon(
@@ -1668,7 +2333,9 @@ class _StatCardsState extends State<_StatCards> {
                           fit: BoxFit.scaleDown,
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            CurrencyFormatter.formatRupiah(stats.pengeluaran.today.total),
+                            CurrencyFormatter.formatRupiah(
+                              stats.pengeluaran.today.total,
+                            ),
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w900,
@@ -1711,15 +2378,25 @@ class _StatCardsState extends State<_StatCards> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _toggleItem(0, 'Hari Ini', isToday, currentFilterDate),
-          _toggleItem(1, !isToday 
-              ? DateFormat('dd MMM yyyy', 'id_ID').format(currentFilterDate) 
-              : 'Pilih Tanggal', !isToday, currentFilterDate),
+          _toggleItem(
+            1,
+            !isToday
+                ? DateFormat('dd MMM yyyy', 'id_ID').format(currentFilterDate)
+                : 'Pilih Tanggal',
+            !isToday,
+            currentFilterDate,
+          ),
         ],
       ),
     );
   }
 
-  Widget _toggleItem(int index, String label, bool active, DateTime? currentDate) {
+  Widget _toggleItem(
+    int index,
+    String label,
+    bool active,
+    DateTime? currentDate,
+  ) {
     return GestureDetector(
       onTap: () => _onPeriodTap(index, currentDate),
       child: Container(
@@ -1733,9 +2410,9 @@ class _StatCardsState extends State<_StatCards> {
           children: [
             if (index == 1) ...[
               Icon(
-                Icons.calendar_month_rounded, 
-                size: 12, 
-                color: active ? const Color(0xFF01579B) : Colors.white70
+                Icons.calendar_month_rounded,
+                size: 12,
+                color: active ? const Color(0xFF01579B) : Colors.white70,
               ),
               const SizedBox(width: 4),
             ],
@@ -1754,40 +2431,150 @@ class _StatCardsState extends State<_StatCards> {
   }
 }
 
-
-
 class _MenuGrid extends StatelessWidget {
   const _MenuGrid();
   @override
   Widget build(BuildContext context) {
     final user = context.select<AuthProvider, User?>((a) => a.user);
     if (user == null) return const SizedBox.shrink();
-    
+
     return GridView.count(
-      shrinkWrap: true, clipBehavior: Clip.none, physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 3, padding: EdgeInsets.zero, crossAxisSpacing: 8, mainAxisSpacing: 8,
+      shrinkWrap: true,
+      clipBehavior: Clip.none,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 3,
+      padding: EdgeInsets.zero,
+      crossAxisSpacing: 8,
+      mainAxisSpacing: 8,
       children: [
-        _MenuItem(label: 'Transaksi DO', icon: Icons.local_shipping_rounded, color: const Color(0xFF01579B), onTap: () { context.read<TransaksiDoProvider>().markAsSeen(); Navigator.push(context, MaterialPageRoute(builder: (_) => const TransaksiDoScreen())); }, badgeSelector: (c) => c.select<DashboardProvider, int>((p) => p.summary?.stats.transaksi.today.count ?? 0)),
         _MenuItem(
-          label: 'Tambah Saldo', 
-          icon: Icons.add_to_photos_rounded, 
-          color: const Color(0xFFF39C12), 
-          onTap: () { Navigator.push(context, MaterialPageRoute(builder: (_) => const TambahSaldoListScreen())); }, 
-          badgeSelector: (c) => c.select<DashboardProvider, int>((p) => p.summary?.tambahSaldoTodayCount ?? 0),
+          label: 'Transaksi DO',
+          icon: Icons.local_shipping_rounded,
+          color: const Color(0xFF01579B),
+          onTap: () {
+            context.read<TransaksiDoProvider>().markAsSeen();
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const TransaksiDoScreen()),
+            );
+          },
+          badgeSelector: (c) => c.select<DashboardProvider, int>(
+            (p) => p.summary?.stats.transaksi.today.count ?? 0,
+          ),
         ),
         _MenuItem(
-          label: 'Operasional', 
-          icon: Icons.payments_rounded, 
-          color: const Color(0xFFE74C3C), 
-          onTap: () { context.read<ResourceProvider>().markAsSeen('operasional'); Navigator.push(context, MaterialPageRoute(builder: (_) => const OperasionalScreen())); }, 
-          badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.operasionalCount),
+          label: 'Tambah Saldo',
+          icon: Icons.add_to_photos_rounded,
+          color: const Color(0xFFF39C12),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const TambahSaldoListScreen()),
+            );
+          },
+          badgeSelector: (c) => c.select<DashboardProvider, int>(
+            (p) => p.summary?.tambahSaldoTodayCount ?? 0,
+          ),
         ),
-        _MenuItem(label: 'Penjual', icon: Icons.storefront_rounded, color: const Color(0xFF27AE60), onTap: () { context.read<ResourceProvider>().markAsSeen('penjual'); Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceListScreen(title: 'Penjual', resourceType: 'penjual'))); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.penjualCount)),
-        _MenuItem(label: 'Supir', icon: Icons.person_rounded, color: const Color(0xFFE67E22), onTap: () { context.read<ResourceProvider>().markAsSeen('supir'); Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceListScreen(title: 'Supir', resourceType: 'supir'))); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.supirCount)),
-        _MenuItem(label: 'Pekerja', icon: Icons.engineering_rounded, color: const Color(0xFF8E44AD), onTap: () { context.read<ResourceProvider>().markAsSeen('pekerja'); Navigator.push(context, MaterialPageRoute(builder: (_) => const ResourceListScreen(title: 'Pekerja', resourceType: 'pekerja'))); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.pekerjaCount)),
-        _MenuItem(label: 'Laporan', icon: Icons.auto_stories_rounded, color: const Color(0xFF2980B9), onTap: () { Navigator.push(context, MaterialPageRoute(builder: (_) => const FinanceJournalScreen())); }, badgeSelector: (c) => c.select<ResourceProvider, int>((p) => p.jurnalCount)),
+        _MenuItem(
+          label: 'Operasional',
+          icon: Icons.payments_rounded,
+          color: const Color(0xFFE74C3C),
+          onTap: () {
+            context.read<ResourceProvider>().markAsSeen('operasional');
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const OperasionalScreen()),
+            );
+          },
+          badgeSelector: (c) =>
+              c.select<ResourceProvider, int>((p) => p.operasionalCount),
+        ),
+        _MenuItem(
+          label: 'Penjual',
+          icon: Icons.storefront_rounded,
+          color: const Color(0xFF27AE60),
+          onTap: () {
+            context.read<ResourceProvider>().markAsSeen('penjual');
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const ResourceListScreen(
+                  title: 'Penjual',
+                  resourceType: 'penjual',
+                ),
+              ),
+            );
+          },
+          badgeSelector: (c) =>
+              c.select<ResourceProvider, int>((p) => p.penjualCount),
+        ),
+        _MenuItem(
+          label: 'Supir',
+          icon: Icons.person_rounded,
+          color: const Color(0xFFE67E22),
+          onTap: () {
+            context.read<ResourceProvider>().markAsSeen('supir');
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const ResourceListScreen(
+                  title: 'Supir',
+                  resourceType: 'supir',
+                ),
+              ),
+            );
+          },
+          badgeSelector: (c) =>
+              c.select<ResourceProvider, int>((p) => p.supirCount),
+        ),
+        _MenuItem(
+          label: 'Pekerja',
+          icon: Icons.engineering_rounded,
+          color: const Color(0xFF8E44AD),
+          onTap: () {
+            context.read<ResourceProvider>().markAsSeen('pekerja');
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const ResourceListScreen(
+                  title: 'Pekerja',
+                  resourceType: 'pekerja',
+                ),
+              ),
+            );
+          },
+          badgeSelector: (c) =>
+              c.select<ResourceProvider, int>((p) => p.pekerjaCount),
+        ),
+        _MenuItem(
+          label: 'Laporan',
+          icon: Icons.auto_stories_rounded,
+          color: const Color(0xFF2980B9),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const FinanceJournalScreen()),
+            );
+          },
+          badgeSelector: (c) =>
+              c.select<ResourceProvider, int>((p) => p.jurnalCount),
+        ),
         if (user.isSuperAdmin)
-          _MenuItem(label: 'Pengaturan', icon: Icons.settings_rounded, color: const Color(0xFF7F8C8D), onTap: () { Navigator.push(context, MaterialPageRoute(builder: (_) => const AppVersionSettingScreen())); }, badgeSelector: (c) => 0),
+          _MenuItem(
+            label: 'Pengaturan',
+            icon: Icons.settings_rounded,
+            color: const Color(0xFF7F8C8D),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const AppVersionSettingScreen(),
+                ),
+              );
+            },
+            badgeSelector: (c) => 0,
+          ),
       ],
     );
   }
@@ -1812,24 +2599,55 @@ class _MenuItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final int count = badgeSelector(context);
     return GestureDetector(
-      onTap: onTap, behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           Container(
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(25), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 15, offset: const Offset(0, 5))]),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(25),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle), child: Icon(icon, size: 26, color: color)),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icon, size: 26, color: color),
+                  ),
                   const SizedBox(height: 8),
-                  Text(label, style: const TextStyle(color: Color(0xFF263238), fontSize: 12, fontWeight: FontWeight.w800), textAlign: TextAlign.center),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: Color(0xFF263238),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ],
               ),
             ),
           ),
-          if (count > 0) Positioned(top: 8, right: 8, child: _CountBadge(count: count, color: color)),
+          if (count > 0)
+            Positioned(
+              top: 8,
+              right: 8,
+              child: _CountBadge(count: count, color: color),
+            ),
         ],
       ),
     );
@@ -1846,9 +2664,21 @@ class _SkeletonStats extends StatelessWidget {
         SizedBox(height: 12),
         Row(
           children: [
-            Expanded(child: SkeletonLoader(width: double.infinity, height: 105, borderRadius: 16)),
+            Expanded(
+              child: SkeletonLoader(
+                width: double.infinity,
+                height: 105,
+                borderRadius: 16,
+              ),
+            ),
             SizedBox(width: 12),
-            Expanded(child: SkeletonLoader(width: double.infinity, height: 105, borderRadius: 16)),
+            Expanded(
+              child: SkeletonLoader(
+                width: double.infinity,
+                height: 105,
+                borderRadius: 16,
+              ),
+            ),
           ],
         ),
       ],

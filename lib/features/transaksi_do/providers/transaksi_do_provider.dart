@@ -91,7 +91,11 @@ class TransaksiDoProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       _isLoading = false;
-      _errorMessage = 'Gagal memuat data transaksi: $e';
+      if (e is DioException && (e.type == DioExceptionType.connectionError || e.type == DioExceptionType.connectionTimeout)) {
+        // Suppress offline error, just show whatever data we have
+      } else {
+        _errorMessage = 'Gagal memuat data transaksi: $e';
+      }
       notifyListeners();
     } finally {
       _isRefreshing = false;

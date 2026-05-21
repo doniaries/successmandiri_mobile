@@ -8,6 +8,7 @@ import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:developer' as dev;
+import 'package:sawitappmobile/core/services/database_service.dart';
 
 class TransaksiDoRepository {
   final ApiClient _apiClient;
@@ -32,6 +33,11 @@ class TransaksiDoRepository {
       );
       return _extractListData(response.data);
     } catch (e) {
+      try {
+        final db = DatabaseService();
+        final localData = await db.query('penjual');
+        return localData.isNotEmpty ? localData : [];
+      } catch (_) {}
       rethrow;
     }
   }
@@ -44,6 +50,11 @@ class TransaksiDoRepository {
       );
       return _extractListData(response.data);
     } catch (e) {
+      try {
+        final db = DatabaseService();
+        final localData = await db.query('supir');
+        return localData.isNotEmpty ? localData : [];
+      } catch (_) {}
       rethrow;
     }
   }
@@ -56,6 +67,11 @@ class TransaksiDoRepository {
       );
       return _extractListData(response.data);
     } catch (e) {
+      try {
+        final db = DatabaseService();
+        final localData = await db.query('kendaraan');
+        return localData.isNotEmpty ? localData : [];
+      } catch (_) {}
       rethrow;
     }
   }
@@ -75,6 +91,16 @@ class TransaksiDoRepository {
 
       return response.data;
     } catch (e) {
+      try {
+        final db = DatabaseService();
+        final localData = await db.query('transaksi_do');
+        return {
+          'data': localData.isNotEmpty ? localData : [],
+          'current_page': 1,
+          'last_page': 1,
+          'total': localData.length
+        };
+      } catch (_) {}
       rethrow;
     }
   }

@@ -8,7 +8,6 @@ import 'package:sawitappmobile/features/operasional/screens/finance_journal_scre
 import 'package:sawitappmobile/features/operasional/screens/operasional_screen.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_screen.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/add_transaksi_do_screen.dart';
-import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/shared/providers/navigation_provider.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -127,14 +126,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final selectedIndex = context.watch<MainNavigationProvider>().selectedIndex;
     
     return Scaffold(
-      body: Column(
-        children: [
-          _buildConnectivityBanner(),
-          Expanded(
-            child: IndexedStack(index: selectedIndex, children: _screens),
-          ),
-        ],
-      ),
+      body: IndexedStack(index: selectedIndex, children: _screens),
       bottomNavigationBar: _buildBottomBar(selectedIndex),
     );
   }
@@ -250,35 +242,5 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 
-  Widget _buildConnectivityBanner() {
-    return StreamBuilder<bool>(
-      stream: SyncService().connectivityStream,
-      initialData: !SyncService().isOffline,
-      builder: (context, snapshot) {
-        final isOnline = snapshot.data ?? true;
-        if (isOnline) return const SizedBox.shrink();
-
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-          color: Colors.orange[800],
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.wifi_off_rounded, color: Colors.white, size: 14),
-              SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Mode Offline: Data akan disimpan lokal & sinkron otomatis saat ada sinyal',
-                  style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
 }
 

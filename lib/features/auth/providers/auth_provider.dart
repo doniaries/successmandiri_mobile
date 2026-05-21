@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sawitappmobile/features/auth/models/user_model.dart';
 import 'package:sawitappmobile/shared/repositories/auth_repository.dart';
@@ -161,7 +162,11 @@ class AuthProvider with ChangeNotifier {
     } catch (e) {
       _isLoading = false;
       _isSwitchingCompany = false;
-      _errorMessage = 'Gagal ganti perusahaan: $e';
+      if (e is DioException && (e.type == DioExceptionType.connectionError || e.type == DioExceptionType.connectionTimeout)) {
+        _errorMessage = 'Pergantian perusahaan tidak bisa dilakukan saat offline.';
+      } else {
+        _errorMessage = 'Gagal ganti perusahaan: $e';
+      }
       notifyListeners();
       return false;
     }
