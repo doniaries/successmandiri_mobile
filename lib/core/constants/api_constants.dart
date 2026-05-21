@@ -10,7 +10,7 @@ class ApiConstants {
 
       // Karena Anda menggunakan HP asli, kita akan gunakan IP Wi-Fi lokal komputer Anda.
       return 'http://192.168.1.8/successmandiri_laravel/public/api';
-    }pada tab aktif dan aktif
+    }
 
     // Produksi (Online)
     return 'https://sawit.successmandiri.com/api';
