@@ -758,88 +758,99 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Section Pembayaran Hutang
-                      if (_currentSellerDebt > 0) ...[
-                        TextFormField(
-                          controller: _pembayaranHutangController,
-                          decoration: _getInputDecoration(
-                            label: 'Potongan Hutang',
-                            hint:
-                                'Maks: ${currencyFormat.format(_currentSellerDebt)}',
-                            icon: Icons.history_rounded,
-                            suffixIcon: IconButton(
-                              icon: const Icon(
-                                  Icons.account_balance_wallet,
-                                  color: Color(0xFF01579B),
-                              ),
-                              onPressed: () {
-                                if (_currentSellerDebt > 0) {
-                                  final amount = _currentSellerDebt < _subTotal
-                                      ? _currentSellerDebt
-                                      : _subTotal;
-                                  _pembayaranHutangController.text =
-                                      NumberFormat.decimalPattern(
-                                        'id_ID',
-                                      ).format(amount);
-                                  _onFieldChanged();
-                                }
-                              },
-                            ),
-                          ).copyWith(prefixText: 'Rp '),
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [CurrencyInputFormatter()],
-                          validator: (val) {
-                            if (val != null && val.isNotEmpty) {
-                              final amount = CurrencyInputFormatter.parse(val);
-                              if (amount > _currentSellerDebt) {
-                                return 'Melebihi hutang';
-                              }
-                              final otherDeductions =
-                                  CurrencyInputFormatter.parse(
-                                    _upahBongkarController.text,
-                                  ) +
-                                  CurrencyInputFormatter.parse(
-                                    _biayaLainController.text,
-                                  );
-                              final maxBayarHutang = max(
-                                0.0,
-                                _subTotal - otherDeductions,
-                              );
-                              if (amount > maxBayarHutang) {
-                                return 'Melebihi sisa hasil transaksi';
-                              }
+                      // Potong Hutang (selalu tampil, sesuai Filament)
+                      TextFormField(
+                        controller: _pembayaranHutangController,
+                        decoration: _getInputDecoration(
+                          label: 'Potong Hutang',
+                          hint: '0',
+                          icon: Icons.history_rounded,
+                          suffixIcon: _currentSellerDebt > 0
+                              ? IconButton(
+                                  icon: const Icon(
+                                    Icons.account_balance_wallet,
+                                    color: Color(0xFF01579B),
+                                  ),
+                                  onPressed: () {
+                                    if (_currentSellerDebt > 0) {
+                                      final amount = _currentSellerDebt < _subTotal
+                                          ? _currentSellerDebt
+                                          : _subTotal;
+                                      _pembayaranHutangController.text =
+                                          NumberFormat.decimalPattern(
+                                            'id_ID',
+                                          ).format(amount);
+                                      _onFieldChanged();
+                                    }
+                                  },
+                                )
+                              : null,
+                        ).copyWith(
+                          prefixText: 'Rp ',
+                          helperText: 'Hutang Penjual: ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(_currentSellerDebt)}',
+                          helperStyle: TextStyle(
+                            color: _currentSellerDebt > 0
+                                ? Colors.orange[800]
+                                : Colors.grey[600],
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                          hintText: () {
+                            final otherDeductions =
+                                CurrencyInputFormatter.parse(
+                                  _upahBongkarController.text,
+                                ) +
+                                CurrencyInputFormatter.parse(
+                                  _biayaLainController.text,
+                                );
+                            final maxBayarHutang = max(0.0, _subTotal - otherDeductions);
+                            return 'Maks. dari hasil: ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(maxBayarHutang)}';
+                          }(),
+                        ),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [CurrencyInputFormatter()],
+                        validator: (val) {
+                          if (val != null && val.isNotEmpty) {
+                            final amount = CurrencyInputFormatter.parse(val);
+                            if (_currentSellerDebt > 0 && amount > _currentSellerDebt) {
+                              return 'Melebihi hutang penjual';
                             }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _sisaHutangController,
-                          readOnly: true,
-                          decoration: _getInputDecoration(
-                            label: 'Sisa Hutang Penjual',
-                            icon: Icons.account_balance_outlined,
-                          ),
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(height: 16),
+                            final otherDeductions =
+                                CurrencyInputFormatter.parse(
+                                  _upahBongkarController.text,
+                                ) +
+                                CurrencyInputFormatter.parse(
+                                  _biayaLainController.text,
+                                );
+                            final maxBayarHutang = max(
+                              0.0,
+                              _subTotal - otherDeductions,
+                            );
+                            if (amount > maxBayarHutang) {
+                              return 'Melebihi sisa hasil transaksi';
+                            }
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
 
-                        TextFormField(
-                          controller: _sisaBayarController,
-                          readOnly: true,
-                          decoration: _getInputDecoration(
-                            label: 'Total Bayar ke Penjual',
-                            icon: Icons.account_balance_wallet_rounded,
-                            fillColor: const Color(0xFFE3F2FD),
-                          ),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w900,
-                            color: Colors.green,
-                            fontSize: 22,
-                          ),
+                      // Total Bayar ke Penjual (selalu tampil, sesuai Filament)
+                      TextFormField(
+                        controller: _sisaBayarController,
+                        readOnly: true,
+                        decoration: _getInputDecoration(
+                          label: 'Total Bayar ke Penjual',
+                          icon: Icons.account_balance_wallet_rounded,
+                          fillColor: const Color(0xFFE3F2FD),
+                        ).copyWith(prefixText: 'Rp '),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                          color: Colors.green,
+                          fontSize: 22,
                         ),
-                        const SizedBox(height: 16),
-                      ],
+                      ),
+                      const SizedBox(height: 16),
 
                       // Indikator Saldo Perusahaan (Match Filament Placeholder)
                       Builder(
