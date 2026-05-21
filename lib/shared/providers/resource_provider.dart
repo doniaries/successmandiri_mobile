@@ -678,7 +678,8 @@ class ResourceProvider with ChangeNotifier {
     try {
       final result = await _repository.storeSupir(data);
 
-      // ✅ SELALU refresh data agar data dari offline_queue langsung muncul
+      // ✅ PANGGIL REFRESH DI SINI (DI LUAR ELSE)
+      // Ini akan memicu pengambilan data (cache + queue offline terbaru)
       await fetchResources('supir', refresh: true);
 
       if (result is Map && result['offline'] == true) {
@@ -719,7 +720,8 @@ class ResourceProvider with ChangeNotifier {
     try {
       final result = await _repository.storePekerja(data);
 
-      // ✅ SELALU refresh data agar data dari offline_queue langsung muncul
+      // ✅ PANGGIL REFRESH DI SINI (DI LUAR ELSE)
+      // Ini akan memicu pengambilan data (cache + queue offline terbaru)
       await fetchResources('pekerja', refresh: true);
 
       if (result is Map && result['offline'] == true) {
@@ -749,7 +751,8 @@ class ResourceProvider with ChangeNotifier {
     try {
       final result = await _repository.storeKendaraan(data);
 
-      // ✅ SELALU refresh data agar data dari offline_queue langsung muncul
+      // ✅ PANGGIL REFRESH DI SINI (DI LUAR ELSE)
+      // Ini akan memicu pengambilan data (cache + queue offline terbaru)
       await fetchResources('kendaraan', refresh: true);
 
       if (result is Map && result['offline'] == true) {
@@ -757,7 +760,7 @@ class ResourceProvider with ChangeNotifier {
       }
       return result;
     } catch (e) {
-      debugPrint('Error adding kendaraan: $e');
+      debugPrint('Error adding kendaran: $e');
       _errorMessage = e.toString();
       return null;
     }
