@@ -548,19 +548,9 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) {
-                if (index < filteredTransactions.length) {
-                  final tx = filteredTransactions[index];
-                  return _buildTransactionCard(tx);
-                }
-                
-                return provider.hasMore
-                    ? const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 20),
-                        child: Center(child: CircularProgressIndicator()),
-                      )
-                    : const SizedBox.shrink();
+                return _buildTransactionCard(filteredTransactions[index]);
               },
-              childCount: filteredTransactions.length + (provider.hasMore ? 1 : 0),
+              childCount: filteredTransactions.length,
             ),
           ),
         );
@@ -881,14 +871,27 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      // Sisi Kanan: Nominal Subtotal
-                      Text(
-                        CurrencyFormatter.formatRupiah(tx.subTotal),
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                          color: isTunai ? Colors.green[700] : Colors.blue[700],
-                        ),
+                      // Sisi Kanan: Nominal Sisa Bayar
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            CurrencyFormatter.formatRupiah(tx.sisaBayar),
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w900,
+                              color: isTunai ? Colors.green[700] : Colors.blue[700],
+                            ),
+                          ),
+                          Text(
+                            'Sub: ${CurrencyFormatter.formatRupiah(tx.subTotal)}',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
