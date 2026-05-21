@@ -12,7 +12,6 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sawitappmobile/core/services/database_service.dart';
 
 class TransaksiDoRepository {
   final ApiClient _apiClient;
@@ -31,14 +30,16 @@ class TransaksiDoRepository {
 
   Future<List<dynamic>> getPenjuals() async {
     try {
-      final response = await _apiClient.dio.get(
-        ApiConstants.penjual,
-        queryParameters: {'all': true},
-      ).timeout(const Duration(seconds: 5));
+      final response = await _apiClient.dio
+          .get(ApiConstants.penjual, queryParameters: {'all': true})
+          .timeout(const Duration(seconds: 5));
       return _extractListData(response.data);
     } catch (e) {
       try {
-        final mergedData = await _syncService.getMergedOfflineData('penjual', ApiConstants.penjual);
+        final mergedData = await _syncService.getMergedOfflineData(
+          'penjual',
+          ApiConstants.penjual,
+        );
         return mergedData.isNotEmpty ? mergedData : [];
       } catch (_) {}
       rethrow;
@@ -47,14 +48,16 @@ class TransaksiDoRepository {
 
   Future<List<dynamic>> getSupirs() async {
     try {
-      final response = await _apiClient.dio.get(
-        ApiConstants.supir,
-        queryParameters: {'all': true},
-      ).timeout(const Duration(seconds: 5));
+      final response = await _apiClient.dio
+          .get(ApiConstants.supir, queryParameters: {'all': true})
+          .timeout(const Duration(seconds: 5));
       return _extractListData(response.data);
     } catch (e) {
       try {
-        final mergedData = await _syncService.getMergedOfflineData('supir', ApiConstants.supir);
+        final mergedData = await _syncService.getMergedOfflineData(
+          'supir',
+          ApiConstants.supir,
+        );
         return mergedData.isNotEmpty ? mergedData : [];
       } catch (_) {}
       rethrow;
@@ -63,55 +66,67 @@ class TransaksiDoRepository {
 
   Future<List<dynamic>> getKendaraans() async {
     try {
-      final response = await _apiClient.dio.get(
-        ApiConstants.kendaraan,
-        queryParameters: {'all': true},
-      ).timeout(const Duration(seconds: 5));
+      final response = await _apiClient.dio
+          .get(ApiConstants.kendaraan, queryParameters: {'all': true})
+          .timeout(const Duration(seconds: 5));
       return _extractListData(response.data);
     } catch (e) {
       try {
-        final mergedData = await _syncService.getMergedOfflineData('kendaraan', ApiConstants.kendaraan);
+        final mergedData = await _syncService.getMergedOfflineData(
+          'kendaraan',
+          ApiConstants.kendaraan,
+        );
         return mergedData.isNotEmpty ? mergedData : [];
       } catch (_) {}
       rethrow;
     }
   }
 
-  Future<dynamic> getTransaksiDo({String? tanggal, int page = 1, int perPage = 20}) async {
+  Future<dynamic> getTransaksiDo({
+    String? tanggal,
+    int page = 1,
+    int perPage = 20,
+  }) async {
     try {
-      final queryParams = <String, dynamic>{
-        'page': page,
-        'per_page': perPage,
-      };
+      final queryParams = <String, dynamic>{'page': page, 'per_page': perPage};
       if (tanggal != null) queryParams['tanggal'] = tanggal;
 
-      final response = await _apiClient.dio.get(
-        ApiConstants.transaksiDo,
-        queryParameters: queryParams,
-      ).timeout(const Duration(seconds: 15));
+      final response = await _apiClient.dio
+          .get(ApiConstants.transaksiDo, queryParameters: queryParams)
+          .timeout(const Duration(seconds: 15));
 
       // Cache halaman pertama (atau semua jika tidak ada filter) untuk mode offline
-      if (page == 1 && tanggal == null) {
+      if (page == 1) {
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('cache_transaksi_do', jsonEncode(response.data));
+        final cacheKey = tanggal != null
+            ? 'cache_transaksi_do_$tanggal'
+            : 'cache_transaksi_do';
+        await prefs.setString(cacheKey, jsonEncode(response.data));
       }
 
       return response.data;
     } catch (e) {
       try {
         final prefs = await SharedPreferences.getInstance();
-        final cachedDataStr = prefs.getString('cache_transaksi_do');
+        final cacheKey = tanggal != null
+            ? 'cache_transaksi_do_$tanggal'
+            : 'cache_transaksi_do';
+        final cachedDataStr = prefs.getString(cacheKey);
+
+        // Gabungkan dengan data antrean offline (POST)
+        final pendingData = await _syncService.getMergedOfflineData(
+          'transaksi_do',
+          ApiConstants.transaksiDo,
+        );
+
         if (cachedDataStr != null) {
           final cachedData = jsonDecode(cachedDataStr);
-          
-          // Gabungkan dengan data antrean offline (POST)
-          final pendingData = await _syncService.getMergedOfflineData('transaksi_do', ApiConstants.transaksiDo);
-          
+
           if (pendingData.isNotEmpty) {
             final List existingList = _extractListData(cachedData);
             // Tambahkan data offline pending di bagian atas
             final combinedList = [...pendingData, ...existingList];
-            
+
             if (cachedData is Map) {
               cachedData['data'] = combinedList;
             } else {
@@ -119,6 +134,13 @@ class TransaksiDoRepository {
             }
           }
           return cachedData;
+        } else if (pendingData.isNotEmpty) {
+          return {
+            'data': pendingData,
+            'current_page': 1,
+            'last_page': 1,
+            'total': pendingData.length,
+          };
         }
       } catch (_) {}
       rethrow;
@@ -127,7 +149,9 @@ class TransaksiDoRepository {
 
   Future<TransaksiDo> getTransaksiDoDetail(int id) async {
     try {
-      final response = await _apiClient.dio.get('${ApiConstants.transaksiDo}/$id');
+      final response = await _apiClient.dio.get(
+        '${ApiConstants.transaksiDo}/$id',
+      );
       return TransaksiDo.fromJson(response.data);
     } catch (e) {
       rethrow;
@@ -195,25 +219,25 @@ class TransaksiDoRepository {
             filename: buktiTransfer.name,
           );
         }
-        
+
         final formData = FormData.fromMap(postData);
-        final response = await _apiClient.dio.post(
-          ApiConstants.transaksiDo,
-          data: formData,
-        ).timeout(const Duration(seconds: 15));
+        final response = await _apiClient.dio
+            .post(ApiConstants.transaksiDo, data: formData)
+            .timeout(const Duration(seconds: 15));
         return response.data;
       } else {
         // Jika tidak ada file, kirim sebagai JSON biasa (Map)
         // Ini lebih stabil di Web dan konsisten dengan ResourceRepository
-        final response = await _apiClient.dio.post(
-          ApiConstants.transaksiDo,
-          data: postData,
-        ).timeout(const Duration(seconds: 15));
+        final response = await _apiClient.dio
+            .post(ApiConstants.transaksiDo, data: postData)
+            .timeout(const Duration(seconds: 15));
         return response.data;
       }
     } on DioException catch (e) {
-      dev.log('DioError creating TransaksiDo: ${e.response?.statusCode} - ${e.message}');
-      
+      dev.log(
+        'DioError creating TransaksiDo: ${e.response?.statusCode} - ${e.message}',
+      );
+
       // Jika error validasi (422) atau error client (400-499), JANGAN diantrekan.
       // Lempar kembali agar UI bisa menampilkan pesan error yang jelas.
       if (e.response != null && e.response!.statusCode != null) {
@@ -248,7 +272,9 @@ class TransaksiDoRepository {
 
       return response.data['data'] ?? 'OTOMATIS (SISTEM)';
     } catch (e) {
-      final dateStr = tanggal != null ? tanggal.replaceAll('-', '') : DateFormat('yyyyMMdd').format(DateTime.now());
+      final dateStr = tanggal != null
+          ? tanggal.replaceAll('-', '')
+          : DateFormat('yyyyMMdd').format(DateTime.now());
       final randomStr = (1000 + Random().nextInt(9000)).toString();
       return 'KSSM-PENDING-$dateStr-$randomStr';
     }
@@ -305,7 +331,7 @@ class TransaksiDoRepository {
             filename: buktiTransfer.name,
           );
         }
-        
+
         postData['_method'] = 'PUT';
         final formData = FormData.fromMap(postData);
         final response = await _apiClient.dio.post(
@@ -327,12 +353,9 @@ class TransaksiDoRepository {
 
   Future<void> deleteTransaksiDo(int id) async {
     try {
-      await _apiClient.dio.delete(
-        '${ApiConstants.transaksiDo}/$id',
-      );
+      await _apiClient.dio.delete('${ApiConstants.transaksiDo}/$id');
     } catch (e) {
       rethrow;
     }
   }
 }
-
