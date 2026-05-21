@@ -1,48 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:sawitappmobile/features/auth/providers/auth_provider.dart';
-import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 
-class ActiveCompanyHeader extends StatefulWidget {
+class ActiveCompanyHeader extends StatelessWidget {
   const ActiveCompanyHeader({super.key});
 
   @override
-  State<ActiveCompanyHeader> createState() => _ActiveCompanyHeaderState();
-}
-
-class _ActiveCompanyHeaderState extends State<ActiveCompanyHeader> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final dashboardProvider = context.read<DashboardProvider>();
-      if (dashboardProvider.summary == null) {
-        dashboardProvider.fetchSummary();
-      }
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final dashboardProvider = context.watch<DashboardProvider>();
     final authProvider = context.watch<AuthProvider>();
-    
-    final summary = dashboardProvider.summary;
-    final String companyName = summary?.perusahaanName ?? authProvider.user?.perusahaanName ?? '-';
-    final String cashierName = summary?.namaKasir ?? authProvider.user?.perusahaanKasir ?? 'Kasir Utama';
-    final double saldo = summary?.saldo ?? 0.0;
-    
+
+    final String companyName = authProvider.user?.perusahaanName ?? '-';
+    final String cashierName = authProvider.user?.perusahaanKasir ?? 'Kasir Utama';
+
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF01579B), Color(0xFF0288D1)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF01579B).withAlpha(51),
@@ -53,9 +32,9 @@ class _ActiveCompanyHeaderState extends State<ActiveCompanyHeader> {
       ),
       child: Row(
         children: [
-          // Logo / Icon Perusahaan
+          // Icon Perusahaan
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: Colors.white.withAlpha(38),
               shape: BoxShape.circle,
@@ -63,7 +42,7 @@ class _ActiveCompanyHeaderState extends State<ActiveCompanyHeader> {
             child: const Icon(
               Icons.business_rounded,
               color: Colors.white,
-              size: 22,
+              size: 20,
             ),
           ),
           const SizedBox(width: 12),
@@ -85,11 +64,11 @@ class _ActiveCompanyHeaderState extends State<ActiveCompanyHeader> {
                 const SizedBox(height: 2),
                 Text(
                   companyName.toUpperCase(),
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 14,
+                    fontSize: 13,
                     fontWeight: FontWeight.bold,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -105,11 +84,11 @@ class _ActiveCompanyHeaderState extends State<ActiveCompanyHeader> {
                     Flexible(
                       child: Text(
                         'Kasir: $cashierName',
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: Colors.white.withAlpha(204),
                           fontSize: 10,
                           fontWeight: FontWeight.w500,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ),
@@ -117,38 +96,6 @@ class _ActiveCompanyHeaderState extends State<ActiveCompanyHeader> {
                 ),
               ],
             ),
-          ),
-          // Pembatas Vertikal
-          Container(
-            height: 32,
-            width: 1,
-            color: Colors.white.withAlpha(51),
-            margin: const EdgeInsets.symmetric(horizontal: 12),
-          ),
-          // Info Saldo Kas
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Saldo Kas',
-                style: TextStyle(
-                  color: Colors.white.withAlpha(179),
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                CurrencyFormatter.formatRupiah(saldo),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ],
           ),
         ],
       ),

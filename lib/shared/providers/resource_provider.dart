@@ -771,16 +771,16 @@ class ResourceProvider with ChangeNotifier {
     notifyListeners();
     try {
       final Map<String, dynamic> data = {
-        'app_version': version, 
+        'app_version': version,
         'app_creator': creator,
+        'changelog': changelog ?? '', // selalu kirim changelog meski kosong
       };
-      if (changelog != null) {
-        data['changelog'] = changelog;
-      }
       final settings = await _repository.updateAppSettings(data);
       _appVersion = settings['app_version'] ?? version;
       _appCreator = settings['app_creator'] ?? creator;
-      _appLogoUrl = ApiConstants.normalizeUrl(settings['app_logo_url']);
+      // Null-safe: logo bisa null jika belum diupload
+      final logoUrl = settings['app_logo_url'];
+      _appLogoUrl = logoUrl != null ? ApiConstants.normalizeUrl(logoUrl as String) : null;
       _changelog = settings['changelog'] ?? changelog ?? _changelog;
       return true;
     } catch (e) {
