@@ -300,52 +300,34 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             const SizedBox(height: 12),
 
-                            // Remember Me & Forgot Password
+                            // Remember Me
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  children: [
-                                    SizedBox(
-                                      width: 24,
-                                      height: 24,
-                                      child: Checkbox(
-                                        value: _isRememberMe,
-                                        activeColor: const Color(0xFF01579B),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            4,
-                                          ),
-                                        ),
-                                        onChanged: (value) {
-                                          setState(() {
-                                            _isRememberMe = value ?? false;
-                                          });
-                                        },
-                                      ),
+                                SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: Checkbox(
+                                    value: _isRememberMe,
+                                    activeColor: const Color(0xFF01579B),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(4),
                                     ),
-                                    const SizedBox(width: 8),
-                                    const Text(
-                                      "Ingat Saya",
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
-                                        color: Color(0xFF546E7A),
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                                TextButton(
-                                  onPressed: () {},
-                                  child: const Text(
-                                    "Lupa Password?",
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF0288D1),
-                                    ),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _isRememberMe = value ?? false;
+                                      });
+                                    },
                                   ),
+                                ),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  "Ingat Email & Password",
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color(0xFF546E7A),
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),

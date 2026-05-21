@@ -34,6 +34,10 @@ class AuthRepository {
         
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('auth_token', token);
+        
+        // Simpan backup untuk login offline jika tidak ada sinyal
+        await prefs.setString('offline_backup_token', token);
+        await prefs.setString('offline_backup_user', jsonEncode(userData));
 
         // Daftarkan FCM token ke backend setelah login berhasil
         PushNotificationService.registerTokenToBackend(token)

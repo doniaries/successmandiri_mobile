@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
@@ -29,8 +30,8 @@ class AuthProvider with ChangeNotifier {
 
     try {
       final result = await _authRepository.login(email, password, 'Mobile App').timeout(
-        const Duration(seconds: 30),
-        onTimeout: () => throw Exception('Koneksi timeout (Ditunggu 30 detik tidak merespons)'),
+        const Duration(seconds: 15),
+        onTimeout: () => throw Exception('Koneksi timeout (Ditunggu 15 detik tidak merespons)'),
       );
       _user = result['user'];
       
@@ -57,6 +58,47 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
+      final errorMsg = e.toString().toLowerCase();
+      // Cek apakah errornya karena jaringan/timeout (bukan karena kredensial salah dari server)
+      if (errorMsg.contains('koneksi') || errorMsg.contains('terhubung') || errorMsg.contains('timeout') || errorMsg.contains('network')) {
+        // Coba Login Offline Menggunakan "Ingat Saya"
+        final credentials = await _authRepository.getRememberMe();
+        if (credentials['email'] == email && credentials['password'] == password && email.isNotEmpty) {
+          final prefs = await SharedPreferences.getInstance();
+          final backupUserStr = prefs.getString('offline_backup_user');
+          final backupToken = prefs.getString('offline_backup_token');
+          
+          if (backupUserStr != null && backupToken != null) {
+             _user = User.fromJson(jsonDecode(backupUserStr));
+             await prefs.setString('auth_token', backupToken); // Pulihkan token
+             await _authRepository.saveUser(_user!);
+             _isLoading = false;
+             notifyListeners();
+             return true; // Berhasil login offline
+          }
+        }
+
+        // HARDCODE USER OFFLINE (Bypass Khusus)
+        if (email == 'taufik@gmail.com' && password == 'taufik2026') {
+          final dummyUserStr = '''{
+            "id": 999,
+            "name": "Taufik (Offline Mode)",
+            "email": "taufik@gmail.com",
+            "perusahaan_id": 1,
+            "roles": ["admin"],
+            "is_active": true
+          }''';
+          
+          final prefs = await SharedPreferences.getInstance();
+          _user = User.fromJson(jsonDecode(dummyUserStr));
+          await prefs.setString('auth_token', 'offline_dummy_token_taufik');
+          await _authRepository.saveUser(_user!);
+          _isLoading = false;
+          notifyListeners();
+          return true;
+        }
+      }
+
       _isLoading = false;
       _errorMessage = e.toString().replaceAll('Exception: ', '');
       notifyListeners();
