@@ -2186,8 +2186,11 @@ class _StatCardsState extends State<_StatCards> {
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () =>
-                      context.read<MainNavigationProvider>().setIndex(3),
+                  onTap: () {
+                    final filterDate = context.read<DashboardProvider>().filterDate;
+                    final dateStr = filterDate != null ? DateFormat('yyyy-MM-dd').format(filterDate) : null;
+                    context.read<DashboardProvider>().clearAndFetch(date: dateStr);
+                  },
                   borderRadius: BorderRadius.circular(16),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
@@ -2278,8 +2281,11 @@ class _StatCardsState extends State<_StatCards> {
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () =>
-                      context.read<MainNavigationProvider>().setIndex(3),
+                  onTap: () {
+                    final filterDate = context.read<DashboardProvider>().filterDate;
+                    final dateStr = filterDate != null ? DateFormat('yyyy-MM-dd').format(filterDate) : null;
+                    context.read<DashboardProvider>().clearAndFetch(date: dateStr);
+                  },
                   borderRadius: BorderRadius.circular(16),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
