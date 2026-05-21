@@ -29,11 +29,52 @@ class ResourceRepository {
   }
 
   Future<dynamic> getPenjualPaginated({int page = 1}) async {
-    final response = await _apiClient.dio.get(
-      ApiConstants.penjual,
-      queryParameters: {'page': page, 'per_page': 10},
-    );
-    return response.data;
+    try {
+      final response = await _apiClient.dio
+          .get(
+            ApiConstants.penjual,
+            queryParameters: {'page': page, 'per_page': 10},
+          )
+          .timeout(const Duration(seconds: 15));
+
+      if (page == 1) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('cache_penjual_list', jsonEncode(response.data));
+      }
+
+      return response.data;
+    } catch (e) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final cachedStr = prefs.getString('cache_penjual_list');
+        final pendingData = await syncService.getMergedOfflineData(
+          'penjual',
+          ApiConstants.penjual,
+        );
+
+        if (cachedStr != null) {
+          final cachedData = jsonDecode(cachedStr);
+          if (pendingData.isNotEmpty) {
+            final List existingList = _extractListData(cachedData);
+            final combinedList = [...pendingData, ...existingList];
+            if (cachedData is Map) {
+              cachedData['data'] = combinedList;
+            } else {
+              return combinedList;
+            }
+          }
+          return cachedData;
+        } else if (pendingData.isNotEmpty) {
+          return {
+            'data': pendingData,
+            'current_page': 1,
+            'last_page': 1,
+            'total': pendingData.length,
+          };
+        }
+      } catch (_) {}
+      rethrow;
+    }
   }
 
   Future<List<Penjual>> getPenjuals() async {
@@ -47,10 +88,9 @@ class ResourceRepository {
         return mergedData.map((e) => Penjual.fromJson(e)).toList();
       }
 
-      final response = await _apiClient.dio.get(
-        ApiConstants.penjual,
-        queryParameters: {'all': true},
-      ).timeout(const Duration(seconds: 5));
+      final response = await _apiClient.dio
+          .get(ApiConstants.penjual, queryParameters: {'all': true})
+          .timeout(const Duration(seconds: 5));
       final List<dynamic> data = _extractListData(response.data);
 
       syncService.cacheData('penjual', data);
@@ -68,7 +108,11 @@ class ResourceRepository {
     final connectivity = await Connectivity().checkConnectivity();
     final isOffline = connectivity.every((r) => r == ConnectivityResult.none);
     if (isOffline) {
-      final qId = await syncService.addToQueue(ApiConstants.penjual, 'POST', data);
+      final qId = await syncService.addToQueue(
+        ApiConstants.penjual,
+        'POST',
+        data,
+      );
       data['id'] = -1 * qId;
       return data;
     }
@@ -84,7 +128,11 @@ class ResourceRepository {
           (e.response!.statusCode ?? 0) < 500) {
         rethrow; // Validation/client error — jangan queue
       }
-      final qId = await syncService.addToQueue(ApiConstants.penjual, 'POST', data);
+      final qId = await syncService.addToQueue(
+        ApiConstants.penjual,
+        'POST',
+        data,
+      );
       data['id'] = -1 * qId;
       return data;
     }
@@ -115,11 +163,52 @@ class ResourceRepository {
   }
 
   Future<dynamic> getSupirPaginated({int page = 1}) async {
-    final response = await _apiClient.dio.get(
-      ApiConstants.supir,
-      queryParameters: {'page': page, 'per_page': 10},
-    );
-    return response.data;
+    try {
+      final response = await _apiClient.dio
+          .get(
+            ApiConstants.supir,
+            queryParameters: {'page': page, 'per_page': 10},
+          )
+          .timeout(const Duration(seconds: 15));
+
+      if (page == 1) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('cache_supir_list', jsonEncode(response.data));
+      }
+
+      return response.data;
+    } catch (e) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final cachedStr = prefs.getString('cache_supir_list');
+        final pendingData = await syncService.getMergedOfflineData(
+          'supir',
+          ApiConstants.supir,
+        );
+
+        if (cachedStr != null) {
+          final cachedData = jsonDecode(cachedStr);
+          if (pendingData.isNotEmpty) {
+            final List existingList = _extractListData(cachedData);
+            final combinedList = [...pendingData, ...existingList];
+            if (cachedData is Map) {
+              cachedData['data'] = combinedList;
+            } else {
+              return combinedList;
+            }
+          }
+          return cachedData;
+        } else if (pendingData.isNotEmpty) {
+          return {
+            'data': pendingData,
+            'current_page': 1,
+            'last_page': 1,
+            'total': pendingData.length,
+          };
+        }
+      } catch (_) {}
+      rethrow;
+    }
   }
 
   Future<List<Supir>> getSupirs() async {
@@ -133,10 +222,9 @@ class ResourceRepository {
         return mergedData.map((e) => Supir.fromJson(e)).toList();
       }
 
-      final response = await _apiClient.dio.get(
-        ApiConstants.supir,
-        queryParameters: {'all': true},
-      ).timeout(const Duration(seconds: 5));
+      final response = await _apiClient.dio
+          .get(ApiConstants.supir, queryParameters: {'all': true})
+          .timeout(const Duration(seconds: 5));
       final List<dynamic> data = _extractListData(response.data);
 
       syncService.cacheData('supir', data);
@@ -199,11 +287,52 @@ class ResourceRepository {
   }
 
   Future<dynamic> getPekerjaPaginated({int page = 1}) async {
-    final response = await _apiClient.dio.get(
-      ApiConstants.pekerja,
-      queryParameters: {'page': page, 'per_page': 10},
-    );
-    return response.data;
+    try {
+      final response = await _apiClient.dio
+          .get(
+            ApiConstants.pekerja,
+            queryParameters: {'page': page, 'per_page': 10},
+          )
+          .timeout(const Duration(seconds: 15));
+
+      if (page == 1) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('cache_pekerja_list', jsonEncode(response.data));
+      }
+
+      return response.data;
+    } catch (e) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final cachedStr = prefs.getString('cache_pekerja_list');
+        final pendingData = await syncService.getMergedOfflineData(
+          'pekerja',
+          ApiConstants.pekerja,
+        );
+
+        if (cachedStr != null) {
+          final cachedData = jsonDecode(cachedStr);
+          if (pendingData.isNotEmpty) {
+            final List existingList = _extractListData(cachedData);
+            final combinedList = [...pendingData, ...existingList];
+            if (cachedData is Map) {
+              cachedData['data'] = combinedList;
+            } else {
+              return combinedList;
+            }
+          }
+          return cachedData;
+        } else if (pendingData.isNotEmpty) {
+          return {
+            'data': pendingData,
+            'current_page': 1,
+            'last_page': 1,
+            'total': pendingData.length,
+          };
+        }
+      } catch (_) {}
+      rethrow;
+    }
   }
 
   Future<List<Pekerja>> getPekerjas() async {
@@ -217,10 +346,9 @@ class ResourceRepository {
         return mergedData.map((e) => Pekerja.fromJson(e)).toList();
       }
 
-      final response = await _apiClient.dio.get(
-        ApiConstants.pekerja,
-        queryParameters: {'all': true},
-      ).timeout(const Duration(seconds: 5));
+      final response = await _apiClient.dio
+          .get(ApiConstants.pekerja, queryParameters: {'all': true})
+          .timeout(const Duration(seconds: 5));
       final List<dynamic> data = _extractListData(response.data);
 
       syncService.cacheData('pekerja', data);
@@ -283,11 +411,55 @@ class ResourceRepository {
   }
 
   Future<dynamic> getKendaraanPaginated({int page = 1}) async {
-    final response = await _apiClient.dio.get(
-      ApiConstants.kendaraan,
-      queryParameters: {'page': page, 'per_page': 10},
-    );
-    return response.data;
+    try {
+      final response = await _apiClient.dio
+          .get(
+            ApiConstants.kendaraan,
+            queryParameters: {'page': page, 'per_page': 10},
+          )
+          .timeout(const Duration(seconds: 15));
+
+      if (page == 1) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(
+          'cache_kendaraan_list',
+          jsonEncode(response.data),
+        );
+      }
+
+      return response.data;
+    } catch (e) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final cachedStr = prefs.getString('cache_kendaraan_list');
+        final pendingData = await syncService.getMergedOfflineData(
+          'kendaraan',
+          ApiConstants.kendaraan,
+        );
+
+        if (cachedStr != null) {
+          final cachedData = jsonDecode(cachedStr);
+          if (pendingData.isNotEmpty) {
+            final List existingList = _extractListData(cachedData);
+            final combinedList = [...pendingData, ...existingList];
+            if (cachedData is Map) {
+              cachedData['data'] = combinedList;
+            } else {
+              return combinedList;
+            }
+          }
+          return cachedData;
+        } else if (pendingData.isNotEmpty) {
+          return {
+            'data': pendingData,
+            'current_page': 1,
+            'last_page': 1,
+            'total': pendingData.length,
+          };
+        }
+      } catch (_) {}
+      rethrow;
+    }
   }
 
   Future<List<Kendaraan>> getKendaraans() async {
@@ -301,10 +473,9 @@ class ResourceRepository {
         return mergedData.map((e) => Kendaraan.fromJson(e)).toList();
       }
 
-      final response = await _apiClient.dio.get(
-        ApiConstants.kendaraan,
-        queryParameters: {'all': true},
-      ).timeout(const Duration(seconds: 5));
+      final response = await _apiClient.dio
+          .get(ApiConstants.kendaraan, queryParameters: {'all': true})
+          .timeout(const Duration(seconds: 5));
       final List<dynamic> data = _extractListData(response.data);
 
       syncService.cacheData('kendaraan', data);
@@ -344,14 +515,19 @@ class ResourceRepository {
 
   Future<dynamic> getOperasionalPaginated({int page = 1}) async {
     try {
-      final response = await _apiClient.dio.get(
-        ApiConstants.operasional,
-        queryParameters: {'page': page, 'per_page': 10},
-      ).timeout(const Duration(seconds: 15));
+      final response = await _apiClient.dio
+          .get(
+            ApiConstants.operasional,
+            queryParameters: {'page': page, 'per_page': 10},
+          )
+          .timeout(const Duration(seconds: 15));
 
       if (page == 1) {
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('cache_operasional_list', jsonEncode(response.data));
+        await prefs.setString(
+          'cache_operasional_list',
+          jsonEncode(response.data),
+        );
       }
 
       return response.data;
@@ -359,19 +535,30 @@ class ResourceRepository {
       try {
         final prefs = await SharedPreferences.getInstance();
         final cachedStr = prefs.getString('cache_operasional_list');
+        final pendingData = await syncService.getMergedOfflineData(
+          'operasional',
+          ApiConstants.operasional,
+        );
+
         if (cachedStr != null) {
           final cachedData = jsonDecode(cachedStr);
-          final pendingData = await syncService.getMergedOfflineData('operasional', ApiConstants.operasional);
           if (pendingData.isNotEmpty) {
-             final List existingList = _extractListData(cachedData);
-             final combinedList = [...pendingData, ...existingList];
-             if (cachedData is Map) {
-                cachedData['data'] = combinedList;
-             } else {
-                return combinedList;
-             }
+            final List existingList = _extractListData(cachedData);
+            final combinedList = [...pendingData, ...existingList];
+            if (cachedData is Map) {
+              cachedData['data'] = combinedList;
+            } else {
+              return combinedList;
+            }
           }
           return cachedData;
+        } else if (pendingData.isNotEmpty) {
+          return {
+            'data': pendingData,
+            'current_page': 1,
+            'last_page': 1,
+            'total': pendingData.length,
+          };
         }
       } catch (_) {}
       rethrow;
@@ -411,22 +598,57 @@ class ResourceRepository {
       if (endDate != null) params['end_date'] = endDate;
       if (jenisTransaksi != null) params['jenis_transaksi'] = jenisTransaksi;
 
-      final response = await _apiClient.dio.get(
-        ApiConstants.jurnalKeuangan,
-        queryParameters: params,
-      ).timeout(const Duration(seconds: 15));
+      final response = await _apiClient.dio
+          .get(ApiConstants.jurnalKeuangan, queryParameters: params)
+          .timeout(const Duration(seconds: 15));
 
-      if (page == 1 && startDate == null && endDate == null && jenisTransaksi == null) {
+      if (page == 1) {
+        final cacheKey =
+            'cache_jurnal_list_${startDate ?? ''}_${endDate ?? ''}_${jenisTransaksi ?? ''}';
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('cache_jurnal_list', jsonEncode(response.data));
+        await prefs.setString(cacheKey, jsonEncode(response.data));
       }
       return response.data;
     } catch (e) {
       try {
+        final cacheKey =
+            'cache_jurnal_list_${startDate ?? ''}_${endDate ?? ''}_${jenisTransaksi ?? ''}';
         final prefs = await SharedPreferences.getInstance();
-        final cachedStr = prefs.getString('cache_jurnal_list');
+        final cachedStr = prefs.getString(cacheKey);
+
+        final pendingData = await syncService.getMergedOfflineData(
+          'jurnal_keuangan',
+          ApiConstants.jurnalKeuangan,
+        );
+        // Filter pendingData based on type
+        final filteredPending = pendingData.where((item) {
+          if (jenisTransaksi != null &&
+              item['jenis_transaksi'] != jenisTransaksi) {
+            return false;
+          }
+          // Note: offline data dates might not match strictly without complex parsing, but usually it's fine for today
+          return true;
+        }).toList();
+
         if (cachedStr != null) {
-          return jsonDecode(cachedStr);
+          final cachedData = jsonDecode(cachedStr);
+          if (filteredPending.isNotEmpty) {
+            final List existingList = _extractListData(cachedData);
+            final combinedList = [...filteredPending, ...existingList];
+            if (cachedData is Map) {
+              cachedData['data'] = combinedList;
+            } else {
+              return combinedList;
+            }
+          }
+          return cachedData;
+        } else if (filteredPending.isNotEmpty) {
+          return {
+            'data': filteredPending,
+            'current_page': 1,
+            'last_page': 1,
+            'total': filteredPending.length,
+          };
         }
       } catch (_) {}
       rethrow;
