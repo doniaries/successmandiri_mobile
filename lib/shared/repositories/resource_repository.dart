@@ -48,7 +48,7 @@ class ResourceRepository {
       final response = await _apiClient.dio.get(
         ApiConstants.penjual,
         queryParameters: {'all': true},
-      );
+      ).timeout(const Duration(seconds: 5));
       final List<dynamic> data = _extractListData(response.data);
 
       syncService.cacheData('penjual', data);
@@ -132,7 +132,7 @@ class ResourceRepository {
       final response = await _apiClient.dio.get(
         ApiConstants.supir,
         queryParameters: {'all': true},
-      );
+      ).timeout(const Duration(seconds: 5));
       final List<dynamic> data = _extractListData(response.data);
 
       syncService.cacheData('supir', data);
@@ -216,7 +216,7 @@ class ResourceRepository {
       final response = await _apiClient.dio.get(
         ApiConstants.pekerja,
         queryParameters: {'all': true},
-      );
+      ).timeout(const Duration(seconds: 5));
       final List<dynamic> data = _extractListData(response.data);
 
       syncService.cacheData('pekerja', data);
@@ -300,7 +300,7 @@ class ResourceRepository {
       final response = await _apiClient.dio.get(
         ApiConstants.kendaraan,
         queryParameters: {'all': true},
-      );
+      ).timeout(const Duration(seconds: 5));
       final List<dynamic> data = _extractListData(response.data);
 
       syncService.cacheData('kendaraan', data);

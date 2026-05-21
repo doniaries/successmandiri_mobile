@@ -35,8 +35,9 @@ class _LoginScreenState extends State<LoginScreen> {
       // Auto login check
       await authProvider.checkAuthStatus();
       if (authProvider.isAuthenticated && mounted) {
-        Navigator.of(context).pushReplacement(
+        Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const MainNavigationScreen()),
+          (route) => false,
         );
         return;
       }
@@ -380,11 +381,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 // Beri tahu OS untuk menyimpan credentials ke Autofill
                                 TextInput.finishAutofillContext();
 
-                                Navigator.of(context).pushReplacement(
+                                Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
                                   MaterialPageRoute(
                                     builder: (context) =>
                                         const MainNavigationScreen(),
                                   ),
+                                  (route) => false,
                                 );
                               },
                               isLoading: authProvider.isLoading,

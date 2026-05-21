@@ -164,10 +164,14 @@ class TransaksiDoProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
     try {
-      // Assuming repository has these methods, if not I will add them
-      _penjuals = await _repository.getPenjuals();
-      _supirs = await _repository.getSupirs();
-      _kendaraans = await _repository.getKendaraans();
+      final results = await Future.wait([
+        _repository.getPenjuals(),
+        _repository.getSupirs(),
+        _repository.getKendaraans(),
+      ]);
+      _penjuals = results[0];
+      _supirs = results[1];
+      _kendaraans = results[2];
       _isLoading = false;
       notifyListeners();
     } catch (e) {

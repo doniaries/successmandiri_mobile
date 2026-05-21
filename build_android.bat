@@ -11,18 +11,22 @@ set /p BUILD_NAME="1. Masukkan Build Name (contoh: 1.0.0): "
 set /p BUILD_NUMBER="2. Masukkan Build Number (contoh: 1, 2, 3): "
 echo.
 
-echo 3. Mengambil dependensi Flutter...
+echo 3. Membersihkan cache build (flutter clean)...
+call flutter clean
+if %ERRORLEVEL% NEQ 0 goto GAGAL
+
+echo 4. Mengambil dependensi Flutter...
 call flutter pub get
 if %ERRORLEVEL% NEQ 0 goto GAGAL
 
 echo.
-echo 4. Memulai kompilasi Release APK (Versi %BUILD_NAME%+%BUILD_NUMBER%)...
+echo 5. Memulai kompilasi Release APK (Versi %BUILD_NAME%_%BUILD_NUMBER%)...
 call flutter build apk --release --build-name=%BUILD_NAME% --build-number=%BUILD_NUMBER%
 if %ERRORLEVEL% NEQ 0 goto GAGAL
 
 echo.
-echo 5. Menyalin dan mengubah nama APK...
-copy /B build\app\outputs\flutter-apk\app-release.apk mysawit_v%BUILD_NAME%+%BUILD_NUMBER%.apk /Y
+echo 6. Menyalin dan mengubah nama APK...
+copy build\app\outputs\flutter-apk\app-release.apk "mysawit_v%BUILD_NAME%_%BUILD_NUMBER%.apk" /Y
 if %ERRORLEVEL% NEQ 0 goto GAGAL
 
 :SUKSES
@@ -30,7 +34,7 @@ echo.
 echo =============================================================
 echo [SUKSES] Build berhasil!
 echo File APK kustom Anda kini berada di folder utama proyek:
-echo -> mysawit_v%BUILD_NAME%+%BUILD_NUMBER%.apk
+echo -^> mysawit_v%BUILD_NAME%_%BUILD_NUMBER%.apk
 echo =============================================================
 goto END
 

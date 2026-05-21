@@ -30,7 +30,7 @@ class TransaksiDoRepository {
       final response = await _apiClient.dio.get(
         ApiConstants.penjual,
         queryParameters: {'all': true},
-      );
+      ).timeout(const Duration(seconds: 5));
       return _extractListData(response.data);
     } catch (e) {
       try {
@@ -46,7 +46,7 @@ class TransaksiDoRepository {
       final response = await _apiClient.dio.get(
         ApiConstants.supir,
         queryParameters: {'all': true},
-      );
+      ).timeout(const Duration(seconds: 5));
       return _extractListData(response.data);
     } catch (e) {
       try {
@@ -62,7 +62,7 @@ class TransaksiDoRepository {
       final response = await _apiClient.dio.get(
         ApiConstants.kendaraan,
         queryParameters: {'all': true},
-      );
+      ).timeout(const Duration(seconds: 5));
       return _extractListData(response.data);
     } catch (e) {
       try {
