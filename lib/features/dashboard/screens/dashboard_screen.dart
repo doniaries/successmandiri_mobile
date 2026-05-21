@@ -440,30 +440,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                         ),
                         title: Text(company['name'] ?? 'Tanpa Nama', style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: isSelected ? const Color(0xFF01579B) : Colors.black87)),
                         subtitle: Text('Kasir: ${company['nama_kasir'] ?? 'Kasir Utama'}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: isSelected ? const Color(0xFF01579B).withValues(alpha: 0.1) : Colors.grey[100],
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                '${company['transaksi_do_count'] ?? 0} DO',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: isSelected ? const Color(0xFF01579B) : Colors.grey[700],
-                                ),
-                              ),
-                            ),
-                            if (isSelected) ...[
-                              const SizedBox(width: 8),
-                              const Icon(Icons.check_circle_rounded, color: Color(0xFF01579B)),
-                            ],
-                          ],
-                        ),
+                        trailing: isSelected ? const Icon(Icons.check_circle_rounded, color: Color(0xFF01579B)) : null,
                         onTap: () async {
                           final dashboardProvider = context.read<DashboardProvider>();
                           final txProvider = context.read<TransaksiDoProvider>();
@@ -1339,20 +1316,13 @@ class _StatCards extends StatefulWidget {
 }
 
 class _StatCardsState extends State<_StatCards> {
-  int _periodFilter = 0; // 0: Hari Ini, 1: Pilih Tanggal
-  DateTime? _selectedDate;
-
-  void _onPeriodTap(int index) async {
+  void _onPeriodTap(int index, DateTime? currentDate) async {
     if (index == 0) {
-      setState(() {
-        _periodFilter = 0;
-        _selectedDate = null;
-      });
       context.read<DashboardProvider>().fetchSummary();
     } else {
       final DateTime? picked = await showDatePicker(
         context: context,
-        initialDate: _selectedDate ?? DateTime.now(),
+        initialDate: currentDate ?? DateTime.now(),
         firstDate: DateTime(2020),
         lastDate: DateTime.now().add(const Duration(days: 365)),
         builder: (context, child) {
@@ -1375,10 +1345,6 @@ class _StatCardsState extends State<_StatCards> {
         },
       );
       if (picked != null) {
-        setState(() {
-          _periodFilter = 1;
-          _selectedDate = picked;
-        });
         final formattedDate = DateFormat('yyyy-MM-dd').format(picked);
         if (mounted) {
           context.read<DashboardProvider>().fetchSummary(date: formattedDate);
@@ -1390,16 +1356,16 @@ class _StatCardsState extends State<_StatCards> {
   @override
   Widget build(BuildContext context) {
     final summary = context.select<DashboardProvider, DashboardSummary?>((p) => p.summary);
+    final filterDate = context.select<DashboardProvider, DateTime?>((p) => p.filterDate);
     if (summary == null) return const SizedBox.shrink();
 
-    final isToday = _periodFilter == 0;
+    final isToday = filterDate == null;
     final stats = summary.stats;
 
     final subtitleStr = isToday 
         ? 'Hari ini' 
-        : (_selectedDate != null 
-            ? DateFormat('dd MMM yyyy', 'id_ID').format(_selectedDate!) 
-            : 'Tanggal terpilih');
+        : DateFormat('dd MMM yyyy', 'id_ID').format(filterDate);
+
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1407,7 +1373,7 @@ class _StatCardsState extends State<_StatCards> {
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            _buildPeriodToggle(),
+            _buildPeriodToggle(filterDate),
           ],
         ),
         const SizedBox(height: 12),
@@ -1671,29 +1637,29 @@ class _StatCardsState extends State<_StatCards> {
     );
   }
 
-  Widget _buildPeriodToggle() {
+  Widget _buildPeriodToggle(DateTime? currentFilterDate) {
+    final bool isToday = currentFilterDate == null;
     return Container(
-      padding: const EdgeInsets.all(3),
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
+        color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _toggleItem(0, 'Hari Ini'),
-          _toggleItem(1, _selectedDate != null 
-              ? DateFormat('dd MMM yyyy', 'id_ID').format(_selectedDate!) 
-              : 'Pilih Tanggal'),
+          _toggleItem(0, 'Hari Ini', isToday, currentFilterDate),
+          _toggleItem(1, !isToday 
+              ? DateFormat('dd MMM yyyy', 'id_ID').format(currentFilterDate) 
+              : 'Pilih Tanggal', !isToday, currentFilterDate),
         ],
       ),
     );
   }
 
-  Widget _toggleItem(int index, String label) {
-    final bool active = _periodFilter == index;
+  Widget _toggleItem(int index, String label, bool active, DateTime? currentDate) {
     return GestureDetector(
-      onTap: () => _onPeriodTap(index),
+      onTap: () => _onPeriodTap(index, currentDate),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
