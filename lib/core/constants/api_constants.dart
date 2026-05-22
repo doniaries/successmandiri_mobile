@@ -1,18 +1,10 @@
 import 'package:flutter/foundation.dart';
 
 class ApiConstants {
-  // Set true untuk mengarahkan ke local server saat didebug, atau false untuk selalu ke produksi
   static const bool useLocalInDebug = false;
 
   static String get baseUrl {
-    if (kDebugMode && useLocalInDebug) {
-      // Pilihlah salah satu URL di bawah ini sesuai setup Anda:
-
-      // Karena Anda menggunakan HP asli, kita akan gunakan IP Wi-Fi lokal komputer Anda.
-      return 'http://192.168.1.8/successmandiri_laravel/public/api';
-    }
-
-    // Produksi (Online)
+    // Selalu gunakan Produksi (Online) agar data sinkron dengan sawit.successmandiri.com
     return 'https://sawit.successmandiri.com/api';
   }
 
