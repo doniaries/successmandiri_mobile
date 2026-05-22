@@ -121,8 +121,9 @@ class SyncService {
         final localData = await _db.query(table);
         for (var e in localData) {
           final id = e['id'];
-          if (id != null && id is int && id <= 0)
+          if (id != null && id is int && id <= 0) {
             continue; // Filter out id <= 0
+          }
           if (e['data'] != null) {
             try {
               final parsed =

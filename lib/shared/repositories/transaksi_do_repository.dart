@@ -31,7 +31,11 @@ class TransaksiDoRepository {
   Future<List<dynamic>> getPenjuals() async {
     try {
       final response = await _apiClient.dio
-          .get(ApiConstants.penjual, queryParameters: {'all': true})
+          // ✅ Tambahkan per_page: 9999 di sini
+          .get(
+            ApiConstants.penjual,
+            queryParameters: {'all': true, 'per_page': 9999},
+          )
           .timeout(const Duration(seconds: 5));
       return _extractListData(response.data);
     } catch (e) {
@@ -49,7 +53,11 @@ class TransaksiDoRepository {
   Future<List<dynamic>> getSupirs() async {
     try {
       final response = await _apiClient.dio
-          .get(ApiConstants.supir, queryParameters: {'all': true})
+          // ✅ Tambahkan per_page: 9999 di sini
+          .get(
+            ApiConstants.supir,
+            queryParameters: {'all': true, 'per_page': 9999},
+          )
           .timeout(const Duration(seconds: 5));
       return _extractListData(response.data);
     } catch (e) {
@@ -67,7 +75,11 @@ class TransaksiDoRepository {
   Future<List<dynamic>> getKendaraans() async {
     try {
       final response = await _apiClient.dio
-          .get(ApiConstants.kendaraan, queryParameters: {'all': true})
+          // ✅ Tambahkan per_page: 9999 di sini
+          .get(
+            ApiConstants.kendaraan,
+            queryParameters: {'all': true, 'per_page': 9999},
+          )
           .timeout(const Duration(seconds: 5));
       return _extractListData(response.data);
     } catch (e) {
@@ -252,7 +264,7 @@ class TransaksiDoRepository {
       final dateStr = tanggal != null
           ? tanggal.replaceAll('-', '')
           : DateFormat('yyyyMMdd').format(DateTime.now());
-          
+
       try {
         final pendingData = await _syncService.getMergedOfflineData(
           'transaksi_do',
@@ -288,7 +300,7 @@ class TransaksiDoRepository {
 
         int nextSeq = maxSeq + 1;
         final seqStr = nextSeq.toString().padLeft(4, '0');
-        
+
         return 'DO-$companyPrefix$dateStr-$seqStr';
       } catch (_) {
         final randomStr = (1000 + Random().nextInt(9000)).toString();

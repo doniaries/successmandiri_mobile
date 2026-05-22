@@ -248,8 +248,9 @@ class ResourceProvider with ChangeNotifier {
     } else {
       if (_isFetchingMore[type] == true ||
           _isRefreshing[type] == true ||
-          _hasMore[type] == false)
+          _hasMore[type] == false) {
         return;
+      }
       _isFetchingMore[type] = true;
       notifyListeners();
     }

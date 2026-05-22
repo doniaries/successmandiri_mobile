@@ -38,8 +38,9 @@ class ResourceRepository {
           .timeout(const Duration(seconds: 15));
 
       if (page == 1) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('cache_penjual_list', jsonEncode(response.data));
+        // Hapus kode SharedPreferences, ganti dengan SQLite Cache
+        final List<dynamic> listData = _extractListData(response.data);
+        await syncService.cacheData('penjual', listData);
       }
 
       return response.data;
@@ -155,8 +156,8 @@ class ResourceRepository {
           .timeout(const Duration(seconds: 15));
 
       if (page == 1) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('cache_supir_list', jsonEncode(response.data));
+        final List<dynamic> listData = _extractListData(response.data);
+        await syncService.cacheData('supir', listData);
       }
 
       return response.data;
@@ -260,10 +261,9 @@ class ResourceRepository {
             queryParameters: {'page': page, 'per_page': 10},
           )
           .timeout(const Duration(seconds: 15));
-
       if (page == 1) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('cache_pekerja_list', jsonEncode(response.data));
+        final List<dynamic> listData = _extractListData(response.data);
+        await syncService.cacheData('pekerja', listData);
       }
 
       return response.data;
@@ -369,11 +369,8 @@ class ResourceRepository {
           .timeout(const Duration(seconds: 15));
 
       if (page == 1) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(
-          'cache_kendaraan_list',
-          jsonEncode(response.data),
-        );
+        final List<dynamic> listData = _extractListData(response.data);
+        await syncService.cacheData('kendaraan', listData);
       }
 
       return response.data;
@@ -455,11 +452,8 @@ class ResourceRepository {
           .timeout(const Duration(seconds: 15));
 
       if (page == 1) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(
-          'cache_operasional_list',
-          jsonEncode(response.data),
-        );
+        final List<dynamic> listData = _extractListData(response.data);
+        await syncService.cacheData('operasional', listData);
       }
 
       return response.data;

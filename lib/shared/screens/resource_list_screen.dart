@@ -117,14 +117,44 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
   }
 
   Widget _buildSummaryCards(ResourceProvider provider, List<dynamic> items) {
-    int totalCount = items.length;
-    
-    double totalHutang = items.fold(0.0, (sum, item) {
-      if (item is Penjual) return sum + (item.sisaHutang ?? 0.0);
-      if (item is Supir) return sum + (item.sisaHutang ?? 0.0);
-      if (item is Pekerja) return sum + item.sisaHutang;
-      return sum;
-    });
+    // 1. Hitung Total Keseluruhan Orang (Menggunakan data server di Provider)
+    int totalCount = items.length; // Fallback default
+    if (widget.resourceType == 'penjual') {
+      // Kita pakai Math.max logika (mana yang lebih besar), agar jika user menambah
+      // data offline, angkanya tetap bertambah meskipun server count belum update.
+      totalCount = provider.penjualCount > items.length
+          ? provider.penjualCount
+          : items.length;
+    } else if (widget.resourceType == 'supir') {
+      totalCount = provider.supirCount > items.length
+          ? provider.supirCount
+          : items.length;
+    } else if (widget.resourceType == 'pekerja') {
+      totalCount = provider.pekerjaCount > items.length
+          ? provider.pekerjaCount
+          : items.length;
+    }
+
+    // 2. Hitung Total Keseluruhan Hutang Perusahaan
+    double totalHutang = 0.0;
+    if (widget.resourceType == 'penjual') {
+      totalHutang = provider.totalHutangPenjual;
+    } else if (widget.resourceType == 'supir') {
+      totalHutang = provider.totalHutangSupir;
+    } else if (widget.resourceType == 'pekerja') {
+      totalHutang = provider.totalHutangPekerja;
+    }
+
+    // Fallback: Jika koneksi terputus/server belum merespon total hutang,
+    // gunakan kalkulasi manual dari list lokal
+    if (totalHutang == 0.0 && items.isNotEmpty) {
+      totalHutang = items.fold(0.0, (sum, item) {
+        if (item is Penjual) return sum + (item.sisaHutang ?? 0.0);
+        if (item is Supir) return sum + (item.sisaHutang ?? 0.0);
+        if (item is Pekerja) return sum + item.sisaHutang;
+        return sum;
+      });
+    }
 
     String titleLabel = 'Total';
     IconData countIcon = Icons.people_alt_rounded;
@@ -181,11 +211,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      Icon(
-                        countIcon,
-                        color: Colors.white,
-                        size: 20,
-                      ),
+                      Icon(countIcon, color: Colors.white, size: 20),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -253,7 +279,9 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                     child: Text(
                       CurrencyFormatter.formatRupiah(totalHutang),
                       style: TextStyle(
-                        color: totalHutang > 0 ? Colors.red[700] : Colors.black87,
+                        color: totalHutang > 0
+                            ? Colors.red[700]
+                            : Colors.black87,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -262,10 +290,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                   const SizedBox(height: 4),
                   const Text(
                     'Sisa Kewajiban',
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 10,
-                    ),
+                    style: TextStyle(color: Colors.grey, fontSize: 10),
                   ),
                 ],
               ),
@@ -276,25 +301,26 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
     );
   }
 
-  Widget _buildListContent(ResourceProvider provider, List<dynamic> items, ScrollController controller) {
+  Widget _buildListContent(
+    ResourceProvider provider,
+    List<dynamic> items,
+    ScrollController controller,
+  ) {
     if (provider.isLoading && items.isEmpty) {
       return _buildSkeletons();
     }
 
-
     Widget listBody = items.isEmpty
         ? Stack(
             children: [
-              ListView(physics: const AlwaysScrollableScrollPhysics()), // Dynamic list to enable RefreshIndicator
+              ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+              ), // Dynamic list to enable RefreshIndicator
               Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.info_outline,
-                      size: 64,
-                      color: Colors.grey[300],
-                    ),
+                    Icon(Icons.info_outline, size: 64, color: Colors.grey[300]),
                     const SizedBox(height: 16),
                     Text(
                       'Data ${widget.title} belum tersedia',
@@ -303,10 +329,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                     const SizedBox(height: 8),
                     Text(
                       'Tarik ke bawah untuk memuat ulang',
-                      style: TextStyle(
-                        color: Colors.grey[400],
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: Colors.grey[400], fontSize: 12),
                     ),
                   ],
                 ),
@@ -319,11 +342,8 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
             padding: const EdgeInsets.all(16),
             itemCount:
                 items.length +
-                (provider.isFetchingMoreFor(widget.resourceType)
-                    ? 1
-                    : 0),
-            separatorBuilder: (context, index) =>
-                const SizedBox(height: 12),
+                (provider.isFetchingMoreFor(widget.resourceType) ? 1 : 0),
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               if (index < items.length) {
                 final item = items[index];
@@ -355,7 +375,8 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
       return const TransaksiDoScreen();
     }
 
-    final bool hasTabs = widget.resourceType == 'penjual' ||
+    final bool hasTabs =
+        widget.resourceType == 'penjual' ||
         widget.resourceType == 'supir' ||
         widget.resourceType == 'pekerja';
 
@@ -375,8 +396,14 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                 indicatorColor: Color(0xFF01579B),
                 indicatorWeight: 3,
                 indicatorSize: TabBarIndicatorSize.tab,
-                labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal, fontSize: 15),
+                labelStyle: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
+                unselectedLabelStyle: TextStyle(
+                  fontWeight: FontWeight.normal,
+                  fontSize: 15,
+                ),
                 tabs: [
                   Tab(text: 'AKTIF'),
                   Tab(text: 'NONAKTIF'),
@@ -387,9 +414,14 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
       body: Column(
         children: [
           const ActiveCompanyHeader(),
-          if (hasTabs || widget.resourceType == 'kendaraan' || widget.resourceType == 'user')
+          if (hasTabs ||
+              widget.resourceType == 'kendaraan' ||
+              widget.resourceType == 'user')
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
               child: TextField(
                 decoration: InputDecoration(
                   hintText: 'Cari...',
@@ -397,7 +429,10 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
                 onChanged: (value) {
                   setState(() {
@@ -458,9 +493,13 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                 if (_searchQuery.isNotEmpty) {
                   final query = _searchQuery.toLowerCase();
                   items = items.where((i) {
-                    if (i is Penjual) return i.nama.toLowerCase().contains(query);
+                    if (i is Penjual) {
+                      return i.nama.toLowerCase().contains(query);
+                    }
                     if (i is Supir) return i.nama.toLowerCase().contains(query);
-                    if (i is Pekerja) return i.nama.toLowerCase().contains(query);
+                    if (i is Pekerja) {
+                      return i.nama.toLowerCase().contains(query);
+                    }
                     if (i is Kendaraan) {
                       final nopol = i.nopol.toLowerCase();
                       final jenis = (i.jenis ?? '').toLowerCase();
@@ -492,8 +531,16 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                       Expanded(
                         child: TabBarView(
                           children: [
-                            _buildListContent(provider, activeItems, _activeScrollController),
-                            _buildListContent(provider, inactiveItems, _inactiveScrollController),
+                            _buildListContent(
+                              provider,
+                              activeItems,
+                              _activeScrollController,
+                            ),
+                            _buildListContent(
+                              provider,
+                              inactiveItems,
+                              _inactiveScrollController,
+                            ),
                           ],
                         ),
                       ),
@@ -538,10 +585,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
     );
 
     if (hasTabs) {
-      return DefaultTabController(
-        length: 2,
-        child: scaffold,
-      );
+      return DefaultTabController(length: 2, child: scaffold);
     }
 
     return scaffold;
@@ -586,11 +630,14 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
           ? const Color(0xFF0D47A1)
           : const Color(0xFF27AE60);
     } else if (item is JurnalKeuangan) {
-      name = item.pihakTerkait != null && item.pihakTerkait!.isNotEmpty && item.pihakTerkait != '-'
+      name =
+          item.pihakTerkait != null &&
+              item.pihakTerkait!.isNotEmpty &&
+              item.pihakTerkait != '-'
           ? '${item.pihakTerkait} (${item.subKategori})'
-          : (item.keterangan?.isNotEmpty == true 
-              ? '${item.subKategori} (${item.keterangan})' 
-              : item.subKategori);
+          : (item.keterangan?.isNotEmpty == true
+                ? '${item.subKategori} (${item.keterangan})'
+                : item.subKategori);
       subtitle =
           '${CurrencyFormatter.formatRupiah(item.nominal)} • ${item.jenisTransaksi} • ${item.caraPembayaran.toUpperCase()}';
       icon = Icons.receipt_long_rounded;
