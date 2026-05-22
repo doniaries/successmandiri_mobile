@@ -163,66 +163,7 @@ class DashboardScreenState extends State<DashboardScreen> {
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             const SliverToBoxAdapter(child: _DashboardHeader()),
-            SliverToBoxAdapter(
-              child: ValueListenableBuilder<int>(
-                valueListenable: SyncService().pendingSyncCount,
-                builder: (context, count, child) {
-                  return AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    transitionBuilder: (child, animation) => SizeTransition(
-                      sizeFactor: animation,
-                      axisAlignment: -1.0,
-                      child: FadeTransition(opacity: animation, child: child),
-                    ),
-                    child: count == 0
-                        ? const SizedBox.shrink(key: ValueKey('empty'))
-                        : Container(
-                            key: const ValueKey('banner'),
-                    margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.orange[50],
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.orange[200]!),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.cloud_upload_rounded,
-                          color: Colors.orange,
-                          size: 24,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Ada $count Data Belum Tersinkron',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
-                                  color: Colors.deepOrange,
-                                ),
-                              ),
-                              const SizedBox(height: 2),
-                              const Text(
-                                'Data akan otomatis dikirim saat perangkat kembali terhubung ke internet.',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  );
-                },
-              ),
-            ),
+
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
