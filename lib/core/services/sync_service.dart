@@ -11,6 +11,8 @@ import 'package:sawitappmobile/core/services/database_service.dart';
 import 'package:sawitappmobile/core/services/notification_service.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
+import 'package:sawitappmobile/features/tambah_saldo/providers/tambah_saldo_provider.dart';
+import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_provider.dart';
 
 class SyncService {
   static final SyncService _instance = SyncService._internal();
@@ -42,9 +44,6 @@ class SyncService {
       if (!_isOffline) {
         // Koneksi kembali → sync data yang tertunda
         syncNow();
-      } else if (!wasOffline && _isOffline) {
-        // Baru saja offline → cek apakah ada data pending
-        _notifyOfflineIfHasPending();
       }
     });
 
@@ -52,32 +51,7 @@ class SyncService {
     Connectivity().checkConnectivity().then((results) {
       _isOffline = results.any((r) => r == ConnectivityResult.none);
       _connectivityController.add(!_isOffline);
-      // Jika langsung offline saat app dibuka dan ada pending, beri tahu user
-      if (_isOffline) {
-        _notifyOfflineIfHasPending();
-      }
     });
-  }
-
-  /// Tampilkan notifikasi lokal jika ada data pending saat offline
-  Future<void> _notifyOfflineIfHasPending() async {
-    try {
-      final queue = await _db.query('offline_queue');
-      if (queue.isEmpty) return;
-
-      final endpoints = queue
-          .map((item) => _getProcessName(item['endpoint'] as String))
-          .toSet()
-          .toList();
-      final processNames = endpoints.join(', ');
-
-      await _notificationService.showOfflineNotification(
-        pendingCount: queue.length,
-        processNames: processNames,
-      );
-    } catch (e) {
-      debugPrint('Error notifying offline pending: \$e');
-    }
   }
 
   Future<void> updatePendingCount() async {
@@ -214,7 +188,9 @@ class SyncService {
       'data': jsonEncode(data),
     });
     await updatePendingCount();
-    syncNow();
+    if (!_isOffline) {
+      syncNow();
+    }
     return id;
   }
 
@@ -233,7 +209,8 @@ class SyncService {
     final List<String> syncedEndpoints = [];
 
     try {
-      final syncTasks = queue.map((item) async {
+      // Sequential sync instead of parallel
+      for (var item in queue) {
         final id = item['id'] as int;
         final endpoint = item['endpoint'] as String;
         final method = item['method'] as String;
@@ -248,23 +225,38 @@ class SyncService {
             await _apiClient.dio.delete(endpoint);
           }
           await _db.deleteQueue(id);
-          return _getProcessName(endpoint); // sukses
+          successCount++;
+          syncedEndpoints.add(_getProcessName(endpoint));
         } catch (e) {
           dev.log('Sync failed for item $id: $e');
-          return null; // gagal
-        }
-      });
-
-      final results = await Future.wait(syncTasks);
-
-      for (var res in results) {
-        if (res != null) {
-          successCount++;
-          syncedEndpoints.add(res);
         }
       }
 
       if (successCount > 0) {
+        // Clear cached dashboard summary agar refresh dari server tanpa offline data
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('cached_dashboard_summary');
+        } catch (_) {}
+
+        // Auto-refresh UI jika aplikasi sedang terbuka, tunggu sampai selesai sebelum update notifikasi & UI state
+        try {
+          final context = NavigationService.navigatorKey.currentContext;
+          if (context != null && context.mounted) {
+            final rp = Provider.of<ResourceProvider>(context, listen: false);
+            final dp = Provider.of<DashboardProvider>(context, listen: false);
+            final tp = Provider.of<TambahSaldoProvider>(context, listen: false);
+            final doProv = Provider.of<TransaksiDoProvider>(context, listen: false);
+            
+            await Future.wait([
+              rp.fetchAllResources(),
+              dp.fetchSummary(),
+              tp.fetchRequests(),
+              doProv.fetchRequests(),
+            ]);
+          }
+        } catch (_) {}
+
         final uniqueEndpoints = syncedEndpoints.toSet().toList();
         final processNames = uniqueEndpoints.join(', ');
         final title = uniqueEndpoints.length == 1
@@ -279,23 +271,6 @@ class SyncService {
           title: title,
           body: body,
         );
-
-        // Clear cached dashboard summary agar refresh dari server tanpa offline data
-        try {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.remove('cached_dashboard_summary');
-        } catch (_) {}
-
-        // Auto-refresh UI jika aplikasi sedang terbuka
-        try {
-          final context = NavigationService.navigatorKey.currentContext;
-          if (context != null && context.mounted) {
-            final rp = Provider.of<ResourceProvider>(context, listen: false);
-            final dp = Provider.of<DashboardProvider>(context, listen: false);
-            rp.fetchAllResources();
-            dp.fetchSummary();
-          }
-        } catch (_) {}
       }
     } finally {
       _isSyncing = false;
