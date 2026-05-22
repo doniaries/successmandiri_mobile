@@ -358,6 +358,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
           );
 
     final Widget scrollableList = RefreshIndicator(
+      notificationPredicate: (notification) => !SyncService().isOffline && defaultScrollNotificationPredicate(notification),
       onRefresh: _refreshData,
       color: const Color(0xFF01579B),
       child: listBody,

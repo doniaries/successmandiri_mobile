@@ -11,6 +11,7 @@ import 'package:sawitappmobile/shared/widgets/change_password_dialog.dart';
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sawitappmobile/core/services/push_notification_service.dart';
+import 'package:sawitappmobile/core/services/sync_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -185,6 +186,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: authProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
+              notificationPredicate: (notification) => !SyncService().isOffline && defaultScrollNotificationPredicate(notification),
               onRefresh: () async {
                 await context.read<AuthProvider>().checkAuthStatus();
                 if (context.mounted) {

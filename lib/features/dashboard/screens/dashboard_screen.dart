@@ -100,6 +100,7 @@ class DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: RefreshIndicator(
+        notificationPredicate: (notification) => !SyncService().isOffline && defaultScrollNotificationPredicate(notification),
         onRefresh: () async {
           final scaffoldMessenger = ScaffoldMessenger.of(context);
           final dashboardProvider = context.read<DashboardProvider>();

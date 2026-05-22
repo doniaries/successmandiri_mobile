@@ -33,8 +33,13 @@ class TambahSaldoRepository {
 
       final response = await _apiClient.dio.get(ApiConstants.tambahSaldo).timeout(const Duration(seconds: 15));
       final List<dynamic> data = _extractListData(response.data);
-      _syncService.cacheData('tambah_saldo', data);
-      return data.map((json) => TambahSaldoModel.fromJson(json)).toList();
+      await _syncService.cacheData('tambah_saldo', data);
+      
+      final mergedData = await _syncService.getMergedOfflineData(
+        'tambah_saldo',
+        ApiConstants.tambahSaldo,
+      );
+      return mergedData.map((e) => TambahSaldoModel.fromJson(e)).toList();
     } catch (e) {
       final mergedData = await _syncService.getMergedOfflineData(
         'tambah_saldo',

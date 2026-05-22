@@ -110,6 +110,16 @@ class TransaksiDoRepository {
       final data = _extractListData(response.data);
       if (page == 1) {
         await _syncService.cacheData('transaksi_do', data);
+        final pendingData = await _syncService.getMergedOfflineData('transaksi_do', ApiConstants.transaksiDo);
+        
+        final filteredPending = pendingData.where((item) {
+          if (tanggal != null && item['tanggal'] != tanggal) return false;
+          return true;
+        }).toList();
+        
+        if (response.data is Map) {
+          response.data['data'] = filteredPending;
+        }
       }
 
       return response.data;

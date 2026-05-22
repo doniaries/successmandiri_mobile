@@ -37,7 +37,6 @@ class SyncService {
     Connectivity().onConnectivityChanged.listen((
       List<ConnectivityResult> results,
     ) {
-      final wasOffline = _isOffline;
       _isOffline = results.any((r) => r == ConnectivityResult.none);
       _connectivityController.add(!_isOffline);
 
@@ -252,7 +251,7 @@ class SyncService {
               rp.fetchAllResources(),
               dp.fetchSummary(),
               tp.fetchRequests(),
-              doProv.fetchRequests(),
+              doProv.fetchTransactions(),
             ]);
           }
         } catch (_) {}

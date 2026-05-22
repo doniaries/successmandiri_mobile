@@ -128,6 +128,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       body: RefreshIndicator(
+        notificationPredicate: (notification) => !SyncService().isOffline && defaultScrollNotificationPredicate(notification),
         onRefresh: () async {
           if (!mounted) return;
           final txProvider = context.read<TransaksiDoProvider>();

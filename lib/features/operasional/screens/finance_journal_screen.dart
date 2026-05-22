@@ -211,6 +211,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
               _buildFilterChips(),
               Expanded(
                 child: RefreshIndicator(
+                  notificationPredicate: (notification) => !SyncService().isOffline && defaultScrollNotificationPredicate(notification),
                   onRefresh: () async => _refreshData(),
                   child: isInitialLoading
                       ? _buildSkeletonList()

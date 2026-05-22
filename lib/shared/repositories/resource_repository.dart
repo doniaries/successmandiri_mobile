@@ -41,6 +41,10 @@ class ResourceRepository {
         // Hapus kode SharedPreferences, ganti dengan SQLite Cache
         final List<dynamic> listData = _extractListData(response.data);
         await syncService.cacheData('penjual', listData);
+        final pendingData = await syncService.getMergedOfflineData('penjual', ApiConstants.penjual);
+        if (response.data is Map) {
+          response.data['data'] = pendingData;
+        }
       }
 
       return response.data;
@@ -77,8 +81,9 @@ class ResourceRepository {
           .timeout(const Duration(seconds: 5));
       final List<dynamic> data = _extractListData(response.data);
 
-      syncService.cacheData('penjual', data);
-      return data.map((e) => Penjual.fromJson(e)).toList();
+      await syncService.cacheData('penjual', data);
+      final mergedData = await syncService.getMergedOfflineData('penjual', ApiConstants.penjual);
+      return mergedData.map((e) => Penjual.fromJson(e)).toList();
     } catch (e) {
       final mergedData = await syncService.getMergedOfflineData(
         'penjual',
@@ -158,6 +163,10 @@ class ResourceRepository {
       if (page == 1) {
         final List<dynamic> listData = _extractListData(response.data);
         await syncService.cacheData('supir', listData);
+        final pendingData = await syncService.getMergedOfflineData('supir', ApiConstants.supir);
+        if (response.data is Map) {
+          response.data['data'] = pendingData;
+        }
       }
 
       return response.data;
@@ -194,8 +203,9 @@ class ResourceRepository {
           .timeout(const Duration(seconds: 5));
       final List<dynamic> data = _extractListData(response.data);
 
-      syncService.cacheData('supir', data);
-      return data.map((e) => Supir.fromJson(e)).toList();
+      await syncService.cacheData('supir', data);
+      final mergedData = await syncService.getMergedOfflineData('supir', ApiConstants.supir);
+      return mergedData.map((e) => Supir.fromJson(e)).toList();
     } catch (e) {
       final mergedData = await syncService.getMergedOfflineData(
         'supir',
@@ -264,6 +274,10 @@ class ResourceRepository {
       if (page == 1) {
         final List<dynamic> listData = _extractListData(response.data);
         await syncService.cacheData('pekerja', listData);
+        final pendingData = await syncService.getMergedOfflineData('pekerja', ApiConstants.pekerja);
+        if (response.data is Map) {
+          response.data['data'] = pendingData;
+        }
       }
 
       return response.data;
@@ -300,8 +314,9 @@ class ResourceRepository {
           .timeout(const Duration(seconds: 5));
       final List<dynamic> data = _extractListData(response.data);
 
-      syncService.cacheData('pekerja', data);
-      return data.map((e) => Pekerja.fromJson(e)).toList();
+      await syncService.cacheData('pekerja', data);
+      final mergedData = await syncService.getMergedOfflineData('pekerja', ApiConstants.pekerja);
+      return mergedData.map((e) => Pekerja.fromJson(e)).toList();
     } catch (e) {
       final mergedData = await syncService.getMergedOfflineData(
         'pekerja',
@@ -371,6 +386,10 @@ class ResourceRepository {
       if (page == 1) {
         final List<dynamic> listData = _extractListData(response.data);
         await syncService.cacheData('kendaraan', listData);
+        final pendingData = await syncService.getMergedOfflineData('kendaraan', ApiConstants.kendaraan);
+        if (response.data is Map) {
+          response.data['data'] = pendingData;
+        }
       }
 
       return response.data;
@@ -407,8 +426,9 @@ class ResourceRepository {
           .timeout(const Duration(seconds: 5));
       final List<dynamic> data = _extractListData(response.data);
 
-      syncService.cacheData('kendaraan', data);
-      return data.map((e) => Kendaraan.fromJson(e)).toList();
+      await syncService.cacheData('kendaraan', data);
+      final mergedData = await syncService.getMergedOfflineData('kendaraan', ApiConstants.kendaraan);
+      return mergedData.map((e) => Kendaraan.fromJson(e)).toList();
     } catch (e) {
       final mergedData = await syncService.getMergedOfflineData(
         'kendaraan',
@@ -454,6 +474,10 @@ class ResourceRepository {
       if (page == 1) {
         final List<dynamic> listData = _extractListData(response.data);
         await syncService.cacheData('operasional', listData);
+        final pendingData = await syncService.getMergedOfflineData('operasional', ApiConstants.operasional);
+        if (response.data is Map) {
+          response.data['data'] = pendingData;
+        }
       }
 
       return response.data;
@@ -475,10 +499,22 @@ class ResourceRepository {
   }
 
   Future<List<Operasional>> getOperasionals() async {
-    final response = await _apiClient.dio.get(ApiConstants.operasional);
-    final List<dynamic> data = _extractListData(response.data);
-    syncService.cacheData('operasional', data);
-    return data.map((e) => Operasional.fromJson(e)).toList();
+    try {
+      final connectivity = await Connectivity().checkConnectivity();
+      if (connectivity.contains(ConnectivityResult.none)) {
+        final mergedData = await syncService.getMergedOfflineData('operasional', ApiConstants.operasional);
+        return mergedData.map((e) => Operasional.fromJson(e)).toList();
+      }
+      
+      final response = await _apiClient.dio.get(ApiConstants.operasional);
+      final List<dynamic> data = _extractListData(response.data);
+      await syncService.cacheData('operasional', data);
+      final mergedData = await syncService.getMergedOfflineData('operasional', ApiConstants.operasional);
+      return mergedData.map((e) => Operasional.fromJson(e)).toList();
+    } catch (e) {
+      final mergedData = await syncService.getMergedOfflineData('operasional', ApiConstants.operasional);
+      return mergedData.map((e) => Operasional.fromJson(e)).toList();
+    }
   }
 
   Future<Operasional> getOperasionalDetail(int id) async {

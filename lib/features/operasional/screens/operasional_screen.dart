@@ -182,6 +182,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       body: RefreshIndicator(
+        notificationPredicate: (notification) => !SyncService().isOffline && defaultScrollNotificationPredicate(notification),
         onRefresh: _refreshData,
         color: const Color(0xFF01579B),
         child: CustomScrollView(
