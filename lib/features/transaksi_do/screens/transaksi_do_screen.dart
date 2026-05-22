@@ -65,14 +65,6 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     
     setState(() => _isManualSyncing = true);
-    scaffoldMessenger.showSnackBar(
-      const SnackBar(
-        content: Text('Memulai Sinkronisasi DO...'),
-        duration: Duration(seconds: 1),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-    
     try {
       // 1. Process offline queue
       await SyncService().syncNow();
@@ -86,13 +78,6 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
       // 4. Fetch latest dashboard summary
       await dashboardProvider.fetchSummary();
       
-      scaffoldMessenger.showSnackBar(
-        const SnackBar(
-          content: Text('Sinkronisasi DO Selesai'),
-          backgroundColor: Color(0xFF0D47A1),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
     } catch (e) {
       if (mounted) {
         scaffoldMessenger.showSnackBar(
