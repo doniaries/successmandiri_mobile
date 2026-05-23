@@ -291,7 +291,7 @@ class SyncService {
     return 'Data';
   }
 
-  Future<void> cacheData(String table, List<dynamic> list) async {
+  Future<void> cacheData(String table, List<dynamic> list, {bool clear = true}) async {
     List<Map<String, dynamic>> mappedList = [];
 
     for (var item in list) {
@@ -310,7 +310,9 @@ class SyncService {
       }
     }
 
-    await _db.clearTable(table);
+    if (clear) {
+      await _db.clearTable(table);
+    }
     if (mappedList.isNotEmpty) {
       await _db.batchInsert(table, mappedList);
     }
@@ -322,8 +324,15 @@ class SyncService {
     if (connectivity.contains(ConnectivityResult.none)) return;
 
     try {
-      // Sesuai permintaan: Hanya sinkronkan data yang dibutuhkan di awal (Dashboard, DO, Laporan)
-      // Master data (Supir, Penjual, Pekerja, Kendaraan) akan dimuat per halaman saat dibutuhkan.
+      // Sinkronisasi Master Data (Penjual, Supir, Pekerja, Kendaraan) agar tersedia offline seluruhnya
+      try {
+        await repository.getPenjuals();
+        await repository.getSupirs();
+        await repository.getPekerjas();
+        await repository.getKendaraans();
+      } catch (e) {
+        debugPrint('Error syncing master data: $e');
+      }
 
       // Sync Users (Karyawan) - Biasanya datanya kecil dan sering dibutuhkan
 

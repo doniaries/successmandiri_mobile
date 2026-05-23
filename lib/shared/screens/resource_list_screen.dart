@@ -367,6 +367,33 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
     return scrollableList;
   }
 
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16.0,
+        vertical: 8.0,
+      ),
+      child: TextField(
+        decoration: InputDecoration(
+          hintText: 'Cari...',
+          prefixIcon: const Icon(Icons.search),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
+        ),
+        onChanged: (value) {
+          setState(() {
+            _searchQuery = value;
+          });
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.resourceType == 'operasional') {
@@ -415,33 +442,10 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
       body: Column(
         children: [
           const ActiveCompanyHeader(),
-          if (hasTabs ||
-              widget.resourceType == 'kendaraan' ||
-              widget.resourceType == 'user')
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 8.0,
-              ),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Cari...',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    _searchQuery = value;
-                  });
-                },
-              ),
-            ),
+          if (!hasTabs &&
+              (widget.resourceType == 'kendaraan' ||
+               widget.resourceType == 'user'))
+            _buildSearchBar(),
           Expanded(
             child: Consumer<ResourceProvider>(
               builder: (context, provider, child) {
@@ -529,6 +533,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                   return Column(
                     children: [
                       _buildSummaryCards(provider, items),
+                      _buildSearchBar(),
                       Expanded(
                         child: TabBarView(
                           children: [

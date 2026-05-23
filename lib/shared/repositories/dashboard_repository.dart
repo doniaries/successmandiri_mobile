@@ -176,6 +176,35 @@ class DashboardRepository {
             stats: newStats,
           );
         }
+
+        // 5. Pending Penjual
+        final pendingPenjual = await syncService.getMergedOfflineData('penjual', ApiConstants.penjual);
+        final offlinePenjualCount = pendingPenjual.where((e) {
+          final id = e['id'] as int?;
+          return id != null && id < 0;
+        }).length;
+
+        // 6. Pending Supir
+        final pendingSupir = await syncService.getMergedOfflineData('supir', ApiConstants.supir);
+        final offlineSupirCount = pendingSupir.where((e) {
+          final id = e['id'] as int?;
+          return id != null && id < 0;
+        }).length;
+
+        // 7. Pending Pekerja
+        final pendingPekerja = await syncService.getMergedOfflineData('pekerja', ApiConstants.pekerja);
+        final offlinePekerjaCount = pendingPekerja.where((e) {
+          final id = e['id'] as int?;
+          return id != null && id < 0;
+        }).length;
+
+        if (offlinePenjualCount > 0 || offlineSupirCount > 0 || offlinePekerjaCount > 0) {
+          summary = summary.copyWith(
+            totalPenjual: summary.totalPenjual + offlinePenjualCount,
+            totalSupir: summary.totalSupir + offlineSupirCount,
+            totalPekerja: summary.totalPekerja + offlinePekerjaCount,
+          );
+        }
         
         return summary;
       } catch (_) {}

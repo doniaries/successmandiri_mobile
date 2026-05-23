@@ -40,7 +40,7 @@ class ResourceRepository {
       if (page == 1) {
         // Hapus kode SharedPreferences, ganti dengan SQLite Cache
         final List<dynamic> listData = _extractListData(response.data);
-        await syncService.cacheData('penjual', listData);
+        await syncService.cacheData('penjual', listData, clear: false);
         final pendingData = await syncService.getMergedOfflineData('penjual', ApiConstants.penjual);
         if (response.data is Map) {
           response.data['data'] = pendingData;
@@ -58,7 +58,6 @@ class ResourceRepository {
           'data': pendingData,
           'current_page': 1,
           'last_page': 1,
-          'total': pendingData.length,
         };
       } catch (_) {}
       rethrow;
@@ -162,7 +161,7 @@ class ResourceRepository {
 
       if (page == 1) {
         final List<dynamic> listData = _extractListData(response.data);
-        await syncService.cacheData('supir', listData);
+        await syncService.cacheData('supir', listData, clear: false);
         final pendingData = await syncService.getMergedOfflineData('supir', ApiConstants.supir);
         if (response.data is Map) {
           response.data['data'] = pendingData;
@@ -180,7 +179,6 @@ class ResourceRepository {
           'data': pendingData,
           'current_page': 1,
           'last_page': 1,
-          'total': pendingData.length,
         };
       } catch (_) {}
       rethrow;
@@ -273,7 +271,7 @@ class ResourceRepository {
           .timeout(const Duration(seconds: 15));
       if (page == 1) {
         final List<dynamic> listData = _extractListData(response.data);
-        await syncService.cacheData('pekerja', listData);
+        await syncService.cacheData('pekerja', listData, clear: false);
         final pendingData = await syncService.getMergedOfflineData('pekerja', ApiConstants.pekerja);
         if (response.data is Map) {
           response.data['data'] = pendingData;
@@ -291,7 +289,6 @@ class ResourceRepository {
           'data': pendingData,
           'current_page': 1,
           'last_page': 1,
-          'total': pendingData.length,
         };
       } catch (_) {}
       rethrow;
@@ -385,7 +382,7 @@ class ResourceRepository {
 
       if (page == 1) {
         final List<dynamic> listData = _extractListData(response.data);
-        await syncService.cacheData('kendaraan', listData);
+        await syncService.cacheData('kendaraan', listData, clear: false);
         final pendingData = await syncService.getMergedOfflineData('kendaraan', ApiConstants.kendaraan);
         if (response.data is Map) {
           response.data['data'] = pendingData;
@@ -403,7 +400,6 @@ class ResourceRepository {
           'data': pendingData,
           'current_page': 1,
           'last_page': 1,
-          'total': pendingData.length,
         };
       } catch (_) {}
       rethrow;
@@ -473,7 +469,7 @@ class ResourceRepository {
 
       if (page == 1) {
         final List<dynamic> listData = _extractListData(response.data);
-        await syncService.cacheData('operasional', listData);
+        await syncService.cacheData('operasional', listData, clear: false);
         final pendingData = await syncService.getMergedOfflineData('operasional', ApiConstants.operasional);
         if (response.data is Map) {
           response.data['data'] = pendingData;
@@ -491,7 +487,6 @@ class ResourceRepository {
           'data': pendingData,
           'current_page': 1,
           'last_page': 1,
-          'total': pendingData.length,
         };
       } catch (_) {}
       rethrow;
