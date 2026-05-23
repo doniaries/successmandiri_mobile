@@ -127,6 +127,21 @@ class DashboardRepository {
            }
         }
 
+        // 4. Pending Tambah Saldo
+        final pendingTambahSaldo = await syncService.getMergedOfflineData('tambah_saldo', ApiConstants.tambahSaldo);
+        final offlineTambahSaldo = pendingTambahSaldo.where((e) {
+          final id = e['id'] as int?;
+          return id != null && id < 0;
+        }).toList();
+
+        if (offlineTambahSaldo.isNotEmpty) {
+           for (var ts in offlineTambahSaldo) {
+             final double nominal = double.tryParse(ts['nominal']?.toString() ?? '0') ?? 0;
+             totalOfflinePemasukan += nominal;
+             countOfflinePemasukan++;
+           }
+        }
+
         // Update saldo dan stats HANYA jika ada offline data
         if (countOfflinePemasukan > 0 || countOfflinePengeluaran > 0) {
           double newSaldo = summary.saldo + totalOfflinePemasukan - totalOfflinePengeluaran;

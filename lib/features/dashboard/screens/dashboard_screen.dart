@@ -1608,10 +1608,10 @@ class _SyncButton extends StatelessWidget {
 
             if (!isOnline) {
               wifiIcon = Icons.wifi_off_rounded;
-              iconColor = Colors.redAccent[100]!;
+              iconColor = Colors.white54;
               tooltipMsg = count > 0
-                  ? '$count data menunggu sinkronisasi.\nAkan otomatis dikirim saat online.'
-                  : 'Tidak ada koneksi internet.\nData tersimpan secara lokal.';
+                  ? '$count data tersimpan lokal.\nAkan sinkron saat online.'
+                  : 'Mode Offline';
             } else {
               if (count > 0) {
                 wifiIcon = Icons.sync_rounded;
@@ -1649,11 +1649,11 @@ class _SyncButton extends StatelessWidget {
                           SnackBar(
                             content: Text(
                               count > 0
-                                  ? '$count data tersimpan lokal. Akan otomatis sinkron saat online.'
-                                  : 'Tidak ada koneksi. Data tersimpan secara lokal.',
+                                  ? '$count data tersimpan lokal.'
+                                  : 'Mode Offline.',
                             ),
-                            backgroundColor: Colors.orange[800],
-                            duration: const Duration(seconds: 3),
+                            backgroundColor: Colors.grey[800],
+                            duration: const Duration(seconds: 2),
                           ),
                         );
                         return;
@@ -1682,11 +1682,11 @@ class _SyncButton extends StatelessWidget {
                     },
                   ),
                 ),
-                if (count > 0)
+                if (count > 0 && isOnline)
                   Positioned(
                     top: -2,
                     right: -2,
-                    child: _CountBadge(count: count, color: isOnline ? Colors.orange : Colors.red),
+                    child: _CountBadge(count: count, color: Colors.orange),
                   ),
               ],
             );

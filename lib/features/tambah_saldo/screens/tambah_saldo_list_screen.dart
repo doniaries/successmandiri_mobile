@@ -97,6 +97,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                 child: RefreshIndicator(
                   notificationPredicate: (notification) => !SyncService().isOffline && defaultScrollNotificationPredicate(notification),
                   onRefresh: () async {
+                    if (SyncService().isOffline) return;
                     final scaffoldMessenger = ScaffoldMessenger.of(context);
                     scaffoldMessenger.showSnackBar(
                       const SnackBar(

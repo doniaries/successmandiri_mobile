@@ -57,6 +57,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   }
 
   Future<void> _manualSync() async {
+    if (SyncService().isOffline) return;
     if (_isManualSyncing) return;
     
     final txProvider = context.read<TransaksiDoProvider>();
@@ -116,6 +117,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
         notificationPredicate: (notification) => !SyncService().isOffline && defaultScrollNotificationPredicate(notification),
         onRefresh: () async {
           if (!mounted) return;
+          if (SyncService().isOffline) return;
           final txProvider = context.read<TransaksiDoProvider>();
           final dashboardProvider = context.read<DashboardProvider>();
           final resourceProvider = context.read<ResourceProvider>();
@@ -571,57 +573,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   }
 
   Widget _buildPendingSyncBanner() {
-    return ValueListenableBuilder<int>(
-      valueListenable: SyncService().pendingSyncCount,
-      builder: (context, count, _) {
-        return SliverToBoxAdapter(
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            transitionBuilder: (child, animation) => SizeTransition(
-              sizeFactor: animation,
-              axisAlignment: -1.0,
-              child: FadeTransition(opacity: animation, child: child),
-            ),
-            child: count == 0
-                ? const SizedBox.shrink(key: ValueKey('empty'))
-                : Container(
-                    key: const ValueKey('banner'),
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.orange[50],
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.orange[200]!),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.sync_problem_rounded, color: Colors.orange, size: 20),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    '$count transaksi menunggu sinkronisasi',
-                    style: TextStyle(
-                      color: Colors.orange[900],
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () => SyncService().syncNow(),
-                  style: TextButton.styleFrom(
-                    visualDensity: VisualDensity.compact,
-                    foregroundColor: Colors.orange[900],
-                  ),
-                  child: const Text('Sinkron Sekarang'),
-                ),
-              ],
-            ),
-          ),
-          ),
-        );
-      },
-    );
+    return const SliverToBoxAdapter(child: SizedBox.shrink());
   }
 
   Future<void> _confirmDelete(dynamic tx) async {

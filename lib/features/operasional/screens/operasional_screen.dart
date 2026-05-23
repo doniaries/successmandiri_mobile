@@ -73,6 +73,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
   }
 
   Future<void> _refreshData() async {
+    if (SyncService().isOffline) return;
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final provider = context.read<ResourceProvider>();
     final dashboardProvider = context.read<DashboardProvider>();
