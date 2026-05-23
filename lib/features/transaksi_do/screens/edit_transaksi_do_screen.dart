@@ -446,7 +446,7 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                                       labelKey: 'nama',
                                       subLabelKey: 'sisa_hutang',
                                       hint: 'Cari nama penjual...',
-                                      addNewScreen: const AddPenjualScreen(),
+                                      addNewScreenBuilder: (query) => AddPenjualScreen(initialName: query),
                                       addNewLabel: 'TAMBAH PENJUAL BARU',
                                     );
                                 if (result != null) {
@@ -606,7 +606,7 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                                         labelKey: 'nama',
                                         subLabelKey: 'sisa_hutang',
                                         hint: 'Cari nama supir...',
-                                        addNewScreen: const AddSupirScreen(),
+                                        addNewScreenBuilder: (query) => AddSupirScreen(initialName: query),
                                         addNewLabel: 'TAMBAH SUPIR BARU',
                                       );
                                   if (result != null) {

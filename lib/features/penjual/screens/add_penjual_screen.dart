@@ -9,7 +9,9 @@ import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
 import 'package:sawitappmobile/shared/widgets/error_dialog.dart';
 
 class AddPenjualScreen extends StatefulWidget {
-  const AddPenjualScreen({super.key});
+  final String? initialName;
+
+  const AddPenjualScreen({super.key, this.initialName});
 
   @override
   State<AddPenjualScreen> createState() => _AddPenjualScreenState();
@@ -23,6 +25,14 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
   final _keteranganController = TextEditingController();
   final _hutangController = TextEditingController();
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialName != null) {
+      _namaController.text = widget.initialName!;
+    }
+  }
 
   @override
   void dispose() {

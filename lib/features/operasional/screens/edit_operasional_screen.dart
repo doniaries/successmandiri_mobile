@@ -10,7 +10,9 @@ import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
 import 'package:sawitappmobile/features/penjual/screens/add_penjual_screen.dart';
 import 'package:sawitappmobile/features/supir/screens/add_supir_screen.dart';
 import 'package:sawitappmobile/features/pekerja/screens/add_pekerja_screen.dart';
+import 'package:sawitappmobile/features/pekerja/screens/add_pekerja_screen.dart';
 import 'package:sawitappmobile/features/operasional/models/operasional_model.dart';
+import 'package:sawitappmobile/shared/widgets/searchable_selection_modal.dart';
 
 class EditOperasionalScreen extends StatefulWidget {
   final Operasional operasional;
@@ -346,88 +348,68 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: DropdownButtonFormField<int>(
-                              key: ValueKey(
-                                'pihak_${_selectedPihakType}_${_selectedKategori}_${_selectedPihakId}_${parties.length}',
-                              ),
-                              isExpanded: true,
-                              initialValue: _selectedPihakId,
-                              decoration: _inputDecoration(
-                                'Pilih Pihak',
-                                Icons.person_rounded,
-                              ),
-                              items: parties.map((e) {
-                                final double sisaHutang =
-                                    double.tryParse(
-                                      e.sisaHutang?.toString() ?? '0',
-                                    ) ??
-                                    0;
-                                return DropdownMenuItem<int>(
-                                  value: e.id as int,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        e.nama.toString().toUpperCase(),
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      if (sisaHutang > 0)
-                                        Text(
-                                          'Hutang: ${CurrencyFormatter.formatRupiah(sisaHutang)}',
-                                          style: TextStyle(
-                                            fontSize: 9,
-                                            color: Colors.red[700],
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                    ],
-                                  ),
+                            child: InkWell(
+                              onTap: () async {
+                                Widget Function(String)? addNewBuilder;
+                                String addNewLabel = 'TAMBAH BARU';
+                                if (_selectedPihakType == 'App\\Models\\Penjual') {
+                                  addNewBuilder = (query) => AddPenjualScreen(initialName: query);
+                                  addNewLabel = 'TAMBAH PENJUAL BARU';
+                                } else if (_selectedPihakType == 'App\\Models\\Supir') {
+                                  addNewBuilder = (query) => AddSupirScreen(initialName: query);
+                                  addNewLabel = 'TAMBAH SUPIR BARU';
+                                } else if (_selectedPihakType == 'App\\Models\\Pekerja') {
+                                  addNewBuilder = (query) => AddPekerjaScreen(initialName: query);
+                                  addNewLabel = 'TAMBAH PEKERJA BARU';
+                                }
+
+                                final result = await SearchableSelectionModal.show(
+                                  context: context,
+                                  title: 'Pilih Pihak',
+                                  items: parties,
+                                  selectedId: _selectedPihakId,
+                                  labelKey: 'nama',
+                                  subLabelKey: 'sisa_hutang',
+                                  hint: 'Cari nama...',
+                                  addNewScreenBuilder: addNewBuilder,
+                                  addNewLabel: addNewLabel,
                                 );
-                              }).toList(),
-                              selectedItemBuilder: (BuildContext context) {
-                                return parties.map<Widget>((e) {
-                                  return Text(
-                                    e.nama.toString().toUpperCase(),
-                                    style: const TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  );
-                                }).toList();
-                              },
-                              onChanged: (val) {
-                                setState(() {
-                                  _selectedPihakId = val;
-                                  dynamic found;
-                                  for (var e in parties) {
-                                    if (e.id == val) {
-                                      found = e;
-                                      break;
+                                if (result != null) {
+                                  setState(() {
+                                    _selectedPihakId = result;
+                                    dynamic found;
+                                    for (var e in parties) {
+                                      if (e.id == result) {
+                                        found = e;
+                                        break;
+                                      }
                                     }
-                                  }
-                                  _selectedPihak = found;
-                                });
+                                    _selectedPihak = found;
+                                  });
+                                }
                               },
-                              validator: (val) =>
-                                  _selectedPihakType != null && val == null
-                                  ? 'Pilih pihak'
-                                  : null,
+                              child: IgnorePointer(
+                                child: TextFormField(
+                                  key: ValueKey('pihak_${_selectedPihakType}_${_selectedKategori}_${_selectedPihakId}_${parties.length}'),
+                                  initialValue: _selectedPihak?.nama?.toString().toUpperCase(),
+                                  decoration: _inputDecoration(
+                                    'Pilih Pihak',
+                                    Icons.person_rounded,
+                                  ).copyWith(
+                                    hintText: 'Cari pihak...',
+                                    suffixIcon: const Icon(Icons.search, size: 20, color: Colors.grey),
+                                  ),
+                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                                  validator: (val) => _selectedPihakType != null && _selectedPihakId == null ? 'Pilih pihak' : null,
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 8),
                           Container(
                             margin: const EdgeInsets.only(top: 4),
                             decoration: BoxDecoration(
-                              color: const Color(
-                                0xFF01579B,
-                              ).withValues(alpha: 0.1),
+                              color: const Color(0xFF01579B).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: IconButton(
@@ -437,27 +419,20 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
                               ),
                               onPressed: () async {
                                 Widget? screen;
-                                if (_selectedPihakType ==
-                                    'App\\Models\\Penjual') {
+                                if (_selectedPihakType == 'App\\Models\\Penjual') {
                                   screen = const AddPenjualScreen();
-                                } else if (_selectedPihakType ==
-                                    'App\\Models\\Supir') {
+                                } else if (_selectedPihakType == 'App\\Models\\Supir') {
                                   screen = const AddSupirScreen();
-                                } else if (_selectedPihakType ==
-                                    'App\\Models\\Pekerja') {
+                                } else if (_selectedPihakType == 'App\\Models\\Pekerja') {
                                   screen = const AddPekerjaScreen();
                                 }
 
                                 if (screen != null) {
                                   await Navigator.push(
                                     context,
-                                    MaterialPageRoute(
-                                      builder: (context) => screen!,
-                                    ),
+                                    MaterialPageRoute(builder: (context) => screen!),
                                   );
-                                  if (mounted) {
-                                    provider.fetchAllResources();
-                                  }
+                                  if (mounted) provider.fetchAllResources();
                                 }
                               },
                             ),

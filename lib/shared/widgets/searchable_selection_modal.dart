@@ -8,7 +8,7 @@ class SearchableSelectionModal extends StatefulWidget {
   final String labelKey;
   final String? subLabelKey;
   final String? hint;
-  final Widget? addNewScreen;
+  final Widget Function(String)? addNewScreenBuilder;
   final String? addNewLabel;
 
   const SearchableSelectionModal({
@@ -19,7 +19,7 @@ class SearchableSelectionModal extends StatefulWidget {
     required this.labelKey,
     this.subLabelKey,
     this.hint,
-    this.addNewScreen,
+    this.addNewScreenBuilder,
     this.addNewLabel,
   });
 
@@ -31,7 +31,7 @@ class SearchableSelectionModal extends StatefulWidget {
     required String labelKey,
     String? subLabelKey,
     String? hint,
-    Widget? addNewScreen,
+    Widget Function(String)? addNewScreenBuilder,
     String? addNewLabel,
   }) {
     return showModalBottomSheet<int>(
@@ -45,7 +45,7 @@ class SearchableSelectionModal extends StatefulWidget {
         labelKey: labelKey,
         subLabelKey: subLabelKey,
         hint: hint,
-        addNewScreen: addNewScreen,
+        addNewScreenBuilder: addNewScreenBuilder,
         addNewLabel: addNewLabel,
       ),
     );
@@ -60,6 +60,20 @@ class _SearchableSelectionModalState extends State<SearchableSelectionModal> {
   final TextEditingController _searchController = TextEditingController();
   final currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
+  String _getProperty(dynamic item, String key) {
+    if (item is Map) {
+      return item[key]?.toString() ?? '';
+    }
+    try {
+      if (key == 'id') return item.id?.toString() ?? '';
+      if (key == 'nama') return item.nama?.toString() ?? '';
+      if (key == 'sisa_hutang' || key == 'sisaHutang') {
+        return item.sisaHutang?.toString() ?? '';
+      }
+    } catch (_) {}
+    return '';
+  }
+
   @override
   void initState() {
     super.initState();
@@ -71,7 +85,7 @@ class _SearchableSelectionModalState extends State<SearchableSelectionModal> {
     final query = _searchController.text.toLowerCase();
     setState(() {
       _filteredItems = widget.items.where((item) {
-        final label = item[widget.labelKey]?.toString().toLowerCase() ?? '';
+        final label = _getProperty(item, widget.labelKey).toLowerCase();
         return label.contains(query);
       }).toList();
     });
@@ -166,7 +180,7 @@ class _SearchableSelectionModalState extends State<SearchableSelectionModal> {
                               'Data tidak ditemukan',
                               style: TextStyle(color: Colors.grey[600]),
                             ),
-                            if (widget.addNewScreen != null) ...[
+                            if (widget.addNewScreenBuilder != null) ...[
                               const SizedBox(height: 24),
                               ElevatedButton.icon(
                                 style: ElevatedButton.styleFrom(
@@ -186,9 +200,10 @@ class _SearchableSelectionModalState extends State<SearchableSelectionModal> {
                                 onPressed: () async {
                                   FocusScope.of(context).unfocus();
                                   final navigator = Navigator.of(context);
+                                  final searchQuery = _searchController.text.trim();
                                   final newRecord = await Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (context) => widget.addNewScreen!),
+                                    MaterialPageRoute(builder: (context) => widget.addNewScreenBuilder!(searchQuery)),
                                   );
                                   if (newRecord != null) {
                                     int? newId;
@@ -214,13 +229,13 @@ class _SearchableSelectionModalState extends State<SearchableSelectionModal> {
                         itemCount: _filteredItems.length,
                         itemBuilder: (context, index) {
                           final item = _filteredItems[index];
-                          final id = item['id'] as int;
-                          final label = item[widget.labelKey]?.toString() ?? '';
+                          final id = int.tryParse(_getProperty(item, 'id')) ?? 0;
+                          final label = _getProperty(item, widget.labelKey);
                           final isSelected = id == widget.selectedId;
                           
                           double? subLabelValue;
                           if (widget.subLabelKey != null) {
-                            subLabelValue = double.tryParse(item[widget.subLabelKey]?.toString() ?? '0');
+                            subLabelValue = double.tryParse(_getProperty(item, widget.subLabelKey!));
                           }
 
                           return ListTile(

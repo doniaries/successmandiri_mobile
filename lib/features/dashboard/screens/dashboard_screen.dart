@@ -31,7 +31,6 @@ import 'package:sawitappmobile/features/operasional/models/operasional_model.dar
 import 'package:sawitappmobile/features/penjual/models/penjual_model.dart';
 import 'package:sawitappmobile/features/supir/models/supir_model.dart';
 
-import 'package:sawitappmobile/shared/providers/navigation_provider.dart';
 import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -100,7 +99,9 @@ class DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: RefreshIndicator(
-        notificationPredicate: (notification) => !SyncService().isOffline && defaultScrollNotificationPredicate(notification),
+        notificationPredicate: (notification) =>
+            !SyncService().isOffline &&
+            defaultScrollNotificationPredicate(notification),
         onRefresh: () async {
           final scaffoldMessenger = ScaffoldMessenger.of(context);
           final dashboardProvider = context.read<DashboardProvider>();
@@ -1366,10 +1367,7 @@ class _DashboardHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _HeaderTopRow(),
-                LiveDateTimeWidget(
-                  color: Colors.white,
-                  isTransparentBg: true,
-                ),
+                LiveDateTimeWidget(color: Colors.white, isTransparentBg: true),
                 SizedBox(height: 12),
                 _CompanySelector(),
                 SizedBox(height: 12),
@@ -1630,10 +1628,7 @@ class _SyncButton extends StatelessWidget {
                 Tooltip(
                   message: tooltipMsg,
                   preferBelow: false,
-                  textStyle: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
+                  textStyle: const TextStyle(color: Colors.white, fontSize: 12),
                   decoration: BoxDecoration(
                     color: Colors.black87,
                     borderRadius: BorderRadius.circular(8),
@@ -2026,10 +2021,7 @@ class _StatCardsState extends State<_StatCards> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: color.withValues(alpha: 0.1),
-              width: 1,
-            ),
+            border: Border.all(color: color.withValues(alpha: 0.1), width: 1),
             boxShadow: [
               BoxShadow(
                 color: color.withValues(alpha: 0.05),
@@ -2136,7 +2128,8 @@ class _StatCardsState extends State<_StatCards> {
               Expanded(
                 flex: 2,
                 child: _buildCompactCard(
-                  onTap: () => context.read<MainNavigationProvider>().setIndex(1),
+                  onTap: () =>
+                      context.read<MainNavigationProvider>().setIndex(1),
                   icon: Icons.local_shipping_rounded,
                   color: const Color(0xFF01579B),
                   title: 'DO Sawit',
@@ -2149,11 +2142,16 @@ class _StatCardsState extends State<_StatCards> {
               Expanded(
                 flex: 3,
                 child: _buildCompactCard(
-                  onTap: () => context.read<MainNavigationProvider>().setIndex(3, journalFilter: 'Pemasukan'),
+                  onTap: () => context.read<MainNavigationProvider>().setIndex(
+                    3,
+                    journalFilter: 'Pemasukan',
+                  ),
                   icon: Icons.trending_up_rounded,
                   color: const Color(0xFF2E7D32),
                   title: 'Pemasukan',
-                  value: CurrencyFormatter.formatRupiah(stats.pemasukan.today.total),
+                  value: CurrencyFormatter.formatRupiah(
+                    stats.pemasukan.today.total,
+                  ),
                   subtitleStr: subtitleStr,
                 ),
               ),
@@ -2162,11 +2160,16 @@ class _StatCardsState extends State<_StatCards> {
               Expanded(
                 flex: 3,
                 child: _buildCompactCard(
-                  onTap: () => context.read<MainNavigationProvider>().setIndex(3, journalFilter: 'Pengeluaran'),
+                  onTap: () => context.read<MainNavigationProvider>().setIndex(
+                    3,
+                    journalFilter: 'Pengeluaran',
+                  ),
                   icon: Icons.trending_down_rounded,
                   color: const Color(0xFFC62828),
                   title: 'Pengeluaran',
-                  value: CurrencyFormatter.formatRupiah(stats.pengeluaran.today.total),
+                  value: CurrencyFormatter.formatRupiah(
+                    stats.pengeluaran.today.total,
+                  ),
                   subtitleStr: subtitleStr,
                 ),
               ),

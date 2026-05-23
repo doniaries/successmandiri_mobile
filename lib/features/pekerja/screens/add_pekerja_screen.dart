@@ -9,7 +9,9 @@ import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
 import 'package:sawitappmobile/shared/widgets/error_dialog.dart';
 
 class AddPekerjaScreen extends StatefulWidget {
-  const AddPekerjaScreen({super.key});
+  final String? initialName;
+
+  const AddPekerjaScreen({super.key, this.initialName});
 
   @override
   State<AddPekerjaScreen> createState() => _AddPekerjaScreenState();
@@ -20,6 +22,14 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
   final _namaController = TextEditingController();
   final _hutangController = TextEditingController();
   final _keteranganController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialName != null) {
+      _namaController.text = widget.initialName!;
+    }
+  }
 
   @override
   void dispose() {

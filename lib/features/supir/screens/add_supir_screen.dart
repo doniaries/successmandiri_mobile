@@ -9,7 +9,9 @@ import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
 import 'package:sawitappmobile/shared/widgets/error_dialog.dart';
 
 class AddSupirScreen extends StatefulWidget {
-  const AddSupirScreen({super.key});
+  final String? initialName;
+
+  const AddSupirScreen({super.key, this.initialName});
 
   @override
   State<AddSupirScreen> createState() => _AddSupirScreenState();
@@ -20,6 +22,14 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
   final _namaController = TextEditingController();
   final _hutangController = TextEditingController();
   final _keteranganController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialName != null) {
+      _namaController.text = widget.initialName!;
+    }
+  }
 
   @override
   void dispose() {
