@@ -1966,6 +1966,8 @@ class _StatCards extends StatefulWidget {
 }
 
 class _StatCardsState extends State<_StatCards> {
+  int _selectedTabIndex = 0;
+
   void _onPeriodTap(int index, DateTime? currentDate) async {
     if (index == 0) {
       context.read<DashboardProvider>().fetchSummary();
@@ -2003,96 +2005,267 @@ class _StatCardsState extends State<_StatCards> {
     }
   }
 
-  Widget _buildCompactCard({
-    required VoidCallback onTap,
-    required IconData icon,
-    required Color color,
-    required String title,
-    required String value,
-    required String subtitleStr,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: color.withValues(alpha: 0.1), width: 1),
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+  Widget _buildTabHeader(String title, int index) {
+    final isActive = _selectedTabIndex == index;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedTabIndex = index;
+        });
+      },
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            decoration: BoxDecoration(
+              color: isActive ? Colors.white : Colors.transparent,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
               ),
-            ],
+            ),
+            child: Text(
+              title.toUpperCase(),
+              style: TextStyle(
+                color: isActive ? Colors.black87 : Colors.white70,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
+                fontSize: 12,
+                letterSpacing: 0.5,
+              ),
+            ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(icon, color: color, size: 16),
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF1A1A1A),
-                        ),
-                        maxLines: 1,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                    color: color,
-                    letterSpacing: -0.5,
-                  ),
-                  maxLines: 1,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitleStr,
-                style: TextStyle(
-                  fontSize: 9,
-                  color: Colors.grey[500],
-                  fontWeight: FontWeight.w600,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
+          if (isActive)
+            Positioned(
+              bottom: -1,
+              left: 0,
+              right: 0,
+              height: 2,
+              child: Container(color: Colors.white),
+            ),
+        ],
       ),
     );
+  }
+
+  Widget _buildTabContent(DashboardStats stats, String subtitleStr) {
+    if (_selectedTabIndex == 0) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF01579B).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.local_shipping_rounded, color: Color(0xFF01579B), size: 12),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${stats.transaksi.today.count} DO',
+                      style: const TextStyle(color: Color(0xFF01579B), fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Row(
+                  children: [
+                    Text('SAWIT', style: TextStyle(color: Colors.black54, fontSize: 10, fontWeight: FontWeight.bold)),
+                    SizedBox(width: 4),
+                    Icon(Icons.edit, color: Colors.black54, size: 10),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Periode aktif $subtitleStr',
+            style: const TextStyle(color: Colors.black54, fontSize: 12),
+          ),
+          const SizedBox(height: 16),
+          IntrinsicHeight(
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Jumlah DO', style: TextStyle(color: Colors.black54, fontSize: 12)),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: FittedBox(
+                              alignment: Alignment.centerLeft,
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                '${stats.transaksi.today.count}',
+                                style: const TextStyle(color: Color(0xFF01579B), fontSize: 20, fontWeight: FontWeight.w900),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: const BoxDecoration(color: Color(0xFF01579B), shape: BoxShape.circle),
+                            child: const Icon(Icons.add, color: Colors.white, size: 10),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const VerticalDivider(color: Colors.black12, thickness: 1),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Total Tonase', style: TextStyle(color: Colors.black54, fontSize: 12)),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: FittedBox(
+                                alignment: Alignment.centerLeft,
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  '${CurrencyFormatter.formatNumber(stats.transaksi.today.tonase)} Kg',
+                                  style: const TextStyle(color: Color(0xFFE67E22), fontSize: 20, fontWeight: FontWeight.w900),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: const BoxDecoration(color: Color(0xFFE67E22), shape: BoxShape.circle),
+                              child: const Icon(Icons.scale_rounded, color: Colors.white, size: 10),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        const Text('Volume buah masuk', style: TextStyle(color: Colors.black38, fontSize: 10)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    } else {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2E7D32).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF2E7D32), size: 12),
+                    SizedBox(width: 4),
+                    Text('KAS', style: TextStyle(color: Color(0xFF2E7D32), fontSize: 12, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Periode aktif $subtitleStr',
+            style: const TextStyle(color: Colors.black54, fontSize: 12),
+          ),
+          const SizedBox(height: 16),
+          IntrinsicHeight(
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Pemasukan', style: TextStyle(color: Colors.black54, fontSize: 12)),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: FittedBox(
+                              alignment: Alignment.centerLeft,
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                CurrencyFormatter.formatRupiah(stats.pemasukan.today.total),
+                                style: const TextStyle(color: Color(0xFF2E7D32), fontSize: 18, fontWeight: FontWeight.w900),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: const BoxDecoration(color: Color(0xFF2E7D32), shape: BoxShape.circle),
+                            child: const Icon(Icons.add, color: Colors.white, size: 10),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const VerticalDivider(color: Colors.black12, thickness: 1),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Pengeluaran', style: TextStyle(color: Colors.black54, fontSize: 12)),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: FittedBox(
+                                alignment: Alignment.centerLeft,
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  CurrencyFormatter.formatRupiah(stats.pengeluaran.today.total),
+                                  style: const TextStyle(color: Color(0xFFC62828), fontSize: 18, fontWeight: FontWeight.w900),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: const BoxDecoration(color: Color(0xFFC62828), shape: BoxShape.circle),
+                              child: const Icon(Icons.remove, color: Colors.white, size: 10),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
   }
 
   @override
@@ -2120,82 +2293,38 @@ class _StatCardsState extends State<_StatCards> {
           children: [_buildPeriodToggle(filterDate)],
         ),
         const SizedBox(height: 12),
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // 1. Transaksi DO
-              Expanded(
-                flex: 1,
-                child: _buildCompactCard(
-                  onTap: () =>
-                      context.read<MainNavigationProvider>().setIndex(1),
-                  icon: Icons.local_shipping_rounded,
-                  color: const Color(0xFF01579B),
-                  title: 'DO Sawit',
-                  value: '${stats.transaksi.today.count} DO',
-                  subtitleStr: subtitleStr,
-                ),
-              ),
-              const SizedBox(width: 8),
-              // 1b. Total Tonase
-              Expanded(
-                flex: 1,
-                child: _buildCompactCard(
-                  onTap: () =>
-                      context.read<MainNavigationProvider>().setIndex(1),
-                  icon: Icons.scale_rounded,
-                  color: const Color(0xFFE67E22),
-                  title: 'Total Tonase',
-                  value: '${CurrencyFormatter.formatNumber(stats.transaksi.today.total)} Kg',
-                  subtitleStr: 'Volume buah masuk ⚖️',
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 8),
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // 2. Pemasukan
-              Expanded(
-                flex: 1,
-                child: _buildCompactCard(
-                  onTap: () => context.read<MainNavigationProvider>().setIndex(
-                    3,
-                    journalFilter: 'Pemasukan',
+        Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 39),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topRight: const Radius.circular(20),
+                    bottomLeft: const Radius.circular(20),
+                    bottomRight: const Radius.circular(20),
+                    topLeft: _selectedTabIndex == 0 ? Radius.zero : const Radius.circular(20),
                   ),
-                  icon: Icons.trending_up_rounded,
-                  color: const Color(0xFF2E7D32),
-                  title: 'Pemasukan',
-                  value: CurrencyFormatter.formatRupiah(
-                    stats.pemasukan.today.total,
-                  ),
-                  subtitleStr: subtitleStr,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
+                child: _buildTabContent(stats, subtitleStr),
               ),
-              const SizedBox(width: 8),
-              // 3. Pengeluaran
-              Expanded(
-                flex: 1,
-                child: _buildCompactCard(
-                  onTap: () => context.read<MainNavigationProvider>().setIndex(
-                    3,
-                    journalFilter: 'Pengeluaran',
-                  ),
-                  icon: Icons.trending_down_rounded,
-                  color: const Color(0xFFC62828),
-                  title: 'Pengeluaran',
-                  value: CurrencyFormatter.formatRupiah(
-                    stats.pengeluaran.today.total,
-                  ),
-                  subtitleStr: subtitleStr,
-                ),
-              ),
-            ],
-          ),
+            ),
+            Row(
+              children: [
+                _buildTabHeader('Transaksi DO', 0),
+                _buildTabHeader('Keuangan', 1),
+              ],
+            ),
+          ],
         ),
       ],
     );
