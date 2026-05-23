@@ -23,7 +23,7 @@ import 'package:sawitappmobile/features/pekerja/screens/pekerja_detail_screen.da
 import 'package:sawitappmobile/features/user/screens/user_detail_screen.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
 import 'package:sawitappmobile/shared/widgets/skeleton_loader.dart';
-import 'package:sawitappmobile/shared/widgets/active_company_header.dart';
+
 
 import 'package:sawitappmobile/core/services/sync_service.dart';
 

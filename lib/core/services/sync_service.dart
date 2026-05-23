@@ -126,7 +126,7 @@ class SyncService {
         // Table doesn't exist (e.g. operasional, transaksi_do), it's fine, we just want the offline queue
       }
 
-      final queue = await _db.query('offline_queue');
+
       for (var item in queue) {
         final qEndpoint = item['endpoint'].toString();
         final method = item['method'].toString();

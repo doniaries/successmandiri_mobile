@@ -11,7 +11,7 @@ import 'package:sawitappmobile/features/tambah_saldo/screens/tambah_saldo_detail
 import 'package:sawitappmobile/features/tambah_saldo/screens/edit_tambah_saldo_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
-import 'package:sawitappmobile/shared/widgets/active_company_header.dart';
+
 
 class TambahSaldoListScreen extends StatefulWidget {
   const TambahSaldoListScreen({super.key});
