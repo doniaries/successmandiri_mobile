@@ -27,7 +27,15 @@ class DashboardProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      _summary = await _repository.getSummary(date: date);
+      final double? currentSaldo = _summary?.saldo;
+      final newSummary = await _repository.getSummary(date: date);
+      
+      if (date != null && currentSaldo != null) {
+        // Pertahankan saldo saat ini jika filter tanggal aktif
+        _summary = newSummary.copyWith(saldo: currentSaldo);
+      } else {
+        _summary = newSummary;
+      }
     } catch (e) {
       _error = e.toString();
     } finally {

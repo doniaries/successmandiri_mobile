@@ -22,6 +22,8 @@ class TambahSaldoListScreen extends StatefulWidget {
 
 class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
   DateTime? _selectedSingleDate;
+  DateTime? _lastDashboardFilterDate;
+  bool _hasInitializedFilterDate = false;
 
   @override
   void initState() {
@@ -57,6 +59,19 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
               : DateTime.now();
 
           final targetDate = _selectedSingleDate ?? systemActiveDate;
+
+          if (!_hasInitializedFilterDate || _lastDashboardFilterDate != dashboardProvider.filterDate) {
+            _hasInitializedFilterDate = true;
+            _lastDashboardFilterDate = dashboardProvider.filterDate;
+            
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() {
+                  _selectedSingleDate = dashboardProvider.filterDate ?? systemActiveDate;
+                });
+              }
+            });
+          }
 
           final filteredRequests = provider.requests.where((r) {
             return DateUtils.isSameDay(r.tanggal.toLocal(), targetDate);
