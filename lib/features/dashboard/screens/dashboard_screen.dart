@@ -2126,7 +2126,7 @@ class _StatCardsState extends State<_StatCards> {
             children: [
               // 1. Transaksi DO
               Expanded(
-                flex: 2,
+                flex: 1,
                 child: _buildCompactCard(
                   onTap: () =>
                       context.read<MainNavigationProvider>().setIndex(1),
@@ -2138,9 +2138,30 @@ class _StatCardsState extends State<_StatCards> {
                 ),
               ),
               const SizedBox(width: 8),
+              // 1b. Total Tonase
+              Expanded(
+                flex: 1,
+                child: _buildCompactCard(
+                  onTap: () =>
+                      context.read<MainNavigationProvider>().setIndex(1),
+                  icon: Icons.scale_rounded,
+                  color: const Color(0xFFE67E22),
+                  title: 'Total Tonase',
+                  value: '${CurrencyFormatter.formatNumber(stats.transaksi.today.total)} Kg',
+                  subtitleStr: 'Volume buah masuk ⚖️',
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
               // 2. Pemasukan
               Expanded(
-                flex: 3,
+                flex: 1,
                 child: _buildCompactCard(
                   onTap: () => context.read<MainNavigationProvider>().setIndex(
                     3,
@@ -2158,7 +2179,7 @@ class _StatCardsState extends State<_StatCards> {
               const SizedBox(width: 8),
               // 3. Pengeluaran
               Expanded(
-                flex: 3,
+                flex: 1,
                 child: _buildCompactCard(
                   onTap: () => context.read<MainNavigationProvider>().setIndex(
                     3,
