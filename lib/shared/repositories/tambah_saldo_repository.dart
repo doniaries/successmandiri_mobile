@@ -79,19 +79,16 @@ class TambahSaldoRepository {
         data: data,
       );
       return TambahSaldoModel.fromJson(response.data['data'] ?? response.data);
-    } on Exception catch (_) {
-      // Cek ulang koneksi saat terjadi error
-      final connectivityAfter = await Connectivity().checkConnectivity();
-      final isReallyOffline = connectivityAfter.every((r) => r == ConnectivityResult.none);
-
-      if (isReallyOffline) {
-        // Koneksi putus saat request → simpan ke queue
-        await _syncService.addToQueue(ApiConstants.tambahSaldo, 'POST', data);
-        return {'offline': true};
+    } on DioException catch (e) {
+      if (e.response != null &&
+          (e.response!.statusCode ?? 0) >= 400 &&
+          (e.response!.statusCode ?? 0) < 500) {
+        rethrow;
       }
-
-      // Error dari server (bukan masalah koneksi) → lempar error agar ditampilkan
-      rethrow;
+      
+      // Jika terjadi timeout atau error koneksi (meskipun terhubung ke WiFi tanpa internet)
+      await _syncService.addToQueue(ApiConstants.tambahSaldo, 'POST', data);
+      return {'offline': true};
     }
   }
 
@@ -152,16 +149,13 @@ class TambahSaldoRepository {
       await _apiClient.dio.delete(
         '${ApiConstants.tambahSaldo}/$id',
       );
-    } catch (e) {
-      final connectivityAfter = await Connectivity().checkConnectivity();
-      final isReallyOffline = connectivityAfter.every((r) => r == ConnectivityResult.none);
-
-      if (isReallyOffline) {
-        await _syncService.addToQueue('${ApiConstants.tambahSaldo}/$id', 'DELETE', {});
-        return;
+    } on DioException catch (e) {
+      if (e.response != null &&
+          (e.response!.statusCode ?? 0) >= 400 &&
+          (e.response!.statusCode ?? 0) < 500) {
+        rethrow;
       }
-
-      rethrow;
+      await _syncService.addToQueue('${ApiConstants.tambahSaldo}/$id', 'DELETE', {});
     }
   }
 }

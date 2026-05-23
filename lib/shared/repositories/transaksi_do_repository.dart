@@ -406,15 +406,13 @@ class TransaksiDoRepository {
       }
 
       await _apiClient.dio.delete('${ApiConstants.transaksiDo}/$id');
-    } catch (e) {
-      final connectivityAfter = await Connectivity().checkConnectivity();
-      final isReallyOffline = connectivityAfter.every((r) => r == ConnectivityResult.none);
-
-      if (isReallyOffline) {
-        await _syncService.addToQueue('${ApiConstants.transaksiDo}/$id', 'DELETE', {});
-        return;
+    } on DioException catch (e) {
+      if (e.response != null && e.response!.statusCode != null) {
+        if (e.response!.statusCode! >= 400 && e.response!.statusCode! < 500) {
+          rethrow;
+        }
       }
-      rethrow;
+      await _syncService.addToQueue('${ApiConstants.transaksiDo}/$id', 'DELETE', {});
     }
   }
 }

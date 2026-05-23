@@ -731,15 +731,13 @@ class ResourceRepository {
       }
 
       await _apiClient.dio.delete('${ApiConstants.operasional}/$id');
-    } catch (e) {
-      final connectivityAfter = await Connectivity().checkConnectivity();
-      final isReallyOffline = connectivityAfter.every((r) => r == ConnectivityResult.none);
-
-      if (isReallyOffline) {
-        await syncService.addToQueue('${ApiConstants.operasional}/$id', 'DELETE', {});
-        return;
+    } on DioException catch (e) {
+      if (e.response != null && e.response!.statusCode != null) {
+        if (e.response!.statusCode! >= 400 && e.response!.statusCode! < 500) {
+          rethrow;
+        }
       }
-      rethrow;
+      await syncService.addToQueue('${ApiConstants.operasional}/$id', 'DELETE', {});
     }
   }
 
