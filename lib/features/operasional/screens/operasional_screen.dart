@@ -191,9 +191,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             _buildAppBar(),
-            const SliverToBoxAdapter(
-              child: ActiveCompanyHeader(),
-            ),
+
             _buildSummaryHeader(),
             _buildListSection(),
           ],

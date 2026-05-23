@@ -441,7 +441,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
       ),
       body: Column(
         children: [
-          const ActiveCompanyHeader(),
+
           if (!hasTabs &&
               (widget.resourceType == 'kendaraan' ||
                widget.resourceType == 'user'))

@@ -47,7 +47,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
       ),
       body: Column(
         children: [
-          const ActiveCompanyHeader(),
+
           Expanded(
             child: Consumer2<TambahSaldoProvider, DashboardProvider>(
               builder: (context, provider, dashboardProvider, child) {

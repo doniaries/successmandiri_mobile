@@ -170,7 +170,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const ActiveCompanyHeader(),
+
                   _buildSummaryHeader(),
                 ],
               ),
