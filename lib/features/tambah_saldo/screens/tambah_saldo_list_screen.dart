@@ -583,11 +583,14 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
       ),
     );
 
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
     final success = await provider.deleteRequest(request.id);
+    
+    // Always hide the loading snackbar, even if widget is unmounted (e.g. user navigated back)
+    scaffoldMessenger.hideCurrentSnackBar();
 
     if (mounted) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
       if (success) {
         dashboardProvider.fetchSummary();
         ScaffoldMessenger.of(context).showSnackBar(
