@@ -61,11 +61,12 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
   List<String> get _currentCaraBayarOptions {
     final double saldoPerusahaan =
         context.read<DashboardProvider>().summary?.saldo ?? 0;
-    
+
     // Untuk transaksi yang diedit, jika cara bayarnya sudah bernilai tertentu,
     // kita harus tetap menyertakan cara bayar aslinya agar valid.
     final List<String> options = [];
-    if (_sisaBayar <= saldoPerusahaan || widget.transaction.caraBayar == 'tunai') {
+    if (_sisaBayar <= saldoPerusahaan ||
+        widget.transaction.caraBayar == 'tunai') {
       options.add('tunai');
     }
     options.addAll(['transfer', 'cair di luar', 'belum dibayar']);
@@ -91,7 +92,9 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
     _hargaSatuanController.text = currencyFormat.format(t.hargaSatuan);
     _upahBongkarController.text = currencyFormat.format(t.upahBongkar);
     _biayaLainController.text = currencyFormat.format(t.biayaLain);
-    _pembayaranHutangController.text = currencyFormat.format(t.pembayaranHutang);
+    _pembayaranHutangController.text = currencyFormat.format(
+      t.pembayaranHutang,
+    );
     _keteranganPembayaranController.text = t.keteranganPembayaran ?? '';
 
     // Nilai awal hutang penjual (menggunakan hutang_awal transaksi yang merekam hutang sebelum transaksi ini terjadi)
@@ -106,7 +109,7 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final provider = context.read<TransaksiDoProvider>();
       await provider.fetchFormData();
-      
+
       // Hitung hutang aktual penjual jika data master penjual telah termuat
       if (_selectedPenjualId != null && provider.penjuals.isNotEmpty) {
         final found = provider.penjuals.firstWhere(
@@ -114,11 +117,13 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
           orElse: () => {},
         );
         if (found.isNotEmpty) {
-          final double sisaHutangDb = double.tryParse(found['sisa_hutang']?.toString() ?? '0') ?? 0;
+          final double sisaHutangDb =
+              double.tryParse(found['sisa_hutang']?.toString() ?? '0') ?? 0;
           setState(() {
             // Karena transaksi ini sudah tersimpan, database sisa_hutang sudah terpotong oleh t.pembayaranHutang.
             // Saat proses edit, kita kembalikan saldo potongan tersebut ke hutang penjual agar bisa diredistribusikan secara dinamis.
-            _currentSellerDebt = sisaHutangDb + widget.transaction.pembayaranHutang;
+            _currentSellerDebt =
+                sisaHutangDb + widget.transaction.pembayaranHutang;
           });
         }
       }
@@ -155,10 +160,10 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
   double get _sisaBayar => max(0.0, _subTotal - _totalPotongan);
 
   double get _sisaHutangPenjual => max(
-        0.0,
-        _currentSellerDebt -
-            CurrencyInputFormatter.parse(_pembayaranHutangController.text),
-      );
+    0.0,
+    _currentSellerDebt -
+        CurrencyInputFormatter.parse(_pembayaranHutangController.text),
+  );
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -219,12 +224,14 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
       _selectedPenjualId = val;
       if (val != null) {
         final penjual = provider.penjuals.firstWhere((p) => p['id'] == val);
-        final double sisaHutangDb = double.tryParse(penjual['sisa_hutang']?.toString() ?? '0') ?? 0;
-        
+        final double sisaHutangDb =
+            double.tryParse(penjual['sisa_hutang']?.toString() ?? '0') ?? 0;
+
         // Jika penjual yang dipilih sama dengan penjual asli transaksi ini,
         // kembalikan nilai pembayaran_hutang asli untuk akurasi perhitungan.
         if (val == widget.transaction.penjualId) {
-          _currentSellerDebt = sisaHutangDb + widget.transaction.pembayaranHutang;
+          _currentSellerDebt =
+              sisaHutangDb + widget.transaction.pembayaranHutang;
         } else {
           _currentSellerDebt = sisaHutangDb;
         }
@@ -245,7 +252,10 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
               leading: const Icon(Icons.photo_library),
               title: const Text('Galeri'),
               onTap: () async {
-                final file = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+                final file = await _picker.pickImage(
+                  source: ImageSource.gallery,
+                  imageQuality: 70,
+                );
                 if (context.mounted) Navigator.pop(context, file);
               },
             ),
@@ -253,14 +263,22 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
               leading: const Icon(Icons.camera_alt),
               title: const Text('Kamera'),
               onTap: () async {
-                final file = await _picker.pickImage(source: ImageSource.camera, imageQuality: 70);
+                final file = await _picker.pickImage(
+                  source: ImageSource.camera,
+                  imageQuality: 70,
+                );
                 if (context.mounted) Navigator.pop(context, file);
               },
             ),
-            if (_selectedBuktiTransferFile != null || (_existingBuktiTransferUrl != null && _existingBuktiTransferUrl!.isNotEmpty))
+            if (_selectedBuktiTransferFile != null ||
+                (_existingBuktiTransferUrl != null &&
+                    _existingBuktiTransferUrl!.isNotEmpty))
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text('Hapus Bukti Transfer', style: TextStyle(color: Colors.red)),
+                title: const Text(
+                  'Hapus Bukti Transfer',
+                  style: TextStyle(color: Colors.red),
+                ),
                 onTap: () {
                   if (context.mounted) Navigator.pop(context, XFile('remove'));
                 },
@@ -420,21 +438,21 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                             child: InkWell(
                               onTap: () async {
                                 final result =
-                                     await SearchableSelectionModal.show(
-                                       context: context,
-                                       title: 'Pilih Penjual',
-                                       items: provider.penjuals,
-                                       selectedId: _selectedPenjualId,
-                                       labelKey: 'nama',
-                                       subLabelKey: 'sisa_hutang',
-                                       hint: 'Cari nama penjual...',
-                                       addNewScreen: const AddPenjualScreen(),
-                                       addNewLabel: 'TAMBAH PENJUAL BARU',
-                                     );
+                                    await SearchableSelectionModal.show(
+                                      context: context,
+                                      title: 'Pilih Penjual',
+                                      items: provider.penjuals,
+                                      selectedId: _selectedPenjualId,
+                                      labelKey: 'nama',
+                                      subLabelKey: 'sisa_hutang',
+                                      hint: 'Cari nama penjual...',
+                                      addNewScreen: const AddPenjualScreen(),
+                                      addNewLabel: 'TAMBAH PENJUAL BARU',
+                                    );
                                 if (result != null) {
-                                   await provider.fetchFormData();
-                                   _onPenjualChanged(result, provider);
-                                 }
+                                  await provider.fetchFormData();
+                                  _onPenjualChanged(result, provider);
+                                }
                               },
                               child: IgnorePointer(
                                 child: TextFormField(
@@ -580,24 +598,24 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                               child: InkWell(
                                 onTap: () async {
                                   final result =
-                                       await SearchableSelectionModal.show(
-                                         context: context,
-                                         title: 'Pilih Supir',
-                                         items: provider.supirs,
-                                         selectedId: _selectedSupirId,
-                                         labelKey: 'nama',
-                                         subLabelKey: 'sisa_hutang',
-                                         hint: 'Cari nama supir...',
-                                         addNewScreen: const AddSupirScreen(),
-                                         addNewLabel: 'TAMBAH SUPIR BARU',
-                                       );
+                                      await SearchableSelectionModal.show(
+                                        context: context,
+                                        title: 'Pilih Supir',
+                                        items: provider.supirs,
+                                        selectedId: _selectedSupirId,
+                                        labelKey: 'nama',
+                                        subLabelKey: 'sisa_hutang',
+                                        hint: 'Cari nama supir...',
+                                        addNewScreen: const AddSupirScreen(),
+                                        addNewLabel: 'TAMBAH SUPIR BARU',
+                                      );
                                   if (result != null) {
-                                     await provider.fetchFormData();
-                                     setState(() {
-                                       _selectedSupirId = result;
-                                     });
-                                     _onFieldChanged();
-                                   }
+                                    await provider.fetchFormData();
+                                    setState(() {
+                                      _selectedSupirId = result;
+                                    });
+                                    _onFieldChanged();
+                                  }
                                 },
                                 child: IgnorePointer(
                                   child: TextFormField(
@@ -756,58 +774,65 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                       // Potong Hutang (selalu tampil, sesuai Filament)
                       TextFormField(
                         controller: _pembayaranHutangController,
-                        decoration: _getInputDecoration(
-                          label: 'Potong Hutang',
-                          hint: '0',
-                          icon: Icons.history_rounded,
-                          suffixIcon: _currentSellerDebt > 0
-                              ? IconButton(
-                                  icon: const Icon(
-                                    Icons.account_balance_wallet,
-                                    color: Color(0xFF01579B),
-                                  ),
-                                  onPressed: () {
-                                    if (_currentSellerDebt > 0) {
-                                      final amount = _currentSellerDebt < _subTotal
-                                          ? _currentSellerDebt
-                                          : _subTotal;
-                                      _pembayaranHutangController.text =
-                                          NumberFormat.decimalPattern(
-                                            'id_ID',
-                                          ).format(amount);
-                                      _onFieldChanged();
-                                    }
-                                  },
-                                )
-                              : null,
-                        ).copyWith(
-                          prefixText: 'Rp ',
-                          helperText: 'Hutang Penjual: ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(_currentSellerDebt)}',
-                          helperStyle: TextStyle(
-                            color: _currentSellerDebt > 0
-                                ? Colors.orange[800]
-                                : Colors.grey[600],
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12,
-                          ),
-                          hintText: () {
-                            final otherDeductions =
-                                CurrencyInputFormatter.parse(
-                                  _upahBongkarController.text,
-                                ) +
-                                CurrencyInputFormatter.parse(
-                                  _biayaLainController.text,
+                        decoration:
+                            _getInputDecoration(
+                              label: 'Potong Hutang',
+                              hint: '0',
+                              icon: Icons.history_rounded,
+                              suffixIcon: _currentSellerDebt > 0
+                                  ? IconButton(
+                                      icon: const Icon(
+                                        Icons.account_balance_wallet,
+                                        color: Color(0xFF01579B),
+                                      ),
+                                      onPressed: () {
+                                        if (_currentSellerDebt > 0) {
+                                          final amount =
+                                              _currentSellerDebt < _subTotal
+                                              ? _currentSellerDebt
+                                              : _subTotal;
+                                          _pembayaranHutangController.text =
+                                              NumberFormat.decimalPattern(
+                                                'id_ID',
+                                              ).format(amount);
+                                          _onFieldChanged();
+                                        }
+                                      },
+                                    )
+                                  : null,
+                            ).copyWith(
+                              prefixText: 'Rp ',
+                              helperText:
+                                  'Hutang Penjual: ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(_currentSellerDebt)}',
+                              helperStyle: TextStyle(
+                                color: _currentSellerDebt > 0
+                                    ? Colors.orange[800]
+                                    : Colors.grey[600],
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                              hintText: () {
+                                final otherDeductions =
+                                    CurrencyInputFormatter.parse(
+                                      _upahBongkarController.text,
+                                    ) +
+                                    CurrencyInputFormatter.parse(
+                                      _biayaLainController.text,
+                                    );
+                                final maxBayarHutang = max(
+                                  0.0,
+                                  _subTotal - otherDeductions,
                                 );
-                            final maxBayarHutang = max(0.0, _subTotal - otherDeductions);
-                            return 'Maks. dari hasil: ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(maxBayarHutang)}';
-                          }(),
-                        ),
+                                return 'Maks. dari hasil: ${NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(maxBayarHutang)}';
+                              }(),
+                            ),
                         keyboardType: TextInputType.number,
                         inputFormatters: [CurrencyInputFormatter()],
                         validator: (val) {
                           if (val != null && val.isNotEmpty) {
                             final amount = CurrencyInputFormatter.parse(val);
-                            if (_currentSellerDebt > 0 && amount > _currentSellerDebt) {
+                            if (_currentSellerDebt > 0 &&
+                                amount > _currentSellerDebt) {
                               return 'Melebihi hutang penjual';
                             }
                             final otherDeductions =
@@ -994,8 +1019,15 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                                     ),
                                   ),
                                   const SizedBox(height: 10),
-                                  const Text('Ketuk untuk mengubah foto bukti transfer', style: TextStyle(fontSize: 12, color: Color(0xFF01579B))),
-                                ] else if (_existingBuktiTransferUrl != null && _existingBuktiTransferUrl!.isNotEmpty) ...[
+                                  const Text(
+                                    'Ketuk untuk mengubah foto bukti transfer',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF01579B),
+                                    ),
+                                  ),
+                                ] else if (_existingBuktiTransferUrl != null &&
+                                    _existingBuktiTransferUrl!.isNotEmpty) ...[
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(12),
                                     child: Image.network(
@@ -1003,21 +1035,49 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                                       height: 200,
                                       width: double.infinity,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) => Container(
-                                        height: 200,
-                                        color: Colors.grey[200],
-                                        child: const Center(child: Icon(Icons.broken_image_outlined, color: Colors.grey)),
-                                      ),
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              Container(
+                                                height: 200,
+                                                color: Colors.grey[200],
+                                                child: const Center(
+                                                  child: Icon(
+                                                    Icons.broken_image_outlined,
+                                                    color: Colors.grey,
+                                                  ),
+                                                ),
+                                              ),
                                     ),
                                   ),
                                   const SizedBox(height: 10),
-                                  const Text('Ketuk untuk mengubah foto bukti transfer', style: TextStyle(fontSize: 12, color: Color(0xFF01579B))),
+                                  const Text(
+                                    'Ketuk untuk mengubah foto bukti transfer',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF01579B),
+                                    ),
+                                  ),
                                 ] else ...[
-                                  const Icon(Icons.cloud_upload_outlined, size: 48, color: Color(0xFF01579B)),
+                                  const Icon(
+                                    Icons.cloud_upload_outlined,
+                                    size: 48,
+                                    color: Color(0xFF01579B),
+                                  ),
                                   const SizedBox(height: 10),
-                                  const Text('Unggah Bukti Transfer', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  const Text(
+                                    'Unggah Bukti Transfer',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                   const SizedBox(height: 4),
-                                  Text('Format JPG, PNG (Maksimal 2MB)', style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+                                  Text(
+                                    'Format JPG, PNG (Maksimal 2MB)',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey[500],
+                                    ),
+                                  ),
                                 ],
                               ],
                             ),
@@ -1050,7 +1110,9 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
       // Jika cara bayar diubah menjadi tunai, dan saldo tidak mencukupi
       if (_selectedCaraBayar == 'tunai' && _sisaBayar > saldoPerusahaan) {
         // Namun, jika cara bayar asli memang tunai, maka kita kurangi sisaBayar dengan sisaBayar transaksi aslinya terlebih dahulu
-        final double sisaBayarLama = widget.transaction.caraBayar == 'tunai' ? widget.transaction.sisaBayar : 0;
+        final double sisaBayarLama = widget.transaction.caraBayar == 'tunai'
+            ? widget.transaction.sisaBayar
+            : 0;
         final double selisihSaldo = _sisaBayar - sisaBayarLama;
         if (selisihSaldo > saldoPerusahaan) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1106,7 +1168,8 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
           SuccessDialog.show(
             context,
             title: 'Berhasil Diubah!',
-            message: 'Data Transaksi DO dengan nomor ${_nomorDoController.text} berhasil diperbarui.',
+            message:
+                'Data Transaksi DO dengan nomor ${_nomorDoController.text} berhasil diperbarui.',
             onConfirm: () {
               // Pop edit screen
               Navigator.of(context).pop();

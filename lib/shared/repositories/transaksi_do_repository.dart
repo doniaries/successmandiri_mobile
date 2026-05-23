@@ -356,7 +356,18 @@ class TransaksiDoRepository {
       data['bukti_transfer'] = '';
     }
 
+    if (id < 0) {
+      await _syncService.updateQueueData(id.abs(), data);
+      return {'offline': true, 'id': id};
+    }
+
     try {
+      final connectivity = await Connectivity().checkConnectivity();
+      if (connectivity.contains(ConnectivityResult.none)) {
+        await _syncService.addToQueue('${ApiConstants.transaksiDo}/$id', 'PUT', data);
+        return {'offline': true, 'id': id};
+      }
+
       if (buktiTransfer is XFile) {
         final Map<String, dynamic> postData = Map.from(data);
         if (kIsWeb) {
@@ -376,16 +387,28 @@ class TransaksiDoRepository {
         final response = await _apiClient.dio.post(
           '${ApiConstants.transaksiDo}/$id',
           data: formData,
-        );
+        ).timeout(const Duration(seconds: 15));
         return response.data;
       } else {
         final response = await _apiClient.dio.put(
           '${ApiConstants.transaksiDo}/$id',
           data: data,
-        );
+        ).timeout(const Duration(seconds: 15));
         return response.data;
       }
+    } on DioException catch (e) {
+      if (e.response != null && e.response!.statusCode != null) {
+        if (e.response!.statusCode! >= 400 && e.response!.statusCode! < 500) {
+          rethrow;
+        }
+      }
+      await _syncService.addToQueue('${ApiConstants.transaksiDo}/$id', 'PUT', data);
+      return {'offline': true, 'id': id};
     } catch (e) {
+      if (e.toString().contains('TimeoutException')) {
+        await _syncService.addToQueue('${ApiConstants.transaksiDo}/$id', 'PUT', data);
+        return {'offline': true, 'id': id};
+      }
       rethrow;
     }
   }

@@ -267,7 +267,7 @@ class TransaksiDoProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      await _repository.updateTransaksiDo(
+      final result = await _repository.updateTransaksiDo(
         id,
         tanggal: tanggal,
         penjualId: penjualId,
@@ -284,7 +284,12 @@ class TransaksiDoProvider with ChangeNotifier {
         keteranganPembayaran: keteranganPembayaran,
       );
 
-      await fetchTransactions();
+      if (result is Map && result['offline'] == true) {
+        _errorMessage = 'Koneksi bermasalah. Transaksi disimpan di antrean offline.';
+      } else {
+        await fetchTransactions();
+      }
+
       _isSaving = false;
       notifyListeners();
       return true;

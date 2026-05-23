@@ -116,12 +116,19 @@ class TambahSaldoProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      await _repository.updateTambahSaldo(
+      final result = await _repository.updateTambahSaldo(
         id,
         nominal: nominal,
         tanggal: tanggal,
         keterangan: keterangan,
       );
+      
+      if (result is Map && result['offline'] == true) {
+        _errorMessage = 'offline';
+      } else {
+        _errorMessage = null;
+      }
+      
       await fetchRequests();
       _isLoading = false;
       notifyListeners();

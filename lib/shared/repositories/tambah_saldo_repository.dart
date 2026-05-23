@@ -4,6 +4,7 @@ import 'package:sawitappmobile/features/tambah_saldo/models/tambah_saldo_model.d
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:uuid/uuid.dart';
+import 'package:dio/dio.dart';
 
 class TambahSaldoRepository {
   final ApiClient _apiClient;
@@ -93,40 +94,56 @@ class TambahSaldoRepository {
   }
 
 
-  Future<TambahSaldoModel> updateTambahSaldo(int id, {
+  Future<dynamic> updateTambahSaldo(int id, {
     required double nominal,
     required String tanggal,
     required String keterangan,
   }) async {
+    final Map<String, dynamic> data = {
+      'nominal': nominal,
+      'tanggal': tanggal,
+      'keterangan': keterangan,
+    };
+
+    if (id < 0) {
+      await _syncService.updateQueueData(id.abs(), data);
+      return TambahSaldoModel(
+        id: id,
+        perusahaanId: 0,
+        userId: 0,
+        tanggal: DateTime.parse(tanggal).toLocal(),
+        nominal: nominal,
+        keterangan: keterangan,
+        status: 'pending',
+        userName: 'Data Offline (Lokal)',
+      );
+    }
+
     try {
-      if (id < 0) {
-        await _syncService.updateQueueData(id.abs(), {
-          'nominal': nominal,
-          'tanggal': tanggal,
-          'keterangan': keterangan,
-        });
-        return TambahSaldoModel(
-          id: id,
-          perusahaanId: 0,
-          userId: 0,
-          tanggal: DateTime.parse(tanggal).toLocal(),
-          nominal: nominal,
-          keterangan: keterangan,
-          status: 'pending',
-          userName: 'Data Offline (Lokal)',
-        );
+      final connectivity = await Connectivity().checkConnectivity();
+      if (connectivity.every((r) => r == ConnectivityResult.none)) {
+        await _syncService.addToQueue('${ApiConstants.tambahSaldo}/$id', 'PUT', data);
+        return {'offline': true, 'id': id};
       }
-      
+
       final response = await _apiClient.dio.put(
         '${ApiConstants.tambahSaldo}/$id',
-        data: {
-          'nominal': nominal,
-          'tanggal': tanggal,
-          'keterangan': keterangan,
-        },
-      );
+        data: data,
+      ).timeout(const Duration(seconds: 15));
       return TambahSaldoModel.fromJson(response.data);
+    } on DioException catch (e) {
+      if (e.response != null &&
+          (e.response!.statusCode ?? 0) >= 400 &&
+          (e.response!.statusCode ?? 0) < 500) {
+        rethrow;
+      }
+      await _syncService.addToQueue('${ApiConstants.tambahSaldo}/$id', 'PUT', data);
+      return {'offline': true, 'id': id};
     } catch (e) {
+      if (e.toString().contains('TimeoutException')) {
+        await _syncService.addToQueue('${ApiConstants.tambahSaldo}/$id', 'PUT', data);
+        return {'offline': true, 'id': id};
+      }
       rethrow;
     }
   }
