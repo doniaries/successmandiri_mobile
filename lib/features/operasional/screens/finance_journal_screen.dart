@@ -12,6 +12,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:sawitappmobile/core/constants/api_constants.dart';
 
 import 'package:sawitappmobile/core/services/sync_service.dart';
+import 'package:sawitappmobile/shared/providers/navigation_provider.dart';
 
 class FinanceJournalScreen extends StatefulWidget {
   const FinanceJournalScreen({super.key});
@@ -148,6 +149,18 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
   @override
   Widget build(BuildContext context) {
     final dashboardProvider = context.watch<DashboardProvider>();
+    final navProvider = context.watch<MainNavigationProvider>();
+    
+    if (navProvider.journalFilter != null) {
+      final newFilter = navProvider.journalFilter!;
+      if (_filters.contains(newFilter)) {
+        _selectedFilter = newFilter;
+      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) context.read<MainNavigationProvider>().clearJournalFilter();
+      });
+    }
+
     final dashboardFilterDate = dashboardProvider.filterDate;
     
     // Deteksi perubahan filterDate dari dashboard SETELAH inisialisasi awal
