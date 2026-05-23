@@ -717,8 +717,28 @@ class ResourceRepository {
 
   Future<void> deleteOperasional(int id) async {
     try {
+      if (id < 0) {
+        await syncService.deleteFromQueue(id.abs());
+        return;
+      }
+
+      final connectivity = await Connectivity().checkConnectivity();
+      final isOffline = connectivity.every((r) => r == ConnectivityResult.none);
+
+      if (isOffline) {
+        await syncService.addToQueue('${ApiConstants.operasional}/$id', 'DELETE', {});
+        return;
+      }
+
       await _apiClient.dio.delete('${ApiConstants.operasional}/$id');
     } catch (e) {
+      final connectivityAfter = await Connectivity().checkConnectivity();
+      final isReallyOffline = connectivityAfter.every((r) => r == ConnectivityResult.none);
+
+      if (isReallyOffline) {
+        await syncService.addToQueue('${ApiConstants.operasional}/$id', 'DELETE', {});
+        return;
+      }
       rethrow;
     }
   }
