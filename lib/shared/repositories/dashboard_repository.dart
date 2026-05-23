@@ -142,8 +142,11 @@ class DashboardRepository {
            }
         }
 
+        final tsQueue = await syncService.getOfflineQueueForEndpoint(ApiConstants.tambahSaldo);
+        final pendingTsDeletes = tsQueue.where((q) => q['method'] == 'DELETE').length;
+
         // Update saldo dan stats HANYA jika ada offline data
-        if (countOfflinePemasukan > 0 || countOfflinePengeluaran > 0) {
+        if (countOfflinePemasukan > 0 || countOfflinePengeluaran > 0 || offlineTambahSaldo.isNotEmpty || pendingTsDeletes > 0) {
           double newSaldo = summary.saldo + totalOfflinePemasukan - totalOfflinePengeluaran;
           final oldStats = summary.stats;
           final newStats = DashboardStats(
@@ -173,6 +176,7 @@ class DashboardRepository {
           summary = summary.copyWith(
             saldo: newSaldo,
             totalJurnalKeuangan: summary.totalJurnalKeuangan + offlineJurnal.length,
+            tambahSaldoTodayCount: (summary.tambahSaldoTodayCount + offlineTambahSaldo.length - pendingTsDeletes).clamp(0, 999999),
             stats: newStats,
           );
         }
