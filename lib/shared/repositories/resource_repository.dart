@@ -147,7 +147,21 @@ class ResourceRepository {
 
   Future<void> deletePenjual(int id) async {
     final url = '${ApiConstants.penjual}/$id';
-    await _apiClient.dio.delete(url);
+    final connectivity = await Connectivity().checkConnectivity();
+    if (connectivity.every((r) => r == ConnectivityResult.none)) {
+      await syncService.addToQueue(url, 'DELETE', {});
+      return;
+    }
+    try {
+      await _apiClient.dio.delete(url);
+    } on DioException catch (e) {
+      if (e.response != null &&
+          (e.response!.statusCode ?? 0) >= 400 &&
+          (e.response!.statusCode ?? 0) < 500) {
+        rethrow;
+      }
+      await syncService.addToQueue(url, 'DELETE', {});
+    }
   }
 
   Future<dynamic> getSupirPaginated({int page = 1}) async {
@@ -258,7 +272,21 @@ class ResourceRepository {
 
   Future<void> deleteSupir(int id) async {
     final url = '${ApiConstants.supir}/$id';
-    await _apiClient.dio.delete(url);
+    final connectivity = await Connectivity().checkConnectivity();
+    if (connectivity.every((r) => r == ConnectivityResult.none)) {
+      await syncService.addToQueue(url, 'DELETE', {});
+      return;
+    }
+    try {
+      await _apiClient.dio.delete(url);
+    } on DioException catch (e) {
+      if (e.response != null &&
+          (e.response!.statusCode ?? 0) >= 400 &&
+          (e.response!.statusCode ?? 0) < 500) {
+        rethrow;
+      }
+      await syncService.addToQueue(url, 'DELETE', {});
+    }
   }
 
   Future<dynamic> getPekerjaPaginated({int page = 1}) async {
@@ -368,7 +396,21 @@ class ResourceRepository {
 
   Future<void> deletePekerja(int id) async {
     final url = '${ApiConstants.pekerja}/$id';
-    await _apiClient.dio.delete(url);
+    final connectivity = await Connectivity().checkConnectivity();
+    if (connectivity.every((r) => r == ConnectivityResult.none)) {
+      await syncService.addToQueue(url, 'DELETE', {});
+      return;
+    }
+    try {
+      await _apiClient.dio.delete(url);
+    } on DioException catch (e) {
+      if (e.response != null &&
+          (e.response!.statusCode ?? 0) >= 400 &&
+          (e.response!.statusCode ?? 0) < 500) {
+        rethrow;
+      }
+      await syncService.addToQueue(url, 'DELETE', {});
+    }
   }
 
   Future<dynamic> getKendaraanPaginated({int page = 1}) async {

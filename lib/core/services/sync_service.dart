@@ -90,12 +90,29 @@ class SyncService {
   ) async {
     try {
       List<Map<String, dynamic>> list = [];
+      final queue = await _db.query('offline_queue');
+      final deletedIds = <int>{};
+      for (var item in queue) {
+        final qEndpoint = item['endpoint'].toString();
+        final method = item['method'].toString();
+        if (method == 'DELETE' && qEndpoint.startsWith('$endpoint/')) {
+          final idStr = qEndpoint.split('/').last;
+          final id = int.tryParse(idStr);
+          if (id != null) {
+            deletedIds.add(id);
+          }
+        }
+      }
+
       try {
         final localData = await _db.query(table);
         for (var e in localData) {
           final id = e['id'];
           if (id != null && id is int && id <= 0) {
             continue; // Filter out id <= 0
+          }
+          if (id != null && id is int && deletedIds.contains(id)) {
+            continue; // Filter out deleted items
           }
           if (e['data'] != null) {
             try {
@@ -119,7 +136,11 @@ class SyncService {
           try {
             final data =
                 jsonDecode(item['data'] as String) as Map<String, dynamic>;
-            data['id'] = -1 * qId; // ID negatif sementara untuk offline
+            final offlineId = -1 * qId; // ID negatif sementara untuk offline
+            if (deletedIds.contains(offlineId)) {
+              continue;
+            }
+            data['id'] = offlineId; 
 
             // --- 1. BERIKAN NILAI DEFAULT ---
             // Mencegah model .fromJson() error karena field backend tidak ada di form POST
