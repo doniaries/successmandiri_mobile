@@ -2058,16 +2058,16 @@ class _StatCardsState extends State<_StatCards> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF01579B).withValues(alpha: 0.1),
+                  color: const Color(0xFFE67E22).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.local_shipping_rounded, color: Color(0xFF01579B), size: 12),
+                    const Icon(Icons.scale_rounded, color: Color(0xFFE67E22), size: 12),
                     const SizedBox(width: 4),
                     Text(
-                      '${stats.transaksi.today.count} DO',
-                      style: const TextStyle(color: Color(0xFF01579B), fontSize: 12, fontWeight: FontWeight.bold),
+                      '${CurrencyFormatter.formatNumber(stats.transaksi.today.tonase)} Kg',
+                      style: const TextStyle(color: Color(0xFFE67E22), fontSize: 12, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -2102,7 +2102,7 @@ class _StatCardsState extends State<_StatCards> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Jumlah DO', style: TextStyle(color: Colors.black54, fontSize: 12)),
+                      const Text('Total Tonase', style: TextStyle(color: Colors.black54, fontSize: 12)),
                       const SizedBox(height: 4),
                       Row(
                         children: [
@@ -2111,19 +2111,21 @@ class _StatCardsState extends State<_StatCards> {
                               alignment: Alignment.centerLeft,
                               fit: BoxFit.scaleDown,
                               child: Text(
-                                '${stats.transaksi.today.count}',
-                                style: const TextStyle(color: Color(0xFF01579B), fontSize: 20, fontWeight: FontWeight.w900),
+                                '${CurrencyFormatter.formatNumber(stats.transaksi.today.tonase)} Kg',
+                                style: const TextStyle(color: Color(0xFFE67E22), fontSize: 20, fontWeight: FontWeight.w900),
                               ),
                             ),
                           ),
                           const SizedBox(width: 4),
                           Container(
                             padding: const EdgeInsets.all(2),
-                            decoration: const BoxDecoration(color: Color(0xFF01579B), shape: BoxShape.circle),
-                            child: const Icon(Icons.add, color: Colors.white, size: 10),
+                            decoration: const BoxDecoration(color: Color(0xFFE67E22), shape: BoxShape.circle),
+                            child: const Icon(Icons.scale_rounded, color: Colors.white, size: 10),
                           ),
                         ],
                       ),
+                      const SizedBox(height: 4),
+                      const Text('Volume buah masuk', style: TextStyle(color: Colors.black38, fontSize: 10)),
                     ],
                   ),
                 ),
@@ -2134,7 +2136,7 @@ class _StatCardsState extends State<_StatCards> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Total Tonase', style: TextStyle(color: Colors.black54, fontSize: 12)),
+                        const Text('Jumlah Transaksi', style: TextStyle(color: Colors.black54, fontSize: 12)),
                         const SizedBox(height: 4),
                         Row(
                           children: [
@@ -2143,21 +2145,21 @@ class _StatCardsState extends State<_StatCards> {
                                 alignment: Alignment.centerLeft,
                                 fit: BoxFit.scaleDown,
                                 child: Text(
-                                  '${CurrencyFormatter.formatNumber(stats.transaksi.today.tonase)} Kg',
-                                  style: const TextStyle(color: Color(0xFFE67E22), fontSize: 20, fontWeight: FontWeight.w900),
+                                  '${stats.transaksi.today.count}',
+                                  style: const TextStyle(color: Color(0xFF01579B), fontSize: 20, fontWeight: FontWeight.w900),
                                 ),
                               ),
                             ),
                             const SizedBox(width: 4),
                             Container(
                               padding: const EdgeInsets.all(2),
-                              decoration: const BoxDecoration(color: Color(0xFFE67E22), shape: BoxShape.circle),
-                              child: const Icon(Icons.scale_rounded, color: Colors.white, size: 10),
+                              decoration: const BoxDecoration(color: Color(0xFF01579B), shape: BoxShape.circle),
+                              child: const Icon(Icons.local_shipping_rounded, color: Colors.white, size: 10),
                             ),
                           ],
                         ),
                         const SizedBox(height: 4),
-                        const Text('Volume buah masuk', style: TextStyle(color: Colors.black38, fontSize: 10)),
+                        const Text('Total DO diproses', style: TextStyle(color: Colors.black38, fontSize: 10)),
                       ],
                     ),
                   ),
