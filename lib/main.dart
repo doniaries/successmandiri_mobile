@@ -10,6 +10,7 @@ import 'package:sawitappmobile/core/services/push_notification_service.dart';
 import 'package:sawitappmobile/features/auth/providers/auth_provider.dart';
 import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_provider.dart';
 import 'package:sawitappmobile/features/tambah_saldo/providers/tambah_saldo_provider.dart';
+import 'package:sawitappmobile/features/tutup_hari/providers/tutup_hari_provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:sawitappmobile/shared/providers/navigation_provider.dart';
@@ -92,6 +93,7 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(create: (_) => TransaksiDoProvider(transaksiRepository)),
         ChangeNotifierProvider(create: (_) => TambahSaldoProvider(tambahSaldoRepository)),
+        ChangeNotifierProvider(create: (_) => TutupHariProvider()),
         ChangeNotifierProvider(create: (_) => ResourceProvider(resourceRepository)),
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
         ChangeNotifierProvider(create: (_) => MainNavigationProvider()),

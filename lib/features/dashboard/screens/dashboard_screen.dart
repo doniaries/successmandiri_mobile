@@ -21,6 +21,7 @@ import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_detail
 import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_screen.dart';
 import 'package:sawitappmobile/features/profile/screens/profile_screen.dart';
 import 'package:sawitappmobile/features/profile/screens/app_version_setting_screen.dart';
+import 'package:sawitappmobile/features/tutup_hari/screens/tutup_hari_screen.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/widgets/skeleton_loader.dart';
 import 'package:sawitappmobile/features/operasional/screens/operasional_screen.dart';
@@ -2418,6 +2419,18 @@ class _MenuGrid extends StatelessWidget {
           },
           badgeSelector: (c) =>
               c.select<ResourceProvider, int>((p) => p.operasionalCount),
+        ),
+        _MenuItem(
+          label: 'Tutup Hari',
+          icon: Icons.done_all_rounded,
+          color: const Color(0xFF673AB7),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const TutupHariScreen()),
+            );
+          },
+          badgeSelector: (c) => 0,
         ),
         _MenuItem(
           label: 'Penjual',
