@@ -694,6 +694,50 @@ class ResourceProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> addDebtPenjual(int id, Map<String, dynamic> data) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      await _repository.addDebtPenjual(id, data);
+      await fetchResources('penjual', refresh: true);
+      return true;
+    } catch (e) {
+      debugPrint('Error adding debt penjual: $e');
+      if (e is DioException) {
+        _errorMessage = e.response?.data?['message'] ?? e.message;
+      } else {
+        _errorMessage = e.toString();
+      }
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> addDebtSupir(int id, Map<String, dynamic> data) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      await _repository.addDebtSupir(id, data);
+      await fetchResources('supir', refresh: true);
+      return true;
+    } catch (e) {
+      debugPrint('Error adding debt supir: $e');
+      if (e is DioException) {
+        _errorMessage = e.response?.data?['message'] ?? e.message;
+      } else {
+        _errorMessage = e.toString();
+      }
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<bool> updatePenjual(int id, Map<String, dynamic> data) async {
     try {
       await _repository.updatePenjual(id, data);

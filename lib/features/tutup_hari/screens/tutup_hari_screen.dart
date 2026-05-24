@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:sawitappmobile/features/tutup_hari/providers/tutup_hari_provider.dart';
 
 class TutupHariScreen extends StatefulWidget {
-  const TutupHariScreen({Key? key}) : super(key: key);
+  const TutupHariScreen({super.key});
 
   @override
   State<TutupHariScreen> createState() => _TutupHariScreenState();

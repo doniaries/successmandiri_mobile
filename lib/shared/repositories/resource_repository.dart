@@ -164,6 +164,25 @@ class ResourceRepository {
     }
   }
 
+  Future<void> addDebtPenjual(int id, Map<String, dynamic> data) async {
+    final url = '${ApiConstants.penjual}/$id/tambah-hutang';
+    final connectivity = await Connectivity().checkConnectivity();
+    if (connectivity.every((r) => r == ConnectivityResult.none)) {
+      await syncService.addToQueue(url, 'POST', data);
+      return;
+    }
+    try {
+      await _apiClient.dio.post(url, data: data);
+    } on DioException catch (e) {
+      if (e.response != null &&
+          (e.response!.statusCode ?? 0) >= 400 &&
+          (e.response!.statusCode ?? 0) < 500) {
+        rethrow;
+      }
+      await syncService.addToQueue(url, 'POST', data);
+    }
+  }
+
   Future<dynamic> getSupirPaginated({int page = 1}) async {
     try {
       final response = await _apiClient.dio
@@ -286,6 +305,25 @@ class ResourceRepository {
         rethrow;
       }
       await syncService.addToQueue(url, 'DELETE', {});
+    }
+  }
+
+  Future<void> addDebtSupir(int id, Map<String, dynamic> data) async {
+    final url = '${ApiConstants.supir}/$id/tambah-hutang';
+    final connectivity = await Connectivity().checkConnectivity();
+    if (connectivity.every((r) => r == ConnectivityResult.none)) {
+      await syncService.addToQueue(url, 'POST', data);
+      return;
+    }
+    try {
+      await _apiClient.dio.post(url, data: data);
+    } on DioException catch (e) {
+      if (e.response != null &&
+          (e.response!.statusCode ?? 0) >= 400 &&
+          (e.response!.statusCode ?? 0) < 500) {
+        rethrow;
+      }
+      await syncService.addToQueue(url, 'POST', data);
     }
   }
 
