@@ -2053,43 +2053,6 @@ class _StatCardsState extends State<_StatCards> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE67E22).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.scale_rounded, color: Color(0xFFE67E22), size: 12),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${CurrencyFormatter.formatNumber(stats.transaksi.today.tonase)} Kg',
-                      style: const TextStyle(color: Color(0xFFE67E22), fontSize: 12, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black12),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Row(
-                  children: [
-                    Text('SAWIT', style: TextStyle(color: Colors.black54, fontSize: 10, fontWeight: FontWeight.bold)),
-                    SizedBox(width: 4),
-                    Icon(Icons.edit, color: Colors.black54, size: 10),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
           Text(
             'Periode aktif $subtitleStr',
             style: const TextStyle(color: Colors.black54, fontSize: 12),
