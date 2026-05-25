@@ -2062,10 +2062,7 @@ class _StatCardsState extends State<_StatCards> {
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: const TextStyle(
-                    color: Colors.black38,
-                    fontSize: 9,
-                  ),
+                  style: const TextStyle(color: Colors.black38, fontSize: 9),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -2135,16 +2132,19 @@ class _StatCardsState extends State<_StatCards> {
                     subtitle: 'Transaksi DO Hari Ini',
                     icon: Icons.receipt_long_rounded,
                     color: const Color(0xFF01579B),
-                    onTap: () => context.read<MainNavigationProvider>().setIndex(1),
+                    onTap: () =>
+                        context.read<MainNavigationProvider>().setIndex(1),
                   ),
                   const SizedBox(width: 12),
                   _buildStatBox(
                     title: 'Total Tonase',
-                    value: '${CurrencyFormatter.formatNumber(stats.transaksi.today.tonase)} Kg',
+                    value:
+                        '${CurrencyFormatter.formatNumber(stats.transaksi.today.tonase)} Kg',
                     subtitle: '${stats.transaksi.today.count} Transaksi DO',
                     icon: Icons.scale_rounded,
                     color: const Color(0xFFE67E22),
-                    onTap: () => context.read<MainNavigationProvider>().setIndex(1),
+                    onTap: () =>
+                        context.read<MainNavigationProvider>().setIndex(1),
                   ),
                 ],
               ),
@@ -2153,20 +2153,26 @@ class _StatCardsState extends State<_StatCards> {
                 children: [
                   _buildStatBox(
                     title: 'Uang Masuk',
-                    value: CurrencyFormatter.formatRupiah(stats.pemasukan.today.total),
-                    subtitle: 'Saldo Kemarin + Pemasukan',
+                    value: CurrencyFormatter.formatRupiah(
+                      stats.pemasukan.today.total,
+                    ),
+                    subtitle: '-',
                     icon: Icons.arrow_circle_down_rounded,
                     color: const Color(0xFF2E7D32),
-                    onTap: () => context.read<MainNavigationProvider>().setIndex(3),
+                    onTap: () =>
+                        context.read<MainNavigationProvider>().setIndex(3),
                   ),
                   const SizedBox(width: 12),
                   _buildStatBox(
                     title: 'Pengeluaran',
-                    value: CurrencyFormatter.formatRupiah(stats.pengeluaran.today.total),
+                    value: CurrencyFormatter.formatRupiah(
+                      stats.pengeluaran.today.total,
+                    ),
                     subtitle: 'Total Pengeluaran Kas',
                     icon: Icons.arrow_circle_up_rounded,
                     color: const Color(0xFFC62828),
-                    onTap: () => context.read<MainNavigationProvider>().setIndex(3),
+                    onTap: () =>
+                        context.read<MainNavigationProvider>().setIndex(3),
                   ),
                 ],
               ),
