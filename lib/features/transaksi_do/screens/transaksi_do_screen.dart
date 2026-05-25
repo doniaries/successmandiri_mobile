@@ -33,9 +33,10 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
       final txProvider = context.read<TransaksiDoProvider>();
       final dashboardProvider = context.read<DashboardProvider>();
 
-      if (txProvider.transactions.isEmpty) {
-        txProvider.fetchTransactions();
-      }
+      final initialDate = dashboardProvider.filterDate ?? DateTime.now();
+      final dateStr = DateFormat('yyyy-MM-dd').format(initialDate);
+      
+      txProvider.fetchTransactions(tanggal: dateStr);
       if (dashboardProvider.summary == null) {
         dashboardProvider.fetchSummary();
       }
@@ -44,7 +45,9 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
 
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
-        context.read<TransaksiDoProvider>().fetchMoreTransactions();
+        final targetDate = _selectedSingleDate ?? DateTime.now();
+        final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
+        context.read<TransaksiDoProvider>().fetchMoreTransactions(tanggal: dateStr);
       }
     });
   }
@@ -74,7 +77,9 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
       await resourceProvider.syncMasterData();
       
       // 3. Fetch latest DO transactions
-      await txProvider.fetchTransactions();
+      final targetDate = _selectedSingleDate ?? DateTime.now();
+      final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
+      await txProvider.fetchTransactions(tanggal: dateStr);
       
       // 4. Fetch latest dashboard summary
       await dashboardProvider.fetchSummary();
@@ -134,7 +139,9 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
             await resourceProvider.syncMasterData();
             
             // 3. Fetch latest DO transactions
-            await txProvider.fetchTransactions();
+            final targetDate = _selectedSingleDate ?? DateTime.now();
+            final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
+            await txProvider.fetchTransactions(tanggal: dateStr);
             
             // 4. Fetch latest dashboard summary
             await dashboardProvider.fetchSummary();
@@ -550,6 +557,8 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
       setState(() {
         _selectedSingleDate = picked;
       });
+      final dateStr = DateFormat('yyyy-MM-dd').format(picked);
+      context.read<TransaksiDoProvider>().fetchTransactions(tanggal: dateStr);
     }
   }
 
