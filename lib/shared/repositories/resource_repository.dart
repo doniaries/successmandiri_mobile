@@ -40,7 +40,7 @@ class ResourceRepository {
       if (page == 1) {
         // Hapus kode SharedPreferences, ganti dengan SQLite Cache
         final List<dynamic> listData = _extractListData(response.data);
-        await syncService.cacheData('penjual', listData, clear: true);
+        await syncService.cacheData('penjual', listData, clear: false);
         final pendingData = await syncService.getMergedOfflineData('penjual', ApiConstants.penjual);
         if (response.data is Map) {
           response.data['data'] = pendingData;
@@ -194,7 +194,7 @@ class ResourceRepository {
 
       if (page == 1) {
         final List<dynamic> listData = _extractListData(response.data);
-        await syncService.cacheData('supir', listData, clear: true);
+        await syncService.cacheData('supir', listData, clear: false);
         final pendingData = await syncService.getMergedOfflineData('supir', ApiConstants.supir);
         if (response.data is Map) {
           response.data['data'] = pendingData;
@@ -337,7 +337,7 @@ class ResourceRepository {
           .timeout(const Duration(seconds: 15));
       if (page == 1) {
         final List<dynamic> listData = _extractListData(response.data);
-        await syncService.cacheData('pekerja', listData, clear: true);
+        await syncService.cacheData('pekerja', listData, clear: false);
         final pendingData = await syncService.getMergedOfflineData('pekerja', ApiConstants.pekerja);
         if (response.data is Map) {
           response.data['data'] = pendingData;
@@ -462,7 +462,7 @@ class ResourceRepository {
 
       if (page == 1) {
         final List<dynamic> listData = _extractListData(response.data);
-        await syncService.cacheData('kendaraan', listData, clear: true);
+        await syncService.cacheData('kendaraan', listData, clear: false);
         final pendingData = await syncService.getMergedOfflineData('kendaraan', ApiConstants.kendaraan);
         if (response.data is Map) {
           response.data['data'] = pendingData;
