@@ -955,6 +955,13 @@ class ResourceProvider with ChangeNotifier {
     } catch (e) {
       debugPrint('Error deleting $type: $e');
       if (e is DioException) {
+        // Jika item sudah tidak ada di server (404), anggap sukses
+        if (e.response?.statusCode == 404 || 
+            (e.response?.data?.toString().contains('No query results') ?? false)) {
+          await fetchResources(type, refresh: true);
+          return true;
+        }
+        
         if (e.response?.data is Map && e.response?.data['errors'] != null) {
           final Map errors = e.response?.data['errors'];
           final firstError = errors.values.first;
