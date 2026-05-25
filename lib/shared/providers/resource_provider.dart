@@ -813,6 +813,72 @@ class ResourceProvider with ChangeNotifier {
 
   Future<dynamic> addOperasional(Map<String, dynamic> data) async {
     _errorMessage = null;
+    
+    // OPTIMISTIC UPDATE UNTUK HUTANG PEKERJA/SUPIR/PENJUAL SAAT OFFLINE
+    if (data['kategori'] == 'kasbon' || data['kategori'] == 'bayar_hutang') {
+      double nominal = double.tryParse(data['nominal'].toString()) ?? 0.0;
+      if (data['kategori'] == 'bayar_hutang') nominal = -nominal; // kurangi hutang jika dibayar
+      
+      int pihakId = data['pihak_id'] is int ? data['pihak_id'] : int.tryParse(data['pihak_id']?.toString() ?? '') ?? 0;
+      String type = data['pihak_type']?.toString() ?? '';
+      
+      if (type == 'App\\Models\\Penjual') {
+        var idx = _penjuals.indexWhere((e) => e.id == pihakId);
+        if (idx != -1) {
+          final old = _penjuals[idx];
+          _penjuals[idx] = Penjual(
+            id: old.id,
+            nama: old.nama,
+            alamat: old.alamat,
+            telepon: old.telepon,
+            hutang: old.hutang,
+            sisaHutang: (old.sisaHutang ?? 0) + nominal,
+            isActive: old.isActive,
+            transaksiDo: old.transaksiDo,
+            mutasiHutang: old.mutasiHutang,
+            createdAt: old.createdAt,
+          );
+        }
+      } else if (type == 'App\\Models\\Supir') {
+        var idx = _supirs.indexWhere((e) => e.id == pihakId);
+        if (idx != -1) {
+          final old = _supirs[idx];
+          _supirs[idx] = Supir(
+            id: old.id,
+            nama: old.nama,
+            telepon: old.telepon,
+            alamat: old.alamat,
+            status: old.status,
+            hutang: old.hutang,
+            sisaHutang: (old.sisaHutang ?? 0) + nominal,
+            isActive: old.isActive,
+            transaksiDo: old.transaksiDo,
+            mutasiHutang: old.mutasiHutang,
+            createdAt: old.createdAt,
+          );
+        }
+      } else if (type == 'App\\Models\\Pekerja') {
+        var idx = _pekerjas.indexWhere((e) => e.id == pihakId);
+        if (idx != -1) {
+          final old = _pekerjas[idx];
+          _pekerjas[idx] = Pekerja(
+            id: old.id,
+            nama: old.nama,
+            telepon: old.telepon,
+            alamat: old.alamat,
+            posisi: old.posisi,
+            hutang: old.hutang,
+            sisaHutang: old.sisaHutang + nominal,
+            perusahaanId: old.perusahaanId,
+            isActive: old.isActive,
+            mutasiHutang: old.mutasiHutang,
+            createdAt: old.createdAt,
+          );
+        }
+      }
+      notifyListeners();
+    }
+    
     try {
       final result = await _repository.storeOperasional(data);
 
