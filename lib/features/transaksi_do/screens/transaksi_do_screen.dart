@@ -41,12 +41,6 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
       }
       txProvider.markAsSeen();
     });
-
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
-        context.read<TransaksiDoProvider>().fetchMoreTransactions();
-      }
-    });
   }
 
   @override

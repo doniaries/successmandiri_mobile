@@ -35,6 +35,13 @@ class Pekerja {
       }
     } catch (_) {}
 
+    // Parse is_active with better null handling
+    final isActiveParsed = json['is_active'];
+    final isActive = isActiveParsed == true ||
+                    isActiveParsed == 1 ||
+                    isActiveParsed == '1' ||
+                    isActiveParsed == 'true';
+
     return Pekerja(
       id: (json['id'] is int) ? json['id'] : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
       nama: json['nama'],
@@ -44,7 +51,7 @@ class Pekerja {
       hutang: double.tryParse(json['hutang']?.toString() ?? '0') ?? 0,
       sisaHutang: double.tryParse(json['sisa_hutang']?.toString() ?? '0') ?? 0,
       perusahaanId: (json['perusahaan_id'] is int) ? json['perusahaan_id'] : int.tryParse(json['perusahaan_id']?.toString() ?? '0') ?? 0,
-      isActive: json['is_active'] == true || json['is_active'] == 1 || json['is_active'] == '1',
+      isActive: isActive,
       mutasiHutang: json['mutasi_hutang'] != null
           ? (json['mutasi_hutang'] as List)
               .map((i) => MutasiHutang.fromJson(i))

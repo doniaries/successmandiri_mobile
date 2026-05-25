@@ -53,30 +53,46 @@ class TransaksiDoProvider with ChangeNotifier {
   }
 
   Future<void> fetchTransactions({String? tanggal}) async {
-    if (_isRefreshing || _isFetchingMore) return;
+    if (_isRefreshing) return;
     _isRefreshing = true;
     if (_transactions.isEmpty) _isLoading = true;
     _errorMessage = null;
     _currentPage = 1;
-    _hasMore = true;
+    _hasMore = false; // Disable pagination for DO transactions
     notifyListeners();
 
     try {
-      final dynamic response = await _repository
-          .getTransaksiDo(tanggal: tanggal, page: _currentPage);
-      
-      List<dynamic> rawData = [];
-      if (response is Map) {
-        rawData = response['data'] ?? [];
-        _hasMore = response['next_page_url'] != null;
-      } else if (response is List) {
-        rawData = response;
-        _hasMore = false;
+      // Fetch all transactions by using page=1 with large limit from API
+      // or repeatedly fetch until no more data
+      List<TransaksiDo> allTransactions = [];
+      int page = 1;
+      bool hasMoreData = true;
+
+      while (hasMoreData) {
+        final dynamic response = await _repository.getTransaksiDo(
+          tanggal: tanggal,
+          page: page,
+        );
+
+        List<dynamic> rawData = [];
+        if (response is Map) {
+          rawData = response['data'] ?? [];
+          hasMoreData = response['next_page_url'] != null;
+        } else if (response is List) {
+          rawData = response;
+          hasMoreData = false;
+        }
+
+        final pageTransactions = rawData.map((json) => TransaksiDo.fromJson(json)).toList();
+        allTransactions.addAll(pageTransactions);
+
+        if (!hasMoreData) break;
+        page++;
       }
-      
-      _transactions = rawData.map((json) => TransaksiDo.fromJson(json)).toList();
+
+      _transactions = allTransactions;
       _isLoading = false;
-      
+
       if (_transactions.isNotEmpty) {
         final prefs = await SharedPreferences.getInstance();
         final lastSeenId = int.tryParse(prefs.getString('seen_state_transaksi_do') ?? '0') ?? 0;
@@ -86,7 +102,7 @@ class TransaksiDoProvider with ChangeNotifier {
         _unreadCount = 0;
         _hasNewData = false;
       }
-      
+
       notifyListeners();
     } catch (e) {
       _isLoading = false;
@@ -103,47 +119,8 @@ class TransaksiDoProvider with ChangeNotifier {
   }
 
   Future<void> fetchMoreTransactions({String? tanggal}) async {
-    if (_isFetchingMore || _isRefreshing || !_hasMore) return;
-
-    _isFetchingMore = true;
-    _errorMessage = null;
-    notifyListeners();
-
-    try {
-      _currentPage++;
-      final dynamic response = await _repository
-          .getTransaksiDo(tanggal: tanggal, page: _currentPage);
-      
-      List<dynamic> rawData = [];
-      if (response is Map) {
-        rawData = response['data'] ?? [];
-        _hasMore = response['next_page_url'] != null;
-      } else if (response is List) {
-        rawData = response;
-        _hasMore = false;
-      }
-      
-      final newItems = rawData.map((json) => TransaksiDo.fromJson(json)).toList();
-      
-      for (var item in newItems) {
-        if (!_transactions.any((e) => e.id == item.id)) {
-          _transactions.add(item);
-        }
-      }
-
-      // Re-evaluate unreadCount after fetching more items
-      final prefs = await SharedPreferences.getInstance();
-      final lastSeenId = int.tryParse(prefs.getString('seen_state_transaksi_do') ?? '0') ?? 0;
-      _unreadCount = _transactions.where((t) => t.id > lastSeenId).length;
-      _hasNewData = _unreadCount > 0;
-
-      _isFetchingMore = false;
-      notifyListeners();
-    } catch (e) {
-      _isFetchingMore = false;
-      _currentPage--; // Rollback page on error
-      notifyListeners();
-    }
+    // Pagination disabled for DO transactions - fetch all for the selected date
+    return;
   }
 
   Future<void> markAsSeen() async {
