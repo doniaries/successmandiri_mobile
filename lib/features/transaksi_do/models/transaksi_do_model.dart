@@ -25,6 +25,12 @@ class TransaksiDo {
 
   String get displaySupirNama => supirNama ?? penjualNama ?? 'Tanpa Supir';
 
+  String get displayNomorUrut {
+    if (nomor.contains('-')) {
+      return nomor.split('-').last;
+    }
+    return nomor;
+  }
 
   final bool isMismatch;
   final String? buktiRekap;

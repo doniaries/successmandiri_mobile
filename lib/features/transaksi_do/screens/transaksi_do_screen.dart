@@ -776,7 +776,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
-                                tx.nomor,
+                                tx.displayNomorUrut,
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w800,
