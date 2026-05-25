@@ -738,6 +738,28 @@ class ResourceProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> addDebtPekerja(int id, Map<String, dynamic> data) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      await _repository.addDebtPekerja(id, data);
+      await fetchResources('pekerja', refresh: true);
+      return true;
+    } catch (e) {
+      debugPrint('Error adding debt pekerja: $e');
+      if (e is DioException) {
+        _errorMessage = e.response?.data?['message'] ?? e.message;
+      } else {
+        _errorMessage = e.toString();
+      }
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<bool> updatePenjual(int id, Map<String, dynamic> data) async {
     try {
       await _repository.updatePenjual(id, data);
@@ -1034,6 +1056,11 @@ class ResourceProvider with ChangeNotifier {
           return false;
       }
       await fetchResources(type, refresh: true);
+      if (type == 'operasional') {
+        fetchResources('pekerja', refresh: true);
+        fetchResources('supir', refresh: true);
+        fetchResources('penjual', refresh: true);
+      }
       return true;
     } catch (e) {
       debugPrint('Error deleting $type: $e');

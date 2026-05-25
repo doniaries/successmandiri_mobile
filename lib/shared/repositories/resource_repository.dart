@@ -250,8 +250,13 @@ class ResourceRepository {
     final connectivity = await Connectivity().checkConnectivity();
     final isOffline = connectivity.every((r) => r == ConnectivityResult.none);
     if (isOffline) {
-      await syncService.addToQueue(ApiConstants.supir, 'POST', data);
-      return {'offline': true};
+      final qId = await syncService.addToQueue(
+        ApiConstants.supir,
+        'POST',
+        data,
+      );
+      data['id'] = -1 * qId;
+      return data;
     }
     try {
       final response = await _apiClient.dio.post(
@@ -265,8 +270,13 @@ class ResourceRepository {
           (e.response!.statusCode ?? 0) < 500) {
         rethrow;
       }
-      await syncService.addToQueue(ApiConstants.supir, 'POST', data);
-      return {'offline': true};
+      final qId = await syncService.addToQueue(
+        ApiConstants.supir,
+        'POST',
+        data,
+      );
+      data['id'] = -1 * qId;
+      return data;
     }
   }
 
@@ -393,8 +403,13 @@ class ResourceRepository {
     final connectivity = await Connectivity().checkConnectivity();
     final isOffline = connectivity.every((r) => r == ConnectivityResult.none);
     if (isOffline) {
-      await syncService.addToQueue(ApiConstants.pekerja, 'POST', data);
-      return {'offline': true};
+      final qId = await syncService.addToQueue(
+        ApiConstants.pekerja,
+        'POST',
+        data,
+      );
+      data['id'] = -1 * qId;
+      return data;
     }
     try {
       final response = await _apiClient.dio.post(
@@ -408,8 +423,13 @@ class ResourceRepository {
           (e.response!.statusCode ?? 0) < 500) {
         rethrow;
       }
-      await syncService.addToQueue(ApiConstants.pekerja, 'POST', data);
-      return {'offline': true};
+      final qId = await syncService.addToQueue(
+        ApiConstants.pekerja,
+        'POST',
+        data,
+      );
+      data['id'] = -1 * qId;
+      return data;
     }
   }
 
@@ -448,6 +468,25 @@ class ResourceRepository {
         rethrow;
       }
       await syncService.addToQueue(url, 'DELETE', {});
+    }
+  }
+
+  Future<void> addDebtPekerja(int id, Map<String, dynamic> data) async {
+    final url = '${ApiConstants.pekerja}/$id/tambah-hutang';
+    final connectivity = await Connectivity().checkConnectivity();
+    if (connectivity.every((r) => r == ConnectivityResult.none)) {
+      await syncService.addToQueue(url, 'POST', data);
+      return;
+    }
+    try {
+      await _apiClient.dio.post(url, data: data);
+    } on DioException catch (e) {
+      if (e.response != null &&
+          (e.response!.statusCode ?? 0) >= 400 &&
+          (e.response!.statusCode ?? 0) < 500) {
+        rethrow;
+      }
+      await syncService.addToQueue(url, 'POST', data);
     }
   }
 
@@ -518,8 +557,13 @@ class ResourceRepository {
     final connectivity = await Connectivity().checkConnectivity();
     final isOffline = connectivity.every((r) => r == ConnectivityResult.none);
     if (isOffline) {
-      await syncService.addToQueue(ApiConstants.kendaraan, 'POST', data);
-      return {'offline': true};
+      final qId = await syncService.addToQueue(
+        ApiConstants.kendaraan,
+        'POST',
+        data,
+      );
+      data['id'] = -1 * qId;
+      return data;
     }
     try {
       final response = await _apiClient.dio.post(

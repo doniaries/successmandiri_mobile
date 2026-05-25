@@ -48,6 +48,8 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
           debtors = provider.penjuals;
         } else if (_selectedPihakType == 'App\\Models\\Supir') {
           debtors = provider.supirs;
+        } else if (_selectedPihakType == 'App\\Models\\Pekerja') {
+          debtors = provider.pekerjas;
         }
 
         if (widget.pihakId != null && debtors.isNotEmpty) {
@@ -115,6 +117,8 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
       success = await provider.addDebtPenjual(_selectedPihak.id, data);
     } else if (_selectedPihakType == 'App\\Models\\Supir') {
       success = await provider.addDebtSupir(_selectedPihak.id, data);
+    } else if (_selectedPihakType == 'App\\Models\\Pekerja') {
+      success = await provider.addDebtPekerja(_selectedPihak.id, data);
     }
 
     if (mounted) {
@@ -181,6 +185,10 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                       value: 'App\\Models\\Supir',
                       child: Text('Supir'),
                     ),
+                    DropdownMenuItem(
+                      value: 'App\\Models\\Pekerja',
+                      child: Text('Pekerja'),
+                    ),
                   ],
                   onChanged: (val) {
                     setState(() {
@@ -205,7 +213,9 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                     items:
                         (_selectedPihakType == 'App\\Models\\Penjual'
                                 ? provider.penjuals
-                                : provider.supirs)
+                                : _selectedPihakType == 'App\\Models\\Supir'
+                                    ? provider.supirs
+                                    : provider.pekerjas)
                             .map(
                               (dynamic e) => DropdownMenuItem<int>(
                                 value: e.id as int,
@@ -221,7 +231,9 @@ class _AddDebtScreenState extends State<AddDebtScreen> {
                         _selectedPihakId = val;
                         final List<dynamic> debtors = (_selectedPihakType == 'App\\Models\\Penjual'
                                 ? provider.penjuals
-                                : provider.supirs);
+                                : _selectedPihakType == 'App\\Models\\Supir'
+                                    ? provider.supirs
+                                    : provider.pekerjas);
                         dynamic found;
                         for (var e in debtors) {
                           if (e.id == val) {
