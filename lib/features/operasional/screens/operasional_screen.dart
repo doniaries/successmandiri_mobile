@@ -21,6 +21,7 @@ class OperasionalScreen extends StatefulWidget {
 class _OperasionalScreenState extends State<OperasionalScreen> {
   final ScrollController _scrollController = ScrollController();
   DateTime? _selectedSingleDate;
+  final Set<int> _deletedIds = {};
 
   @override
   void initState() {
@@ -114,13 +115,23 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
 
   List<Operasional> _getFilteredDateItems(List<Operasional> allItems) {
     final targetDate = _selectedSingleDate ?? DateTime.now();
-    return allItems.where((item) {
+    var filtered = allItems.where((item) {
       return DateUtils.isSameDay(item.tanggal.toLocal(), targetDate);
     }).toList();
+    
+    // Urutkan dari yang terbaru (tanggal terbaru / id terbesar)
+    filtered.sort((a, b) {
+      int dateCompare = b.tanggal.compareTo(a.tanggal);
+      if (dateCompare != 0) return dateCompare;
+      return b.id.compareTo(a.id);
+    });
+    
+    return filtered;
   }
 
   List<Operasional> _getFilteredItems(List<Operasional> allItems) {
     List<Operasional> items = _getFilteredDateItems(allItems);
+    items = items.where((i) => !_deletedIds.contains(i.id)).toList();
     if (_currentFilter != 'Semua') {
       items = items
           .where(
@@ -479,7 +490,6 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
           );
         }
 
-        final targetDate = _selectedSingleDate ?? DateTime.now();
         final items = _getFilteredItems(provider.operasionals);
 
         if (items.isEmpty) {
@@ -536,30 +546,98 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
         ? const Color(0xFFC62828)
         : const Color(0xFF2E7D32);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => OperasionalDetailScreen(operasional: item),
-            ),
-          ),
+    return Dismissible(
+      key: Key('operasional_${item.id}'),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        decoration: BoxDecoration(
+          color: Colors.red,
           borderRadius: BorderRadius.circular(16),
-          child: Padding(
+        ),
+        child: const Icon(Icons.delete_sweep_rounded, color: Colors.white, size: 30),
+      ),
+      confirmDismiss: (direction) async {
+        return await showDialog(
+          context: context,
+          builder: (BuildContext dialogContext) {
+            return AlertDialog(
+              title: const Text('Hapus Transaksi'),
+              content: const Text('Apakah Anda yakin ingin menghapus transaksi operasional ini?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext, false),
+                  child: const Text('Batal'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  child: const Text('Hapus', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+      onDismissed: (direction) {
+        setState(() {
+          _deletedIds.add(item.id);
+        });
+        final provider = context.read<ResourceProvider>();
+        final dashboardProvider = context.read<DashboardProvider>();
+        provider.deleteResource('operasional', item.id).then((success) {
+          if (mounted) {
+            if (success) {
+              dashboardProvider.fetchSummary();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Operasional berhasil dihapus'),
+                  backgroundColor: Colors.green,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            } else {
+              setState(() {
+                _deletedIds.remove(item.id);
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(provider.errorMessage ?? 'Gagal menghapus operasional'),
+                  backgroundColor: Colors.red,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+              _refreshData();
+            }
+          }
+        });
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => OperasionalDetailScreen(operasional: item),
+              ),
+            ),
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
@@ -622,6 +700,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

@@ -95,12 +95,33 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final provider = context.read<ResourceProvider>();
     final cleanNominal = _nominalController.text.replaceAll(
       RegExp(r'[^0-9]'),
       '',
     );
     final nominalValue = double.tryParse(cleanNominal) ?? 0;
+
+    if (nominalValue <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Nominal harus lebih dari 0'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    if (_selectedPihakType != null && _selectedPihakId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pilih pihak terkait terlebih dahulu'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    final provider = context.read<ResourceProvider>();
 
     // Validasi Saldo Perusahaan
     if (_selectedOperasional == 'Pengeluaran') {
@@ -262,11 +283,10 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
                 DropdownButtonFormField<String>(
                   initialValue: _selectedPihakType,
                   decoration: _inputDecoration(
-                    'Tipe Pihak (Opsional)',
+                    'Tipe Pihak',
                     Icons.group_rounded,
                   ),
                   items: const [
-                    DropdownMenuItem(value: null, child: Text('Tidak Ada')),
                     DropdownMenuItem(
                       value: 'App\\Models\\Penjual',
                       child: Text('Penjual'),
@@ -287,6 +307,7 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
                       _selectedPihakId = null;
                     });
                   },
+                  validator: (val) => val == null ? 'Pilih tipe pihak' : null,
                 ),
                 const SizedBox(height: 20),
 
@@ -468,6 +489,7 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
                     'Keterangan',
                     Icons.note_rounded,
                   ),
+                  validator: (val) => (val == null || val.trim().isEmpty) ? 'Keterangan wajib diisi' : null,
                 ),
                 const SizedBox(height: 40),
 
