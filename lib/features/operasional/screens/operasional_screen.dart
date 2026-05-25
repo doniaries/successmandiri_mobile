@@ -27,19 +27,9 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     super.initState();
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final activeDateStr = context
-          .read<DashboardProvider>()
-          .summary
-          ?.systemActiveDate;
-      if (activeDateStr != null) {
-        setState(() {
-          _selectedSingleDate = DateTime.parse(activeDateStr);
-        });
-      } else {
-        setState(() {
-          _selectedSingleDate = DateTime.now();
-        });
-      }
+      setState(() {
+        _selectedSingleDate = DateTime.now();
+      });
       
       final provider = context.read<ResourceProvider>();
       if (provider.operasionals.isEmpty) {
@@ -122,15 +112,15 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     }
   }
 
-  List<Operasional> _getFilteredDateItems(List<Operasional> allItems, DateTime systemActiveDate) {
-    final targetDate = _selectedSingleDate ?? systemActiveDate;
+  List<Operasional> _getFilteredDateItems(List<Operasional> allItems) {
+    final targetDate = _selectedSingleDate ?? DateTime.now();
     return allItems.where((item) {
       return DateUtils.isSameDay(item.tanggal.toLocal(), targetDate);
     }).toList();
   }
 
-  List<Operasional> _getFilteredItems(List<Operasional> allItems, DateTime systemActiveDate) {
-    List<Operasional> items = _getFilteredDateItems(allItems, systemActiveDate);
+  List<Operasional> _getFilteredItems(List<Operasional> allItems) {
+    List<Operasional> items = _getFilteredDateItems(allItems);
     if (_currentFilter != 'Semua') {
       items = items
           .where(
@@ -142,17 +132,11 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
   }
 
   void _showFilterSheet() async {
-    final activeDateStr = context
-        .read<DashboardProvider>()
-        .summary
-        ?.systemActiveDate;
-    final systemActiveDate = activeDateStr != null
-        ? DateTime.parse(activeDateStr)
-        : DateTime.now();
+    final targetDate = _selectedSingleDate ?? DateTime.now();
 
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _selectedSingleDate ?? systemActiveDate,
+      initialDate: targetDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now().add(const Duration(days: 365)),
       initialEntryMode: DatePickerEntryMode.calendarOnly,
@@ -245,12 +229,9 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
         children: [
           Consumer2<ResourceProvider, DashboardProvider>(
             builder: (context, resourceProvider, dashboardProvider, child) {
-              final activeDateStr = dashboardProvider.summary?.systemActiveDate;
-              final systemActiveDate = activeDateStr != null
-                  ? DateTime.parse(activeDateStr)
-                  : DateTime.now();
+              final targetDate = _selectedSingleDate ?? DateTime.now();
 
-              final filteredDateItems = _getFilteredDateItems(resourceProvider.operasionals, systemActiveDate);
+              final filteredDateItems = _getFilteredDateItems(resourceProvider.operasionals);
               double totalPemasukan = 0;
               double totalPengeluaran = 0;
               for (var item in filteredDateItems) {
@@ -261,10 +242,8 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                 }
               }
 
-              final targetDate = _selectedSingleDate ?? systemActiveDate;
               final dateText = DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
-              
-              final isFilterActive = _selectedSingleDate != null && !DateUtils.isSameDay(_selectedSingleDate!, systemActiveDate);
+              final isFilterActive = _selectedSingleDate != null && !DateUtils.isSameDay(_selectedSingleDate!, DateTime.now());
 
               return Container(
                 width: double.infinity,
@@ -500,12 +479,8 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
           );
         }
 
-        final activeDateStr = dashboardProvider.summary?.systemActiveDate;
-        final systemActiveDate = activeDateStr != null
-            ? DateTime.parse(activeDateStr)
-            : DateTime.now();
-
-        final items = _getFilteredItems(provider.operasionals, systemActiveDate);
+        final targetDate = _selectedSingleDate ?? DateTime.now();
+        final items = _getFilteredItems(provider.operasionals);
 
         if (items.isEmpty) {
           return SliverFillRemaining(

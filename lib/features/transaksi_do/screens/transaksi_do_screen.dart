@@ -103,12 +103,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
       _hasInitializedFilterDate = true;
       _lastDashboardFilterDate = dashboardFilterDate;
       
-      final activeDateStr = dashboardProvider.summary?.systemActiveDate;
-      final systemActiveDate = activeDateStr != null
-          ? DateTime.parse(activeDateStr)
-          : DateTime.now();
-          
-      _selectedSingleDate = dashboardFilterDate ?? systemActiveDate;
+      _selectedSingleDate = dashboardFilterDate ?? DateTime.now();
     }
 
     return Scaffold(
@@ -284,17 +279,12 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
     return Consumer2<DashboardProvider, TransaksiDoProvider>(
       builder: (context, dashboardProvider, txProvider, _) {
         final transactions = txProvider.transactions;
-        final activeDateStr = dashboardProvider.summary?.systemActiveDate;
-        final systemActiveDate = activeDateStr != null 
-            ? DateTime.parse(activeDateStr) 
-            : DateTime.now();
-        
-        final targetDate = _selectedSingleDate ?? systemActiveDate;
+        final targetDate = _selectedSingleDate ?? DateTime.now();
         final activeCount = transactions.where((t) => DateUtils.isSameDay(t.tanggal.toLocal(), targetDate)).length;
         
         final dateText = DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
         
-        final isFilterActive = _selectedSingleDate != null && !DateUtils.isSameDay(_selectedSingleDate!, systemActiveDate);
+        final isFilterActive = _selectedSingleDate != null && !DateUtils.isSameDay(_selectedSingleDate!, DateTime.now());
 
         return Container(
           margin: const EdgeInsets.all(16),
@@ -489,12 +479,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
           );
         }
 
-        final activeDateStr = dashboardProvider.summary?.systemActiveDate;
-        final systemActiveDate = activeDateStr != null 
-            ? DateTime.parse(activeDateStr) 
-            : DateTime.now();
-
-        final targetDate = _selectedSingleDate ?? systemActiveDate;
+        final targetDate = _selectedSingleDate ?? DateTime.now();
 
         final filteredTransactions = provider.transactions.where((t) {
           // 1. Search Filter
@@ -538,15 +523,11 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   }
 
   void _showFilterSheet() async {
-    final dashboardProvider = context.read<DashboardProvider>();
-    final activeDateStr = dashboardProvider.summary?.systemActiveDate;
-    final systemActiveDate = activeDateStr != null
-        ? DateTime.parse(activeDateStr)
-        : DateTime.now();
+    final targetDate = _selectedSingleDate ?? DateTime.now();
 
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _selectedSingleDate ?? systemActiveDate,
+      initialDate: targetDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now().add(const Duration(days: 365)),
       initialEntryMode: DatePickerEntryMode.calendarOnly,
