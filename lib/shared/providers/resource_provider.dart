@@ -932,7 +932,24 @@ class ResourceProvider with ChangeNotifier {
 
   Future<bool> deleteResource(String type, int id) async {
     _isLoading = true;
+    
+    // OPTIMISTIC UPDATE: Langsung hapus dari state lokal agar UI langsung responsif
+    switch (type) {
+      case 'penjual':
+        _penjuals.removeWhere((e) => e.id == id);
+        break;
+      case 'supir':
+        _supirs.removeWhere((e) => e.id == id);
+        break;
+      case 'pekerja':
+        _pekerjas.removeWhere((e) => e.id == id);
+        break;
+      case 'operasional':
+        _operasionals.removeWhere((e) => e.id == id);
+        break;
+    }
     notifyListeners();
+
     try {
       switch (type) {
         case 'penjual':
@@ -976,6 +993,9 @@ class ResourceProvider with ChangeNotifier {
       } else {
         _errorMessage = e.toString();
       }
+      
+      // Revert optimistic update by re-fetching data if deletion failed
+      await fetchResources(type, refresh: true);
       return false;
     } finally {
       _isLoading = false;
