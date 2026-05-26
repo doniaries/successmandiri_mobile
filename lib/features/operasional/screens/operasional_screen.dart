@@ -64,6 +64,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final provider = context.read<ResourceProvider>();
     final dashboardProvider = context.read<DashboardProvider>();
+    final globalFilter = context.read<GlobalFilterProvider>();
 
     scaffoldMessenger.showSnackBar(
       const SnackBar(
@@ -74,10 +75,16 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     );
 
     try {
+      final targetDate = globalFilter.selectedDate ??
+          (dashboardProvider.summary?.systemActiveDate != null
+              ? DateTime.parse(dashboardProvider.summary!.systemActiveDate)
+              : DateTime.now());
+      final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
+
       await SyncService().syncNow();
       await provider.syncMasterData();
-      await provider.fetchResources('operasional', refresh: true);
-      await dashboardProvider.fetchSummary();
+      await provider.fetchResources('operasional', refresh: true, filters: {'tanggal': dateStr});
+      await dashboardProvider.fetchSummary(filterDate: globalFilter.selectedDate);
 
       if (!mounted) return;
       scaffoldMessenger.showSnackBar(
@@ -104,6 +111,8 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     DateTime systemActiveDate,
     DateTime? filterDate,
   ) {
+    // Dengan filter backend, data sudah difilter sesuai tanggal. Namun, offline queue mungkin mencampur, 
+    // jadi filter lokal tetap dipertahankan.
     final targetDate = filterDate ?? systemActiveDate;
     return allItems.where((item) {
       return DateUtils.isSameDay(item.tanggal.toLocal(), targetDate);
@@ -157,8 +166,12 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     );
 
     if (picked != null) {
+      if (!mounted) return;
       globalFilter.setDate(picked);
       dashboardProvider.fetchSummary(filterDate: picked);
+      
+      final dateStr = DateFormat('yyyy-MM-dd').format(picked);
+      context.read<ResourceProvider>().fetchResources('operasional', refresh: true, filters: {'tanggal': dateStr});
     }
   }
 

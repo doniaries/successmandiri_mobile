@@ -500,12 +500,15 @@ class ResourceRepository {
     }
   }
 
-  Future<dynamic> getOperasionalPaginated({int page = 1}) async {
+  Future<dynamic> getOperasionalPaginated({int page = 1, String? tanggal}) async {
     try {
+      final Map<String, dynamic> params = {'page': page, 'per_page': 10};
+      if (tanggal != null) params['tanggal'] = tanggal;
+
       final response = await _apiClient.dio
           .get(
             ApiConstants.operasional,
-            queryParameters: {'page': page, 'per_page': 10},
+            queryParameters: params,
           )
           .timeout(const Duration(seconds: 15));
 

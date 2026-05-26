@@ -319,7 +319,10 @@ class ResourceProvider with ChangeNotifier {
             response = await _repository.getKendaraanPaginated(page: page);
             break;
           case 'operasional':
-            response = await _repository.getOperasionalPaginated(page: page);
+            response = await _repository.getOperasionalPaginated(
+              page: page,
+              tanggal: filters?['tanggal'],
+            );
             break;
           case 'jurnal_keuangan':
             response = await _repository.getJurnalPaginated(
