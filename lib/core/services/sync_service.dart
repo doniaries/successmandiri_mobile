@@ -14,6 +14,26 @@ import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:sawitappmobile/features/tambah_saldo/providers/tambah_saldo_provider.dart';
 import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_provider.dart';
+import 'package:flutter/foundation.dart';
+
+/// Top-level function for `compute` to run on a background isolate.
+/// This prevents the UI from freezing when encoding thousands of items.
+List<Map<String, dynamic>> _mapDataForDb(List<dynamic> list) {
+  List<Map<String, dynamic>> mappedList = [];
+  for (var item in list) {
+    if (item is Map) {
+      try {
+        if (item['id'] != null) {
+          mappedList.add({
+            'id': item['id'],
+            'data': jsonEncode(item),
+          });
+        }
+      } catch (_) {}
+    }
+  }
+  return mappedList;
+}
 
 class SyncService {
   static final SyncService _instance = SyncService._internal();
@@ -391,27 +411,22 @@ class SyncService {
     List<dynamic> list, {
     bool clear = true,
   }) async {
-    List<Map<String, dynamic>> mappedList = [];
-
-    for (var item in list) {
-      if (item is Map) {
-        try {
-          Map<String, dynamic> mappedData = {
-            'id': item['id'],
-            'data': jsonEncode(item),
-          };
-          if (mappedData['id'] != null) {
-            mappedList.add(mappedData);
-          }
-        } catch (e) {
-          debugPrint('Error mapping data for $table: $e');
-        }
-      }
+    if (list.isEmpty) {
+      if (clear) await _db.clearTable(table);
+      return;
     }
+
+    // Pindahkan komputasi berat (jsonEncode looping) ke Background Isolate
+    // menggunakan fungsi compute bawaan Flutter agar Main Thread (UI) tidak freeze
+    final mappedList = await compute(_mapDataForDb, list);
 
     if (clear) {
       await _db.clearTable(table);
     }
+    
+    // Beri jeda sangat singkat agar UI sempat bernapas (render frame) sebelum akses database
+    await Future.delayed(const Duration(milliseconds: 10));
+
     if (mappedList.isNotEmpty) {
       await _db.batchInsert(table, mappedList);
     }
@@ -459,6 +474,9 @@ class SyncService {
       } catch (e) {
         debugPrint('Error syncing companies: $e');
       }
+
+      // Beri waktu Main Thread untuk bernapas kembali setelah sinkronisasi panjang
+      await Future.delayed(const Duration(milliseconds: 50));
 
       debugPrint('Full sync completed successfully');
     } catch (e) {
