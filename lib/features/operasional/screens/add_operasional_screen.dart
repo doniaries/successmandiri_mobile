@@ -11,7 +11,6 @@ import 'package:sawitappmobile/features/penjual/screens/add_penjual_screen.dart'
 import 'package:sawitappmobile/features/supir/screens/add_supir_screen.dart';
 import 'package:sawitappmobile/features/pekerja/screens/add_pekerja_screen.dart';
 import 'package:sawitappmobile/shared/widgets/searchable_selection_modal.dart';
-import package:sawitappmobile/core/utils/app_time.dart;
 
 class AddOperasionalScreen extends StatefulWidget {
   const AddOperasionalScreen({super.key});
@@ -25,7 +24,7 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
   final _nominalController = TextEditingController();
   final _keteranganController = TextEditingController();
 
-  DateTime _selectedDate = AppTime.now();
+  DateTime _selectedDate = DateTime.now();
   String _selectedOperasional = 'Pengeluaran';
   String? _selectedKategori;
   int? _selectedPihakId;
@@ -122,7 +121,7 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
 
     final success = await provider.addOperasional({
       'tanggal': (() {
-        final now = AppTime.now();
+        final now = DateTime.now();
         final finalDateTime = DateTime(
           _selectedDate.year,
           _selectedDate.month,

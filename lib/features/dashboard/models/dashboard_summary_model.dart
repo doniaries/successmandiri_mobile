@@ -1,6 +1,5 @@
 import 'package:sawitappmobile/features/transaksi_do/models/transaksi_do_model.dart';
 import 'package:sawitappmobile/features/operasional/models/operasional_model.dart';
-import package:sawitappmobile/core/utils/app_time.dart;
 
 class DashboardSummary {
   final double saldo;
@@ -107,7 +106,7 @@ class DashboardSummary {
       jurnalTodayCount: int.tryParse(json['jurnal_today_count']?.toString() ?? '0') ?? 0,
       perusahaanName: json['perusahaan_name']?.toString() ?? '-',
       namaKasir: json['nama_kasir']?.toString() ?? 'Kasir Utama',
-      systemActiveDate: json['system_active_date']?.toString() ?? AppTime.now().toIso8601String().split('T')[0],
+      systemActiveDate: json['system_active_date']?.toString() ?? DateTime.now().toIso8601String().split('T')[0],
       transactions: (json['transactions'] as List?)
               ?.map((e) => TransaksiDo.fromJson(e))
               .toList() ??

@@ -14,7 +14,6 @@ import 'package:sawitappmobile/core/constants/api_constants.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/shared/providers/navigation_provider.dart';
 import 'package:sawitappmobile/shared/providers/global_filter_provider.dart';
-import package:sawitappmobile/core/utils/app_time.dart;
 
 class FinanceJournalScreen extends StatefulWidget {
   const FinanceJournalScreen({super.key});
@@ -71,7 +70,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
         ?.systemActiveDate;
     return activeDateStr != null
         ? DateTime.parse(activeDateStr)
-        : AppTime.now();
+        : DateTime.now();
   }
 
   void _onScroll() {
@@ -523,7 +522,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
       context: context,
       initialDate: globalFilter.selectedDate ?? _getSystemActiveDate(),
       firstDate: DateTime(2020),
-      lastDate: AppTime.now().add(const Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
       initialEntryMode: DatePickerEntryMode.calendarOnly,
       initialDatePickerMode: DatePickerMode.day,
       builder: (context, child) {

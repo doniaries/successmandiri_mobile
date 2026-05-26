@@ -12,7 +12,6 @@ import 'package:sawitappmobile/features/supir/screens/add_supir_screen.dart';
 import 'package:sawitappmobile/features/pekerja/screens/add_pekerja_screen.dart';
 import 'package:sawitappmobile/features/operasional/models/operasional_model.dart';
 import 'package:sawitappmobile/shared/widgets/searchable_selection_modal.dart';
-import package:sawitappmobile/core/utils/app_time.dart;
 
 class EditOperasionalScreen extends StatefulWidget {
   final Operasional operasional;
@@ -128,7 +127,7 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
 
     final success = await provider.updateOperasional(widget.operasional.id, {
       'tanggal': (() {
-        final now = AppTime.now();
+        final now = DateTime.now();
         final finalDateTime = DateTime(
           _selectedDate.year,
           _selectedDate.month,

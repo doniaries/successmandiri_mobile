@@ -16,7 +16,6 @@ import 'package:sawitappmobile/features/supir/screens/add_supir_screen.dart';
 import 'package:sawitappmobile/shared/widgets/balance_validation_modal.dart';
 import 'package:sawitappmobile/features/transaksi_do/models/transaksi_do_model.dart';
 import 'package:sawitappmobile/core/constants/api_constants.dart';
-import package:sawitappmobile/core/utils/app_time.dart;
 
 class EditTransaksiDoScreen extends StatefulWidget {
   final TransaksiDo transaction;
@@ -43,7 +42,7 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
   final _keteranganPembayaranController = TextEditingController();
   final _nomorDoController = TextEditingController();
 
-  DateTime _selectedDate = AppTime.now();
+  DateTime _selectedDate = DateTime.now();
   int? _selectedPenjualId;
   int? _selectedSupirId;
   String _selectedCaraBayar = 'tunai';
@@ -1133,7 +1132,7 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
           .updateTransaction(
             widget.transaction.id,
             tanggal: (() {
-              final now = AppTime.now();
+              final now = DateTime.now();
               final finalDateTime = DateTime(
                 _selectedDate.year,
                 _selectedDate.month,

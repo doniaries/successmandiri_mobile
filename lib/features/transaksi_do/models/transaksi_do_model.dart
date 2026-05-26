@@ -1,4 +1,3 @@
-import package:sawitappmobile/core/utils/app_time.dart;
 class TransaksiDo {
   final int id;
   final String nomor;
@@ -69,7 +68,7 @@ class TransaksiDo {
     return TransaksiDo(
       id: json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
       nomor: json['nomor'] ?? '',
-      tanggal: parsedDate ?? AppTime.now(),
+      tanggal: parsedDate ?? DateTime.now(),
       penjualId: (json['penjual_id'] is int) ? json['penjual_id'] : int.tryParse(json['penjual_id']?.toString() ?? ''),
       supirId: (json['supir_id'] is int) ? json['supir_id'] : int.tryParse(json['supir_id']?.toString() ?? ''),
       noPolisi: json['no_polisi']?.toString(),

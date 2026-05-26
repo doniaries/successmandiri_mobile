@@ -12,7 +12,6 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import package:sawitappmobile/core/utils/app_time.dart;
 
 class TransaksiDoRepository {
   final ApiClient _apiClient;
@@ -348,7 +347,7 @@ class TransaksiDoRepository {
     } catch (e) {
       final dateStr = tanggal != null
           ? tanggal.replaceAll('-', '')
-          : DateFormat('yyyyMMdd').format(AppTime.now());
+          : DateFormat('yyyyMMdd').format(DateTime.now());
 
       try {
         final pendingData = await _syncService.getMergedOfflineData(

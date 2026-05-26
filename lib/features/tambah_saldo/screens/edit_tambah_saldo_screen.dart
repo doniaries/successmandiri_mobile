@@ -8,7 +8,6 @@ import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/features/tambah_saldo/models/tambah_saldo_model.dart';
-import package:sawitappmobile/core/utils/app_time.dart;
 
 class EditTambahSaldoScreen extends StatefulWidget {
   final TambahSaldoModel request;
@@ -217,7 +216,7 @@ class _EditTambahSaldoScreenState extends State<EditTambahSaldoScreen> {
                               widget.request.id,
                               nominal: double.parse(nominalClean),
                               tanggal: (() {
-                                final now = AppTime.now();
+                                final now = DateTime.now();
                                 final finalDateTime = DateTime(
                                   _selectedDate.year,
                                   _selectedDate.month,

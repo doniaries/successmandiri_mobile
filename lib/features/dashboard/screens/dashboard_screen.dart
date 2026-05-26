@@ -34,7 +34,6 @@ import 'package:sawitappmobile/features/supir/models/supir_model.dart';
 
 import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import package:sawitappmobile/core/utils/app_time.dart;
 
 class DashboardScreen extends StatefulWidget {
   final VoidCallback? onAddBalance;
@@ -885,7 +884,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                     'type': 'penjual',
                     'data': p,
                     'id': 'penjual_${p.id}',
-                    'time': p.createdAt ?? AppTime.now(),
+                    'time': p.createdAt ?? DateTime.now(),
                   },
                 ),
                 ...filteredSupirs.map(
@@ -893,7 +892,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                     'type': 'supir',
                     'data': s,
                     'id': 'supir_${s.id}',
-                    'time': s.createdAt ?? AppTime.now(),
+                    'time': s.createdAt ?? DateTime.now(),
                   },
                 ),
               ]..sort(
@@ -1009,7 +1008,7 @@ class DashboardScreenState extends State<DashboardScreen> {
     String titleText = '';
     String bodyText = '';
     double amount = 0;
-    DateTime date = AppTime.now();
+    DateTime date = DateTime.now();
     Widget? detailScreen;
 
     if (isDo) {
@@ -1067,7 +1066,7 @@ class DashboardScreenState extends State<DashboardScreen> {
       titleText = 'Pendaftaran Penjual';
       bodyText = 'Penjual baru: ${data.nama} (${data.telepon ?? 'No Telp -'})';
       amount = 0;
-      date = data.createdAt ?? AppTime.now();
+      date = data.createdAt ?? DateTime.now();
       detailScreen = const ResourceListScreen(
         title: 'Master Penjual',
         resourceType: 'penjual',
@@ -1081,7 +1080,7 @@ class DashboardScreenState extends State<DashboardScreen> {
       titleText = 'Pendaftaran Supir';
       bodyText = 'Supir baru: ${data.nama} (${data.telepon ?? 'No Telp -'})';
       amount = 0;
-      date = data.createdAt ?? AppTime.now();
+      date = data.createdAt ?? DateTime.now();
       detailScreen = const ResourceListScreen(
         title: 'Master Supir',
         resourceType: 'supir',
@@ -2016,9 +2015,9 @@ class _StatCardsState extends State<_StatCards> {
     } else {
       final DateTime? picked = await showDatePicker(
         context: context,
-        initialDate: currentDate ?? AppTime.now(),
+        initialDate: currentDate ?? DateTime.now(),
         firstDate: DateTime(2020),
-        lastDate: AppTime.now().add(const Duration(days: 365)),
+        lastDate: DateTime.now().add(const Duration(days: 365)),
         builder: (context, child) {
           return Theme(
             data: Theme.of(context).copyWith(

@@ -7,7 +7,6 @@ import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
-import package:sawitappmobile/core/utils/app_time.dart;
 
 class PayDebtScreen extends StatefulWidget {
   final String? pihakType;
@@ -24,7 +23,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
   final _nominalController = TextEditingController();
   final _keteranganController = TextEditingController();
 
-  DateTime _selectedDate = AppTime.now();
+  DateTime _selectedDate = DateTime.now();
   String? _selectedPihakType;
   dynamic _selectedPihak;
   int? _selectedPihakId;
@@ -99,7 +98,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
 
     final success = await provider.addOperasional({
       'tanggal': (() {
-        final now = AppTime.now();
+        final now = DateTime.now();
         final finalDateTime = DateTime(
           _selectedDate.year,
           _selectedDate.month,
