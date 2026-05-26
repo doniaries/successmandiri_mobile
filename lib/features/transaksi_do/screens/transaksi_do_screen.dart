@@ -758,7 +758,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Sisi Kiri: Icon + Nomor DO
+                      // Sisi Kiri: Icon + Nomor DO + Cara Bayar
                       Expanded(
                         child: Row(
                           children: [
@@ -776,15 +776,29 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                             ),
                             const SizedBox(width: 10),
                             Expanded(
-                              child: Text(
-                                tx.nomor,
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w800,
-                                  color: Color(0xFF1E293B),
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _getShortDoNumber(tx.nomor),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
+                                      color: Color(0xFF1E293B),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    (tx.caraBayar ?? 'Tunai').toUpperCase(),
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      color: isTunai ? Colors.green[600] : Colors.blue[600],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -922,6 +936,15 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
         ),
       ),
     );
+  String _getShortDoNumber(String nomor) {
+    if (nomor.startsWith('DO-')) {
+      final parts = nomor.split('-');
+      if (parts.length >= 4) {
+        // format: DO-P3-20260525-001 -> DO-001
+        return 'DO-${parts.last}';
+      }
+    }
+    return nomor;
   }
 }
 
