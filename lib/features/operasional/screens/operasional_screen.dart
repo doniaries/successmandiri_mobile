@@ -21,6 +21,7 @@ class OperasionalScreen extends StatefulWidget {
 
 class _OperasionalScreenState extends State<OperasionalScreen> {
   final ScrollController _scrollController = ScrollController();
+  String _currentFilter = 'Semua';
 
   @override
   void initState() {
@@ -63,7 +64,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final provider = context.read<ResourceProvider>();
     final dashboardProvider = context.read<DashboardProvider>();
-    
+
     scaffoldMessenger.showSnackBar(
       const SnackBar(
         content: Text('Memulai Sinkronisasi Operasional...'),
@@ -71,23 +72,13 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
         behavior: SnackBarBehavior.floating,
       ),
     );
-    
+
     try {
-      // 1. Process offline queue
       await SyncService().syncNow();
-      
-      // 2. Fetch latest master data from web
       await provider.syncMasterData();
-      
-      // 3. Fetch latest operational data
-      await provider.fetchResources(
-        'operasional',
-        refresh: true,
-      );
-      
-      // 4. Fetch latest dashboard summary
+      await provider.fetchResources('operasional', refresh: true);
       await dashboardProvider.fetchSummary();
-      
+
       if (!mounted) return;
       scaffoldMessenger.showSnackBar(
         const SnackBar(
@@ -108,15 +99,24 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     }
   }
 
-  List<Operasional> _getFilteredDateItems(List<Operasional> allItems, DateTime systemActiveDate, DateTime? filterDate) {
+  List<Operasional> _getFilteredDateItems(
+    List<Operasional> allItems,
+    DateTime systemActiveDate,
+    DateTime? filterDate,
+  ) {
     final targetDate = filterDate ?? systemActiveDate;
     return allItems.where((item) {
       return DateUtils.isSameDay(item.tanggal.toLocal(), targetDate);
     }).toList();
   }
 
-  List<Operasional> _getFilteredItems(List<Operasional> allItems, DateTime systemActiveDate, DateTime? filterDate) {
-    List<Operasional> items = _getFilteredDateItems(allItems, systemActiveDate, filterDate);
+  List<Operasional> _getFilteredItems(
+    List<Operasional> allItems,
+    DateTime systemActiveDate,
+    DateTime? filterDate,
+  ) {
+    List<Operasional> items =
+        _getFilteredDateItems(allItems, systemActiveDate, filterDate);
     if (_currentFilter != 'Semua') {
       items = items
           .where(
@@ -167,7 +167,9 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       body: RefreshIndicator(
-        notificationPredicate: (notification) => !SyncService().isOffline && defaultScrollNotificationPredicate(notification),
+        notificationPredicate: (notification) =>
+            !SyncService().isOffline &&
+            defaultScrollNotificationPredicate(notification),
         onRefresh: _refreshData,
         color: const Color(0xFF01579B),
         child: CustomScrollView(
@@ -175,8 +177,8 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             _buildAppBar(),
-
             _buildSummaryHeader(),
+            SliverToBoxAdapter(child: _buildFilterChips()),
             _buildListSection(),
           ],
         ),
@@ -223,195 +225,175 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     );
   }
 
+  /// Widget summary — pemasukan & pengeluaran dihitung dari data operasional
+  /// lokal yang difilter berdasarkan tanggal aktif (bukan dari dashboard stats).
   Widget _buildSummaryHeader() {
     return SliverToBoxAdapter(
-      child: Column(
-        children: [
-          Consumer3<ResourceProvider, DashboardProvider, GlobalFilterProvider>(
-            builder: (context, resourceProvider, dashboardProvider, globalFilter, child) {
-              final activeDateStr = dashboardProvider.summary?.systemActiveDate;
-              final systemActiveDate = activeDateStr != null
-                  ? DateTime.parse(activeDateStr)
-                  : DateTime.now();
+      child: Consumer2<ResourceProvider, GlobalFilterProvider>(
+        builder: (context, resourceProvider, globalFilter, _) {
+          final dashboardProvider = context.read<DashboardProvider>();
+          final activeDateStr = dashboardProvider.summary?.systemActiveDate;
+          final systemActiveDate = activeDateStr != null
+              ? DateTime.parse(activeDateStr)
+              : DateTime.now();
 
-              final filteredDateItems = _getFilteredDateItems(resourceProvider.operasionals, systemActiveDate, globalFilter.selectedDate);
-              double totalPemasukan = 0;
-              double totalPengeluaran = 0;
-              for (var item in filteredDateItems) {
-                if (item.operasional.toLowerCase() == 'pemasukan') {
-                  totalPemasukan += item.nominal;
-                } else if (item.operasional.toLowerCase() == 'pengeluaran') {
-                  totalPengeluaran += item.nominal;
-                }
-              }
+          final targetDate = globalFilter.selectedDate ?? systemActiveDate;
+          final dateText =
+              DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
+          final isFilterActive = globalFilter.selectedDate != null &&
+              !DateUtils.isSameDay(
+                  globalFilter.selectedDate!, systemActiveDate);
 
-              final targetDate = globalFilter.selectedDate ?? systemActiveDate;
-              final dateText = DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
-              
-              final isFilterActive = globalFilter.selectedDate != null && !DateUtils.isSameDay(globalFilter.selectedDate!, systemActiveDate);
+          // Hitung dari data operasional lokal filtered by tanggal
+          final filteredDateItems = _getFilteredDateItems(
+            resourceProvider.operasionals,
+            systemActiveDate,
+            globalFilter.selectedDate,
+          );
+          double totalPemasukan = 0;
+          double totalPengeluaran = 0;
+          for (final item in filteredDateItems) {
+            if (item.operasional.toLowerCase() == 'pemasukan') {
+              totalPemasukan += item.nominal;
+            } else if (item.operasional.toLowerCase() == 'pengeluaran') {
+              totalPengeluaran += item.nominal;
+            }
+          }
 
-              return Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-                margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF01579B), Color(0xFF0288D1)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF01579B).withValues(alpha: 0.3),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+          return Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+            margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF01579B), Color(0xFF0288D1)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF01579B).withValues(alpha: 0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Label + tombol filter tanggal
+                Row(
                   children: [
-                    Text(
-                      isFilterActive ? 'Filter Operasional' : 'Ringkasan Operasional',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Text(
+                        isFilterActive
+                            ? 'Filter Operasional'
+                            : 'Ringkasan Operasional',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text(
-                                'Tanggal Transaksi',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              InkWell(
-                                onTap: _showFilterSheet,
-                                borderRadius: BorderRadius.circular(12),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: Colors.white.withValues(alpha: 0.25),
-                                      width: 0.5,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(
-                                        Icons.calendar_month_rounded,
-                                        color: Colors.white,
-                                        size: 16,
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Flexible(
-                                        child: FittedBox(
-                                          fit: BoxFit.scaleDown,
-                                          child: Text(
-                                            dateText,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w900,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      const Icon(
-                                        Icons.arrow_drop_down_rounded,
-                                        color: Colors.white,
-                                        size: 18,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
+                    InkWell(
+                      onTap: _showFilterSheet,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.25),
+                            width: 0.5,
                           ),
                         ),
-                        Container(
-                          height: 40,
-                          width: 1,
-                          color: Colors.white24,
-                          margin: const EdgeInsets.symmetric(horizontal: 16),
-                        ),
-                        Expanded(
-                          flex: 2,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text(
-                                'Total Transaksi',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.calendar_month_rounded,
+                                color: Colors.white, size: 14),
+                            const SizedBox(width: 6),
+                            Text(
+                              dateText,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
                               ),
-                              const SizedBox(height: 6),
-                              FittedBox(
-                                fit: BoxFit.scaleDown,
-                                child: Text(
-                                  '${filteredDateItems.length}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(Icons.arrow_drop_down_rounded,
+                                color: Colors.white, size: 16),
+                          ],
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildSummaryItemInsideCard(
-                            'Pemasukan',
-                            totalPemasukan,
-                            Icons.trending_up_rounded,
-                            Colors.greenAccent,
-                          ),
-                        ),
-                        Container(width: 1, height: 40, color: Colors.white24),
-                        Expanded(
-                          child: _buildSummaryItemInsideCard(
-                            'Pengeluaran',
-                            totalPengeluaran,
-                            Icons.trending_down_rounded,
-                            Colors.orangeAccent,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
-              );
-            },
-          ),
-          _buildFilterChips(),
-        ],
+                const SizedBox(height: 16),
+                // Pemasukan & Pengeluaran dari data operasional lokal
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildStatItem(
+                        'Pemasukan',
+                        totalPemasukan,
+                        Icons.trending_up_rounded,
+                        Colors.greenAccent,
+                      ),
+                    ),
+                    Container(width: 1, height: 40, color: Colors.white24),
+                    Expanded(
+                      child: _buildStatItem(
+                        'Pengeluaran',
+                        totalPengeluaran,
+                        Icons.trending_down_rounded,
+                        Colors.orangeAccent,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
       ),
+    );
+  }
+
+  Widget _buildStatItem(
+    String label,
+    double amount,
+    IconData icon,
+    Color color,
+  ) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 16),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          CurrencyFormatter.formatRupiah(amount),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        ),
+      ],
     );
   }
 
@@ -430,23 +412,18 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     );
   }
 
-  String _currentFilter = 'Semua';
-
   Widget _buildChip(String label) {
-    bool isSelected = _currentFilter == label;
+    final bool isSelected = _currentFilter == label;
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _currentFilter = label;
-        });
-      },
+      onTap: () => setState(() => _currentFilter = label),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF01579B) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? const Color(0xFF01579B) : Colors.grey[300]!,
+            color:
+                isSelected ? const Color(0xFF01579B) : Colors.grey[300]!,
           ),
           boxShadow: isSelected
               ? [
@@ -470,8 +447,6 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     );
   }
 
-
-
   Widget _buildListSection() {
     return Consumer3<ResourceProvider, DashboardProvider, GlobalFilterProvider>(
       builder: (context, provider, dashboardProvider, globalFilter, child) {
@@ -489,7 +464,11 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
             ? DateTime.parse(activeDateStr)
             : DateTime.now();
 
-        final items = _getFilteredItems(provider.operasionals, systemActiveDate, globalFilter.selectedDate);
+        final items = _getFilteredItems(
+          provider.operasionals,
+          systemActiveDate,
+          globalFilter.selectedDate,
+        );
 
         if (items.isEmpty) {
           return SliverFillRemaining(
@@ -529,8 +508,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                 }
                 return null;
               },
-              childCount:
-                  items.length +
+              childCount: items.length +
                   (provider.isFetchingMoreFor('operasional') ? 1 : 0),
             ),
           ),
@@ -541,9 +519,8 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
 
   Widget _buildOperasionalItem(Operasional item) {
     final isPengeluaran = item.operasional.toLowerCase() == 'pengeluaran';
-    final color = isPengeluaran
-        ? const Color(0xFFC62828)
-        : const Color(0xFF2E7D32);
+    final color =
+        isPengeluaran ? const Color(0xFFC62828) : const Color(0xFF2E7D32);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -564,7 +541,8 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => OperasionalDetailScreen(operasional: item),
+              builder: (context) =>
+                  OperasionalDetailScreen(operasional: item),
             ),
           ),
           borderRadius: BorderRadius.circular(16),
@@ -601,20 +579,26 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        item.namaPihak != null && item.namaPihak!.isNotEmpty && item.namaPihak != '-'
-                            ? (item.keterangan != null && item.keterangan!.isNotEmpty && item.keterangan != '-'
+                        item.namaPihak != null &&
+                                item.namaPihak!.isNotEmpty &&
+                                item.namaPihak != '-'
+                            ? (item.keterangan != null &&
+                                    item.keterangan!.isNotEmpty &&
+                                    item.keterangan != '-'
                                 ? '${item.namaPihak} (${item.keterangan})'
                                 : item.namaPihak!)
                             : (item.keterangan ?? '-'),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                        style: TextStyle(
+                            fontSize: 13, color: Colors.grey[600]),
                       ),
-
                       const SizedBox(height: 4),
                       Text(
-                        DateFormat('dd MMM yyyy • HH:mm', 'id_ID').format(item.tanggal),
-                        style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+                        DateFormat('dd MMM yyyy • HH:mm', 'id_ID')
+                            .format(item.tanggal),
+                        style: TextStyle(
+                            fontSize: 11, color: Colors.grey[400]),
                       ),
                     ],
                   ),
@@ -643,38 +627,6 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
         width: double.infinity,
         borderRadius: 16,
       ),
-    );
-  }
-
-  Widget _buildSummaryItemInsideCard(
-    String label,
-    double amount,
-    IconData icon,
-    Color color,
-  ) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 16),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: const TextStyle(color: Colors.white70, fontSize: 12),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          CurrencyFormatter.formatRupiah(amount),
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-          ),
-        ),
-      ],
     );
   }
 }

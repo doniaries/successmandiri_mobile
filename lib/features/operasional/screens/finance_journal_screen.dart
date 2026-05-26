@@ -196,7 +196,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
             children: [
               isInitialLoading
                   ? _buildSkeletonHeader()
-                  : _buildSummaryHeader(provider, globalFilter.selectedDate),
+                  : _buildSummaryHeader(globalFilter.selectedDate),
               _buildFilterChips(),
               Expanded(
                 child: RefreshIndicator(
@@ -239,271 +239,122 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     );
   }
 
-  Widget _buildSummaryHeader(ResourceProvider provider, DateTime? selectedDate) {
+  Widget _buildSummaryHeader(DateTime? selectedDate) {
     final targetDate = selectedDate ?? _getSystemActiveDate();
     final systemActiveDate = _getSystemActiveDate();
-
-    // Hitung statistik berdasarkan tanggal aktif menggunakan ringkasan data dari server
-    final double displayIn = provider.totalPemasukan;
-    final double displayOut = provider.totalPengeluaran;
-    final int filterCount = provider.jurnalCount;
-
-    final isFilterActive = selectedDate != null && !DateUtils.isSameDay(selectedDate, systemActiveDate);
+    final isFilterActive = selectedDate != null &&
+        !DateUtils.isSameDay(selectedDate, systemActiveDate);
     final dateText = DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
     final labelSuffix = DateFormat('d MMM', 'id_ID').format(targetDate);
 
-    if (isFilterActive) {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-        margin: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF01579B), Color(0xFF0288D1)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF01579B).withValues(alpha: 0.3),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Filter Laporan',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'Tanggal Laporan',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      InkWell(
-                        onTap: _showFilterSheet,
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.25),
-                              width: 0.5,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.calendar_month_rounded,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                              const SizedBox(width: 6),
-                              Flexible(
-                                child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: Text(
-                                    dateText,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w900,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              const Icon(
-                                Icons.arrow_drop_down_rounded,
-                                color: Colors.white,
-                                size: 18,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  height: 40,
-                  width: 1,
-                  color: Colors.white24,
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'Total Transaksi',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          '$filterCount',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildSummaryItem(
-                    'Masuk ($labelSuffix)',
-                    displayIn,
-                    Icons.arrow_downward_rounded,
-                    Colors.greenAccent,
-                  ),
-                ),
-                Container(width: 1, height: 40, color: Colors.white24),
-                Expanded(
-                  child: _buildSummaryItem(
-                    'Keluar ($labelSuffix)',
-                    displayOut,
-                    Icons.arrow_upward_rounded,
-                    Colors.orangeAccent,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    }
+    return Consumer<DashboardProvider>(
+      builder: (context, dashboardProvider, _) {
+        // Data pemasukan/pengeluaran dari dashboard stats — sama persis dengan widget dashboard
+        final double displayIn =
+            dashboardProvider.summary?.stats.pemasukan.today.total ?? 0.0;
+        final double displayOut =
+            dashboardProvider.summary?.stats.pengeluaran.today.total ?? 0.0;
+        final double currentSaldo =
+            dashboardProvider.summary?.saldo ?? 0.0;
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF01579B), Color(0xFF0288D1)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF01579B).withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          const Text(
-            'Total Saldo Kas',
-            style: TextStyle(color: Colors.white70, fontSize: 13),
-          ),
-          const SizedBox(height: 4),
-          Consumer<DashboardProvider>(
-            builder: (context, dashboardProv, child) {
-              final double currentSaldo = dashboardProv.summary?.saldo ?? 0.0;
-              return Text(
-                CurrencyFormatter.formatRupiah(currentSaldo),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 10),
-          InkWell(
-            onTap: _showFilterSheet,
-            borderRadius: BorderRadius.circular(20),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white30, width: 0.5),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.calendar_month_rounded, color: Colors.white, size: 14),
-                  const SizedBox(width: 6),
-                  Text(
-                    DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(Icons.arrow_drop_down_rounded, color: Colors.white, size: 16),
-                ],
-              ),
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          margin: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF01579B), Color(0xFF0288D1)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: _buildSummaryItem(
-                  'Masuk ($labelSuffix)',
-                  displayIn,
-                  Icons.arrow_downward_rounded,
-                  Colors.greenAccent,
-                ),
-              ),
-              Container(width: 1, height: 40, color: Colors.white24),
-              Expanded(
-                child: _buildSummaryItem(
-                  'Keluar ($labelSuffix)',
-                  displayOut,
-                  Icons.arrow_upward_rounded,
-                  Colors.orangeAccent,
-                ),
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF01579B).withValues(alpha: 0.3),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
-        ],
-      ),
+          child: Column(
+            children: [
+              // Saldo Kas
+              Text(
+                isFilterActive ? 'Laporan Keuangan' : 'Total Saldo Kas',
+                style: const TextStyle(color: Colors.white70, fontSize: 13),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                isFilterActive
+                    ? dateText
+                    : CurrencyFormatter.formatRupiah(currentSaldo),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
+              InkWell(
+                onTap: _showFilterSheet,
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white30, width: 0.5),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.calendar_month_rounded,
+                          color: Colors.white, size: 14),
+                      const SizedBox(width: 6),
+                      Text(
+                        DateFormat('dd MMMM yyyy', 'id_ID')
+                            .format(targetDate),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(Icons.arrow_drop_down_rounded,
+                          color: Colors.white, size: 16),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Pemasukan & Pengeluaran dari dashboard stats
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildSummaryItem(
+                      'Masuk ($labelSuffix)',
+                      displayIn,
+                      Icons.arrow_downward_rounded,
+                      Colors.greenAccent,
+                    ),
+                  ),
+                  Container(width: 1, height: 40, color: Colors.white24),
+                  Expanded(
+                    child: _buildSummaryItem(
+                      'Keluar ($labelSuffix)',
+                      displayOut,
+                      Icons.arrow_upward_rounded,
+                      Colors.orangeAccent,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

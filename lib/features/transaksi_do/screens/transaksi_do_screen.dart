@@ -153,15 +153,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             _buildAppBar(),
-            SliverToBoxAdapter(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-
-                  _buildSummaryHeader(),
-                ],
-              ),
-            ),
+            SliverToBoxAdapter(child: _buildSummaryHeader()),
             _buildPendingSyncBanner(),
             _buildTransactionList(),
             const SliverToBoxAdapter(child: SizedBox(height: 100)),
@@ -268,24 +260,38 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
 
 
   Widget _buildSummaryHeader() {
-    return Consumer3<DashboardProvider, TransaksiDoProvider, GlobalFilterProvider>(
-      builder: (context, dashboardProvider, txProvider, globalFilter, _) {
-        final transactions = txProvider.transactions;
+    return Consumer3<TransaksiDoProvider, GlobalFilterProvider, ResourceProvider>(
+      builder: (context, txProvider, globalFilter, resourceProvider, _) {
+        final dashboardProvider = context.read<DashboardProvider>();
         final activeDateStr = dashboardProvider.summary?.systemActiveDate;
-        final systemActiveDate = activeDateStr != null 
-            ? DateTime.parse(activeDateStr) 
+        final systemActiveDate = activeDateStr != null
+            ? DateTime.parse(activeDateStr)
             : DateTime.now();
-        
         final targetDate = globalFilter.selectedDate ?? systemActiveDate;
-        final activeCount = transactions.where((t) => DateUtils.isSameDay(t.tanggal.toLocal(), targetDate)).length;
-        
         final dateText = DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
-        
-        final isFilterActive = globalFilter.selectedDate != null && !DateUtils.isSameDay(globalFilter.selectedDate!, systemActiveDate);
+        final isFilterActive = globalFilter.selectedDate != null &&
+            !DateUtils.isSameDay(globalFilter.selectedDate!, systemActiveDate);
+
+        // Hitung dari transaksi DO yang sudah difilter tanggal
+        final filteredTx = txProvider.transactions.where(
+          (t) => DateUtils.isSameDay(t.tanggal.toLocal(), targetDate),
+        ).toList();
+        final totalTonase = filteredTx.fold<double>(
+          0, (sum, t) => sum + t.tonase);
+        final totalNilaiDo = filteredTx.fold<double>(
+          0, (sum, t) => sum + t.subTotal);
+
+        // Hitung pengeluaran operasional dari data lokal filtered by tanggal
+        final filteredOps = resourceProvider.operasionals.where(
+          (o) => DateUtils.isSameDay(o.tanggal.toLocal(), targetDate) &&
+              o.operasional.toLowerCase() == 'pengeluaran',
+        ).toList();
+        final totalPengeluaranOps = filteredOps.fold<double>(
+          0, (sum, o) => sum + o.nominal);
 
         return Container(
-          margin: const EdgeInsets.all(16),
-          padding: const EdgeInsets.all(24),
+          margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [Color(0xFF0D47A1), Color(0xFF1976D2)],
@@ -304,126 +310,89 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Baris atas: label + filter tanggal
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    isFilterActive ? 'Filter Transaksi' : 'Ringkasan Transaksi',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                  const Icon(Icons.local_shipping_rounded,
+                      color: Colors.white70, size: 16),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      isFilterActive
+                          ? 'Filter Transaksi DO'
+                          : 'Ringkasan DO Hari Ini',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
+                  InkWell(
+                    onTap: _showFilterSheet,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.25),
+                          width: 0.5,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.calendar_month_rounded,
+                              color: Colors.white, size: 13),
+                          const SizedBox(width: 5),
+                          Text(
+                            dateText,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(width: 3),
+                          const Icon(Icons.arrow_drop_down_rounded,
+                              color: Colors.white, size: 15),
+                        ],
+                      ),
                     ),
-                    child: const Icon(Icons.local_shipping_rounded, color: Colors.white, size: 20),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
+              // Baris stats: Tonase | Nilai DO | Pengeluaran Ops
               Row(
                 children: [
                   Expanded(
-                    flex: 3,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          'Tanggal Transaksi',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        InkWell(
-                          onTap: _showFilterSheet,
-                          borderRadius: BorderRadius.circular(12),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.25),
-                                width: 0.5,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.calendar_month_rounded,
-                                  color: Colors.white,
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 6),
-                                Flexible(
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    child: Text(
-                                      dateText,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w900,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                const Icon(
-                                  Icons.arrow_drop_down_rounded,
-                                  color: Colors.white,
-                                  size: 18,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
+                    child: _buildDoStatItem(
+                      'Total Tonase',
+                      '${totalTonase.toStringAsFixed(0)} kg',
+                      Icons.scale_rounded,
+                      Colors.lightBlueAccent,
                     ),
                   ),
-                  Container(
-                    height: 40,
-                    width: 1,
-                    color: Colors.white24,
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                  ),
+                  Container(width: 1, height: 40, color: Colors.white24),
                   Expanded(
-                    flex: 2,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          'Total Transaksi',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            '$activeCount',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ),
-                      ],
+                    child: _buildDoStatItem(
+                      'Nilai DO',
+                      CurrencyFormatter.formatRupiah(totalNilaiDo),
+                      Icons.attach_money_rounded,
+                      Colors.greenAccent,
+                    ),
+                  ),
+                  Container(width: 1, height: 40, color: Colors.white24),
+                  Expanded(
+                    child: _buildDoStatItem(
+                      'Pengeluaran',
+                      CurrencyFormatter.formatRupiah(totalPengeluaranOps),
+                      Icons.trending_down_rounded,
+                      Colors.orangeAccent,
                     ),
                   ),
                 ],
@@ -434,6 +403,41 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
       },
     );
   }
+
+  Widget _buildDoStatItem(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return Column(
+      children: [
+        Icon(icon, color: color, size: 18),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white70,
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 2),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
 
   Widget _buildTransactionList() {
     return Consumer3<TransaksiDoProvider, DashboardProvider, GlobalFilterProvider>(
