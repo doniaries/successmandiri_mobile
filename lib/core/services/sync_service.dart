@@ -123,8 +123,11 @@ class SyncService {
   /// Ini memastikan item yang baru ditambahkan secara offline langsung muncul di daftar saat offline.
   Future<List<Map<String, dynamic>>> getMergedOfflineData(
     String table,
-    String endpoint,
-  ) async {
+    String endpoint, {
+    String? where,
+    List<dynamic>? whereArgs,
+    String? orderBy,
+  }) async {
     try {
       final queue = await _db.query('offline_queue');
       final deletedIds = <int>{};
@@ -143,7 +146,7 @@ class SyncService {
       final List<Map<String, dynamic>> list = [];
 
       try {
-        final localData = await _db.query(table);
+        final localData = await _db.query(table, where: where, whereArgs: whereArgs, orderBy: orderBy);
         for (var e in localData) {
           final id = e['id'];
           if (id != null && id is int && id <= 0) {

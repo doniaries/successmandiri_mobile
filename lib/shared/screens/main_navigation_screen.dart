@@ -159,7 +159,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
               children: [
                 _buildNavItem(0, Icons.grid_view_rounded, 'Beranda', selectedIndex),
                 _buildNavItem(1, Icons.local_shipping_rounded, 'Transaksi DO', selectedIndex),
-                const SizedBox(width: 80), // Ruang seimbang untuk tombol tengah
+                const SizedBox(width: 110), // Ruang seimbang untuk tombol tengah yang lebih lebar
                 _buildNavItem(2, Icons.receipt_long_rounded, 'Operasional', selectedIndex),
                 _buildNavItem(3, Icons.account_balance_wallet_rounded, 'Laporan', selectedIndex),
               ],
@@ -168,7 +168,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
           // Large Centered "DO" Button
           Positioned(
-            top: -15,
+            top: 22,
             child: GestureDetector(
               onTap: () {
                 _onItemTapped(1); // Go to DO List
@@ -178,40 +178,38 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       builder: (context) => const AddTransaksiDoScreen()),
                 );
               },
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF01579B),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 3),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF01579B).withValues(alpha: 0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF01579B),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF01579B).withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
                     ),
-                    child: const Icon(
+                  ],
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
                       Icons.add_rounded,
                       color: Colors.white,
-                      size: 28,
+                      size: 18,
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Tambah DO',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF01579B),
+                    SizedBox(width: 4),
+                    Text(
+                      'Tambah DO',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

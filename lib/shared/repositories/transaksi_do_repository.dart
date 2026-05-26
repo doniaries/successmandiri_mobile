@@ -96,9 +96,19 @@ class TransaksiDoRepository {
 
   Future<List<dynamic>> getLocalTransaksiDo({String? tanggal}) async {
     try {
+      String? whereClause;
+      List<dynamic>? whereArgs;
+      if (tanggal != null) {
+        whereClause = 'tanggal LIKE ?';
+        whereArgs = ['$tanggal%'];
+      }
+
       final pendingData = await _syncService.getMergedOfflineData(
         'transaksi_do',
         ApiConstants.transaksiDo,
+        where: whereClause,
+        whereArgs: whereArgs,
+        orderBy: 'id DESC',
       );
 
       final filteredPending = pendingData.where((item) {
@@ -129,10 +139,11 @@ class TransaksiDoRepository {
           .timeout(const Duration(seconds: 15));
 
       final data = _extractListData(response.data);
-      if (page == 1) {
-        // Jika sedang filter tanggal, jangan hapus seluruh tabel 'transaksi_do'
-        await _syncService.cacheData('transaksi_do', data, clear: tanggal == null);
+      
+      // Cache data for all pages, but only clear table on page 1 without date filter
+      await _syncService.cacheData('transaksi_do', data, clear: (page == 1 && tanggal == null));
 
+      if (page == 1) {
         // Ambil data offline MURNI (yang belum di-sync / belum ada ID server positif)
         final offlineQueue = await _syncService.getOfflineQueueForEndpoint(
           ApiConstants.transaksiDo,
@@ -196,9 +207,19 @@ class TransaksiDoRepository {
       return response.data;
     } catch (e) {
       try {
+        String? whereClause;
+        List<dynamic>? whereArgs;
+        if (tanggal != null) {
+          whereClause = 'tanggal LIKE ?';
+          whereArgs = ['$tanggal%'];
+        }
+
         final pendingData = await _syncService.getMergedOfflineData(
           'transaksi_do',
           ApiConstants.transaksiDo,
+          where: whereClause,
+          whereArgs: whereArgs,
+          orderBy: 'id DESC',
         );
 
         final filteredPending = pendingData.where((item) {
@@ -350,9 +371,13 @@ class TransaksiDoRepository {
           : DateFormat('yyyyMMdd').format(DateTime.now());
 
       try {
+        final queryTanggal = tanggal ?? DateFormat('yyyy-MM-dd').format(DateTime.now());
+        
         final pendingData = await _syncService.getMergedOfflineData(
           'transaksi_do',
           ApiConstants.transaksiDo,
+          where: 'tanggal LIKE ?',
+          whereArgs: ['$queryTanggal%'],
         );
 
         int maxSeq = 0;

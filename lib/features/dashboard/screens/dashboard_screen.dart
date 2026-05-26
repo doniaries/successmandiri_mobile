@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:sawitappmobile/core/constants/api_constants.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -690,7 +691,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                           ),
                           child: company['logo_url'] != null
                               ? CachedNetworkImage(
-                                  imageUrl: company['logo_url'],
+                                  imageUrl: ApiConstants.normalizeUrl(company['logo_url']) ?? '',
                                   width: 24,
                                   height: 24,
                                   fit: BoxFit.contain,
@@ -1891,7 +1892,7 @@ class _CompanySelector extends StatelessWidget {
             if (logo != null)
               ClipOval(
                 child: CachedNetworkImage(
-                  imageUrl: logo,
+                  imageUrl: ApiConstants.normalizeUrl(logo) ?? '',
                   width: 28,
                   height: 28,
                   fit: BoxFit.contain,

@@ -89,10 +89,10 @@ class DatabaseService {
     return await db!.insert(table, data, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  Future<List<Map<String, dynamic>>> query(String table) async {
+  Future<List<Map<String, dynamic>>> query(String table, {String? where, List<dynamic>? whereArgs, String? orderBy, int? limit}) async {
     if (kIsWeb) return [];
     final db = await database;
-    return await db!.query(table);
+    return await db!.query(table, where: where, whereArgs: whereArgs, orderBy: orderBy, limit: limit);
   }
 
   Future<int> deleteQueue(int id) async {

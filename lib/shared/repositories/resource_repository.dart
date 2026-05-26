@@ -514,22 +514,64 @@ class ResourceRepository {
 
       if (page == 1) {
         final List<dynamic> listData = _extractListData(response.data);
-        await syncService.cacheData('operasional', listData, clear: false);
-        final pendingData = await syncService.getMergedOfflineData('operasional', ApiConstants.operasional);
+        
+        await syncService.cacheData('operasional', listData, clear: (tanggal == null));
+        
+        String? whereClause;
+        List<dynamic>? whereArgs;
+        if (tanggal != null) {
+          whereClause = 'tanggal LIKE ?';
+          whereArgs = ['$tanggal%'];
+        }
+        
+        final pendingData = await syncService.getMergedOfflineData(
+          'operasional', 
+          ApiConstants.operasional,
+          where: whereClause,
+          whereArgs: whereArgs,
+          orderBy: 'id DESC',
+        );
+        
+        final filteredPending = pendingData.where((item) {
+          if (tanggal != null) {
+            final itemTanggal = item['tanggal']?.toString() ?? '';
+            if (!itemTanggal.startsWith(tanggal)) return false;
+          }
+          return true;
+        }).toList();
+
         if (response.data is Map) {
-          response.data['data'] = pendingData;
+          response.data['data'] = filteredPending;
         }
       }
 
       return response.data;
     } catch (e) {
       try {
+        String? whereClause;
+        List<dynamic>? whereArgs;
+        if (tanggal != null) {
+          whereClause = 'tanggal LIKE ?';
+          whereArgs = ['$tanggal%'];
+        }
         final pendingData = await syncService.getMergedOfflineData(
           'operasional',
           ApiConstants.operasional,
+          where: whereClause,
+          whereArgs: whereArgs,
+          orderBy: 'id DESC',
         );
+        
+        final filteredPending = pendingData.where((item) {
+          if (tanggal != null) {
+            final itemTanggal = item['tanggal']?.toString() ?? '';
+            if (!itemTanggal.startsWith(tanggal)) return false;
+          }
+          return true;
+        }).toList();
+
         return {
-          'data': pendingData,
+          'data': filteredPending,
           'current_page': 1,
           'last_page': 1,
         };

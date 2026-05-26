@@ -936,6 +936,8 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
         ),
       ),
     );
+  }
+
   String _getShortDoNumber(String nomor) {
     if (nomor.startsWith('DO-')) {
       final parts = nomor.split('-');
