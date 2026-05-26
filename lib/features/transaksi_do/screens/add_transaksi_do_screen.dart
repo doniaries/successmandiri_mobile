@@ -12,6 +12,7 @@ import 'package:sawitappmobile/shared/widgets/searchable_selection_modal.dart';
 import 'package:sawitappmobile/features/penjual/screens/add_penjual_screen.dart';
 import 'package:sawitappmobile/features/supir/screens/add_supir_screen.dart';
 import 'package:sawitappmobile/shared/widgets/balance_validation_modal.dart';
+import package:sawitappmobile/core/utils/app_time.dart;
 
 class AddTransaksiDoScreen extends StatefulWidget {
   const AddTransaksiDoScreen({super.key});
@@ -32,7 +33,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
   final _nominalTransferController = TextEditingController();
   final _nomorDoController = TextEditingController(text: 'OTOMATIS (SISTEM)');
 
-  DateTime _selectedDate = DateTime.now();
+  DateTime _selectedDate = AppTime.now();
   int? _selectedPenjualId;
   int? _selectedSupirId;
   String _selectedCaraBayar = 'tunai';
@@ -942,7 +943,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
       final success = await provider
           .createTransaction(
             tanggal: (() {
-              final now = DateTime.now();
+              final now = AppTime.now();
               final finalDateTime = DateTime(
                 _selectedDate.year,
                 _selectedDate.month,

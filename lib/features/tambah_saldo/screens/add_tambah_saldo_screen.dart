@@ -7,6 +7,7 @@ import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
+import package:sawitappmobile/core/utils/app_time.dart;
 
 class AddTambahSaldoScreen extends StatefulWidget {
   const AddTambahSaldoScreen({super.key});
@@ -19,7 +20,7 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nominalController = TextEditingController();
   final _keteranganController = TextEditingController();
-  DateTime _selectedDate = DateTime.now();
+  DateTime _selectedDate = AppTime.now();
 
   @override
   void initState() {
@@ -30,7 +31,7 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
       try {
         _selectedDate = DateTime.parse(activeDateStr);
       } catch (_) {
-        _selectedDate = DateTime.now();
+        _selectedDate = AppTime.now();
       }
     }
   }
@@ -216,7 +217,7 @@ class _AddTambahSaldoScreenState extends State<AddTambahSaldoScreen> {
                             .createRequest(
                               nominal: double.parse(nominalClean),
                               tanggal: (() {
-                                final now = DateTime.now();
+                                final now = AppTime.now();
                                 final finalDateTime = DateTime(
                                   _selectedDate.year,
                                   _selectedDate.month,

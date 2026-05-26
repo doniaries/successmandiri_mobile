@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import package:sawitappmobile/core/utils/app_time.dart;
 
 class LiveDateTimeWidget extends StatefulWidget {
   final TextStyle? style;
@@ -31,11 +32,11 @@ class _LiveDateTimeWidgetState extends State<LiveDateTimeWidget> {
   @override
   void initState() {
     super.initState();
-    _currentTime = DateTime.now();
+    _currentTime = AppTime.now();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
         setState(() {
-          _currentTime = DateTime.now();
+          _currentTime = AppTime.now();
         });
       }
     });

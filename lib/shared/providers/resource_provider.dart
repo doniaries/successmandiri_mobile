@@ -411,6 +411,12 @@ class ResourceProvider with ChangeNotifier {
                 _kendaraans.add(item);
               }
             }
+            _kendaraans.sort((a, b) {
+              if (a.id < 0 && b.id >= 0) return -1;
+              if (b.id < 0 && a.id >= 0) return 1;
+              if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
+              return b.id.compareTo(a.id);
+            });
             break;
           case 'operasional':
             final items = rawData.map((e) => Operasional.fromJson(e)).toList();
@@ -435,6 +441,12 @@ class ResourceProvider with ChangeNotifier {
                 _jurnalKeuangans.add(item);
               }
             }
+            _jurnalKeuangans.sort((a, b) {
+              if (a.id < 0 && b.id >= 0) return -1;
+              if (b.id < 0 && a.id >= 0) return 1;
+              if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
+              return b.id.compareTo(a.id);
+            });
             break;
           case 'user':
             final items = rawData.map((e) => User.fromJson(e)).toList();
@@ -444,6 +456,12 @@ class ResourceProvider with ChangeNotifier {
                 _users.add(item);
               }
             }
+            _users.sort((a, b) {
+              if (a.id < 0 && b.id >= 0) return -1;
+              if (b.id < 0 && a.id >= 0) return 1;
+              if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
+              return b.id.compareTo(a.id);
+            });
             break;
         }
 

@@ -11,6 +11,7 @@ import 'package:sawitappmobile/features/operasional/screens/add_operasional_scre
 import 'package:sawitappmobile/features/operasional/screens/operasional_detail_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/shared/providers/global_filter_provider.dart';
+import package:sawitappmobile/core/utils/app_time.dart;
 
 class OperasionalScreen extends StatefulWidget {
   const OperasionalScreen({super.key});
@@ -78,7 +79,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
       final targetDate = globalFilter.selectedDate ??
           (dashboardProvider.summary?.systemActiveDate != null
               ? DateTime.parse(dashboardProvider.summary!.systemActiveDate)
-              : DateTime.now());
+              : AppTime.now());
       final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
 
       await SyncService().syncNow();
@@ -142,13 +143,13 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     final activeDateStr = dashboardProvider.summary?.systemActiveDate;
     final systemActiveDate = activeDateStr != null
         ? DateTime.parse(activeDateStr)
-        : DateTime.now();
+        : AppTime.now();
 
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: globalFilter.selectedDate ?? systemActiveDate,
       firstDate: DateTime(2020),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      lastDate: AppTime.now().add(const Duration(days: 365)),
       initialEntryMode: DatePickerEntryMode.calendarOnly,
       initialDatePickerMode: DatePickerMode.day,
       builder: (context, child) {
@@ -248,7 +249,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
           final activeDateStr = dashboardProvider.summary?.systemActiveDate;
           final systemActiveDate = activeDateStr != null
               ? DateTime.parse(activeDateStr)
-              : DateTime.now();
+              : AppTime.now();
 
           final targetDate = globalFilter.selectedDate ?? systemActiveDate;
           final dateText =
@@ -490,7 +491,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
         final activeDateStr = dashboardProvider.summary?.systemActiveDate;
         final systemActiveDate = activeDateStr != null
             ? DateTime.parse(activeDateStr)
-            : DateTime.now();
+            : AppTime.now();
 
         final items = _getFilteredItems(
           provider.operasionals,

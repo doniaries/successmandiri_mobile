@@ -9,6 +9,7 @@ import 'package:sawitappmobile/features/transaksi_do/screens/edit_transaksi_do_s
 import 'package:sawitappmobile/core/services/sync_service.dart';
 
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
+import package:sawitappmobile/core/utils/app_time.dart;
 
 class TransaksiDoScreen extends StatefulWidget {
   const TransaksiDoScreen({super.key});
@@ -35,7 +36,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
         final activeDateStr = dashboardProvider.summary?.systemActiveDate;
         final systemActiveDate = activeDateStr != null 
             ? DateTime.parse(activeDateStr) 
-            : DateTime.now();
+            : AppTime.now();
         final globalFilter = context.read<GlobalFilterProvider>();
         final targetDate = globalFilter.selectedDate ?? systemActiveDate;
         
@@ -266,7 +267,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
         final activeDateStr = dashboardProvider.summary?.systemActiveDate;
         final systemActiveDate = activeDateStr != null
             ? DateTime.parse(activeDateStr)
-            : DateTime.now();
+            : AppTime.now();
         final targetDate = globalFilter.selectedDate ?? systemActiveDate;
         final dateText = DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
         final isFilterActive = globalFilter.selectedDate != null &&
@@ -470,7 +471,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
         final activeDateStr = dashboardProvider.summary?.systemActiveDate;
         final systemActiveDate = activeDateStr != null 
             ? DateTime.parse(activeDateStr) 
-            : DateTime.now();
+            : AppTime.now();
 
         final targetDate = globalFilter.selectedDate ?? systemActiveDate;
 
@@ -521,13 +522,13 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
     final activeDateStr = dashboardProvider.summary?.systemActiveDate;
     final systemActiveDate = activeDateStr != null
         ? DateTime.parse(activeDateStr)
-        : DateTime.now();
+        : AppTime.now();
 
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: globalFilter.selectedDate ?? systemActiveDate,
       firstDate: DateTime(2020),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      lastDate: AppTime.now().add(const Duration(days: 365)),
       initialEntryMode: DatePickerEntryMode.calendarOnly,
       initialDatePickerMode: DatePickerMode.day,
       builder: (context, child) {

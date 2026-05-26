@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import package:sawitappmobile/core/utils/app_time.dart;
 
 class DigitalClock extends StatefulWidget {
   const DigitalClock({super.key});
@@ -11,7 +12,7 @@ class DigitalClock extends StatefulWidget {
 
 class _DigitalClockState extends State<DigitalClock> {
   late Timer _timer;
-  DateTime _now = DateTime.now();
+  DateTime _now = AppTime.now();
 
   @override
   void initState() {
@@ -19,7 +20,7 @@ class _DigitalClockState extends State<DigitalClock> {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
         setState(() {
-          _now = DateTime.now();
+          _now = AppTime.now();
         });
       }
     });

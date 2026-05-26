@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import package:sawitappmobile/core/utils/app_time.dart;
 
 class SessionService extends WidgetsBindingObserver {
   static final SessionService _instance = SessionService._internal();
@@ -14,7 +15,7 @@ class SessionService extends WidgetsBindingObserver {
   void start({required VoidCallback onTimeout}) {
     _onTimeout = onTimeout;
     _isActive = true;
-    _lastActive = DateTime.now();
+    _lastActive = AppTime.now();
     _resetTimer();
     WidgetsBinding.instance.addObserver(this);
   }
@@ -28,7 +29,7 @@ class SessionService extends WidgetsBindingObserver {
 
   void reset() {
     if (!_isActive) return;
-    _lastActive = DateTime.now();
+    _lastActive = AppTime.now();
     _resetTimer();
   }
 
@@ -47,7 +48,7 @@ class SessionService extends WidgetsBindingObserver {
 
     if (state == AppLifecycleState.resumed) {
       if (_lastActive != null) {
-        final duration = DateTime.now().difference(_lastActive!);
+        final duration = AppTime.now().difference(_lastActive!);
         if (duration.inMinutes >= 5) {
           if (_onTimeout != null) _onTimeout!();
         } else {
@@ -55,7 +56,7 @@ class SessionService extends WidgetsBindingObserver {
         }
       }
     } else if (state == AppLifecycleState.paused) {
-      _lastActive = DateTime.now();
+      _lastActive = AppTime.now();
       _timer?.cancel(); // In background, we'll check duration on resume
     }
   }

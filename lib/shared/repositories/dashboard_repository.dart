@@ -8,6 +8,7 @@ import 'package:sawitappmobile/features/dashboard/models/dashboard_summary_model
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/features/transaksi_do/models/transaksi_do_model.dart';
 import 'package:sawitappmobile/features/operasional/models/operasional_model.dart';
+import package:sawitappmobile/core/utils/app_time.dart;
 
 class DashboardRepository {
   final ApiClient _apiClient = ApiClient();
@@ -282,7 +283,7 @@ class DashboardRepository {
       jurnalTodayCount: 0,
       perusahaanName: '-',
       namaKasir: '-',
-      systemActiveDate: DateTime.now().toIso8601String().split('T')[0],
+      systemActiveDate: AppTime.now().toIso8601String().split('T')[0],
       transactions: [],
       latestOperasional: [],
       stats: DashboardStats.fromJson({}),

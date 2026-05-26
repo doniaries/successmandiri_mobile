@@ -12,6 +12,7 @@ import 'package:sawitappmobile/features/tambah_saldo/screens/edit_tambah_saldo_s
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/shared/providers/global_filter_provider.dart';
+import package:sawitappmobile/core/utils/app_time.dart;
 
 class TambahSaldoListScreen extends StatefulWidget {
   const TambahSaldoListScreen({super.key});
@@ -53,7 +54,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                     dashboardProvider.summary?.systemActiveDate;
                 final systemActiveDate = activeDateStr != null
                     ? DateTime.parse(activeDateStr)
-                    : DateTime.now();
+                    : AppTime.now();
 
                 final targetDate = globalFilter.selectedDate ?? systemActiveDate;
 
@@ -515,13 +516,13 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
     final activeDateStr = dashboardProvider.summary?.systemActiveDate;
     final systemActiveDate = activeDateStr != null
         ? DateTime.parse(activeDateStr)
-        : DateTime.now();
+        : AppTime.now();
 
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: globalFilter.selectedDate ?? systemActiveDate,
       firstDate: DateTime(2020),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      lastDate: AppTime.now().add(const Duration(days: 365)),
       initialEntryMode: DatePickerEntryMode.calendarOnly,
       initialDatePickerMode: DatePickerMode.day,
       builder: (context, child) {
