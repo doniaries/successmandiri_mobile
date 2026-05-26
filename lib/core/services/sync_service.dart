@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as dev;
+import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/core/navigation/navigation_service.dart';
 import 'package:sawitappmobile/core/network/api_client.dart';
@@ -20,6 +21,8 @@ class SyncService {
   final ApiClient _apiClient = ApiClient();
   final NotificationService _notificationService = NotificationService();
   bool _isSyncing = false;
+  bool _cancelRequested = false;
+  CancelToken? _cancelToken;
 
   final ValueNotifier<int> pendingSyncCount = ValueNotifier(0);
 
@@ -89,7 +92,6 @@ class SyncService {
     String endpoint,
   ) async {
     try {
-      List<Map<String, dynamic>> list = [];
       final queue = await _db.query('offline_queue');
       final deletedIds = <int>{};
       for (var item in queue) {
@@ -103,6 +105,8 @@ class SyncService {
           }
         }
       }
+
+      final List<Map<String, dynamic>> list = [];
 
       try {
         final localData = await _db.query(table);
@@ -126,7 +130,6 @@ class SyncService {
         // Table doesn't exist (e.g. operasional, transaksi_do), it's fine, we just want the offline queue
       }
 
-
       for (var item in queue) {
         final qEndpoint = item['endpoint'].toString();
         final method = item['method'].toString();
@@ -140,7 +143,7 @@ class SyncService {
             if (deletedIds.contains(offlineId)) {
               continue;
             }
-            data['id'] = offlineId; 
+            data['id'] = offlineId;
 
             // --- 1. BERIKAN NILAI DEFAULT ---
             // Mencegah model .fromJson() error karena field backend tidak ada di form POST
@@ -224,13 +227,23 @@ class SyncService {
     if (queue.isEmpty) return;
 
     _isSyncing = true;
+    _cancelRequested = false;
+    _cancelToken = CancelToken();
     int successCount = 0;
     // Kumpulkan endpoints yang BENAR-BENAR berhasil (fix bug take(successCount))
     final List<String> syncedEndpoints = [];
 
     try {
+      debugPrint(
+        'SyncService.syncNow: starting sync. queue size=${queue.length}',
+      );
       // Sequential sync instead of parallel
       for (var item in queue) {
+        if (_cancelRequested) {
+          dev.log('SyncService.syncNow: cancel requested, breaking loop');
+          break;
+        }
+
         final id = item['id'] as int;
         final endpoint = item['endpoint'] as String;
         final method = item['method'] as String;
@@ -238,21 +251,27 @@ class SyncService {
 
         try {
           if (method == 'POST') {
-            await _apiClient.dio.post(endpoint, data: data);
+            await _apiClient.dio.post(endpoint, data: data, cancelToken: _cancelToken);
           } else if (method == 'PUT') {
-            await _apiClient.dio.put(endpoint, data: data);
+            await _apiClient.dio.put(endpoint, data: data, cancelToken: _cancelToken);
           } else if (method == 'DELETE') {
-            await _apiClient.dio.delete(endpoint);
+            await _apiClient.dio.delete(endpoint, cancelToken: _cancelToken);
           }
           await _db.deleteQueue(id);
           successCount++;
           syncedEndpoints.add(_getProcessName(endpoint));
+          debugPrint(
+            'SyncService.syncNow: item synced id=$id endpoint=$endpoint method=$method',
+          );
         } catch (e) {
           dev.log('Sync failed for item $id: $e');
         }
       }
 
       if (successCount > 0) {
+        debugPrint(
+          'SyncService.syncNow: successCount=$successCount, refreshing providers',
+        );
         // Clear cached dashboard summary agar refresh dari server tanpa offline data
         try {
           final prefs = await SharedPreferences.getInstance();
@@ -266,14 +285,42 @@ class SyncService {
             final rp = Provider.of<ResourceProvider>(context, listen: false);
             final dp = Provider.of<DashboardProvider>(context, listen: false);
             final tp = Provider.of<TambahSaldoProvider>(context, listen: false);
-            final doProv = Provider.of<TransaksiDoProvider>(context, listen: false);
-            
-            await Future.wait([
-              rp.fetchAllResources(),
-              dp.fetchSummary(),
-              tp.fetchRequests(),
-              doProv.fetchTransactions(),
-            ]);
+            final doProv = Provider.of<TransaksiDoProvider>(
+              context,
+              listen: false,
+            );
+
+            // Prefer sequential refresh to reduce race conditions
+            debugPrint(
+              'SyncService.syncNow: calling ResourceProvider.fetchAllResources',
+            );
+            await rp.fetchAllResources();
+            // Ensure jurnal_keuangan is refreshed for ALL users (not only leaders)
+            try {
+              debugPrint(
+                'SyncService.syncNow: forcing jurnal_keuangan refresh',
+              );
+              await rp.fetchResources('jurnal_keuangan', refresh: true);
+              debugPrint(
+                'SyncService.syncNow: jurnal_keuangan refresh completed',
+              );
+            } catch (e) {
+              debugPrint(
+                'SyncService.syncNow: jurnal_keuangan refresh failed: $e',
+              );
+            }
+            debugPrint(
+              'SyncService.syncNow: calling DashboardProvider.fetchSummary',
+            );
+            await dp.fetchSummary();
+            debugPrint(
+              'SyncService.syncNow: calling TambahSaldoProvider.fetchRequests',
+            );
+            await tp.fetchRequests();
+            debugPrint(
+              'SyncService.syncNow: calling TransaksiDoProvider.fetchTransactions',
+            );
+            await doProv.fetchTransactions();
           }
         } catch (_) {}
 
@@ -291,11 +338,38 @@ class SyncService {
           title: title,
           body: body,
         );
+
+        // Also show an in-app SnackBar if app is foreground
+        try {
+          final ctx = NavigationService.navigatorKey.currentContext;
+          if (ctx != null && ctx.mounted) {
+            final scaffoldMessenger = ScaffoldMessenger.of(ctx);
+            scaffoldMessenger.showSnackBar(
+              SnackBar(
+                content: Text('$title\n$body'),
+                duration: const Duration(seconds: 4),
+                backgroundColor: Colors.green[700],
+              ),
+            );
+          }
+        } catch (_) {}
       }
     } finally {
       _isSyncing = false;
+      _cancelRequested = false;
+      _cancelToken = null;
       updatePendingCount();
     }
+  }
+
+  /// Request cancellation of a running sync. If a sync is in progress,
+  /// this will cancel ongoing HTTP requests and stop processing further items.
+  void cancelSync() {
+    if (!_isSyncing) return;
+    _cancelRequested = true;
+    try {
+      _cancelToken?.cancel('Cancelled by user');
+    } catch (_) {}
   }
 
   /// Konversi endpoint API ke nama proses yang mudah dibaca
@@ -312,7 +386,11 @@ class SyncService {
     return 'Data';
   }
 
-  Future<void> cacheData(String table, List<dynamic> list, {bool clear = true}) async {
+  Future<void> cacheData(
+    String table,
+    List<dynamic> list, {
+    bool clear = true,
+  }) async {
     List<Map<String, dynamic>> mappedList = [];
 
     for (var item in list) {
