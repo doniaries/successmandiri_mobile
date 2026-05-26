@@ -2315,14 +2315,10 @@ class _MenuGrid extends StatelessWidget {
           icon: Icons.payments_rounded,
           color: const Color(0xFFE74C3C),
           onTap: () {
-            context.read<ResourceProvider>().markAsSeen('operasional');
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const OperasionalScreen()),
-            );
+            // Disabled navigation to Operasional data as requested
           },
           badgeSelector: (c) =>
-              c.select<ResourceProvider, int>((p) => p.operasionalCount),
+              c.select<DashboardProvider, int>((p) => p.summary?.operasionalTodayCount ?? 0),
         ),
         _MenuItem(
           label: 'Penjual',
@@ -2392,7 +2388,7 @@ class _MenuGrid extends StatelessWidget {
             );
           },
           badgeSelector: (c) =>
-              c.select<ResourceProvider, int>((p) => p.jurnalCount),
+              c.select<DashboardProvider, int>((p) => p.summary?.jurnalTodayCount ?? 0),
         ),
         if (user.isSuperAdmin)
           _MenuItem(

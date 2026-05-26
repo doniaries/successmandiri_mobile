@@ -13,6 +13,8 @@ class DashboardSummary {
   final double totalPengajuanDana;
   final int totalPengajuanCount;
   final int tambahSaldoTodayCount;
+  final int operasionalTodayCount;
+  final int jurnalTodayCount;
   final String perusahaanName;
   final String namaKasir;
   final String systemActiveDate;
@@ -32,6 +34,8 @@ class DashboardSummary {
     required this.totalPengajuanDana,
     required this.totalPengajuanCount,
     required this.tambahSaldoTodayCount,
+    required this.operasionalTodayCount,
+    required this.jurnalTodayCount,
     required this.perusahaanName,
     required this.namaKasir,
     required this.systemActiveDate,
@@ -52,6 +56,8 @@ class DashboardSummary {
     double? totalPengajuanDana,
     int? totalPengajuanCount,
     int? tambahSaldoTodayCount,
+    int? operasionalTodayCount,
+    int? jurnalTodayCount,
     String? perusahaanName,
     String? namaKasir,
     String? systemActiveDate,
@@ -71,6 +77,8 @@ class DashboardSummary {
       totalPengajuanDana: totalPengajuanDana ?? this.totalPengajuanDana,
       totalPengajuanCount: totalPengajuanCount ?? this.totalPengajuanCount,
       tambahSaldoTodayCount: tambahSaldoTodayCount ?? this.tambahSaldoTodayCount,
+      operasionalTodayCount: operasionalTodayCount ?? this.operasionalTodayCount,
+      jurnalTodayCount: jurnalTodayCount ?? this.jurnalTodayCount,
       perusahaanName: perusahaanName ?? this.perusahaanName,
       namaKasir: namaKasir ?? this.namaKasir,
       systemActiveDate: systemActiveDate ?? this.systemActiveDate,
@@ -94,6 +102,8 @@ class DashboardSummary {
       totalPengajuanDana: double.tryParse(json['total_pengajuan_dana']?.toString() ?? '0') ?? 0,
       totalPengajuanCount: int.tryParse(json['total_pengajuan_count']?.toString() ?? '0') ?? 0,
       tambahSaldoTodayCount: int.tryParse(json['tambah_saldo_today_count']?.toString() ?? '0') ?? 0,
+      operasionalTodayCount: int.tryParse(json['operasional_today_count']?.toString() ?? '0') ?? 0,
+      jurnalTodayCount: int.tryParse(json['jurnal_today_count']?.toString() ?? '0') ?? 0,
       perusahaanName: json['perusahaan_name']?.toString() ?? '-',
       namaKasir: json['nama_kasir']?.toString() ?? 'Kasir Utama',
       systemActiveDate: json['system_active_date']?.toString() ?? DateTime.now().toIso8601String().split('T')[0],
