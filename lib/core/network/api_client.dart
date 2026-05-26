@@ -1,9 +1,20 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sawitappmobile/core/constants/api_constants.dart';
 import 'package:sawitappmobile/core/navigation/navigation_service.dart';
 import 'package:sawitappmobile/features/auth/screens/login_screen.dart';
+
+// Top-level functions untuk mencegah ANR saat jsonDecode string yang sangat besar
+dynamic _parseAndDecode(String response) {
+  return jsonDecode(response);
+}
+
+Future<dynamic> _parseJson(String text) {
+  return compute(_parseAndDecode, text);
+}
 
 class ApiClient {
   late Dio _dio;
@@ -19,6 +30,9 @@ class ApiClient {
         'Content-Type': 'application/json',
       },
     ));
+
+    // Menggunakan Isolate (compute) untuk memproses respon JSON di background
+    _dio.transformer = SyncTransformer()..jsonDecodeCallback = _parseJson;
 
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
