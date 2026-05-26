@@ -110,15 +110,64 @@ class TransaksiDoRepository {
       final data = _extractListData(response.data);
       if (page == 1) {
         await _syncService.cacheData('transaksi_do', data);
-        final pendingData = await _syncService.getMergedOfflineData('transaksi_do', ApiConstants.transaksiDo);
-        
-        final filteredPending = pendingData.where((item) {
-          if (tanggal != null && item['tanggal'] != tanggal) return false;
-          return true;
-        }).toList();
-        
+
+        // Ambil data offline MURNI (yang belum di-sync / belum ada ID server positif)
+        final offlineQueue = await _syncService.getOfflineQueueForEndpoint(
+          ApiConstants.transaksiDo,
+        );
+
+        // Filter offline queue berdasarkan tanggal yang dipilih
+        final filteredOffline = offlineQueue
+            .where((item) {
+              final itemData = item['data'] as Map<String, dynamic>;
+              if (tanggal != null) {
+                final itemTanggal = itemData['tanggal']?.toString() ?? '';
+                if (!itemTanggal.startsWith(tanggal)) return false;
+              }
+              return true;
+            })
+            .map((item) {
+              final mapped = Map<String, dynamic>.from(item['data']);
+              mapped['id'] = item['id']; // pakai id negatif
+              return mapped;
+            })
+            .toList();
+
         if (response.data is Map) {
-          response.data['data'] = filteredPending;
+          // Gabungkan data offline (di atas) dengan data online dari server
+          final original = response.data as Map<String, dynamic>;
+          final online = data;
+          final merged = [...filteredOffline, ...online];
+          original['data'] = merged;
+
+          // Perbaiki metadata total jika perlu (tambahkan jumlah item offline)
+          try {
+            final rawTotal = original['total'];
+            int serverTotal = rawTotal is int
+                ? rawTotal
+                : int.tryParse(rawTotal?.toString() ?? '') ?? online.length;
+            original['total'] = serverTotal + filteredOffline.length;
+          } catch (_) {
+            original['total'] = merged.length;
+          }
+
+          // Update from/to/last_page jika ada informasi per_page
+          try {
+            final perPageVal = original['per_page'] is int
+                ? original['per_page'] as int
+                : int.tryParse(original['per_page']?.toString() ?? '') ??
+                      perPage;
+            original['from'] = 1;
+            original['to'] = merged.length < perPageVal
+                ? merged.length
+                : perPageVal;
+            final totalVal =
+                int.tryParse(original['total']?.toString() ?? '') ??
+                merged.length;
+            original['last_page'] = (totalVal / perPageVal).ceil();
+          } catch (_) {}
+        } else if (response.data is List) {
+          response.data = [...filteredOffline, ...data];
         }
       }
 
@@ -131,7 +180,10 @@ class TransaksiDoRepository {
         );
 
         final filteredPending = pendingData.where((item) {
-          if (tanggal != null && item['tanggal'] != tanggal) return false;
+          if (tanggal != null) {
+            final itemTanggal = item['tanggal']?.toString() ?? '';
+            if (!itemTanggal.startsWith(tanggal)) return false;
+          }
           return true;
         }).toList();
 
@@ -364,7 +416,11 @@ class TransaksiDoRepository {
     try {
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
-        await _syncService.addToQueue('${ApiConstants.transaksiDo}/$id', 'PUT', data);
+        await _syncService.addToQueue(
+          '${ApiConstants.transaksiDo}/$id',
+          'PUT',
+          data,
+        );
         return {'offline': true, 'id': id};
       }
 
@@ -384,16 +440,14 @@ class TransaksiDoRepository {
 
         postData['_method'] = 'PUT';
         final formData = FormData.fromMap(postData);
-        final response = await _apiClient.dio.post(
-          '${ApiConstants.transaksiDo}/$id',
-          data: formData,
-        ).timeout(const Duration(seconds: 15));
+        final response = await _apiClient.dio
+            .post('${ApiConstants.transaksiDo}/$id', data: formData)
+            .timeout(const Duration(seconds: 15));
         return response.data;
       } else {
-        final response = await _apiClient.dio.put(
-          '${ApiConstants.transaksiDo}/$id',
-          data: data,
-        ).timeout(const Duration(seconds: 15));
+        final response = await _apiClient.dio
+            .put('${ApiConstants.transaksiDo}/$id', data: data)
+            .timeout(const Duration(seconds: 15));
         return response.data;
       }
     } on DioException catch (e) {
@@ -402,11 +456,19 @@ class TransaksiDoRepository {
           rethrow;
         }
       }
-      await _syncService.addToQueue('${ApiConstants.transaksiDo}/$id', 'PUT', data);
+      await _syncService.addToQueue(
+        '${ApiConstants.transaksiDo}/$id',
+        'PUT',
+        data,
+      );
       return {'offline': true, 'id': id};
     } catch (e) {
       if (e.toString().contains('TimeoutException')) {
-        await _syncService.addToQueue('${ApiConstants.transaksiDo}/$id', 'PUT', data);
+        await _syncService.addToQueue(
+          '${ApiConstants.transaksiDo}/$id',
+          'PUT',
+          data,
+        );
         return {'offline': true, 'id': id};
       }
       rethrow;
@@ -424,7 +486,11 @@ class TransaksiDoRepository {
       final isOffline = connectivity.every((r) => r == ConnectivityResult.none);
 
       if (isOffline) {
-        await _syncService.addToQueue('${ApiConstants.transaksiDo}/$id', 'DELETE', {});
+        await _syncService.addToQueue(
+          '${ApiConstants.transaksiDo}/$id',
+          'DELETE',
+          {},
+        );
         return;
       }
 
@@ -435,7 +501,11 @@ class TransaksiDoRepository {
           rethrow;
         }
       }
-      await _syncService.addToQueue('${ApiConstants.transaksiDo}/$id', 'DELETE', {});
+      await _syncService.addToQueue(
+        '${ApiConstants.transaksiDo}/$id',
+        'DELETE',
+        {},
+      );
     }
   }
 }

@@ -27,7 +27,6 @@ class DashboardProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      final double? currentSaldo = _summary?.saldo;
       final newSummary = await _repository.getSummary(date: date);
       
       _summary = newSummary;

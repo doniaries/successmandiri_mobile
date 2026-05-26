@@ -36,7 +36,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final dashboardProvider = context.read<DashboardProvider>();
-      
+
       // Prioritaskan filterDate dari dashboard jika ada
       final filterDate = dashboardProvider.filterDate;
       if (filterDate != null) {
@@ -58,6 +58,12 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
         refresh: true,
         filters: _buildApiFilters(),
       );
+
+      // Pastikan summary dashboard juga dimuat untuk tanggal yang sama
+      try {
+        final dateStr = DateFormat('yyyy-MM-dd').format(_selectedSingleDate!);
+        dashboardProvider.fetchSummary(date: dateStr);
+      } catch (_) {}
     });
   }
 
@@ -74,7 +80,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
     filters['start_date'] = dateStr;
     filters['end_date'] = dateStr;
-    
+
     return filters;
   }
 
@@ -106,7 +112,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final provider = context.read<ResourceProvider>();
     final dashboardProvider = context.read<DashboardProvider>();
-    
+
     scaffoldMessenger.showSnackBar(
       const SnackBar(
         content: Text('Memulai Sinkronisasi Laporan...'),
@@ -114,20 +120,25 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
         behavior: SnackBarBehavior.floating,
       ),
     );
-    
+
     try {
       // 1. Process offline queue
-      await SyncService().syncNow();
-      
+      // Run sync in background so UI won't hang
+      SyncService().syncNow();
+
       // 2. Fetch latest master data from web
       await provider.syncMasterData();
-      
+
       // 3. Fetch latest financial journal data
-      await provider.fetchResources('jurnal_keuangan', refresh: true, filters: _buildApiFilters());
-      
+      await provider.fetchResources(
+        'jurnal_keuangan',
+        refresh: true,
+        filters: _buildApiFilters(),
+      );
+
       // 4. Fetch latest dashboard summary
       await dashboardProvider.fetchSummary();
-      
+
       scaffoldMessenger.showSnackBar(
         const SnackBar(
           content: Text('Sinkronisasi Laporan Selesai'),
@@ -150,30 +161,33 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
   Widget build(BuildContext context) {
     final dashboardProvider = context.watch<DashboardProvider>();
     final navProvider = context.watch<MainNavigationProvider>();
-    
+
     if (navProvider.journalFilter != null) {
       final newFilter = navProvider.journalFilter!;
       if (_filters.contains(newFilter)) {
         _selectedFilter = newFilter;
       }
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) context.read<MainNavigationProvider>().clearJournalFilter();
+        if (mounted) {
+          context.read<MainNavigationProvider>().clearJournalFilter();
+        }
       });
     }
 
     final dashboardFilterDate = dashboardProvider.filterDate;
-    
+
     // Deteksi perubahan filterDate dari dashboard SETELAH inisialisasi awal
-    if (_hasInitializedFilterDate && _lastDashboardFilterDate != dashboardFilterDate) {
+    if (_hasInitializedFilterDate &&
+        _lastDashboardFilterDate != dashboardFilterDate) {
       _lastDashboardFilterDate = dashboardFilterDate;
-      
+
       final activeDateStr = dashboardProvider.summary?.systemActiveDate;
       final systemActiveDate = activeDateStr != null
           ? DateTime.parse(activeDateStr)
           : DateTime.now();
-          
+
       _selectedSingleDate = dashboardFilterDate ?? systemActiveDate;
-      
+
       // Trigger fetch saat filter dashboard berubah
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
@@ -182,6 +196,12 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
           refresh: true,
           filters: _buildApiFilters(),
         );
+
+        // Juga refresh summary dashboard untuk tanggal yang dipilih
+        try {
+          final dateStr = DateFormat('yyyy-MM-dd').format(_selectedSingleDate!);
+          context.read<DashboardProvider>().fetchSummary(date: dateStr);
+        } catch (_) {}
       });
     }
 
@@ -224,7 +244,9 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
               _buildFilterChips(),
               Expanded(
                 child: RefreshIndicator(
-                  notificationPredicate: (notification) => !SyncService().isOffline && defaultScrollNotificationPredicate(notification),
+                  notificationPredicate: (notification) =>
+                      !SyncService().isOffline &&
+                      defaultScrollNotificationPredicate(notification),
                   onRefresh: () async => _refreshData(),
                   child: isInitialLoading
                       ? _buildSkeletonList()
@@ -266,16 +288,29 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
   Widget _buildSummaryHeader(ResourceProvider provider) {
     final targetDate = _selectedSingleDate ?? _getSystemActiveDate();
 
-    // Hitung statistik berdasarkan tanggal filter aktif menggunakan ringkasan data dari server
-    final double displayIn = provider.totalPemasukan;
-    final double displayOut = provider.totalPengeluaran;
-    final int filterCount = provider.jurnalCount;
+    final dashboardProv = context.watch<DashboardProvider>();
+    final summary = dashboardProv.summary;
+    final systemActiveDate = summary?.systemActiveDate;
+
+    // Jika tanggal filter = system active date → pakai nilai dari dashboard summary
+    // (logika sama persis dengan Filament DashboardStatsWidget)
+    // Jika tanggal lain → fallback ke hitungan dari jurnal_keuangan
+    final bool isActiveDate =
+        systemActiveDate != null &&
+        DateUtils.isSameDay(targetDate, DateTime.parse(systemActiveDate));
+
+    final double displayIn = isActiveDate
+        ? (summary?.stats.pemasukan.today.total ?? provider.totalPemasukan)
+        : provider.totalPemasukan;
+    final double displayOut = isActiveDate
+        ? (summary?.stats.pengeluaran.today.total ?? provider.totalPengeluaran)
+        : provider.totalPengeluaran;
+
+    // Hitung langsung dari list yang difilter per tanggal (bukan dari global jurnalCount)
+    // Note: filterCount removed (not used) — rely on dashboard summary for totals
 
     final dateText = DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
     final labelSuffix = DateFormat('d MMM', 'id_ID').format(targetDate);
-
-    final dashboardProv = context.watch<DashboardProvider>();
-    final double currentSaldo = dashboardProv.summary?.saldo ?? 0.0;
 
     return Container(
       width: double.infinity,
@@ -298,39 +333,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
       ),
       child: Column(
         children: [
-          // Bagian 1: Saldo Perusahaan (Selalu Tampil & Tidak Terpengaruh Filter Tanggal)
-          const Text(
-            'Saldo Perusahaan',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.5,
-            ),
-          ),
-          const SizedBox(height: 4),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              CurrencyFormatter.formatRupiah(currentSaldo),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 30,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.5,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          
-          // Divider tipis pemisah saldo dan informasi filter
-          Container(
-            height: 1,
-            color: Colors.white.withValues(alpha: 0.15),
-          ),
-          const SizedBox(height: 16),
-
-          // Bagian 2: Info Tanggal Laporan & Total Transaksi
+          // Bagian 1: Info Tanggal Laporan & Total Transaksi
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -341,7 +344,10 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
                   onTap: _showFilterSheet,
                   borderRadius: BorderRadius.circular(12),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
@@ -383,27 +389,12 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              // Total Transaksi
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  'Transaksi: $filterCount',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+              // (Removed) Total Transaksi badge per permintaan — gunakan angka di widget Dashboard
             ],
           ),
           const SizedBox(height: 20),
 
-          // Bagian 3: Pemasukan & Pengeluaran (Menyesuaikan dengan tanggal filter)
+          // Bagian 2: Pemasukan & Pengeluaran (Menyesuaikan dengan tanggal filter)
           Row(
             children: [
               Expanded(
@@ -583,7 +574,10 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
   List<JurnalKeuangan> _getFilteredItems(List<JurnalKeuangan> items) {
     final targetDate = _selectedSingleDate ?? _getSystemActiveDate();
     return items.where((item) {
-      final matchesDate = DateUtils.isSameDay(item.tanggal.toLocal(), targetDate);
+      final matchesDate = DateUtils.isSameDay(
+        item.tanggal.toLocal(),
+        targetDate,
+      );
       if (!matchesDate) return false;
 
       if (_selectedFilter == 'Semua') return true;
@@ -714,6 +708,4 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
       ],
     );
   }
-
-
 }

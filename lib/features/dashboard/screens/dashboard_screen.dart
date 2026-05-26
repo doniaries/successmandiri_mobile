@@ -117,8 +117,8 @@ class DashboardScreenState extends State<DashboardScreen> {
           );
 
           try {
-            // 1. Process offline queue
-            await SyncService().syncNow();
+            // 1. Process offline queue (background)
+            SyncService().syncNow();
 
             // 2. Fetch latest user & company details from server
             await authProvider.checkAuthStatus();
@@ -1662,8 +1662,8 @@ class _SyncButton extends StatelessWidget {
                         ),
                       );
 
-                      // 1. Process offline queue
-                      await SyncService().syncNow();
+                      // 1. Process offline queue (run in background)
+                      SyncService().syncNow();
 
                       // 2. Fetch latest master data from web
                       if (context.mounted) {

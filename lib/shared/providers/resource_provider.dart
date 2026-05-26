@@ -256,6 +256,9 @@ class ResourceProvider with ChangeNotifier {
     }
 
     try {
+      debugPrint(
+        'ResourceProvider.fetchResources: type=$type refresh=$refresh filters=${filters?.toString()} page=${_currentPage[type] ?? 1}',
+      );
       int page = _currentPage[type] ?? 1;
       dynamic response;
 
@@ -324,6 +327,20 @@ class ResourceProvider with ChangeNotifier {
               _totalHutangPekerja = totalHutang;
               break;
           }
+        }
+        // Debug logging for jurnal_keuangan responses
+        try {
+          if (type == 'jurnal_keuangan') {
+            debugPrint(
+              'ResourceProvider.fetchResources: jurnal_keuangan response total=${response['total']} summary=${response['summary']} data_len=${rawData.length}',
+            );
+          } else {
+            debugPrint(
+              'ResourceProvider.fetchResources: response keys=${response.keys.toList()} data_len=${rawData.length}',
+            );
+          }
+        } catch (e) {
+          debugPrint('ResourceProvider.fetchResources: logging failed: $e');
         }
       } else if (response is List) {
         rawData = response;
@@ -835,15 +852,19 @@ class ResourceProvider with ChangeNotifier {
 
   Future<dynamic> addOperasional(Map<String, dynamic> data) async {
     _errorMessage = null;
-    
+
     // OPTIMISTIC UPDATE UNTUK HUTANG PEKERJA/SUPIR/PENJUAL SAAT OFFLINE
     if (data['kategori'] == 'kasbon' || data['kategori'] == 'bayar_hutang') {
       double nominal = double.tryParse(data['nominal'].toString()) ?? 0.0;
-      if (data['kategori'] == 'bayar_hutang') nominal = -nominal; // kurangi hutang jika dibayar
-      
-      int pihakId = data['pihak_id'] is int ? data['pihak_id'] : int.tryParse(data['pihak_id']?.toString() ?? '') ?? 0;
+      if (data['kategori'] == 'bayar_hutang') {
+        nominal = -nominal; // kurangi hutang jika dibayar
+      }
+
+      int pihakId = data['pihak_id'] is int
+          ? data['pihak_id']
+          : int.tryParse(data['pihak_id']?.toString() ?? '') ?? 0;
       String type = data['pihak_type']?.toString() ?? '';
-      
+
       if (type == 'App\\Models\\Penjual') {
         var idx = _penjuals.indexWhere((e) => e.id == pihakId);
         if (idx != -1) {
@@ -900,7 +921,7 @@ class ResourceProvider with ChangeNotifier {
       }
       notifyListeners();
     }
-    
+
     try {
       final result = await _repository.storeOperasional(data);
 
@@ -1020,7 +1041,7 @@ class ResourceProvider with ChangeNotifier {
 
   Future<bool> deleteResource(String type, int id) async {
     _isLoading = true;
-    
+
     // OPTIMISTIC UPDATE: Langsung hapus dari state lokal agar UI langsung responsif
     switch (type) {
       case 'penjual':
@@ -1066,12 +1087,13 @@ class ResourceProvider with ChangeNotifier {
       debugPrint('Error deleting $type: $e');
       if (e is DioException) {
         // Jika item sudah tidak ada di server (404), anggap sukses
-        if (e.response?.statusCode == 404 || 
-            (e.response?.data?.toString().contains('No query results') ?? false)) {
+        if (e.response?.statusCode == 404 ||
+            (e.response?.data?.toString().contains('No query results') ??
+                false)) {
           await fetchResources(type, refresh: true);
           return true;
         }
-        
+
         if (e.response?.data is Map && e.response?.data['errors'] != null) {
           final Map errors = e.response?.data['errors'];
           final firstError = errors.values.first;
@@ -1086,7 +1108,7 @@ class ResourceProvider with ChangeNotifier {
       } else {
         _errorMessage = e.toString();
       }
-      
+
       // Revert optimistic update by re-fetching data if deletion failed
       await fetchResources(type, refresh: true);
       return false;

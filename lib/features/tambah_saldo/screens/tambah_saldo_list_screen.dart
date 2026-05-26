@@ -12,7 +12,6 @@ import 'package:sawitappmobile/features/tambah_saldo/screens/edit_tambah_saldo_s
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 
-
 class TambahSaldoListScreen extends StatefulWidget {
   const TambahSaldoListScreen({super.key});
 
@@ -49,147 +48,162 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
       ),
       body: Column(
         children: [
-
           Expanded(
             child: Consumer2<TambahSaldoProvider, DashboardProvider>(
               builder: (context, provider, dashboardProvider, child) {
-                final activeDateStr = dashboardProvider.summary?.systemActiveDate;
-          final systemActiveDate = activeDateStr != null
-              ? DateTime.parse(activeDateStr)
-              : DateTime.now();
+                final activeDateStr =
+                    dashboardProvider.summary?.systemActiveDate;
+                final systemActiveDate = activeDateStr != null
+                    ? DateTime.parse(activeDateStr)
+                    : DateTime.now();
 
-          final targetDate = _selectedSingleDate ?? systemActiveDate;
+                final targetDate = _selectedSingleDate ?? systemActiveDate;
 
-          if (!_hasInitializedFilterDate || _lastDashboardFilterDate != dashboardProvider.filterDate) {
-            _hasInitializedFilterDate = true;
-            _lastDashboardFilterDate = dashboardProvider.filterDate;
-            
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                setState(() {
-                  _selectedSingleDate = dashboardProvider.filterDate ?? systemActiveDate;
-                });
-              }
-            });
-          }
+                if (!_hasInitializedFilterDate ||
+                    _lastDashboardFilterDate != dashboardProvider.filterDate) {
+                  _hasInitializedFilterDate = true;
+                  _lastDashboardFilterDate = dashboardProvider.filterDate;
 
-          final filteredRequests = provider.requests.where((r) {
-            return DateUtils.isSameDay(r.tanggal.toLocal(), targetDate);
-          }).toList();
-
-          if (provider.isLoading && provider.requests.isEmpty) {
-            return ListView.builder(
-              padding: const EdgeInsets.all(10),
-              itemCount: 5,
-              itemBuilder: (context, index) => const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: SkeletonLoader(
-                  height: 100,
-                  width: double.infinity,
-                  borderRadius: 12,
-                ),
-              ),
-            );
-          }
-
-          final formattedDateText = DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
-
-          return Column(
-            children: [
-              _buildSummaryHeader(
-                provider,
-                dashboardProvider,
-                filteredRequests,
-                systemActiveDate,
-              ),
-              _buildFilterInfoWidget(
-                provider,
-                dashboardProvider,
-                filteredRequests,
-                systemActiveDate,
-              ),
-              Expanded(
-                child: RefreshIndicator(
-                  notificationPredicate: (notification) => !SyncService().isOffline && defaultScrollNotificationPredicate(notification),
-                  onRefresh: () async {
-                    if (SyncService().isOffline) return;
-                    final scaffoldMessenger = ScaffoldMessenger.of(context);
-                    scaffoldMessenger.showSnackBar(
-                      const SnackBar(
-                        content: Text('Memulai Sinkronisasi Data...'),
-                        duration: Duration(seconds: 1),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                    
-                    try {
-                      // 1. Process offline queue
-                      await SyncService().syncNow();
-                      
-                      // 2. Fetch latest master data from web
-                      if (context.mounted) {
-                        await context.read<ResourceProvider>().syncMasterData();
-                      }
-                      
-                      // 3. Fetch latest requests list
-                      await provider.fetchRequests();
-                      
-                      // 4. Fetch latest summary for dashboard
-                      if (context.mounted) {
-                        await context.read<DashboardProvider>().fetchSummary();
-                      }
-                      
-                      scaffoldMessenger.showSnackBar(
-                        const SnackBar(
-                          content: Text('Sinkronisasi Data Selesai'),
-                          backgroundColor: Colors.green,
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    } catch (e) {
-                      scaffoldMessenger.showSnackBar(
-                        SnackBar(
-                          content: Text('Gagal sinkron: $e'),
-                          backgroundColor: Colors.red,
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) {
+                      setState(() {
+                        _selectedSingleDate =
+                            dashboardProvider.filterDate ?? systemActiveDate;
+                      });
                     }
-                  },
-                  child: filteredRequests.isEmpty
-                      ? ListView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          children: [
-                            SizedBox(
-                              height: MediaQuery.of(context).size.height * 0.4,
-                              child: Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(32.0),
-                                  child: Text(
-                                    'Tidak ada transaksi untuk tanggal $formattedDateText.',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 14,
+                  });
+                }
+
+                final filteredRequests = provider.requests.where((r) {
+                  return DateUtils.isSameDay(r.tanggal.toLocal(), targetDate);
+                }).toList();
+
+                if (provider.isLoading && provider.requests.isEmpty) {
+                  return ListView.builder(
+                    padding: const EdgeInsets.all(10),
+                    itemCount: 5,
+                    itemBuilder: (context, index) => const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: SkeletonLoader(
+                        height: 100,
+                        width: double.infinity,
+                        borderRadius: 12,
+                      ),
+                    ),
+                  );
+                }
+
+                final formattedDateText = DateFormat(
+                  'dd MMMM yyyy',
+                  'id_ID',
+                ).format(targetDate);
+
+                return Column(
+                  children: [
+                    _buildSummaryHeader(
+                      provider,
+                      dashboardProvider,
+                      filteredRequests,
+                      systemActiveDate,
+                    ),
+                    _buildFilterInfoWidget(
+                      provider,
+                      dashboardProvider,
+                      filteredRequests,
+                      systemActiveDate,
+                    ),
+                    Expanded(
+                      child: RefreshIndicator(
+                        notificationPredicate: (notification) =>
+                            !SyncService().isOffline &&
+                            defaultScrollNotificationPredicate(notification),
+                        onRefresh: () async {
+                          if (SyncService().isOffline) return;
+                          final scaffoldMessenger = ScaffoldMessenger.of(
+                            context,
+                          );
+                          scaffoldMessenger.showSnackBar(
+                            const SnackBar(
+                              content: Text('Memulai Sinkronisasi Data...'),
+                              duration: Duration(seconds: 1),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+
+                          try {
+                            // 1. Process offline queue (run in background)
+                            SyncService().syncNow();
+
+                            // 2. Fetch latest master data from web (will run immediately, sync may still be in progress)
+                            if (context.mounted) {
+                              await context
+                                  .read<ResourceProvider>()
+                                  .syncMasterData();
+                            }
+
+                            // 3. Fetch latest requests list
+                            await provider.fetchRequests();
+
+                            // 4. Fetch latest summary for dashboard
+                            if (context.mounted) {
+                              await context
+                                  .read<DashboardProvider>()
+                                  .fetchSummary();
+                            }
+
+                            scaffoldMessenger.showSnackBar(
+                              const SnackBar(
+                                content: Text('Sinkronisasi Data Selesai'),
+                                backgroundColor: Colors.green,
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          } catch (e) {
+                            scaffoldMessenger.showSnackBar(
+                              SnackBar(
+                                content: Text('Gagal sinkron: $e'),
+                                backgroundColor: Colors.red,
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
+                        },
+                        child: filteredRequests.isEmpty
+                            ? ListView(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                children: [
+                                  SizedBox(
+                                    height:
+                                        MediaQuery.of(context).size.height *
+                                        0.4,
+                                    child: Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(32.0),
+                                        child: Text(
+                                          'Tidak ada transaksi untuk tanggal $formattedDateText.',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
+                                ],
+                              )
+                            : ListView.builder(
+                                padding: const EdgeInsets.all(10),
+                                itemCount: filteredRequests.length,
+                                itemBuilder: (context, index) {
+                                  final request = filteredRequests[index];
+                                  return _buildRequestItem(request);
+                                },
                               ),
-                            ),
-                          ],
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.all(10),
-                          itemCount: filteredRequests.length,
-                          itemBuilder: (context, index) {
-                            final request = filteredRequests[index];
-                            return _buildRequestItem(request);
-                          },
-                        ),
-                ),
-              ),
-            ],
-          );
+                      ),
+                    ),
+                  ],
+                );
               },
             ),
           ),
@@ -223,9 +237,14 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
 
     final double currentSaldo = dashboardProvider.summary?.saldo ?? 0.0;
     final targetDate = _selectedSingleDate ?? systemActiveDate;
-    final formattedDateText = DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
-    
-    final isFilterActive = _selectedSingleDate != null && !DateUtils.isSameDay(_selectedSingleDate!, systemActiveDate);
+    final formattedDateText = DateFormat(
+      'dd MMMM yyyy',
+      'id_ID',
+    ).format(targetDate);
+
+    final isFilterActive =
+        _selectedSingleDate != null &&
+        !DateUtils.isSameDay(_selectedSingleDate!, systemActiveDate);
 
     return Container(
       width: double.infinity,
@@ -264,7 +283,10 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                   onTap: _showFilterSheet,
                   borderRadius: BorderRadius.circular(20),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
@@ -324,7 +346,10 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                         onTap: _showFilterSheet,
                         borderRadius: BorderRadius.circular(12),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
@@ -542,7 +567,10 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
           children: [
             Icon(Icons.warning_amber_rounded, color: Colors.redAccent),
             SizedBox(width: 8),
-            Text('Hapus Transaksi', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              'Hapus Transaksi',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ],
         ),
         content: Text(
@@ -555,7 +583,13 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Ya, Hapus', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Ya, Hapus',
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -573,7 +607,10 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
             SizedBox(
               width: 16,
               height: 16,
-              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2,
+              ),
             ),
             SizedBox(width: 12),
             Text('Menghapus tambah saldo...'),
@@ -586,7 +623,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     final success = await provider.deleteRequest(request.id);
-    
+
     // Always hide the loading snackbar, even if widget is unmounted (e.g. user navigated back)
     scaffoldMessenger.hideCurrentSnackBar();
 
@@ -604,7 +641,9 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
         provider.fetchRequests(); // Restore visually on error
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(provider.errorMessage ?? 'Gagal menghapus tambah saldo.'),
+            content: Text(
+              provider.errorMessage ?? 'Gagal menghapus tambah saldo.',
+            ),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),
@@ -629,14 +668,14 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
           children: [
             Text(
               'Hapus',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
             ),
             SizedBox(width: 8),
-            Icon(
-              Icons.delete_outline_rounded,
-              color: Colors.white,
-              size: 28,
-            ),
+            Icon(Icons.delete_outline_rounded, color: Colors.white, size: 28),
           ],
         ),
       ),
@@ -661,7 +700,10 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
             );
           },
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
             title: Text(
               CurrencyFormatter.formatRupiah(request.nominal),
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
@@ -681,7 +723,11 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Icon(Icons.person_outline_rounded, size: 13, color: Colors.grey[600]),
+                    Icon(
+                      Icons.person_outline_rounded,
+                      size: 13,
+                      color: Colors.grey[600],
+                    ),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
@@ -696,7 +742,11 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                 const SizedBox(height: 3),
                 Row(
                   children: [
-                    Icon(Icons.calendar_today_outlined, size: 12, color: Colors.grey[600]),
+                    Icon(
+                      Icons.calendar_today_outlined,
+                      size: 12,
+                      color: Colors.grey[600],
+                    ),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
@@ -717,19 +767,28 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.edit_rounded, color: Colors.blueAccent, size: 22),
+                  icon: const Icon(
+                    Icons.edit_rounded,
+                    color: Colors.blueAccent,
+                    size: 22,
+                  ),
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => EditTambahSaldoScreen(request: request),
+                        builder: (context) =>
+                            EditTambahSaldoScreen(request: request),
                       ),
                     );
                   },
                   tooltip: 'Ubah',
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete_rounded, color: Colors.redAccent, size: 22),
+                  icon: const Icon(
+                    Icons.delete_rounded,
+                    color: Colors.redAccent,
+                    size: 22,
+                  ),
                   onPressed: () async {
                     final confirmed = await _showDeleteConfirmDialog(request);
                     if (confirmed == true) {
@@ -757,7 +816,10 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
       return const SizedBox.shrink();
     }
 
-    final formattedFilterDate = DateFormat('dd MMMM yyyy', 'id_ID').format(_selectedSingleDate!);
+    final formattedFilterDate = DateFormat(
+      'dd MMMM yyyy',
+      'id_ID',
+    ).format(_selectedSingleDate!);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -843,10 +905,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
             icon: const Icon(Icons.close_rounded, size: 16),
             label: const Text(
               'Reset',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
             ),
           ),
         ],

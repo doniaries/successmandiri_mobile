@@ -24,7 +24,6 @@ import 'package:sawitappmobile/features/user/screens/user_detail_screen.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
 import 'package:sawitappmobile/shared/widgets/skeleton_loader.dart';
 
-
 import 'package:sawitappmobile/core/services/sync_service.dart';
 
 class ResourceListScreen extends StatefulWidget {
@@ -106,7 +105,8 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
 
   Future<void> _refreshData() async {
     try {
-      await SyncService().syncNow();
+      // Run sync in background to avoid UI hang
+      SyncService().syncNow();
     } catch (_) {}
     if (mounted) {
       await context.read<ResourceProvider>().fetchResources(
@@ -358,7 +358,9 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
           );
 
     final Widget scrollableList = RefreshIndicator(
-      notificationPredicate: (notification) => !SyncService().isOffline && defaultScrollNotificationPredicate(notification),
+      notificationPredicate: (notification) =>
+          !SyncService().isOffline &&
+          defaultScrollNotificationPredicate(notification),
       onRefresh: _refreshData,
       color: const Color(0xFF01579B),
       child: listBody,
@@ -369,17 +371,12 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16.0,
-        vertical: 8.0,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: TextField(
         decoration: InputDecoration(
           hintText: 'Cari...',
           prefixIcon: const Icon(Icons.search),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 12,
@@ -441,10 +438,9 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
       ),
       body: Column(
         children: [
-
           if (!hasTabs &&
               (widget.resourceType == 'kendaraan' ||
-               widget.resourceType == 'user'))
+                  widget.resourceType == 'user'))
             _buildSearchBar(),
           Expanded(
             child: Consumer<ResourceProvider>(

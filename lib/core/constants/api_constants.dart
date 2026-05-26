@@ -1,7 +1,15 @@
+
+
+import 'package:flutter/foundation.dart';
+
 class ApiConstants {
-  static const bool useLocalInDebug = false;
+  static const bool useLocalInDebug = true;
 
   static String get baseUrl {
+    if (kDebugMode && useLocalInDebug) {
+      if (kIsWeb) return 'http://127.0.0.1:8000/api';
+      return 'http://192.168.1.6:8000/api'; // IP Lokal dari Laragon / artisan serve
+    }
     // Selalu gunakan Produksi (Online) agar data sinkron dengan sawit.successmandiri.com
     return 'https://sawit.successmandiri.com/api';
   }
