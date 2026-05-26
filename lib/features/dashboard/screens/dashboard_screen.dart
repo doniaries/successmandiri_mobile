@@ -691,7 +691,11 @@ class DashboardScreenState extends State<DashboardScreen> {
                           ),
                           child: company['logo_url'] != null
                               ? CachedNetworkImage(
-                                  imageUrl: ApiConstants.normalizeUrl(company['logo_url']) ?? '',
+                                  imageUrl:
+                                      ApiConstants.normalizeUrl(
+                                        company['logo_url'],
+                                      ) ??
+                                      '',
                                   width: 24,
                                   height: 24,
                                   fit: BoxFit.contain,
@@ -1374,23 +1378,35 @@ class _DashboardHeader extends StatelessWidget {
                     final activeDateStr = provider.summary?.systemActiveDate;
                     if (activeDateStr != null) {
                       final activeDate = DateTime.parse(activeDateStr);
-                      final formatted = DateFormat('dd MMM yyyy', 'id_ID').format(activeDate);
+                      final formatted = DateFormat(
+                        'dd MMM yyyy',
+                        'id_ID',
+                      ).format(activeDate);
                       return Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.amber.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.amber.withValues(alpha: 0.5)),
+                              border: Border.all(
+                                color: Colors.amber.withValues(alpha: 0.5),
+                              ),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.event_available, color: Colors.amber, size: 14),
+                                const Icon(
+                                  Icons.event_available,
+                                  color: Colors.amber,
+                                  size: 14,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  'Tgl Sistem: $formatted',
+                                  'Tgl: $formatted',
                                   style: const TextStyle(
                                     color: Colors.amber,
                                     fontSize: 12,
@@ -1401,11 +1417,18 @@ class _DashboardHeader extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          const LiveDateTimeWidget(color: Colors.white, isTransparentBg: true, showDate: false),
+                          const LiveDateTimeWidget(
+                            color: Colors.white,
+                            isTransparentBg: true,
+                            showDate: false,
+                          ),
                         ],
                       );
                     }
-                    return const LiveDateTimeWidget(color: Colors.white, isTransparentBg: true);
+                    return const LiveDateTimeWidget(
+                      color: Colors.white,
+                      isTransparentBg: true,
+                    );
                   },
                 ),
                 SizedBox(height: 12),

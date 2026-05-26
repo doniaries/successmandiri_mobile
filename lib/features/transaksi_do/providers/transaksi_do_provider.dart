@@ -70,11 +70,9 @@ class TransaksiDoProvider with ChangeNotifier {
     // 1. Tampilkan data dari SQLite (Local) terlebih dahulu agar cepat (Offline-first)
     try {
       final localDataRaw = await _repository.getLocalTransaksiDo(tanggal: _currentTanggal);
-      if (localDataRaw.isNotEmpty) {
-        _transactions = localDataRaw.map((json) => TransaksiDo.fromJson(json)).toList();
-        _isLoading = false;
-        notifyListeners();
-      }
+      _transactions = localDataRaw.map((json) => TransaksiDo.fromJson(json)).toList();
+      _isLoading = false;
+      notifyListeners();
     } catch (_) {}
 
     try {

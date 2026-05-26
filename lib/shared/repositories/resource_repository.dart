@@ -65,6 +65,12 @@ class ResourceRepository {
   }
 
   Future<List<Penjual>> getPenjuals() async {
+    List<Penjual> parseAndSort(List<Map<String, dynamic>> data) {
+      final list = data.map((e) => Penjual.fromJson(e)).toList();
+      list.sort((a, b) => (a.nama ?? '').toLowerCase().compareTo((b.nama ?? '').toLowerCase()));
+      return list;
+    }
+    
     try {
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
@@ -72,7 +78,7 @@ class ResourceRepository {
           'penjual',
           ApiConstants.penjual,
         );
-        return mergedData.map((e) => Penjual.fromJson(e)).toList();
+        return parseAndSort(mergedData);
       }
 
       final response = await _apiClient.dio
@@ -82,13 +88,13 @@ class ResourceRepository {
 
       await syncService.cacheData('penjual', data);
       final mergedData = await syncService.getMergedOfflineData('penjual', ApiConstants.penjual);
-      return mergedData.map((e) => Penjual.fromJson(e)).toList();
+      return parseAndSort(mergedData);
     } catch (e) {
       final mergedData = await syncService.getMergedOfflineData(
         'penjual',
         ApiConstants.penjual,
       );
-      return mergedData.map((e) => Penjual.fromJson(e)).toList();
+      return parseAndSort(mergedData);
     }
   }
 
@@ -200,6 +206,12 @@ class ResourceRepository {
   }
 
   Future<List<Supir>> getSupirs() async {
+    List<Supir> parseAndSort(List<Map<String, dynamic>> data) {
+      final list = data.map((e) => Supir.fromJson(e)).toList();
+      list.sort((a, b) => (a.nama ?? '').toLowerCase().compareTo((b.nama ?? '').toLowerCase()));
+      return list;
+    }
+    
     try {
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
@@ -207,7 +219,7 @@ class ResourceRepository {
           'supir',
           ApiConstants.supir,
         );
-        return mergedData.map((e) => Supir.fromJson(e)).toList();
+        return parseAndSort(mergedData);
       }
 
       final response = await _apiClient.dio
@@ -217,13 +229,13 @@ class ResourceRepository {
 
       await syncService.cacheData('supir', data);
       final mergedData = await syncService.getMergedOfflineData('supir', ApiConstants.supir);
-      return mergedData.map((e) => Supir.fromJson(e)).toList();
+      return parseAndSort(mergedData);
     } catch (e) {
       final mergedData = await syncService.getMergedOfflineData(
         'supir',
         ApiConstants.supir,
       );
-      return mergedData.map((e) => Supir.fromJson(e)).toList();
+      return parseAndSort(mergedData);
     }
   }
 
@@ -324,6 +336,12 @@ class ResourceRepository {
   }
 
   Future<List<Pekerja>> getPekerjas() async {
+    List<Pekerja> parseAndSort(List<Map<String, dynamic>> data) {
+      final list = data.map((e) => Pekerja.fromJson(e)).toList();
+      list.sort((a, b) => (a.nama ?? '').toLowerCase().compareTo((b.nama ?? '').toLowerCase()));
+      return list;
+    }
+    
     try {
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
@@ -331,7 +349,7 @@ class ResourceRepository {
           'pekerja',
           ApiConstants.pekerja,
         );
-        return mergedData.map((e) => Pekerja.fromJson(e)).toList();
+        return parseAndSort(mergedData);
       }
 
       final response = await _apiClient.dio
@@ -341,13 +359,13 @@ class ResourceRepository {
 
       await syncService.cacheData('pekerja', data);
       final mergedData = await syncService.getMergedOfflineData('pekerja', ApiConstants.pekerja);
-      return mergedData.map((e) => Pekerja.fromJson(e)).toList();
+      return parseAndSort(mergedData);
     } catch (e) {
       final mergedData = await syncService.getMergedOfflineData(
         'pekerja',
         ApiConstants.pekerja,
       );
-      return mergedData.map((e) => Pekerja.fromJson(e)).toList();
+      return parseAndSort(mergedData);
     }
   }
 
