@@ -23,6 +23,7 @@ import 'package:sawitappmobile/features/pekerja/screens/pekerja_detail_screen.da
 import 'package:sawitappmobile/features/user/screens/user_detail_screen.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
 import 'package:sawitappmobile/shared/widgets/skeleton_loader.dart';
+import 'package:sawitappmobile/features/operasional/screens/pay_debt_screen.dart';
 
 import 'package:sawitappmobile/core/services/sync_service.dart';
 
@@ -723,18 +724,48 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                 ),
               )
             : null,
-        trailing: Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: Colors.grey[50],
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            Icons.chevron_right_rounded,
-            color: Colors.grey[400],
-            size: 20,
-          ),
-        ),
+        trailing: (hutang != null && hutang > 0 && (item is Penjual || item is Supir || item is Pekerja))
+            ? ElevatedButton.icon(
+                onPressed: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PayDebtScreen(
+                        pihakType: item is Penjual
+                            ? 'App\\Models\\Penjual'
+                            : item is Supir
+                                ? 'App\\Models\\Supir'
+                                : 'App\\Models\\Pekerja',
+                        pihakId: item.id,
+                      ),
+                    ),
+                  );
+                  if (mounted && context.mounted) {
+                    context.read<ResourceProvider>().fetchResources(widget.resourceType, refresh: true);
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+                icon: const Icon(Icons.payment, size: 16),
+                label: const Text('Bayar', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              )
+            : Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.chevron_right_rounded,
+                  color: Colors.grey[400],
+                  size: 20,
+                ),
+              ),
         onTap: () {
           if (item is Operasional) {
             Navigator.push(

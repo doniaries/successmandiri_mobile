@@ -420,6 +420,12 @@ class ResourceProvider with ChangeNotifier {
                 _operasionals.add(item);
               }
             }
+            _operasionals.sort((a, b) {
+              if (a.id < 0 && b.id >= 0) return -1;
+              if (b.id < 0 && a.id >= 0) return 1;
+              if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
+              return b.id.compareTo(a.id);
+            });
             break;
           case 'jurnal_keuangan':
             final items = rawData.map((e) => JurnalKeuangan.fromJson(e)).toList();
