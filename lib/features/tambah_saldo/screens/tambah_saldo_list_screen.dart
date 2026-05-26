@@ -11,6 +11,7 @@ import 'package:sawitappmobile/features/tambah_saldo/screens/tambah_saldo_detail
 import 'package:sawitappmobile/features/tambah_saldo/screens/edit_tambah_saldo_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
+import 'package:sawitappmobile/shared/providers/global_filter_provider.dart';
 
 class TambahSaldoListScreen extends StatefulWidget {
   const TambahSaldoListScreen({super.key});
@@ -20,9 +21,6 @@ class TambahSaldoListScreen extends StatefulWidget {
 }
 
 class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
-  DateTime? _selectedSingleDate;
-  DateTime? _lastDashboardFilterDate;
-  bool _hasInitializedFilterDate = false;
 
   @override
   void initState() {
@@ -49,30 +47,15 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
       body: Column(
         children: [
           Expanded(
-            child: Consumer2<TambahSaldoProvider, DashboardProvider>(
-              builder: (context, provider, dashboardProvider, child) {
+            child: Consumer3<TambahSaldoProvider, DashboardProvider, GlobalFilterProvider>(
+              builder: (context, provider, dashboardProvider, globalFilter, child) {
                 final activeDateStr =
                     dashboardProvider.summary?.systemActiveDate;
                 final systemActiveDate = activeDateStr != null
                     ? DateTime.parse(activeDateStr)
                     : DateTime.now();
 
-                final targetDate = _selectedSingleDate ?? systemActiveDate;
-
-                if (!_hasInitializedFilterDate ||
-                    _lastDashboardFilterDate != dashboardProvider.filterDate) {
-                  _hasInitializedFilterDate = true;
-                  _lastDashboardFilterDate = dashboardProvider.filterDate;
-
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (mounted) {
-                      setState(() {
-                        _selectedSingleDate =
-                            dashboardProvider.filterDate ?? systemActiveDate;
-                      });
-                    }
-                  });
-                }
+                final targetDate = globalFilter.selectedDate ?? systemActiveDate;
 
                 final filteredRequests = provider.requests.where((r) {
                   return DateUtils.isSameDay(r.tanggal.toLocal(), targetDate);
@@ -105,12 +88,14 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                       dashboardProvider,
                       filteredRequests,
                       systemActiveDate,
+                      globalFilter.selectedDate,
                     ),
                     _buildFilterInfoWidget(
                       provider,
                       dashboardProvider,
                       filteredRequests,
                       systemActiveDate,
+                      globalFilter.selectedDate,
                     ),
                     Expanded(
                       child: RefreshIndicator(
@@ -229,6 +214,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
     DashboardProvider dashboardProvider,
     List<TambahSaldoModel> filtered,
     DateTime systemActiveDate,
+    DateTime? selectedDate,
   ) {
     double totalNominal = 0;
     for (var r in filtered) {
@@ -236,15 +222,15 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
     }
 
     final double currentSaldo = dashboardProvider.summary?.saldo ?? 0.0;
-    final targetDate = _selectedSingleDate ?? systemActiveDate;
+    final targetDate = selectedDate ?? systemActiveDate;
     final formattedDateText = DateFormat(
       'dd MMMM yyyy',
       'id_ID',
     ).format(targetDate);
 
     final isFilterActive =
-        _selectedSingleDate != null &&
-        !DateUtils.isSameDay(_selectedSingleDate!, systemActiveDate);
+        selectedDate != null &&
+        !DateUtils.isSameDay(selectedDate, systemActiveDate);
 
     return Container(
       width: double.infinity,
@@ -524,6 +510,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
   }
 
   void _showFilterSheet() async {
+    final globalFilter = context.read<GlobalFilterProvider>();
     final dashboardProvider = context.read<DashboardProvider>();
     final activeDateStr = dashboardProvider.summary?.systemActiveDate;
     final systemActiveDate = activeDateStr != null
@@ -532,7 +519,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
 
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _selectedSingleDate ?? systemActiveDate,
+      initialDate: globalFilter.selectedDate ?? systemActiveDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now().add(const Duration(days: 365)),
       initialEntryMode: DatePickerEntryMode.calendarOnly,
@@ -552,9 +539,8 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
     );
 
     if (picked != null) {
-      setState(() {
-        _selectedSingleDate = picked;
-      });
+      globalFilter.setDate(picked);
+      dashboardProvider.fetchSummary(filterDate: picked);
     }
   }
 
@@ -810,16 +796,17 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
     DashboardProvider dashboardProvider,
     List<TambahSaldoModel> filtered,
     DateTime systemActiveDate,
+    DateTime? selectedDate,
   ) {
-    if (_selectedSingleDate == null) return const SizedBox.shrink();
-    if (DateUtils.isSameDay(_selectedSingleDate!, systemActiveDate)) {
+    if (selectedDate == null) return const SizedBox.shrink();
+    if (DateUtils.isSameDay(selectedDate, systemActiveDate)) {
       return const SizedBox.shrink();
     }
 
     final formattedFilterDate = DateFormat(
       'dd MMMM yyyy',
       'id_ID',
-    ).format(_selectedSingleDate!);
+    ).format(selectedDate);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -890,9 +877,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
           ),
           TextButton.icon(
             onPressed: () {
-              setState(() {
-                _selectedSingleDate = null;
-              });
+              context.read<GlobalFilterProvider>().setDate(null);
             },
             style: TextButton.styleFrom(
               foregroundColor: Colors.red[700],

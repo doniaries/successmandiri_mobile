@@ -8,28 +8,24 @@ class DashboardProvider with ChangeNotifier {
   DashboardSummary? _summary;
   bool _isLoading = false;
   String? _error;
-  DateTime? _filterDate;
 
   DashboardSummary? get summary => _summary;
   bool get isLoading => _isLoading;
   String? get error => _error;
-  DateTime? get filterDate => _filterDate;
 
-  Future<void> fetchSummary({String? date}) async {
-    if (_summary == null || date != null) _isLoading = true;
+  Future<void> fetchSummary({DateTime? filterDate}) async {
+    if (_summary == null || filterDate != null) _isLoading = true;
     _error = null;
-
-    if (date != null) {
-      _filterDate = DateTime.parse(date);
-    } else {
-      _filterDate = null;
-    }
     notifyListeners();
 
     try {
-      final newSummary = await _repository.getSummary(date: date);
+      final dateStr = filterDate != null 
+          ? "${filterDate.year}-${filterDate.month.toString().padLeft(2, '0')}-${filterDate.day.toString().padLeft(2, '0')}"
+          : null;
       
-      if (date != null && _summary?.saldo != null) {
+      final newSummary = await _repository.getSummary(date: dateStr);
+      
+      if (filterDate != null && _summary?.saldo != null) {
         // Pertahankan saldo saat ini jika filter tanggal aktif
         _summary = newSummary.copyWith(saldo: _summary!.saldo);
       } else {
@@ -44,14 +40,17 @@ class DashboardProvider with ChangeNotifier {
   }
 
   /// Gunakan ini saat switch perusahaan agar nama perusahaan lama tidak tampil
-  Future<void> clearAndFetch({String? date}) async {
+  Future<void> clearAndFetch({DateTime? filterDate}) async {
     _summary = null;
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      _summary = await _repository.getSummary(date: date);
+      final dateStr = filterDate != null 
+          ? "${filterDate.year}-${filterDate.month.toString().padLeft(2, '0')}-${filterDate.day.toString().padLeft(2, '0')}"
+          : null;
+      _summary = await _repository.getSummary(date: dateStr);
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -63,7 +62,6 @@ class DashboardProvider with ChangeNotifier {
   void clearData() {
     _summary = null;
     _error = null;
-    _filterDate = null;
     notifyListeners();
   }
 }

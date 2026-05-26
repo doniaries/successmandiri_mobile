@@ -13,6 +13,7 @@ import 'package:sawitappmobile/core/constants/api_constants.dart';
 
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/shared/providers/navigation_provider.dart';
+import 'package:sawitappmobile/shared/providers/global_filter_provider.dart';
 
 class FinanceJournalScreen extends StatefulWidget {
   const FinanceJournalScreen({super.key});
@@ -25,9 +26,8 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
   String _selectedFilter = 'Semua';
   final List<String> _filters = ['Semua', 'Pemasukan', 'Pengeluaran'];
   final ScrollController _scrollController = ScrollController();
-  DateTime? _selectedSingleDate;
-  DateTime? _lastDashboardFilterDate;
-  bool _hasInitializedFilterDate = false;
+  DateTime? _lastGlobalDate;
+  bool _hasInitializedGlobalDate = false;
 
   @override
   void initState() {
@@ -35,23 +35,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final dashboardProvider = context.read<DashboardProvider>();
       
-      // Prioritaskan filterDate dari dashboard jika ada
-      final filterDate = dashboardProvider.filterDate;
-      if (filterDate != null) {
-        _selectedSingleDate = filterDate;
-        _lastDashboardFilterDate = filterDate;
-        _hasInitializedFilterDate = true;
-      } else {
-        final activeDateStr = dashboardProvider.summary?.systemActiveDate;
-        _selectedSingleDate = activeDateStr != null
-            ? DateTime.parse(activeDateStr)
-            : DateTime.now();
-        _hasInitializedFilterDate = true;
-        _lastDashboardFilterDate = null;
-      }
-
       // Fetch data sesuai tanggal yang sudah ditentukan
       context.read<ResourceProvider>().fetchResources(
         'jurnal_keuangan',
@@ -70,7 +54,8 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
   Map<String, dynamic> _buildApiFilters() {
     final Map<String, dynamic> filters = {};
 
-    final targetDate = _selectedSingleDate ?? _getSystemActiveDate();
+    final globalFilter = context.read<GlobalFilterProvider>();
+    final targetDate = globalFilter.selectedDate ?? _getSystemActiveDate();
     final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
     filters['start_date'] = dateStr;
     filters['end_date'] = dateStr;
@@ -148,8 +133,8 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dashboardProvider = context.watch<DashboardProvider>();
     final navProvider = context.watch<MainNavigationProvider>();
+    final globalFilter = context.watch<GlobalFilterProvider>();
     
     if (navProvider.journalFilter != null) {
       final newFilter = navProvider.journalFilter!;
@@ -161,20 +146,8 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
       });
     }
 
-    final dashboardFilterDate = dashboardProvider.filterDate;
-    
-    // Deteksi perubahan filterDate dari dashboard SETELAH inisialisasi awal
-    if (_hasInitializedFilterDate && _lastDashboardFilterDate != dashboardFilterDate) {
-      _lastDashboardFilterDate = dashboardFilterDate;
-      
-      final activeDateStr = dashboardProvider.summary?.systemActiveDate;
-      final systemActiveDate = activeDateStr != null
-          ? DateTime.parse(activeDateStr)
-          : DateTime.now();
-          
-      _selectedSingleDate = dashboardFilterDate ?? systemActiveDate;
-      
-      // Trigger fetch saat filter dashboard berubah
+    if (_hasInitializedGlobalDate && _lastGlobalDate != globalFilter.selectedDate) {
+      _lastGlobalDate = globalFilter.selectedDate;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         context.read<ResourceProvider>().fetchResources(
@@ -183,6 +156,9 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
           filters: _buildApiFilters(),
         );
       });
+    } else if (!_hasInitializedGlobalDate) {
+      _lastGlobalDate = globalFilter.selectedDate;
+      _hasInitializedGlobalDate = true;
     }
 
     return Scaffold(
@@ -214,13 +190,13 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
               provider.isLoading && provider.jurnalKeuangans.isEmpty;
 
           final items = provider.jurnalKeuangans;
-          final filteredItems = _getFilteredItems(items);
+          final filteredItems = _getFilteredItems(items, globalFilter.selectedDate);
 
           return Column(
             children: [
               isInitialLoading
                   ? _buildSkeletonHeader()
-                  : _buildSummaryHeader(provider),
+                  : _buildSummaryHeader(provider, globalFilter.selectedDate),
               _buildFilterChips(),
               Expanded(
                 child: RefreshIndicator(
@@ -263,8 +239,8 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     );
   }
 
-  Widget _buildSummaryHeader(ResourceProvider provider) {
-    final targetDate = _selectedSingleDate ?? _getSystemActiveDate();
+  Widget _buildSummaryHeader(ResourceProvider provider, DateTime? selectedDate) {
+    final targetDate = selectedDate ?? _getSystemActiveDate();
     final systemActiveDate = _getSystemActiveDate();
 
     // Hitung statistik berdasarkan tanggal aktif menggunakan ringkasan data dari server
@@ -272,7 +248,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     final double displayOut = provider.totalPengeluaran;
     final int filterCount = provider.jurnalCount;
 
-    final isFilterActive = _selectedSingleDate != null && !DateUtils.isSameDay(_selectedSingleDate!, systemActiveDate);
+    final isFilterActive = selectedDate != null && !DateUtils.isSameDay(selectedDate, systemActiveDate);
     final dateText = DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
     final labelSuffix = DateFormat('d MMM', 'id_ID').format(targetDate);
 
@@ -677,8 +653,8 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     );
   }
 
-  List<JurnalKeuangan> _getFilteredItems(List<JurnalKeuangan> items) {
-    final targetDate = _selectedSingleDate ?? _getSystemActiveDate();
+  List<JurnalKeuangan> _getFilteredItems(List<JurnalKeuangan> items, DateTime? selectedDate) {
+    final targetDate = selectedDate ?? _getSystemActiveDate();
     return items.where((item) {
       final matchesDate = DateUtils.isSameDay(item.tanggal.toLocal(), targetDate);
       if (!matchesDate) return false;
@@ -689,9 +665,11 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
   }
 
   void _showFilterSheet() async {
+    final globalFilter = context.read<GlobalFilterProvider>();
+    final dashboardProvider = context.read<DashboardProvider>();
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _selectedSingleDate ?? _getSystemActiveDate(),
+      initialDate: globalFilter.selectedDate ?? _getSystemActiveDate(),
       firstDate: DateTime(2020),
       lastDate: DateTime.now().add(const Duration(days: 365)),
       initialEntryMode: DatePickerEntryMode.calendarOnly,
@@ -710,19 +688,19 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
       },
     );
     if (picked != null) {
-      setState(() {
-        _selectedSingleDate = picked;
-      });
+      globalFilter.setDate(picked);
+      dashboardProvider.fetchSummary(filterDate: picked);
       _refreshData();
     }
   }
 
   Future<void> _handleDownloadPdf() async {
     final authProvider = context.read<AuthProvider>();
+    final globalFilter = context.read<GlobalFilterProvider>();
     final token = await authProvider.getAuthToken();
     if (token == null) return;
-
-    final targetDate = _selectedSingleDate ?? _getSystemActiveDate();
+    if (!mounted) return;
+    final targetDate = globalFilter.selectedDate ?? _getSystemActiveDate();
     final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
     final startDateStr = dateStr;
     final endDateStr = dateStr;

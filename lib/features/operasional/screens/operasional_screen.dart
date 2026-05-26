@@ -10,6 +10,7 @@ import 'package:sawitappmobile/shared/widgets/skeleton_loader.dart';
 import 'package:sawitappmobile/features/operasional/screens/add_operasional_screen.dart';
 import 'package:sawitappmobile/features/operasional/screens/operasional_detail_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
+import 'package:sawitappmobile/shared/providers/global_filter_provider.dart';
 
 class OperasionalScreen extends StatefulWidget {
   const OperasionalScreen({super.key});
@@ -20,27 +21,12 @@ class OperasionalScreen extends StatefulWidget {
 
 class _OperasionalScreenState extends State<OperasionalScreen> {
   final ScrollController _scrollController = ScrollController();
-  DateTime? _selectedSingleDate;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final activeDateStr = context
-          .read<DashboardProvider>()
-          .summary
-          ?.systemActiveDate;
-      if (activeDateStr != null) {
-        setState(() {
-          _selectedSingleDate = DateTime.parse(activeDateStr);
-        });
-      } else {
-        setState(() {
-          _selectedSingleDate = DateTime.now();
-        });
-      }
-      
       final provider = context.read<ResourceProvider>();
       if (provider.operasionals.isEmpty) {
         _refreshData();
@@ -122,15 +108,15 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     }
   }
 
-  List<Operasional> _getFilteredDateItems(List<Operasional> allItems, DateTime systemActiveDate) {
-    final targetDate = _selectedSingleDate ?? systemActiveDate;
+  List<Operasional> _getFilteredDateItems(List<Operasional> allItems, DateTime systemActiveDate, DateTime? filterDate) {
+    final targetDate = filterDate ?? systemActiveDate;
     return allItems.where((item) {
       return DateUtils.isSameDay(item.tanggal.toLocal(), targetDate);
     }).toList();
   }
 
-  List<Operasional> _getFilteredItems(List<Operasional> allItems, DateTime systemActiveDate) {
-    List<Operasional> items = _getFilteredDateItems(allItems, systemActiveDate);
+  List<Operasional> _getFilteredItems(List<Operasional> allItems, DateTime systemActiveDate, DateTime? filterDate) {
+    List<Operasional> items = _getFilteredDateItems(allItems, systemActiveDate, filterDate);
     if (_currentFilter != 'Semua') {
       items = items
           .where(
@@ -142,17 +128,16 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
   }
 
   void _showFilterSheet() async {
-    final activeDateStr = context
-        .read<DashboardProvider>()
-        .summary
-        ?.systemActiveDate;
+    final dashboardProvider = context.read<DashboardProvider>();
+    final globalFilter = context.read<GlobalFilterProvider>();
+    final activeDateStr = dashboardProvider.summary?.systemActiveDate;
     final systemActiveDate = activeDateStr != null
         ? DateTime.parse(activeDateStr)
         : DateTime.now();
 
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _selectedSingleDate ?? systemActiveDate,
+      initialDate: globalFilter.selectedDate ?? systemActiveDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now().add(const Duration(days: 365)),
       initialEntryMode: DatePickerEntryMode.calendarOnly,
@@ -172,9 +157,8 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     );
 
     if (picked != null) {
-      setState(() {
-        _selectedSingleDate = picked;
-      });
+      globalFilter.setDate(picked);
+      dashboardProvider.fetchSummary(filterDate: picked);
     }
   }
 
@@ -243,14 +227,14 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     return SliverToBoxAdapter(
       child: Column(
         children: [
-          Consumer2<ResourceProvider, DashboardProvider>(
-            builder: (context, resourceProvider, dashboardProvider, child) {
+          Consumer3<ResourceProvider, DashboardProvider, GlobalFilterProvider>(
+            builder: (context, resourceProvider, dashboardProvider, globalFilter, child) {
               final activeDateStr = dashboardProvider.summary?.systemActiveDate;
               final systemActiveDate = activeDateStr != null
                   ? DateTime.parse(activeDateStr)
                   : DateTime.now();
 
-              final filteredDateItems = _getFilteredDateItems(resourceProvider.operasionals, systemActiveDate);
+              final filteredDateItems = _getFilteredDateItems(resourceProvider.operasionals, systemActiveDate, globalFilter.selectedDate);
               double totalPemasukan = 0;
               double totalPengeluaran = 0;
               for (var item in filteredDateItems) {
@@ -261,10 +245,10 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                 }
               }
 
-              final targetDate = _selectedSingleDate ?? systemActiveDate;
+              final targetDate = globalFilter.selectedDate ?? systemActiveDate;
               final dateText = DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
               
-              final isFilterActive = _selectedSingleDate != null && !DateUtils.isSameDay(_selectedSingleDate!, systemActiveDate);
+              final isFilterActive = globalFilter.selectedDate != null && !DateUtils.isSameDay(globalFilter.selectedDate!, systemActiveDate);
 
               return Container(
                 width: double.infinity,
@@ -489,8 +473,8 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
 
 
   Widget _buildListSection() {
-    return Consumer2<ResourceProvider, DashboardProvider>(
-      builder: (context, provider, dashboardProvider, child) {
+    return Consumer3<ResourceProvider, DashboardProvider, GlobalFilterProvider>(
+      builder: (context, provider, dashboardProvider, globalFilter, child) {
         if (provider.isLoading && provider.operasionals.isEmpty) {
           return SliverList(
             delegate: SliverChildBuilderDelegate(
@@ -505,7 +489,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
             ? DateTime.parse(activeDateStr)
             : DateTime.now();
 
-        final items = _getFilteredItems(provider.operasionals, systemActiveDate);
+        final items = _getFilteredItems(provider.operasionals, systemActiveDate, globalFilter.selectedDate);
 
         if (items.isEmpty) {
           return SliverFillRemaining(

@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:sawitappmobile/features/auth/providers/auth_provider.dart';
 import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_provider.dart';
 import 'package:sawitappmobile/features/tambah_saldo/providers/tambah_saldo_provider.dart';
+import 'package:sawitappmobile/shared/providers/global_filter_provider.dart';
 
 import 'package:sawitappmobile/shared/screens/resource_list_screen.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
@@ -1967,8 +1968,12 @@ class _StatCards extends StatefulWidget {
 
 class _StatCardsState extends State<_StatCards> {
   void _onPeriodTap(int index, DateTime? currentDate) async {
+    final globalFilter = context.read<GlobalFilterProvider>();
+    final dashboardProvider = context.read<DashboardProvider>();
+
     if (index == 0) {
-      context.read<DashboardProvider>().fetchSummary();
+      globalFilter.clearDate();
+      dashboardProvider.fetchSummary(filterDate: null);
     } else {
       final DateTime? picked = await showDatePicker(
         context: context,
@@ -1995,9 +2000,9 @@ class _StatCardsState extends State<_StatCards> {
         },
       );
       if (picked != null) {
-        final formattedDate = DateFormat('yyyy-MM-dd').format(picked);
         if (mounted) {
-          context.read<DashboardProvider>().fetchSummary(date: formattedDate);
+          globalFilter.setDate(picked);
+          dashboardProvider.fetchSummary(filterDate: picked);
         }
       }
     }
@@ -2100,9 +2105,8 @@ class _StatCardsState extends State<_StatCards> {
     final summary = context.select<DashboardProvider, DashboardSummary?>(
       (p) => p.summary,
     );
-    final filterDate = context.select<DashboardProvider, DateTime?>(
-      (p) => p.filterDate,
-    );
+    final filterDate = context.watch<GlobalFilterProvider>().selectedDate;
+    
     if (summary == null) return const SizedBox.shrink();
 
     final isToday = filterDate == null;

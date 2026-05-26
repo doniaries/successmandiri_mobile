@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:sawitappmobile/shared/providers/global_filter_provider.dart';
 import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_provider.dart';
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
@@ -18,10 +19,7 @@ class TransaksiDoScreen extends StatefulWidget {
 
 class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   final ScrollController _scrollController = ScrollController();
-  DateTime? _selectedSingleDate;
   bool _isManualSyncing = false;
-  DateTime? _lastDashboardFilterDate;
-  bool _hasInitializedFilterDate = false;
   bool _isSearching = false;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
@@ -90,20 +88,6 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dashboardProvider = context.watch<DashboardProvider>();
-    final dashboardFilterDate = dashboardProvider.filterDate;
-    
-    if (!_hasInitializedFilterDate || _lastDashboardFilterDate != dashboardFilterDate) {
-      _hasInitializedFilterDate = true;
-      _lastDashboardFilterDate = dashboardFilterDate;
-      
-      final activeDateStr = dashboardProvider.summary?.systemActiveDate;
-      final systemActiveDate = activeDateStr != null
-          ? DateTime.parse(activeDateStr)
-          : DateTime.now();
-          
-      _selectedSingleDate = dashboardFilterDate ?? systemActiveDate;
-    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -275,20 +259,20 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
 
 
   Widget _buildSummaryHeader() {
-    return Consumer2<DashboardProvider, TransaksiDoProvider>(
-      builder: (context, dashboardProvider, txProvider, _) {
+    return Consumer3<DashboardProvider, TransaksiDoProvider, GlobalFilterProvider>(
+      builder: (context, dashboardProvider, txProvider, globalFilter, _) {
         final transactions = txProvider.transactions;
         final activeDateStr = dashboardProvider.summary?.systemActiveDate;
         final systemActiveDate = activeDateStr != null 
             ? DateTime.parse(activeDateStr) 
             : DateTime.now();
         
-        final targetDate = _selectedSingleDate ?? systemActiveDate;
+        final targetDate = globalFilter.selectedDate ?? systemActiveDate;
         final activeCount = transactions.where((t) => DateUtils.isSameDay(t.tanggal.toLocal(), targetDate)).length;
         
         final dateText = DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
         
-        final isFilterActive = _selectedSingleDate != null && !DateUtils.isSameDay(_selectedSingleDate!, systemActiveDate);
+        final isFilterActive = globalFilter.selectedDate != null && !DateUtils.isSameDay(globalFilter.selectedDate!, systemActiveDate);
 
         return Container(
           margin: const EdgeInsets.all(16),
@@ -443,8 +427,8 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   }
 
   Widget _buildTransactionList() {
-    return Consumer2<TransaksiDoProvider, DashboardProvider>(
-      builder: (context, provider, dashboardProvider, _) {
+    return Consumer3<TransaksiDoProvider, DashboardProvider, GlobalFilterProvider>(
+      builder: (context, provider, dashboardProvider, globalFilter, _) {
         if (provider.isLoading && provider.transactions.isEmpty) {
           return const SliverFillRemaining(
             child: Center(child: CircularProgressIndicator()),
@@ -488,7 +472,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
             ? DateTime.parse(activeDateStr) 
             : DateTime.now();
 
-        final targetDate = _selectedSingleDate ?? systemActiveDate;
+        final targetDate = globalFilter.selectedDate ?? systemActiveDate;
 
         final filteredTransactions = provider.transactions.where((t) {
           // 1. Search Filter
@@ -533,6 +517,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
 
   void _showFilterSheet() async {
     final dashboardProvider = context.read<DashboardProvider>();
+    final globalFilter = context.read<GlobalFilterProvider>();
     final activeDateStr = dashboardProvider.summary?.systemActiveDate;
     final systemActiveDate = activeDateStr != null
         ? DateTime.parse(activeDateStr)
@@ -540,7 +525,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
 
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _selectedSingleDate ?? systemActiveDate,
+      initialDate: globalFilter.selectedDate ?? systemActiveDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now().add(const Duration(days: 365)),
       initialEntryMode: DatePickerEntryMode.calendarOnly,
@@ -560,9 +545,8 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
     );
 
     if (picked != null) {
-      setState(() {
-        _selectedSingleDate = picked;
-      });
+      globalFilter.setDate(picked);
+      dashboardProvider.fetchSummary(filterDate: picked);
     }
   }
 
