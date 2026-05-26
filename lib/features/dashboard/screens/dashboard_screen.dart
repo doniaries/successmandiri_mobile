@@ -1368,7 +1368,45 @@ class _DashboardHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _HeaderTopRow(),
-                LiveDateTimeWidget(color: Colors.white, isTransparentBg: true),
+                Consumer<DashboardProvider>(
+                  builder: (context, provider, _) {
+                    final activeDateStr = provider.summary?.systemActiveDate;
+                    if (activeDateStr != null) {
+                      final activeDate = DateTime.parse(activeDateStr);
+                      final formatted = DateFormat('dd MMM yyyy', 'id_ID').format(activeDate);
+                      return Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.amber.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.amber.withValues(alpha: 0.5)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.event_available, color: Colors.amber, size: 14),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Tgl Sistem: $formatted',
+                                  style: const TextStyle(
+                                    color: Colors.amber,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const LiveDateTimeWidget(color: Colors.white, isTransparentBg: true, showDate: false),
+                        ],
+                      );
+                    }
+                    return const LiveDateTimeWidget(color: Colors.white, isTransparentBg: true);
+                  },
+                ),
                 SizedBox(height: 12),
                 _CompanySelector(),
                 SizedBox(height: 12),
