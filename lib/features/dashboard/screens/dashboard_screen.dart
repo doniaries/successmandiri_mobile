@@ -1362,12 +1362,12 @@ class _DashboardHeader extends StatelessWidget {
               ),
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(20, 50, 20, 20),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _HeaderTopRow(),
+                const _HeaderTopRow(),
                 Consumer<DashboardProvider>(
                   builder: (context, provider, _) {
                     final activeDateStr = provider.summary?.systemActiveDate;
