@@ -1,4 +1,4 @@
-package com.example.sawitappmobile
+package com.mysawit.app
 
 import io.flutter.embedding.android.FlutterActivity
 import android.app.NotificationChannel

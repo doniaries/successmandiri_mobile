@@ -282,6 +282,7 @@ class ResourceProvider with ChangeNotifier {
         final items = allRawData.map((e) => Pekerja.fromJson(e)).toList();
         _pekerjas.clear();
         _pekerjas.addAll(items);
+        _pekerjas.sort((a, b) => b.id.compareTo(a.id));
 
         // Update counts
         if (lastResponse is Map && lastResponse['total'] != null) {
@@ -372,6 +373,7 @@ class ResourceProvider with ChangeNotifier {
                 _penjuals.add(item);
               }
             }
+            _penjuals.sort((a, b) => b.id.compareTo(a.id));
             break;
           case 'supir':
             final items = rawData.map((e) => Supir.fromJson(e)).toList();
@@ -381,6 +383,7 @@ class ResourceProvider with ChangeNotifier {
                 _supirs.add(item);
               }
             }
+            _supirs.sort((a, b) => b.id.compareTo(a.id));
             break;
           case 'kendaraan':
             final items = rawData.map((e) => Kendaraan.fromJson(e)).toList();
