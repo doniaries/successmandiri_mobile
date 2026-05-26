@@ -122,7 +122,8 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
   }
 
   Future<void> _handleDelete() async {
-    if ((_currentSupir.hutang ?? 0) > 0) {
+    final double sisaHutang = _currentSupir.sisaHutang ?? 0;
+    if (sisaHutang > 0) {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
@@ -176,7 +177,29 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
             SuccessDialog.show(context, title: 'Berhasil', message: 'Data Supir berhasil dihapus.');
             Navigator.pop(context);
           } else {
-            ErrorDialog.show(context, title: 'Gagal', message: context.read<ResourceProvider>().errorMessage ?? 'Gagal menghapus data.');
+            // Server menolak (ada transaksi terhubung) — tawarkan nonaktif
+            final errMsg = context.read<ResourceProvider>().errorMessage ?? 'Gagal menghapus data.';
+            final offerDeactivate = await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Hapus Gagal'),
+                content: Text('$errMsg\n\nApakah Anda ingin menonaktifkan data ini sebagai gantinya?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('Tidak'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    style: TextButton.styleFrom(foregroundColor: Colors.orange),
+                    child: const Text('Nonaktifkan'),
+                  ),
+                ],
+              ),
+            );
+            if (offerDeactivate == true && _currentSupir.isActive) {
+              _handleToggleStatus();
+            }
           }
         }
       } catch (e) {

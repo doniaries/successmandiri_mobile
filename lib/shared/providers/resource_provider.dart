@@ -954,6 +954,7 @@ class ResourceProvider with ChangeNotifier {
 
   Future<bool> deleteResource(String type, int id) async {
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
     try {
       switch (type) {
@@ -977,16 +978,16 @@ class ResourceProvider with ChangeNotifier {
     } catch (e) {
       debugPrint('Error deleting $type: $e');
       if (e is DioException) {
-        if (e.response?.data is Map && e.response?.data['errors'] != null) {
-          final Map errors = e.response?.data['errors'];
-          final firstError = errors.values.first;
-          if (firstError is List && firstError.isNotEmpty) {
-            _errorMessage = firstError.first.toString();
-          } else {
-            _errorMessage = firstError.toString();
-          }
+        // Ambil pesan dari body response (422 hutang, 422 ada transaksi)
+        final responseData = e.response?.data;
+        if (responseData is Map) {
+          _errorMessage = responseData['message']?.toString() ??
+              (responseData['errors'] != null
+                  ? (responseData['errors'] as Map).values.first?.toString()
+                  : null) ??
+              e.message;
         } else {
-          _errorMessage = e.response?.data?['message'] ?? e.message;
+          _errorMessage = e.message;
         }
       } else {
         _errorMessage = e.toString();

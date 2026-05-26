@@ -67,7 +67,7 @@ class ResourceRepository {
   Future<List<Penjual>> getPenjuals() async {
     List<Penjual> parseAndSort(List<Map<String, dynamic>> data) {
       final list = data.map((e) => Penjual.fromJson(e)).toList();
-      list.sort((a, b) => a.nama.toLowerCase().compareTo(b.nama.toLowerCase()));
+      list.sort((a, b) => b.id.compareTo(a.id));
       return list;
     }
     
@@ -208,7 +208,7 @@ class ResourceRepository {
   Future<List<Supir>> getSupirs() async {
     List<Supir> parseAndSort(List<Map<String, dynamic>> data) {
       final list = data.map((e) => Supir.fromJson(e)).toList();
-      list.sort((a, b) => a.nama.toLowerCase().compareTo(b.nama.toLowerCase()));
+      list.sort((a, b) => b.id.compareTo(a.id));
       return list;
     }
     
@@ -338,7 +338,7 @@ class ResourceRepository {
   Future<List<Pekerja>> getPekerjas() async {
     List<Pekerja> parseAndSort(List<Map<String, dynamic>> data) {
       final list = data.map((e) => Pekerja.fromJson(e)).toList();
-      list.sort((a, b) => a.nama.toLowerCase().compareTo(b.nama.toLowerCase()));
+      list.sort((a, b) => b.id.compareTo(a.id));
       return list;
     }
     
