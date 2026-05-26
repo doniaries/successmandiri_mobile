@@ -69,7 +69,6 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
       'nama': _namaController.text,
       'keterangan': _keteranganController.text,
       'hutang': hutangValue > 0 ? hutangValue : 0,
-      'status': 'Aktif', // Default status
     });
 
     if (mounted) {
