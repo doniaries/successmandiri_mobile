@@ -281,14 +281,6 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
         final totalNilaiDo = filteredTx.fold<double>(
           0, (sum, t) => sum + t.subTotal);
 
-        // Hitung pengeluaran operasional dari data lokal filtered by tanggal
-        final filteredOps = resourceProvider.operasionals.where(
-          (o) => DateUtils.isSameDay(o.tanggal.toLocal(), targetDate) &&
-              o.operasional.toLowerCase() == 'pengeluaran',
-        ).toList();
-        final totalPengeluaranOps = filteredOps.fold<double>(
-          0, (sum, o) => sum + o.nominal);
-
         return Container(
           margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
           padding: const EdgeInsets.all(20),
@@ -366,15 +358,14 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-              // Baris stats: Tonase | Nilai DO | Pengeluaran Ops
+              // Baris stats: Tonase | Nilai DO
               Row(
                 children: [
                   Expanded(
                     child: _buildDoStatItem(
                       'Total Tonase',
-                      '${totalTonase.toStringAsFixed(0)} kg',
-                      Icons.scale_rounded,
-                      Colors.lightBlueAccent,
+                      '${NumberFormat.decimalPattern('id').format(totalTonase)} kg',
+                      const Icon(Icons.scale_rounded, color: Colors.lightBlueAccent, size: 18),
                     ),
                   ),
                   Container(width: 1, height: 40, color: Colors.white24),
@@ -382,17 +373,14 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                     child: _buildDoStatItem(
                       'Nilai DO',
                       CurrencyFormatter.formatRupiah(totalNilaiDo),
-                      Icons.attach_money_rounded,
-                      Colors.greenAccent,
-                    ),
-                  ),
-                  Container(width: 1, height: 40, color: Colors.white24),
-                  Expanded(
-                    child: _buildDoStatItem(
-                      'Pengeluaran',
-                      CurrencyFormatter.formatRupiah(totalPengeluaranOps),
-                      Icons.trending_down_rounded,
-                      Colors.orangeAccent,
+                      const Text(
+                        'Rp',
+                        style: TextStyle(
+                          color: Colors.greenAccent,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -407,12 +395,11 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   Widget _buildDoStatItem(
     String label,
     String value,
-    IconData icon,
-    Color color,
+    Widget iconWidget,
   ) {
     return Column(
       children: [
-        Icon(icon, color: color, size: 18),
+        iconWidget,
         const SizedBox(height: 4),
         Text(
           label,

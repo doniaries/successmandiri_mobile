@@ -154,16 +154,19 @@ class PemasukanStats {
 class StatDetail {
   final double total;
   final int count;
+  final double tonase;
 
   StatDetail({
     required this.total,
     required this.count,
+    this.tonase = 0.0,
   });
 
   factory StatDetail.fromJson(Map<String, dynamic> json) {
     return StatDetail(
       total: double.tryParse(json['total']?.toString() ?? '0') ?? 0,
       count: int.tryParse(json['count']?.toString() ?? '0') ?? 0,
+      tonase: double.tryParse(json['tonase']?.toString() ?? '0') ?? 0,
     );
   }
 }

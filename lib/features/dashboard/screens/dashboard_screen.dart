@@ -2008,7 +2008,7 @@ class _StatCardsState extends State<_StatCards> {
     }
   }
 
-  Widget _buildCompactCard({
+  Widget _buildGridItem({
     required VoidCallback onTap,
     required IconData icon,
     required Color color,
@@ -2016,85 +2016,65 @@ class _StatCardsState extends State<_StatCards> {
     required String value,
     required String subtitleStr,
   }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: color.withValues(alpha: 0.1), width: 1),
-            boxShadow: [
-              BoxShadow(
-                color: color.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(8),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: color, size: 16),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF333333),
                     ),
-                    child: Icon(icon, color: color, size: 16),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF1A1A1A),
-                        ),
-                        maxLines: 1,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                    color: color,
-                    letterSpacing: -0.5,
-                  ),
-                  maxLines: 1,
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitleStr,
+              ],
+            ),
+            const SizedBox(height: 6),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value,
                 style: TextStyle(
-                  fontSize: 9,
-                  color: Colors.grey[500],
-                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w900,
+                  color: color,
+                  letterSpacing: -0.3,
                 ),
                 maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitleStr,
+              style: TextStyle(
+                fontSize: 8,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
       ),
     );
@@ -2106,7 +2086,7 @@ class _StatCardsState extends State<_StatCards> {
       (p) => p.summary,
     );
     final filterDate = context.watch<GlobalFilterProvider>().selectedDate;
-    
+
     if (summary == null) return const SizedBox.shrink();
 
     final isToday = filterDate == null;
@@ -2123,59 +2103,95 @@ class _StatCardsState extends State<_StatCards> {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [_buildPeriodToggle(filterDate)],
         ),
-        const SizedBox(height: 12),
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+        const SizedBox(height: 10),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. Transaksi DO
-              Expanded(
-                flex: 2,
-                child: _buildCompactCard(
-                  onTap: () =>
-                      context.read<MainNavigationProvider>().setIndex(1),
-                  icon: Icons.local_shipping_rounded,
-                  color: const Color(0xFF01579B),
-                  title: 'DO Sawit',
-                  value: '${stats.transaksi.today.count} DO',
-                  subtitleStr: subtitleStr,
+              Text(
+                'Ringkasan ($subtitleStr)',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF1A1A1A),
                 ),
               ),
-              const SizedBox(width: 8),
-              // 2. Pemasukan
-              Expanded(
-                flex: 3,
-                child: _buildCompactCard(
-                  onTap: () => context.read<MainNavigationProvider>().setIndex(
-                    3,
-                    journalFilter: 'Pemasukan',
+              const SizedBox(height: 10),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _buildGridItem(
+                      onTap: () =>
+                          context.read<MainNavigationProvider>().setIndex(1),
+                      icon: Icons.local_shipping_rounded,
+                      color: const Color(0xFF01579B),
+                      title: 'Jumlah Transaksi',
+                      value: '${stats.transaksi.today.count}',
+                      subtitleStr: 'Transaksi DO $subtitleStr',
+                    ),
                   ),
-                  icon: Icons.trending_up_rounded,
-                  color: const Color(0xFF2E7D32),
-                  title: 'Pemasukan',
-                  value: CurrencyFormatter.formatRupiah(
-                    stats.pemasukan.today.total,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildGridItem(
+                      onTap: () =>
+                          context.read<MainNavigationProvider>().setIndex(1),
+                      icon: Icons.scale_rounded,
+                      color: const Color(0xFFE67E22),
+                      title: 'Total Tonase',
+                      value:
+                          '${NumberFormat.decimalPattern('id').format(stats.transaksi.today.tonase)} Kg',
+                      subtitleStr: 'Total Tonase DO',
+                    ),
                   ),
-                  subtitleStr: subtitleStr,
-                ),
+                ],
               ),
-              const SizedBox(width: 8),
-              // 3. Pengeluaran
-              Expanded(
-                flex: 3,
-                child: _buildCompactCard(
-                  onTap: () => context.read<MainNavigationProvider>().setIndex(
-                    3,
-                    journalFilter: 'Pengeluaran',
+              const SizedBox(height: 8),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _buildGridItem(
+                      onTap: () => context
+                          .read<MainNavigationProvider>()
+                          .setIndex(3, journalFilter: 'Pemasukan'),
+                      icon: Icons.trending_up_rounded,
+                      color: const Color(0xFF2E7D32),
+                      title: 'Uang Masuk',
+                      value: CurrencyFormatter.formatRupiah(
+                        stats.pemasukan.today.total,
+                      ),
+                      subtitleStr: 'Total Pemasukan Kas',
+                    ),
                   ),
-                  icon: Icons.trending_down_rounded,
-                  color: const Color(0xFFC62828),
-                  title: 'Pengeluaran',
-                  value: CurrencyFormatter.formatRupiah(
-                    stats.pengeluaran.today.total,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildGridItem(
+                      onTap: () => context
+                          .read<MainNavigationProvider>()
+                          .setIndex(3, journalFilter: 'Pengeluaran'),
+                      icon: Icons.trending_down_rounded,
+                      color: const Color(0xFFC62828),
+                      title: 'Pengeluaran',
+                      value: CurrencyFormatter.formatRupiah(
+                        stats.pengeluaran.today.total,
+                      ),
+                      subtitleStr: 'Total Pengeluaran Kas',
+                    ),
                   ),
-                  subtitleStr: subtitleStr,
-                ),
+                ],
               ),
             ],
           ),
