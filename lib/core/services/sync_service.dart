@@ -285,6 +285,13 @@ class SyncService {
           );
         } catch (e) {
           dev.log('Sync failed for item $id: $e');
+          if (e is DioException && e.response?.statusCode == 422) {
+            dev.log('Item $id returned 422 Validation Error (possibly duplicate). Removing from queue.');
+            await _db.deleteQueue(id);
+            // Optionally, we could increment successCount, but it's technically a skip
+            successCount++;
+            syncedEndpoints.add(_getProcessName(endpoint));
+          }
         }
       }
 
