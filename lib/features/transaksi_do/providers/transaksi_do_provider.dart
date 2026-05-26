@@ -15,9 +15,8 @@ class TransaksiDoProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   bool _hasNewData = false;
-  int _currentPage = 1;
   bool _hasMore = true;
-  bool _isFetchingMore = false;
+  final bool _isFetchingMore = false;
   bool _isSaving = false;
   bool _isRefreshing = false;
 
@@ -47,7 +46,6 @@ class TransaksiDoProvider with ChangeNotifier {
     _errorMessage = null;
     _hasNewData = false;
     _unreadCount = 0;
-    _currentPage = 1;
     _hasMore = true;
     notifyListeners();
   }
@@ -57,7 +55,6 @@ class TransaksiDoProvider with ChangeNotifier {
     _isRefreshing = true;
     if (_transactions.isEmpty) _isLoading = true;
     _errorMessage = null;
-    _currentPage = 1;
     _hasMore = false; // Disable pagination for DO transactions
     notifyListeners();
 
