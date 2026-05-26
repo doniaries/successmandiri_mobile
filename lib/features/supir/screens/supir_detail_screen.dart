@@ -121,6 +121,73 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
     }
   }
 
+  Future<void> _handleDelete() async {
+    if ((_currentSupir.hutang ?? 0) > 0) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Tidak Bisa Dihapus'),
+          content: Text('Data ${_currentSupir.nama} tidak bisa dihapus karena masih memiliki sisa hutang. Anda hanya dapat menonaktifkannya.\n\nIngin menonaktifkan sekarang?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Nonaktifkan'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed == true && _currentSupir.isActive) {
+        _handleToggleStatus();
+      }
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus Supir'),
+        content: Text('Apakah Anda yakin ingin menghapus ${_currentSupir.nama} secara permanen?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      setState(() => _isLoading = true);
+      try {
+        final success = await context.read<ResourceProvider>().deleteResource('supir', _currentSupir.id);
+        if (mounted) {
+          setState(() => _isLoading = false);
+          if (success) {
+            SuccessDialog.show(context, title: 'Berhasil', message: 'Data Supir berhasil dihapus.');
+            Navigator.pop(context);
+          } else {
+            ErrorDialog.show(context, title: 'Gagal', message: context.read<ResourceProvider>().errorMessage ?? 'Gagal menghapus data.');
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ErrorDialog.show(context, title: 'Error', message: e.toString());
+        }
+      }
+    }
+  }
+
   void _showEditBottomSheet() {
     showModalBottomSheet(
       context: context,
@@ -156,6 +223,11 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
             ),
             tooltip: _currentSupir.isActive ? 'Nonaktifkan' : 'Aktifkan',
             onPressed: _isLoading ? null : _handleToggleStatus,
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
+            tooltip: 'Hapus Supir',
+            onPressed: _isLoading ? null : _handleDelete,
           ),
           const SizedBox(width: 8),
         ],

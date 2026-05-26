@@ -121,6 +121,73 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
     }
   }
 
+  Future<void> _handleDelete() async {
+    if ((_currentPenjual.hutang ?? 0) > 0) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Tidak Bisa Dihapus'),
+          content: Text('Data ${_currentPenjual.nama} tidak bisa dihapus karena masih memiliki sisa hutang. Anda hanya dapat menonaktifkannya.\n\nIngin menonaktifkan sekarang?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('Nonaktifkan'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed == true && _currentPenjual.isActive) {
+        _handleToggleStatus();
+      }
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus Penjual'),
+        content: Text('Apakah Anda yakin ingin menghapus ${_currentPenjual.nama} secara permanen?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      setState(() => _isLoading = true);
+      try {
+        final success = await context.read<ResourceProvider>().deleteResource('penjual', _currentPenjual.id);
+        if (mounted) {
+          setState(() => _isLoading = false);
+          if (success) {
+            SuccessDialog.show(context, title: 'Berhasil', message: 'Data Penjual berhasil dihapus.');
+            Navigator.pop(context); // Go back after delete
+          } else {
+            ErrorDialog.show(context, title: 'Gagal', message: context.read<ResourceProvider>().errorMessage ?? 'Gagal menghapus data.');
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ErrorDialog.show(context, title: 'Error', message: e.toString());
+        }
+      }
+    }
+  }
+
   void _showEditBottomSheet() {
     showModalBottomSheet(
       context: context,
@@ -156,6 +223,11 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
             ),
             tooltip: _currentPenjual.isActive ? 'Nonaktifkan' : 'Aktifkan',
             onPressed: _isLoading ? null : _handleToggleStatus,
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
+            tooltip: 'Hapus Penjual',
+            onPressed: _isLoading ? null : _handleDelete,
           ),
           const SizedBox(width: 8),
         ],
