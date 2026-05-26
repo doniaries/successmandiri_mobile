@@ -22,7 +22,7 @@ class DatabaseService {
     String path = join(await getDatabasesPath(), 'successmandiri.db');
     return await openDatabase(
       path, 
-      version: 3, 
+      version: 4, 
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -47,6 +47,13 @@ class DatabaseService {
         await db.execute('CREATE TABLE IF NOT EXISTS $table (id INTEGER PRIMARY KEY, data TEXT)');
       }
     }
+    if (oldVersion < 4) {
+      try { await db.execute('ALTER TABLE transaksi_do ADD COLUMN tanggal TEXT'); } catch (_) {}
+      try { await db.execute('ALTER TABLE operasional ADD COLUMN tanggal TEXT'); } catch (_) {}
+      
+      try { await db.execute('CREATE INDEX IF NOT EXISTS idx_transaksi_do_tanggal ON transaksi_do (tanggal)'); } catch (_) {}
+      try { await db.execute('CREATE INDEX IF NOT EXISTS idx_operasional_tanggal ON operasional (tanggal)'); } catch (_) {}
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -61,11 +68,18 @@ class DatabaseService {
     ''');
     
     final tables = [
-      'penjual', 'supir', 'pekerja', 'kendaraan', 'users', 'perusahaans', 'transaksi_do',
-      'operasional', 'jurnal_keuangan', 'tambah_saldo', 'pengajuan_dana'
+      'penjual', 'supir', 'pekerja', 'kendaraan', 'users', 'perusahaans',
+      'jurnal_keuangan', 'tambah_saldo', 'pengajuan_dana'
     ];
     for (var table in tables) {
       await db.execute('CREATE TABLE $table (id INTEGER PRIMARY KEY, data TEXT)');
+    }
+
+    // Tabel dengan index tanggal
+    final indexedTables = ['operasional', 'transaksi_do'];
+    for (var table in indexedTables) {
+      await db.execute('CREATE TABLE $table (id INTEGER PRIMARY KEY, tanggal TEXT, data TEXT)');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_${table}_tanggal ON $table (tanggal)');
     }
   }
 

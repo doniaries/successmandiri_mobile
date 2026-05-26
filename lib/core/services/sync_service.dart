@@ -15,19 +15,27 @@ import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.d
 import 'package:sawitappmobile/features/tambah_saldo/providers/tambah_saldo_provider.dart';
 import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_provider.dart';
 import 'package:flutter/foundation.dart';
+import 'package:sqflite/sqflite.dart';
 
-/// Top-level function for `compute` to run on a background isolate.
-/// This prevents the UI from freezing when encoding thousands of items.
 List<Map<String, dynamic>> _mapDataForDb(List<dynamic> list) {
   List<Map<String, dynamic>> mappedList = [];
   for (var item in list) {
     if (item is Map) {
       try {
         if (item['id'] != null) {
-          mappedList.add({
+          final mappedItem = {
             'id': item['id'],
             'data': jsonEncode(item),
-          });
+          };
+          if (item.containsKey('tanggal') && item['tanggal'] != null) {
+            final t = item['tanggal'].toString();
+            if (t.length >= 10) {
+              mappedItem['tanggal'] = t.substring(0, 10);
+            } else {
+              mappedItem['tanggal'] = t;
+            }
+          }
+          mappedList.add(mappedItem);
         }
       } catch (_) {}
     }
@@ -78,8 +86,14 @@ class SyncService {
 
   Future<void> updatePendingCount() async {
     try {
-      final queue = await _db.query('offline_queue');
-      pendingSyncCount.value = queue.length;
+      final db = await DatabaseService().database;
+      if (db != null) {
+        // Hanya menarik 1 angka murni dari SQLite, jauh lebih cepat!
+        int? count = Sqflite.firstIntValue(
+            await db.rawQuery('SELECT COUNT(*) FROM offline_queue')
+        );
+        pendingSyncCount.value = count ?? 0;
+      }
     } catch (e) {
       debugPrint('Error updating pending count: $e');
     }

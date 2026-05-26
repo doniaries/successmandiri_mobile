@@ -265,11 +265,15 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
           );
           double totalPemasukan = 0;
           double totalPengeluaran = 0;
+          int countPemasukan = 0;
+          int countPengeluaran = 0;
           for (final item in filteredDateItems) {
             if (item.operasional.toLowerCase() == 'pemasukan') {
               totalPemasukan += item.nominal;
+              countPemasukan++;
             } else if (item.operasional.toLowerCase() == 'pengeluaran') {
               totalPengeluaran += item.nominal;
+              countPengeluaran++;
             }
           }
 
@@ -355,6 +359,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                       child: _buildStatItem(
                         'Pemasukan',
                         totalPemasukan,
+                        countPemasukan,
                         Icons.trending_up_rounded,
                         Colors.greenAccent,
                       ),
@@ -364,6 +369,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                       child: _buildStatItem(
                         'Pengeluaran',
                         totalPengeluaran,
+                        countPengeluaran,
                         Icons.trending_down_rounded,
                         Colors.orangeAccent,
                       ),
@@ -381,6 +387,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
   Widget _buildStatItem(
     String label,
     double amount,
+    int count,
     IconData icon,
     Color color,
   ) {
@@ -404,6 +411,14 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
             color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          '$count transaksi',
+          style: const TextStyle(
+            color: Colors.white54,
+            fontSize: 10,
           ),
         ),
       ],
