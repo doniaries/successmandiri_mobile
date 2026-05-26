@@ -21,7 +21,6 @@ import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_detail
 import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_screen.dart';
 import 'package:sawitappmobile/features/profile/screens/profile_screen.dart';
 import 'package:sawitappmobile/features/profile/screens/app_version_setting_screen.dart';
-import 'package:sawitappmobile/features/tutup_hari/screens/tutup_hari_screen.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/widgets/skeleton_loader.dart';
 import 'package:sawitappmobile/features/operasional/screens/operasional_screen.dart';
@@ -2004,70 +2003,92 @@ class _StatCardsState extends State<_StatCards> {
     }
   }
 
-  Widget _buildStatBox({
-    required String title,
-    required String value,
-    required String subtitle,
+  Widget _buildCompactCard({
+    required VoidCallback onTap,
     required IconData icon,
     required Color color,
-    VoidCallback? onTap,
+    required String title,
+    required String value,
+    required String subtitleStr,
   }) {
-    return Expanded(
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: color.withValues(alpha: 0.1)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(icon, size: 14, color: color),
-                    const SizedBox(width: 4),
-                    Expanded(
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: color.withValues(alpha: 0.1), width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(icon, color: color, size: 16),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
                       child: Text(
                         title,
                         style: const TextStyle(
-                          color: Colors.black54,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF1A1A1A),
                         ),
                         maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    value,
-                    style: TextStyle(
-                      color: color,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w900,
-                    ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: color,
+                    letterSpacing: -0.5,
+                  ),
+                  maxLines: 1,
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: const TextStyle(color: Colors.black38, fontSize: 9),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitleStr,
+                style: TextStyle(
+                  fontSize: 9,
+                  color: Colors.grey[500],
+                  fontWeight: FontWeight.w600,
                 ),
-              ],
-            ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ),
         ),
       ),
@@ -2099,82 +2120,58 @@ class _StatCardsState extends State<_StatCards> {
           children: [_buildPeriodToggle(filterDate)],
         ),
         const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(
-                'Ringkasan ($subtitleStr)',
-                style: const TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
+              // 1. Transaksi DO
+              Expanded(
+                flex: 2,
+                child: _buildCompactCard(
+                  onTap: () =>
+                      context.read<MainNavigationProvider>().setIndex(1),
+                  icon: Icons.local_shipping_rounded,
+                  color: const Color(0xFF01579B),
+                  title: 'DO Sawit',
+                  value: '${stats.transaksi.today.count} DO',
+                  subtitleStr: subtitleStr,
                 ),
               ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  _buildStatBox(
-                    title: 'Jumlah Transaksi',
-                    value: '${stats.transaksi.today.count}',
-                    subtitle: 'Transaksi DO Hari Ini',
-                    icon: Icons.receipt_long_rounded,
-                    color: const Color(0xFF01579B),
-                    onTap: () =>
-                        context.read<MainNavigationProvider>().setIndex(1),
+              const SizedBox(width: 8),
+              // 2. Pemasukan
+              Expanded(
+                flex: 3,
+                child: _buildCompactCard(
+                  onTap: () => context.read<MainNavigationProvider>().setIndex(
+                    3,
+                    journalFilter: 'Pemasukan',
                   ),
-                  const SizedBox(width: 12),
-                  _buildStatBox(
-                    title: 'Total Tonase',
-                    value:
-                        '${CurrencyFormatter.formatNumber(stats.transaksi.today.tonase)} Kg',
-                    subtitle: '${stats.transaksi.today.count} Transaksi DO',
-                    icon: Icons.scale_rounded,
-                    color: const Color(0xFFE67E22),
-                    onTap: () =>
-                        context.read<MainNavigationProvider>().setIndex(1),
+                  icon: Icons.trending_up_rounded,
+                  color: const Color(0xFF2E7D32),
+                  title: 'Pemasukan',
+                  value: CurrencyFormatter.formatRupiah(
+                    stats.pemasukan.today.total,
                   ),
-                ],
+                  subtitleStr: subtitleStr,
+                ),
               ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  _buildStatBox(
-                    title: 'Uang Masuk',
-                    value: CurrencyFormatter.formatRupiah(
-                      stats.pemasukan.today.total,
-                    ),
-                    subtitle: '-',
-                    icon: Icons.arrow_circle_down_rounded,
-                    color: const Color(0xFF2E7D32),
-                    onTap: () =>
-                        context.read<MainNavigationProvider>().setIndex(3),
+              const SizedBox(width: 8),
+              // 3. Pengeluaran
+              Expanded(
+                flex: 3,
+                child: _buildCompactCard(
+                  onTap: () => context.read<MainNavigationProvider>().setIndex(
+                    3,
+                    journalFilter: 'Pengeluaran',
                   ),
-                  const SizedBox(width: 12),
-                  _buildStatBox(
-                    title: 'Pengeluaran',
-                    value: CurrencyFormatter.formatRupiah(
-                      stats.pengeluaran.today.total,
-                    ),
-                    subtitle: 'Total Pengeluaran Kas',
-                    icon: Icons.arrow_circle_up_rounded,
-                    color: const Color(0xFFC62828),
-                    onTap: () =>
-                        context.read<MainNavigationProvider>().setIndex(3),
+                  icon: Icons.trending_down_rounded,
+                  color: const Color(0xFFC62828),
+                  title: 'Pengeluaran',
+                  value: CurrencyFormatter.formatRupiah(
+                    stats.pengeluaran.today.total,
                   ),
-                ],
+                  subtitleStr: subtitleStr,
+                ),
               ),
             ],
           ),
@@ -2306,18 +2303,6 @@ class _MenuGrid extends StatelessWidget {
           },
           badgeSelector: (c) =>
               c.select<ResourceProvider, int>((p) => p.operasionalCount),
-        ),
-        _MenuItem(
-          label: 'Tutup Hari',
-          icon: Icons.done_all_rounded,
-          color: const Color(0xFF673AB7),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const TutupHariScreen()),
-            );
-          },
-          badgeSelector: (c) => 0,
         ),
         _MenuItem(
           label: 'Penjual',

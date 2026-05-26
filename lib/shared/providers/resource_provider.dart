@@ -219,8 +219,6 @@ class ResourceProvider with ChangeNotifier {
       _hasMore[type] = true;
       _isFetchingMore[type] = false;
 
-      // Only set isLoading if we don't have data yet to show skeletons
-      // If we have data, we'll keep showing it while refreshing in background
       switch (type) {
         case 'penjual':
           if (_penjuals.isEmpty) _isLoading = true;
@@ -256,195 +254,201 @@ class ResourceProvider with ChangeNotifier {
     }
 
     try {
-      debugPrint(
-        'ResourceProvider.fetchResources: type=$type refresh=$refresh filters=${filters?.toString()} page=${_currentPage[type] ?? 1}',
-      );
       int page = _currentPage[type] ?? 1;
-      dynamic response;
+      List<dynamic> allRawData = [];
+      bool hasMore = true;
+      dynamic lastResponse; // Store last response for summary
 
-      switch (type) {
-        case 'penjual':
-          response = await _repository.getPenjualPaginated(page: page);
-          break;
-        case 'supir':
-          response = await _repository.getSupirPaginated(page: page);
-          break;
-        case 'pekerja':
-          response = await _repository.getPekerjaPaginated(page: page);
-          break;
-        case 'kendaraan':
-          response = await _repository.getKendaraanPaginated(page: page);
-          break;
-        case 'operasional':
-          response = await _repository.getOperasionalPaginated(page: page);
-          break;
-        case 'jurnal_keuangan':
-          response = await _repository.getJurnalPaginated(
-            page: page,
-            startDate: filters?['start_date'],
-            endDate: filters?['end_date'],
-            jenisTransaksi: filters?['jenis_transaksi'],
-          );
-          break;
-        case 'user':
-          response = await _repository.getUsersPaginated(page: page);
-          break;
-      }
+      // For 'pekerja', fetch ALL data instead of paginating
+      if (type == 'pekerja' && page == 1) {
+        while (hasMore) {
+          final response = await _repository.getPekerjaPaginated(page: page);
+          lastResponse = response; // Store last response
+          List<dynamic> rawData = [];
 
-      List<dynamic> rawData = [];
-      bool hasMore = false;
+          if (response is Map) {
+            rawData = response['data'] ?? [];
+            hasMore = response['next_page_url'] != null;
+          } else if (response is List) {
+            rawData = response;
+            hasMore = false;
+          }
 
-      if (response is Map) {
-        rawData = response['data'] ?? [];
-        hasMore = response['next_page_url'] != null;
+          allRawData.addAll(rawData);
+          if (!hasMore) break;
+          page++;
+        }
+
+        final items = allRawData.map((e) => Pekerja.fromJson(e)).toList();
+        _pekerjas.clear();
+        _pekerjas.addAll(items);
+
+        // Update counts
+        if (lastResponse is Map && lastResponse['total'] != null) {
+          _totalPekerja = int.tryParse(lastResponse['total'].toString()) ?? 0;
+        } else {
+          _totalPekerja = items.length;
+        }
 
         // Capture summary if present
-        if (response['summary'] != null) {
-          _serverTotalPemasukan =
-              double.tryParse(
-                response['summary']['total_pemasukan']?.toString() ?? '0',
-              ) ??
-              0;
-          _serverTotalPengeluaran =
-              double.tryParse(
-                response['summary']['total_pengeluaran']?.toString() ?? '0',
-              ) ??
-              0;
-
-          double totalHutang =
-              double.tryParse(
-                response['summary']['total_hutang']?.toString() ?? '0.0',
-              ) ??
-              0.0;
-          switch (type) {
-            case 'penjual':
-              _totalHutangPenjual = totalHutang;
-              break;
-            case 'supir':
-              _totalHutangSupir = totalHutang;
-              break;
-            case 'pekerja':
-              _totalHutangPekerja = totalHutang;
-              break;
-          }
+        if (lastResponse is Map && lastResponse['summary'] != null) {
+          double totalHutang = double.tryParse(
+            lastResponse['summary']['total_hutang']?.toString() ?? '0.0',
+          ) ?? 0.0;
+          _totalHutangPekerja = totalHutang;
         }
-        // Debug logging for jurnal_keuangan responses
-        try {
-          if (type == 'jurnal_keuangan') {
-            debugPrint(
-              'ResourceProvider.fetchResources: jurnal_keuangan response total=${response['total']} summary=${response['summary']} data_len=${rawData.length}',
-            );
-          } else {
-            debugPrint(
-              'ResourceProvider.fetchResources: response keys=${response.keys.toList()} data_len=${rawData.length}',
-            );
-          }
-        } catch (e) {
-          debugPrint('ResourceProvider.fetchResources: logging failed: $e');
-        }
-      } else if (response is List) {
-        rawData = response;
-        hasMore = false;
-      }
 
-      switch (type) {
-        case 'penjual':
-          final items = rawData.map((e) => Penjual.fromJson(e)).toList();
-          if (page == 1) _penjuals.clear();
-          for (var item in items) {
-            if (!_penjuals.any((e) => e.id == item.id)) {
-              _penjuals.add(item);
-            }
-          }
-          break;
-        case 'supir':
-          final items = rawData.map((e) => Supir.fromJson(e)).toList();
-          if (page == 1) _supirs.clear();
-          for (var item in items) {
-            if (!_supirs.any((e) => e.id == item.id)) {
-              _supirs.add(item);
-            }
-          }
-          break;
-        case 'pekerja':
-          final items = rawData.map((e) => Pekerja.fromJson(e)).toList();
-          if (page == 1) _pekerjas.clear();
-          for (var item in items) {
-            if (!_pekerjas.any((e) => e.id == item.id)) {
-              _pekerjas.add(item);
-            }
-          }
-          break;
-        case 'kendaraan':
-          final items = rawData.map((e) => Kendaraan.fromJson(e)).toList();
-          if (page == 1) _kendaraans.clear();
-          for (var item in items) {
-            if (!_kendaraans.any((e) => e.id == item.id)) {
-              _kendaraans.add(item);
-            }
-          }
-          break;
-        case 'operasional':
-          final items = rawData.map((e) => Operasional.fromJson(e)).toList();
-          if (page == 1) _operasionals.clear();
-          for (var item in items) {
-            if (!_operasionals.any((e) => e.id == item.id)) {
-              _operasionals.add(item);
-            }
-          }
-          break;
-        case 'jurnal_keuangan':
-          final items = rawData.map((e) => JurnalKeuangan.fromJson(e)).toList();
-          if (page == 1) _jurnalKeuangans.clear();
-          for (var item in items) {
-            if (!_jurnalKeuangans.any((e) => e.id == item.id)) {
-              _jurnalKeuangans.add(item);
-            }
-          }
-          break;
-        case 'user':
-          final items = rawData.map((e) => User.fromJson(e)).toList();
-          if (page == 1) _users.clear();
-          for (var item in items) {
-            if (!_users.any((e) => e.id == item.id)) {
-              _users.add(item);
-            }
-          }
-          break;
-      }
+        await _checkNewDataFor(type);
+      } else {
+        // Original pagination logic for other types
+        dynamic response;
 
-      _currentPage[type] = page + 1;
-      _hasMore[type] = hasMore;
-
-      // Update counts based on total returned by API if available
-      if (response is Map && response['total'] != null) {
-        int total = int.tryParse(response['total'].toString()) ?? 0;
         switch (type) {
           case 'penjual':
-            _totalPenjual = total;
+            response = await _repository.getPenjualPaginated(page: page);
             break;
           case 'supir':
-            _totalSupir = total;
-            break;
-          case 'pekerja':
-            _totalPekerja = total;
+            response = await _repository.getSupirPaginated(page: page);
             break;
           case 'kendaraan':
-            _totalKendaraan = total;
+            response = await _repository.getKendaraanPaginated(page: page);
             break;
           case 'operasional':
-            _totalOperasional = total;
+            response = await _repository.getOperasionalPaginated(page: page);
             break;
           case 'jurnal_keuangan':
-            _totalJurnal = total;
+            response = await _repository.getJurnalPaginated(
+              page: page,
+              startDate: filters?['start_date'],
+              endDate: filters?['end_date'],
+              jenisTransaksi: filters?['jenis_transaksi'],
+            );
             break;
           case 'user':
-            _totalUser = total;
+            response = await _repository.getUsersPaginated(page: page);
+            break;
+          default:
+            return;
+        }
+
+        List<dynamic> rawData = [];
+        bool hasMoreData = false;
+
+        if (response is Map) {
+          rawData = response['data'] ?? [];
+          hasMoreData = response['next_page_url'] != null;
+
+          if (response['summary'] != null) {
+            _serverTotalPemasukan = double.tryParse(
+              response['summary']['total_pemasukan']?.toString() ?? '0',
+            ) ?? 0;
+            _serverTotalPengeluaran = double.tryParse(
+              response['summary']['total_pengeluaran']?.toString() ?? '0',
+            ) ?? 0;
+
+            double totalHutang = double.tryParse(
+              response['summary']['total_hutang']?.toString() ?? '0.0',
+            ) ?? 0.0;
+            switch (type) {
+              case 'penjual':
+                _totalHutangPenjual = totalHutang;
+                break;
+              case 'supir':
+                _totalHutangSupir = totalHutang;
+                break;
+            }
+          }
+        } else if (response is List) {
+          rawData = response;
+          hasMoreData = false;
+        }
+
+        switch (type) {
+          case 'penjual':
+            final items = rawData.map((e) => Penjual.fromJson(e)).toList();
+            if (page == 1) _penjuals.clear();
+            for (var item in items) {
+              if (!_penjuals.any((e) => e.id == item.id)) {
+                _penjuals.add(item);
+              }
+            }
+            break;
+          case 'supir':
+            final items = rawData.map((e) => Supir.fromJson(e)).toList();
+            if (page == 1) _supirs.clear();
+            for (var item in items) {
+              if (!_supirs.any((e) => e.id == item.id)) {
+                _supirs.add(item);
+              }
+            }
+            break;
+          case 'kendaraan':
+            final items = rawData.map((e) => Kendaraan.fromJson(e)).toList();
+            if (page == 1) _kendaraans.clear();
+            for (var item in items) {
+              if (!_kendaraans.any((e) => e.id == item.id)) {
+                _kendaraans.add(item);
+              }
+            }
+            break;
+          case 'operasional':
+            final items = rawData.map((e) => Operasional.fromJson(e)).toList();
+            if (page == 1) _operasionals.clear();
+            for (var item in items) {
+              if (!_operasionals.any((e) => e.id == item.id)) {
+                _operasionals.add(item);
+              }
+            }
+            break;
+          case 'jurnal_keuangan':
+            final items = rawData.map((e) => JurnalKeuangan.fromJson(e)).toList();
+            if (page == 1) _jurnalKeuangans.clear();
+            for (var item in items) {
+              if (!_jurnalKeuangans.any((e) => e.id == item.id)) {
+                _jurnalKeuangans.add(item);
+              }
+            }
+            break;
+          case 'user':
+            final items = rawData.map((e) => User.fromJson(e)).toList();
+            if (page == 1) _users.clear();
+            for (var item in items) {
+              if (!_users.any((e) => e.id == item.id)) {
+                _users.add(item);
+              }
+            }
             break;
         }
-      }
 
-      await _checkNewDataFor(type);
+        _currentPage[type] = page + 1;
+        _hasMore[type] = hasMoreData;
+
+        if (response is Map && response['total'] != null) {
+          int total = int.tryParse(response['total'].toString()) ?? 0;
+          switch (type) {
+            case 'penjual':
+              _totalPenjual = total;
+              break;
+            case 'supir':
+              _totalSupir = total;
+              break;
+            case 'kendaraan':
+              _totalKendaraan = total;
+              break;
+            case 'operasional':
+              _totalOperasional = total;
+              break;
+            case 'jurnal_keuangan':
+              _totalJurnal = total;
+              break;
+            case 'user':
+              _totalUser = total;
+              break;
+          }
+        }
+
+        await _checkNewDataFor(type);
+      }
     } catch (e) {
       debugPrint('Error fetching $type: $e');
     } finally {
@@ -711,72 +715,6 @@ class ResourceProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> addDebtPenjual(int id, Map<String, dynamic> data) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-    try {
-      await _repository.addDebtPenjual(id, data);
-      await fetchResources('penjual', refresh: true);
-      return true;
-    } catch (e) {
-      debugPrint('Error adding debt penjual: $e');
-      if (e is DioException) {
-        _errorMessage = e.response?.data?['message'] ?? e.message;
-      } else {
-        _errorMessage = e.toString();
-      }
-      return false;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  Future<bool> addDebtSupir(int id, Map<String, dynamic> data) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-    try {
-      await _repository.addDebtSupir(id, data);
-      await fetchResources('supir', refresh: true);
-      return true;
-    } catch (e) {
-      debugPrint('Error adding debt supir: $e');
-      if (e is DioException) {
-        _errorMessage = e.response?.data?['message'] ?? e.message;
-      } else {
-        _errorMessage = e.toString();
-      }
-      return false;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  Future<bool> addDebtPekerja(int id, Map<String, dynamic> data) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-    try {
-      await _repository.addDebtPekerja(id, data);
-      await fetchResources('pekerja', refresh: true);
-      return true;
-    } catch (e) {
-      debugPrint('Error adding debt pekerja: $e');
-      if (e is DioException) {
-        _errorMessage = e.response?.data?['message'] ?? e.message;
-      } else {
-        _errorMessage = e.toString();
-      }
-      return false;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
   Future<bool> updatePenjual(int id, Map<String, dynamic> data) async {
     try {
       await _repository.updatePenjual(id, data);
@@ -852,76 +790,6 @@ class ResourceProvider with ChangeNotifier {
 
   Future<dynamic> addOperasional(Map<String, dynamic> data) async {
     _errorMessage = null;
-
-    // OPTIMISTIC UPDATE UNTUK HUTANG PEKERJA/SUPIR/PENJUAL SAAT OFFLINE
-    if (data['kategori'] == 'kasbon' || data['kategori'] == 'bayar_hutang') {
-      double nominal = double.tryParse(data['nominal'].toString()) ?? 0.0;
-      if (data['kategori'] == 'bayar_hutang') {
-        nominal = -nominal; // kurangi hutang jika dibayar
-      }
-
-      int pihakId = data['pihak_id'] is int
-          ? data['pihak_id']
-          : int.tryParse(data['pihak_id']?.toString() ?? '') ?? 0;
-      String type = data['pihak_type']?.toString() ?? '';
-
-      if (type == 'App\\Models\\Penjual') {
-        var idx = _penjuals.indexWhere((e) => e.id == pihakId);
-        if (idx != -1) {
-          final old = _penjuals[idx];
-          _penjuals[idx] = Penjual(
-            id: old.id,
-            nama: old.nama,
-            alamat: old.alamat,
-            telepon: old.telepon,
-            hutang: old.hutang,
-            sisaHutang: (old.sisaHutang ?? 0) + nominal,
-            isActive: old.isActive,
-            transaksiDo: old.transaksiDo,
-            mutasiHutang: old.mutasiHutang,
-            createdAt: old.createdAt,
-          );
-        }
-      } else if (type == 'App\\Models\\Supir') {
-        var idx = _supirs.indexWhere((e) => e.id == pihakId);
-        if (idx != -1) {
-          final old = _supirs[idx];
-          _supirs[idx] = Supir(
-            id: old.id,
-            nama: old.nama,
-            telepon: old.telepon,
-            alamat: old.alamat,
-            status: old.status,
-            hutang: old.hutang,
-            sisaHutang: (old.sisaHutang ?? 0) + nominal,
-            isActive: old.isActive,
-            transaksiDo: old.transaksiDo,
-            mutasiHutang: old.mutasiHutang,
-            createdAt: old.createdAt,
-          );
-        }
-      } else if (type == 'App\\Models\\Pekerja') {
-        var idx = _pekerjas.indexWhere((e) => e.id == pihakId);
-        if (idx != -1) {
-          final old = _pekerjas[idx];
-          _pekerjas[idx] = Pekerja(
-            id: old.id,
-            nama: old.nama,
-            telepon: old.telepon,
-            alamat: old.alamat,
-            posisi: old.posisi,
-            hutang: old.hutang,
-            sisaHutang: old.sisaHutang + nominal,
-            perusahaanId: old.perusahaanId,
-            isActive: old.isActive,
-            mutasiHutang: old.mutasiHutang,
-            createdAt: old.createdAt,
-          );
-        }
-      }
-      notifyListeners();
-    }
-
     try {
       final result = await _repository.storeOperasional(data);
 
@@ -1041,24 +909,7 @@ class ResourceProvider with ChangeNotifier {
 
   Future<bool> deleteResource(String type, int id) async {
     _isLoading = true;
-
-    // OPTIMISTIC UPDATE: Langsung hapus dari state lokal agar UI langsung responsif
-    switch (type) {
-      case 'penjual':
-        _penjuals.removeWhere((e) => e.id == id);
-        break;
-      case 'supir':
-        _supirs.removeWhere((e) => e.id == id);
-        break;
-      case 'pekerja':
-        _pekerjas.removeWhere((e) => e.id == id);
-        break;
-      case 'operasional':
-        _operasionals.removeWhere((e) => e.id == id);
-        break;
-    }
     notifyListeners();
-
     try {
       switch (type) {
         case 'penjual':
@@ -1077,23 +928,10 @@ class ResourceProvider with ChangeNotifier {
           return false;
       }
       await fetchResources(type, refresh: true);
-      if (type == 'operasional') {
-        fetchResources('pekerja', refresh: true);
-        fetchResources('supir', refresh: true);
-        fetchResources('penjual', refresh: true);
-      }
       return true;
     } catch (e) {
       debugPrint('Error deleting $type: $e');
       if (e is DioException) {
-        // Jika item sudah tidak ada di server (404), anggap sukses
-        if (e.response?.statusCode == 404 ||
-            (e.response?.data?.toString().contains('No query results') ??
-                false)) {
-          await fetchResources(type, refresh: true);
-          return true;
-        }
-
         if (e.response?.data is Map && e.response?.data['errors'] != null) {
           final Map errors = e.response?.data['errors'];
           final firstError = errors.values.first;
@@ -1108,9 +946,6 @@ class ResourceProvider with ChangeNotifier {
       } else {
         _errorMessage = e.toString();
       }
-
-      // Revert optimistic update by re-fetching data if deletion failed
-      await fetchResources(type, refresh: true);
       return false;
     } finally {
       _isLoading = false;

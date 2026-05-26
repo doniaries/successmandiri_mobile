@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:sawitappmobile/features/transaksi_do/models/transaksi_do_model.dart';
 import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_provider.dart';
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
@@ -34,25 +33,13 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
       final txProvider = context.read<TransaksiDoProvider>();
       final dashboardProvider = context.read<DashboardProvider>();
 
-      final initialDate = dashboardProvider.filterDate ?? DateTime.now();
-      final dateStr = DateFormat('yyyy-MM-dd').format(initialDate);
-
-      txProvider.fetchTransactions(tanggal: dateStr);
+      if (txProvider.transactions.isEmpty) {
+        txProvider.fetchTransactions();
+      }
       if (dashboardProvider.summary == null) {
         dashboardProvider.fetchSummary();
       }
       txProvider.markAsSeen();
-    });
-
-    _scrollController.addListener(() {
-      if (_scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent - 200) {
-        final targetDate = _selectedSingleDate ?? DateTime.now();
-        final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
-        context.read<TransaksiDoProvider>().fetchMoreTransactions(
-          tanggal: dateStr,
-        );
-      }
     });
   }
 
@@ -66,27 +53,26 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   Future<void> _manualSync() async {
     if (SyncService().isOffline) return;
     if (_isManualSyncing) return;
-
+    
     final txProvider = context.read<TransaksiDoProvider>();
     final dashboardProvider = context.read<DashboardProvider>();
     final resourceProvider = context.read<ResourceProvider>();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
-
+    
     setState(() => _isManualSyncing = true);
     try {
-      // 1. Process offline queue (run in background to avoid UI hang)
-      SyncService().syncNow();
-
+      // 1. Process offline queue
+      await SyncService().syncNow();
+      
       // 2. Fetch latest master data from web
       await resourceProvider.syncMasterData();
-
+      
       // 3. Fetch latest DO transactions
-      final targetDate = _selectedSingleDate ?? DateTime.now();
-      final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
-      await txProvider.fetchTransactions(tanggal: dateStr);
-
+      await txProvider.fetchTransactions();
+      
       // 4. Fetch latest dashboard summary
       await dashboardProvider.fetchSummary();
+      
     } catch (e) {
       if (mounted) {
         scaffoldMessenger.showSnackBar(
@@ -106,21 +92,23 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   Widget build(BuildContext context) {
     final dashboardProvider = context.watch<DashboardProvider>();
     final dashboardFilterDate = dashboardProvider.filterDate;
-
-    if (!_hasInitializedFilterDate ||
-        _lastDashboardFilterDate != dashboardFilterDate) {
+    
+    if (!_hasInitializedFilterDate || _lastDashboardFilterDate != dashboardFilterDate) {
       _hasInitializedFilterDate = true;
       _lastDashboardFilterDate = dashboardFilterDate;
-
-      _selectedSingleDate = dashboardFilterDate ?? DateTime.now();
+      
+      final activeDateStr = dashboardProvider.summary?.systemActiveDate;
+      final systemActiveDate = activeDateStr != null
+          ? DateTime.parse(activeDateStr)
+          : DateTime.now();
+          
+      _selectedSingleDate = dashboardFilterDate ?? systemActiveDate;
     }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       body: RefreshIndicator(
-        notificationPredicate: (notification) =>
-            !SyncService().isOffline &&
-            defaultScrollNotificationPredicate(notification),
+        notificationPredicate: (notification) => !SyncService().isOffline && defaultScrollNotificationPredicate(notification),
         onRefresh: () async {
           if (!mounted) return;
           if (SyncService().isOffline) return;
@@ -128,7 +116,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
           final dashboardProvider = context.read<DashboardProvider>();
           final resourceProvider = context.read<ResourceProvider>();
           final scaffoldMessenger = ScaffoldMessenger.of(context);
-
+          
           scaffoldMessenger.showSnackBar(
             const SnackBar(
               content: Text('Memulai Sinkronisasi DO...'),
@@ -136,22 +124,20 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
               behavior: SnackBarBehavior.floating,
             ),
           );
-
+          
           try {
-            // 1. Process offline queue (run in background to avoid UI hang)
-            SyncService().syncNow();
-
+            // 1. Process offline queue
+            await SyncService().syncNow();
+            
             // 2. Fetch latest master data from web
             await resourceProvider.syncMasterData();
-
+            
             // 3. Fetch latest DO transactions
-            final targetDate = _selectedSingleDate ?? DateTime.now();
-            final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
-            await txProvider.fetchTransactions(tanggal: dateStr);
-
+            await txProvider.fetchTransactions();
+            
             // 4. Fetch latest dashboard summary
             await dashboardProvider.fetchSummary();
-
+            
             scaffoldMessenger.showSnackBar(
               const SnackBar(
                 content: Text('Sinkronisasi DO Selesai'),
@@ -177,7 +163,10 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
             SliverToBoxAdapter(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: [_buildSummaryHeader()],
+                children: [
+
+                  _buildSummaryHeader(),
+                ],
               ),
             ),
             _buildPendingSyncBanner(),
@@ -186,6 +175,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
           ],
         ),
       ),
+
     );
   }
 
@@ -281,16 +271,24 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
     );
   }
 
+
+
+
   Widget _buildSummaryHeader() {
     return Consumer2<DashboardProvider, TransaksiDoProvider>(
       builder: (context, dashboardProvider, txProvider, _) {
-        final targetDate = _selectedSingleDate ?? DateTime.now();
-        final activeCount = txProvider.totalTransactions;
+        final transactions = txProvider.transactions;
+        final activeDateStr = dashboardProvider.summary?.systemActiveDate;
+        final systemActiveDate = activeDateStr != null 
+            ? DateTime.parse(activeDateStr) 
+            : DateTime.now();
+        
+        final targetDate = _selectedSingleDate ?? systemActiveDate;
+        final activeCount = transactions.where((t) => DateUtils.isSameDay(t.tanggal.toLocal(), targetDate)).length;
+        
         final dateText = DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
-
-        final isFilterActive =
-            _selectedSingleDate != null &&
-            !DateUtils.isSameDay(_selectedSingleDate!, DateTime.now());
+        
+        final isFilterActive = _selectedSingleDate != null && !DateUtils.isSameDay(_selectedSingleDate!, systemActiveDate);
 
         return Container(
           margin: const EdgeInsets.all(16),
@@ -330,11 +328,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                       color: Colors.white.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.local_shipping_rounded,
-                      color: Colors.white,
-                      size: 20,
-                    ),
+                    child: const Icon(Icons.local_shipping_rounded, color: Colors.white, size: 20),
                   ),
                 ],
               ),
@@ -360,10 +354,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                           onTap: _showFilterSheet,
                           borderRadius: BorderRadius.circular(12),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(12),
@@ -451,23 +442,6 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
     );
   }
 
-  List<TransaksiDo> _filterVisibleTransactions(
-    List<TransaksiDo> transactions,
-    DateTime targetDate,
-  ) {
-    return transactions.where((t) {
-      if (_searchQuery.isNotEmpty) {
-        final query = _searchQuery.toLowerCase();
-        final matchesSearch =
-            t.nomor.toLowerCase().contains(query) ||
-            (t.penjualNama?.toLowerCase().contains(query) ?? false) ||
-            t.displaySupirNama.toLowerCase().contains(query);
-        if (!matchesSearch) return false;
-      }
-      return DateUtils.isSameDay(t.tanggal.toLocal(), targetDate);
-    }).toList();
-  }
-
   Widget _buildTransactionList() {
     return Consumer2<TransaksiDoProvider, DashboardProvider>(
       builder: (context, provider, dashboardProvider, _) {
@@ -485,19 +459,12 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
-                      Icons.error_outline_rounded,
-                      color: Colors.red,
-                      size: 48,
-                    ),
+                    const Icon(Icons.error_outline_rounded, color: Colors.red, size: 48),
                     const SizedBox(height: 16),
                     Text(
                       provider.errorMessage!,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton.icon(
@@ -516,11 +483,26 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
           );
         }
 
-        final targetDate = _selectedSingleDate ?? DateTime.now();
-        final filteredTransactions = _filterVisibleTransactions(
-          provider.transactions,
-          targetDate,
-        );
+        final activeDateStr = dashboardProvider.summary?.systemActiveDate;
+        final systemActiveDate = activeDateStr != null 
+            ? DateTime.parse(activeDateStr) 
+            : DateTime.now();
+
+        final targetDate = _selectedSingleDate ?? systemActiveDate;
+
+        final filteredTransactions = provider.transactions.where((t) {
+          // 1. Search Filter
+          if (_searchQuery.isNotEmpty) {
+            final query = _searchQuery.toLowerCase();
+            final matchesSearch = t.nomor.toLowerCase().contains(query) ||
+                (t.penjualNama?.toLowerCase().contains(query) ?? false) ||
+                (t.displaySupirNama.toLowerCase().contains(query));
+            if (!matchesSearch) return false;
+          }
+
+          // 2. Date Filter
+          return DateUtils.isSameDay(t.tanggal.toLocal(), targetDate);
+        }).toList();
 
         if (filteredTransactions.isEmpty) {
           return const SliverFillRemaining(
@@ -537,9 +519,12 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
         return SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           sliver: SliverList(
-            delegate: SliverChildBuilderDelegate((context, index) {
-              return _buildTransactionCard(filteredTransactions[index]);
-            }, childCount: filteredTransactions.length),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                return _buildTransactionCard(filteredTransactions[index]);
+              },
+              childCount: filteredTransactions.length,
+            ),
           ),
         );
       },
@@ -547,11 +532,15 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   }
 
   void _showFilterSheet() async {
-    final targetDate = _selectedSingleDate ?? DateTime.now();
+    final dashboardProvider = context.read<DashboardProvider>();
+    final activeDateStr = dashboardProvider.summary?.systemActiveDate;
+    final systemActiveDate = activeDateStr != null
+        ? DateTime.parse(activeDateStr)
+        : DateTime.now();
 
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: targetDate,
+      initialDate: _selectedSingleDate ?? systemActiveDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now().add(const Duration(days: 365)),
       initialEntryMode: DatePickerEntryMode.calendarOnly,
@@ -574,9 +563,6 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
       setState(() {
         _selectedSingleDate = picked;
       });
-      final dateStr = DateFormat('yyyy-MM-dd').format(picked);
-      if (!mounted) return;
-      context.read<TransaksiDoProvider>().fetchTransactions(tanggal: dateStr);
     }
   }
 
@@ -591,11 +577,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            const Icon(
-              Icons.warning_amber_rounded,
-              color: Colors.red,
-              size: 28,
-            ),
+            const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
             const SizedBox(width: 12),
             const Text(
               'Hapus Transaksi',
@@ -610,24 +592,16 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text(
-              'Batal',
-              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
-            ),
+            child: const Text('Batal', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text(
-              'Hapus',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            child: const Text('Hapus', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -637,7 +611,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
       final provider = context.read<TransaksiDoProvider>();
       final scaffoldMessenger = ScaffoldMessenger.of(context);
       final success = await provider.deleteTransaction(tx.id);
-
+      
       if (mounted) {
         if (success) {
           scaffoldMessenger.showSnackBar(
@@ -651,9 +625,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
         } else {
           scaffoldMessenger.showSnackBar(
             SnackBar(
-              content: Text(
-                provider.errorMessage ?? 'Gagal menghapus transaksi',
-              ),
+              content: Text(provider.errorMessage ?? 'Gagal menghapus transaksi'),
               backgroundColor: Colors.red,
               behavior: SnackBarBehavior.floating,
             ),
@@ -665,7 +637,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
 
   Widget _buildTransactionCard(dynamic tx) {
     final isTunai = tx.caraBayar?.toLowerCase() == 'tunai';
-
+    
     return Dismissible(
       key: Key('dismiss_do_${tx.id}'),
       direction: DismissDirection.endToStart, // Hanya geser ke kiri
@@ -673,16 +645,10 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
         final confirmed = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             title: Row(
               children: [
-                const Icon(
-                  Icons.warning_amber_rounded,
-                  color: Colors.red,
-                  size: 28,
-                ),
+                const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
                 const SizedBox(width: 12),
                 const Text(
                   'Hapus Transaksi',
@@ -697,27 +663,16 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text(
-                  'Batal',
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: const Text('Batal', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, true),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text(
-                  'Hapus',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
+                child: const Text('Hapus', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -728,7 +683,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
         final provider = context.read<TransaksiDoProvider>();
         final scaffoldMessenger = ScaffoldMessenger.of(context);
         final success = await provider.deleteTransaction(tx.id);
-
+        
         if (mounted) {
           if (success) {
             scaffoldMessenger.showSnackBar(
@@ -742,9 +697,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
           } else {
             scaffoldMessenger.showSnackBar(
               SnackBar(
-                content: Text(
-                  provider.errorMessage ?? 'Gagal menghapus transaksi',
-                ),
+                content: Text(provider.errorMessage ?? 'Gagal menghapus transaksi'),
                 backgroundColor: Colors.red,
                 behavior: SnackBarBehavior.floating,
               ),
@@ -798,8 +751,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
               await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      EditTransaksiDoScreen(transaction: tx, popParent: false),
+                  builder: (context) => EditTransaksiDoScreen(transaction: tx, popParent: false),
                 ),
               );
               if (mounted) {
@@ -825,24 +777,19 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: (isTunai ? Colors.green : Colors.blue)
-                                    .withValues(alpha: 0.1),
+                                color: (isTunai ? Colors.green : Colors.blue).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Icon(
-                                isTunai
-                                    ? Icons.payments_rounded
-                                    : Icons.account_balance_rounded,
-                                color: isTunai
-                                    ? Colors.green[700]
-                                    : Colors.blue[700],
+                                isTunai ? Icons.payments_rounded : Icons.account_balance_rounded,
+                                color: isTunai ? Colors.green[700] : Colors.blue[700],
                                 size: 18,
                               ),
                             ),
                             const SizedBox(width: 10),
                             Expanded(
                               child: Text(
-                                tx.displayNomorUrut,
+                                tx.nomor,
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w800,
@@ -865,9 +812,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w900,
-                              color: isTunai
-                                  ? Colors.green[700]
-                                  : Colors.blue[700],
+                              color: isTunai ? Colors.green[700] : Colors.blue[700],
                             ),
                           ),
                           Text(
@@ -884,7 +829,10 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                   ),
                   const SizedBox(height: 10),
                   // Divider Halus Pemisah Konten
-                  Container(height: 1, color: Colors.grey[100]),
+                  Container(
+                    height: 1,
+                    color: Colors.grey[100],
+                  ),
                   const SizedBox(height: 10),
                   // Baris 2: Nama Penjual/Supir, Tanggal & Tombol Aksi Mandiri
                   Row(
@@ -909,17 +857,10 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                Icon(
-                                  Icons.access_time_rounded,
-                                  size: 12,
-                                  color: Colors.grey[400],
-                                ),
+                                Icon(Icons.access_time_rounded, size: 12, color: Colors.grey[400]),
                                 const SizedBox(width: 4),
                                 Text(
-                                  DateFormat(
-                                    'dd MMM yyyy • HH:mm',
-                                    'id_ID',
-                                  ).format(tx.tanggal),
+                                  DateFormat('dd MMM yyyy • HH:mm', 'id_ID').format(tx.tanggal),
                                   style: TextStyle(
                                     fontSize: 10,
                                     color: Colors.grey[500],
@@ -941,17 +882,12 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                             borderRadius: BorderRadius.circular(10),
                             child: InkWell(
                               onTap: () async {
-                                final txProvider = context
-                                    .read<TransaksiDoProvider>();
-                                final dashProvider = context
-                                    .read<DashboardProvider>();
+                                final txProvider = context.read<TransaksiDoProvider>();
+                                final dashProvider = context.read<DashboardProvider>();
                                 await Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => EditTransaksiDoScreen(
-                                      transaction: tx,
-                                      popParent: false,
-                                    ),
+                                    builder: (context) => EditTransaksiDoScreen(transaction: tx, popParent: false),
                                   ),
                                 );
                                 if (mounted) {
@@ -1002,3 +938,4 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
 }
 
 // _CategoryFilterDelegate dihapus — diganti SliverToBoxAdapter
+

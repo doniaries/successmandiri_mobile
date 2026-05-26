@@ -21,17 +21,26 @@ class OperasionalScreen extends StatefulWidget {
 class _OperasionalScreenState extends State<OperasionalScreen> {
   final ScrollController _scrollController = ScrollController();
   DateTime? _selectedSingleDate;
-  final Set<int> _deletedIds = {};
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      setState(() {
-        _selectedSingleDate = DateTime.now();
-      });
-
+      final activeDateStr = context
+          .read<DashboardProvider>()
+          .summary
+          ?.systemActiveDate;
+      if (activeDateStr != null) {
+        setState(() {
+          _selectedSingleDate = DateTime.parse(activeDateStr);
+        });
+      } else {
+        setState(() {
+          _selectedSingleDate = DateTime.now();
+        });
+      }
+      
       final provider = context.read<ResourceProvider>();
       if (provider.operasionals.isEmpty) {
         _refreshData();
@@ -68,7 +77,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final provider = context.read<ResourceProvider>();
     final dashboardProvider = context.read<DashboardProvider>();
-
+    
     scaffoldMessenger.showSnackBar(
       const SnackBar(
         content: Text('Memulai Sinkronisasi Operasional...'),
@@ -76,20 +85,23 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
         behavior: SnackBarBehavior.floating,
       ),
     );
-
+    
     try {
-      // 1. Process offline queue (run in background)
-      SyncService().syncNow();
-
+      // 1. Process offline queue
+      await SyncService().syncNow();
+      
       // 2. Fetch latest master data from web
       await provider.syncMasterData();
-
+      
       // 3. Fetch latest operational data
-      await provider.fetchResources('operasional', refresh: true);
-
+      await provider.fetchResources(
+        'operasional',
+        refresh: true,
+      );
+      
       // 4. Fetch latest dashboard summary
       await dashboardProvider.fetchSummary();
-
+      
       if (!mounted) return;
       scaffoldMessenger.showSnackBar(
         const SnackBar(
@@ -110,25 +122,15 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     }
   }
 
-  List<Operasional> _getFilteredDateItems(List<Operasional> allItems) {
-    final targetDate = _selectedSingleDate ?? DateTime.now();
-    var filtered = allItems.where((item) {
+  List<Operasional> _getFilteredDateItems(List<Operasional> allItems, DateTime systemActiveDate) {
+    final targetDate = _selectedSingleDate ?? systemActiveDate;
+    return allItems.where((item) {
       return DateUtils.isSameDay(item.tanggal.toLocal(), targetDate);
     }).toList();
-
-    // Urutkan dari yang terbaru (tanggal terbaru / id terbesar)
-    filtered.sort((a, b) {
-      int dateCompare = b.tanggal.compareTo(a.tanggal);
-      if (dateCompare != 0) return dateCompare;
-      return b.id.compareTo(a.id);
-    });
-
-    return filtered;
   }
 
-  List<Operasional> _getFilteredItems(List<Operasional> allItems) {
-    List<Operasional> items = _getFilteredDateItems(allItems);
-    items = items.where((i) => !_deletedIds.contains(i.id)).toList();
+  List<Operasional> _getFilteredItems(List<Operasional> allItems, DateTime systemActiveDate) {
+    List<Operasional> items = _getFilteredDateItems(allItems, systemActiveDate);
     if (_currentFilter != 'Semua') {
       items = items
           .where(
@@ -140,11 +142,17 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
   }
 
   void _showFilterSheet() async {
-    final targetDate = _selectedSingleDate ?? DateTime.now();
+    final activeDateStr = context
+        .read<DashboardProvider>()
+        .summary
+        ?.systemActiveDate;
+    final systemActiveDate = activeDateStr != null
+        ? DateTime.parse(activeDateStr)
+        : DateTime.now();
 
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: targetDate,
+      initialDate: _selectedSingleDate ?? systemActiveDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now().add(const Duration(days: 365)),
       initialEntryMode: DatePickerEntryMode.calendarOnly,
@@ -175,15 +183,18 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       body: RefreshIndicator(
-        notificationPredicate: (notification) =>
-            !SyncService().isOffline &&
-            defaultScrollNotificationPredicate(notification),
+        notificationPredicate: (notification) => !SyncService().isOffline && defaultScrollNotificationPredicate(notification),
         onRefresh: _refreshData,
         color: const Color(0xFF01579B),
         child: CustomScrollView(
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [_buildAppBar(), _buildSummaryHeader(), _buildListSection()],
+          slivers: [
+            _buildAppBar(),
+
+            _buildSummaryHeader(),
+            _buildListSection(),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -234,11 +245,12 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
         children: [
           Consumer2<ResourceProvider, DashboardProvider>(
             builder: (context, resourceProvider, dashboardProvider, child) {
-              final targetDate = _selectedSingleDate ?? DateTime.now();
+              final activeDateStr = dashboardProvider.summary?.systemActiveDate;
+              final systemActiveDate = activeDateStr != null
+                  ? DateTime.parse(activeDateStr)
+                  : DateTime.now();
 
-              final filteredDateItems = _getFilteredDateItems(
-                resourceProvider.operasionals,
-              );
+              final filteredDateItems = _getFilteredDateItems(resourceProvider.operasionals, systemActiveDate);
               double totalPemasukan = 0;
               double totalPengeluaran = 0;
               for (var item in filteredDateItems) {
@@ -249,20 +261,14 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                 }
               }
 
-              final dateText = DateFormat(
-                'dd MMMM yyyy',
-                'id_ID',
-              ).format(targetDate);
-              final isFilterActive =
-                  _selectedSingleDate != null &&
-                  !DateUtils.isSameDay(_selectedSingleDate!, DateTime.now());
+              final targetDate = _selectedSingleDate ?? systemActiveDate;
+              final dateText = DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
+              
+              final isFilterActive = _selectedSingleDate != null && !DateUtils.isSameDay(_selectedSingleDate!, systemActiveDate);
 
               return Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 18,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
                 margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
@@ -283,9 +289,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isFilterActive
-                          ? 'Filter Operasional'
-                          : 'Ringkasan Operasional',
+                      isFilterActive ? 'Filter Operasional' : 'Ringkasan Operasional',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 14,
@@ -313,17 +317,12 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                                 onTap: _showFilterSheet,
                                 borderRadius: BorderRadius.circular(12),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 6,
-                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withValues(alpha: 0.15),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.25,
-                                      ),
+                                      color: Colors.white.withValues(alpha: 0.25),
                                       width: 0.5,
                                     ),
                                   ),
@@ -487,6 +486,8 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     );
   }
 
+
+
   Widget _buildListSection() {
     return Consumer2<ResourceProvider, DashboardProvider>(
       builder: (context, provider, dashboardProvider, child) {
@@ -499,7 +500,12 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
           );
         }
 
-        final items = _getFilteredItems(provider.operasionals);
+        final activeDateStr = dashboardProvider.summary?.systemActiveDate;
+        final systemActiveDate = activeDateStr != null
+            ? DateTime.parse(activeDateStr)
+            : DateTime.now();
+
+        final items = _getFilteredItems(provider.operasionals, systemActiveDate);
 
         if (items.isEmpty) {
           return SliverFillRemaining(
@@ -555,183 +561,89 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
         ? const Color(0xFFC62828)
         : const Color(0xFF2E7D32);
 
-    return Dismissible(
-      key: Key('operasional_${item.id}'),
-      direction: DismissDirection.endToStart,
-      background: Container(
-        alignment: Alignment.centerRight,
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        decoration: BoxDecoration(
-          color: Colors.red,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: const Icon(
-          Icons.delete_sweep_rounded,
-          color: Colors.white,
-          size: 30,
-        ),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      confirmDismiss: (direction) async {
-        return await showDialog(
-          context: context,
-          builder: (BuildContext dialogContext) {
-            return AlertDialog(
-              title: const Text('Hapus Transaksi'),
-              content: const Text(
-                'Apakah Anda yakin ingin menghapus transaksi operasional ini?',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogContext, false),
-                  child: const Text('Batal'),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OperasionalDetailScreen(operasional: item),
+            ),
+          ),
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    isPengeluaran
+                        ? Icons.trending_down_rounded
+                        : Icons.trending_up_rounded,
+                    color: color,
+                    size: 24,
+                  ),
                 ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                  onPressed: () => Navigator.pop(dialogContext, true),
-                  child: const Text(
-                    'Hapus',
-                    style: TextStyle(color: Colors.white),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.kategoriLabel ?? item.kategori,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2C3E50),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        item.namaPihak != null && item.namaPihak!.isNotEmpty && item.namaPihak != '-'
+                            ? (item.keterangan != null && item.keterangan!.isNotEmpty && item.keterangan != '-'
+                                ? '${item.namaPihak} (${item.keterangan})'
+                                : item.namaPihak!)
+                            : (item.keterangan ?? '-'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                      ),
+
+                      const SizedBox(height: 4),
+                      Text(
+                        DateFormat('dd MMM yyyy • HH:mm', 'id_ID').format(item.tanggal),
+                        style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  CurrencyFormatter.formatRupiah(item.nominal),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: color,
                   ),
                 ),
               ],
-            );
-          },
-        );
-      },
-      onDismissed: (direction) {
-        setState(() {
-          _deletedIds.add(item.id);
-        });
-        final provider = context.read<ResourceProvider>();
-        final dashboardProvider = context.read<DashboardProvider>();
-        provider.deleteResource('operasional', item.id).then((success) {
-          if (mounted) {
-            if (success) {
-              dashboardProvider.fetchSummary();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Operasional berhasil dihapus'),
-                  backgroundColor: Colors.green,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            } else {
-              setState(() {
-                _deletedIds.remove(item.id);
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    provider.errorMessage ?? 'Gagal menghapus operasional',
-                  ),
-                  backgroundColor: Colors.red,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-              _refreshData();
-            }
-          }
-        });
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    OperasionalDetailScreen(operasional: item),
-              ),
-            ),
-            borderRadius: BorderRadius.circular(16),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      isPengeluaran
-                          ? Icons.trending_down_rounded
-                          : Icons.trending_up_rounded,
-                      color: color,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.kategoriLabel ?? item.kategori,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2C3E50),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          item.namaPihak != null &&
-                                  item.namaPihak!.isNotEmpty &&
-                                  item.namaPihak != '-'
-                              ? (item.keterangan != null &&
-                                        item.keterangan!.isNotEmpty &&
-                                        item.keterangan != '-'
-                                    ? '${item.namaPihak} (${item.keterangan})'
-                                    : item.namaPihak!)
-                              : (item.keterangan ?? '-'),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-
-                        const SizedBox(height: 4),
-                        Text(
-                          DateFormat(
-                            'dd MMM yyyy • HH:mm',
-                            'id_ID',
-                          ).format(item.tanggal),
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey[400],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Text(
-                    CurrencyFormatter.formatRupiah(item.nominal),
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w900,
-                      color: color,
-                    ),
-                  ),
-                ],
-              ),
             ),
           ),
         ),

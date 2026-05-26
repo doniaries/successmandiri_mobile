@@ -7,7 +7,6 @@ import 'package:sawitappmobile/shared/models/mutasi_hutang_model.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/features/operasional/screens/pay_debt_screen.dart';
-import 'package:sawitappmobile/features/operasional/screens/add_debt_screen.dart';
 import 'package:sawitappmobile/shared/widgets/error_dialog.dart';
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 
@@ -296,52 +295,26 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
                 'Total Hutang', 
                 CurrencyFormatter.formatRupiah(_currentSupir.hutang ?? 0),
                 textColor: (_currentSupir.hutang ?? 0) > 0 ? Colors.orange[800] : Colors.green[700],
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextButton.icon(
-                      onPressed: () async {
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => AddDebtScreen(
-                              pihakType: 'App\\Models\\Supir',
-                              pihakId: _currentSupir.id,
-                            ),
-                          ),
-                        );
-                        _fetchDetail();
-                      },
-                      icon: const Icon(Icons.add_circle_outline, size: 18),
-                      label: const Text('Tambah'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.orange[800],
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                      ),
-                    ),
-                    if ((_currentSupir.hutang ?? 0) > 0)
-                      TextButton.icon(
-                        onPressed: () async {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => PayDebtScreen(
-                                pihakType: 'App\\Models\\Supir',
-                                pihakId: _currentSupir.id,
-                              ),
-                            ),
-                          );
-                          _fetchDetail();
-                        },
-                        icon: const Icon(Icons.payment_rounded, size: 18),
-                        label: const Text('Bayar'),
-                        style: TextButton.styleFrom(
-                          foregroundColor: const Color(0xFF01579B),
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                trailing: (_currentSupir.hutang ?? 0) > 0 ? TextButton.icon(
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PayDebtScreen(
+                          pihakType: 'App\\Models\\Supir',
+                          pihakId: _currentSupir.id,
                         ),
                       ),
-                  ],
-                ),
+                    );
+                    _fetchDetail();
+                  },
+                  icon: const Icon(Icons.payment_rounded, size: 18),
+                  label: const Text('Bayar'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFF01579B),
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                ) : null,
               ),
             ]),
 

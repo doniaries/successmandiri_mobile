@@ -22,8 +22,6 @@ class TransaksiDoProvider with ChangeNotifier {
   bool _isRefreshing = false;
 
   int _unreadCount = 0;
-  int _totalTransactions = 0;
-  String? _lastFilterDate;
 
   TransaksiDoProvider(this._repository);
 
@@ -39,8 +37,7 @@ class TransaksiDoProvider with ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get hasNewData => _hasNewData;
   int get unreadCount => _unreadCount;
-  int get totalTransactions => _totalTransactions;
-  String? get lastFilterDate => _lastFilterDate;
+  int get totalTransactions => _transactions.length;
 
   void clearData() {
     _transactions.clear();
@@ -52,53 +49,53 @@ class TransaksiDoProvider with ChangeNotifier {
     _unreadCount = 0;
     _currentPage = 1;
     _hasMore = true;
-    _lastFilterDate = null;
     notifyListeners();
   }
 
   Future<void> fetchTransactions({String? tanggal}) async {
-    if (tanggal != null) {
-      _lastFilterDate = tanggal;
-    } else {
-      tanggal = _lastFilterDate;
-    }
-
-    if (_isRefreshing || _isFetchingMore) return;
+    if (_isRefreshing) return;
     _isRefreshing = true;
     if (_transactions.isEmpty) _isLoading = true;
     _errorMessage = null;
     _currentPage = 1;
-    _hasMore = true;
+    _hasMore = false; // Disable pagination for DO transactions
     notifyListeners();
 
     try {
-      final dynamic response = await _repository.getTransaksiDo(
-        tanggal: tanggal,
-        page: _currentPage,
-      );
+      // Fetch all transactions by using page=1 with large limit from API
+      // or repeatedly fetch until no more data
+      List<TransaksiDo> allTransactions = [];
+      int page = 1;
+      bool hasMoreData = true;
 
-      List<dynamic> rawData = [];
-      if (response is Map) {
-        rawData = response['data'] ?? [];
-        _hasMore = response['next_page_url'] != null;
-        _totalTransactions =
-            _parseTotalFromResponse(response) ?? rawData.length;
-      } else if (response is List) {
-        rawData = response;
-        _hasMore = false;
-        _totalTransactions = rawData.length;
+      while (hasMoreData) {
+        final dynamic response = await _repository.getTransaksiDo(
+          tanggal: tanggal,
+          page: page,
+        );
+
+        List<dynamic> rawData = [];
+        if (response is Map) {
+          rawData = response['data'] ?? [];
+          hasMoreData = response['next_page_url'] != null;
+        } else if (response is List) {
+          rawData = response;
+          hasMoreData = false;
+        }
+
+        final pageTransactions = rawData.map((json) => TransaksiDo.fromJson(json)).toList();
+        allTransactions.addAll(pageTransactions);
+
+        if (!hasMoreData) break;
+        page++;
       }
 
-      _transactions = rawData
-          .map((json) => TransaksiDo.fromJson(json))
-          .toList();
+      _transactions = allTransactions;
       _isLoading = false;
 
       if (_transactions.isNotEmpty) {
         final prefs = await SharedPreferences.getInstance();
-        final lastSeenId =
-            int.tryParse(prefs.getString('seen_state_transaksi_do') ?? '0') ??
-            0;
+        final lastSeenId = int.tryParse(prefs.getString('seen_state_transaksi_do') ?? '0') ?? 0;
         _unreadCount = _transactions.where((t) => t.id > lastSeenId).length;
         _hasNewData = _unreadCount > 0;
       } else {
@@ -109,9 +106,7 @@ class TransaksiDoProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       _isLoading = false;
-      if (e is DioException &&
-          (e.type == DioExceptionType.connectionError ||
-              e.type == DioExceptionType.connectionTimeout)) {
+      if (e is DioException && (e.type == DioExceptionType.connectionError || e.type == DioExceptionType.connectionTimeout)) {
         // Suppress offline error, just show whatever data we have
       } else {
         _errorMessage = 'Gagal memuat data transaksi: $e';
@@ -123,85 +118,14 @@ class TransaksiDoProvider with ChangeNotifier {
     }
   }
 
-  int? _parseTotalFromResponse(Map<dynamic, dynamic> response) {
-    final candidates = <dynamic>[
-      response['total'],
-      response['meta'] is Map ? response['meta']['total'] : null,
-      response['pagination'] is Map ? response['pagination']['total'] : null,
-    ];
-
-    for (final candidate in candidates) {
-      if (candidate == null) continue;
-      final parsed = int.tryParse(candidate.toString());
-      if (parsed != null && parsed >= 0) return parsed;
-    }
-    return null;
-  }
-
   Future<void> fetchMoreTransactions({String? tanggal}) async {
-    if (tanggal != null) {
-      _lastFilterDate = tanggal;
-    } else {
-      tanggal = _lastFilterDate;
-    }
-
-    if (_isFetchingMore || _isRefreshing || !_hasMore) return;
-
-    _isFetchingMore = true;
-    _errorMessage = null;
-    notifyListeners();
-
-    try {
-      _currentPage++;
-      final dynamic response = await _repository.getTransaksiDo(
-        tanggal: tanggal,
-        page: _currentPage,
-      );
-
-      List<dynamic> rawData = [];
-      if (response is Map) {
-        rawData = response['data'] ?? [];
-        _hasMore = response['next_page_url'] != null;
-        final pageTotal = _parseTotalFromResponse(response);
-        if (pageTotal != null) {
-          _totalTransactions = pageTotal;
-        }
-      } else if (response is List) {
-        rawData = response;
-        _hasMore = false;
-      }
-
-      final newItems = rawData
-          .map((json) => TransaksiDo.fromJson(json))
-          .toList();
-
-      for (var item in newItems) {
-        if (!_transactions.any((e) => e.id == item.id)) {
-          _transactions.add(item);
-        }
-      }
-
-      // Re-evaluate unreadCount after fetching more items
-      final prefs = await SharedPreferences.getInstance();
-      final lastSeenId =
-          int.tryParse(prefs.getString('seen_state_transaksi_do') ?? '0') ?? 0;
-      _unreadCount = _transactions.where((t) => t.id > lastSeenId).length;
-      _hasNewData = _unreadCount > 0;
-
-      _isFetchingMore = false;
-      notifyListeners();
-    } catch (e) {
-      _isFetchingMore = false;
-      _currentPage--; // Rollback page on error
-      notifyListeners();
-    }
+    // Pagination disabled for DO transactions - fetch all for the selected date
+    return;
   }
 
   Future<void> markAsSeen() async {
     if (_transactions.isNotEmpty) {
-      final maxId = _transactions
-          .map((t) => t.id)
-          .reduce((curr, next) => curr > next ? curr : next);
+      final maxId = _transactions.map((t) => t.id).reduce((curr, next) => curr > next ? curr : next);
       await SeenStateService.markAsSeen('transaksi_do', maxId.toString());
       _unreadCount = 0;
       _hasNewData = false;
@@ -255,7 +179,7 @@ class TransaksiDoProvider with ChangeNotifier {
     _isSaving = true;
     _errorMessage = null;
     notifyListeners();
-
+ 
     try {
       final result = await _repository.createTransaksiDo(
         tanggal: tanggal,
@@ -277,8 +201,7 @@ class TransaksiDoProvider with ChangeNotifier {
       );
 
       if (result is Map && result['offline'] == true) {
-        _errorMessage =
-            'Koneksi bermasalah. Transaksi disimpan di antrean offline.';
+        _errorMessage = 'Koneksi bermasalah. Transaksi disimpan di antrean offline.';
         // Tetap return true karena dianggap "berhasil disimpan" di lokal
       } else {
         await fetchTransactions(); // Refresh list hanya jika online berhasil
@@ -339,8 +262,7 @@ class TransaksiDoProvider with ChangeNotifier {
       );
 
       if (result is Map && result['offline'] == true) {
-        _errorMessage =
-            'Koneksi bermasalah. Transaksi disimpan di antrean offline.';
+        _errorMessage = 'Koneksi bermasalah. Transaksi disimpan di antrean offline.';
       } else {
         await fetchTransactions();
       }
@@ -385,3 +307,4 @@ class TransaksiDoProvider with ChangeNotifier {
     }
   }
 }
+

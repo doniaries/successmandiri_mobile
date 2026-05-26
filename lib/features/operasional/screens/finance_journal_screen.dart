@@ -36,7 +36,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final dashboardProvider = context.read<DashboardProvider>();
-
+      
       // Prioritaskan filterDate dari dashboard jika ada
       final filterDate = dashboardProvider.filterDate;
       if (filterDate != null) {
@@ -58,12 +58,6 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
         refresh: true,
         filters: _buildApiFilters(),
       );
-
-      // Pastikan summary dashboard juga dimuat untuk tanggal yang sama
-      try {
-        final dateStr = DateFormat('yyyy-MM-dd').format(_selectedSingleDate!);
-        dashboardProvider.fetchSummary(date: dateStr);
-      } catch (_) {}
     });
   }
 
@@ -80,7 +74,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
     filters['start_date'] = dateStr;
     filters['end_date'] = dateStr;
-
+    
     return filters;
   }
 
@@ -112,7 +106,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final provider = context.read<ResourceProvider>();
     final dashboardProvider = context.read<DashboardProvider>();
-
+    
     scaffoldMessenger.showSnackBar(
       const SnackBar(
         content: Text('Memulai Sinkronisasi Laporan...'),
@@ -120,25 +114,20 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
         behavior: SnackBarBehavior.floating,
       ),
     );
-
+    
     try {
       // 1. Process offline queue
-      // Run sync in background so UI won't hang
-      SyncService().syncNow();
-
+      await SyncService().syncNow();
+      
       // 2. Fetch latest master data from web
       await provider.syncMasterData();
-
+      
       // 3. Fetch latest financial journal data
-      await provider.fetchResources(
-        'jurnal_keuangan',
-        refresh: true,
-        filters: _buildApiFilters(),
-      );
-
+      await provider.fetchResources('jurnal_keuangan', refresh: true, filters: _buildApiFilters());
+      
       // 4. Fetch latest dashboard summary
       await dashboardProvider.fetchSummary();
-
+      
       scaffoldMessenger.showSnackBar(
         const SnackBar(
           content: Text('Sinkronisasi Laporan Selesai'),
@@ -161,33 +150,30 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
   Widget build(BuildContext context) {
     final dashboardProvider = context.watch<DashboardProvider>();
     final navProvider = context.watch<MainNavigationProvider>();
-
+    
     if (navProvider.journalFilter != null) {
       final newFilter = navProvider.journalFilter!;
       if (_filters.contains(newFilter)) {
         _selectedFilter = newFilter;
       }
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          context.read<MainNavigationProvider>().clearJournalFilter();
-        }
+        if (mounted) context.read<MainNavigationProvider>().clearJournalFilter();
       });
     }
 
     final dashboardFilterDate = dashboardProvider.filterDate;
-
+    
     // Deteksi perubahan filterDate dari dashboard SETELAH inisialisasi awal
-    if (_hasInitializedFilterDate &&
-        _lastDashboardFilterDate != dashboardFilterDate) {
+    if (_hasInitializedFilterDate && _lastDashboardFilterDate != dashboardFilterDate) {
       _lastDashboardFilterDate = dashboardFilterDate;
-
+      
       final activeDateStr = dashboardProvider.summary?.systemActiveDate;
       final systemActiveDate = activeDateStr != null
           ? DateTime.parse(activeDateStr)
           : DateTime.now();
-
+          
       _selectedSingleDate = dashboardFilterDate ?? systemActiveDate;
-
+      
       // Trigger fetch saat filter dashboard berubah
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
@@ -196,12 +182,6 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
           refresh: true,
           filters: _buildApiFilters(),
         );
-
-        // Juga refresh summary dashboard untuk tanggal yang dipilih
-        try {
-          final dateStr = DateFormat('yyyy-MM-dd').format(_selectedSingleDate!);
-          context.read<DashboardProvider>().fetchSummary(date: dateStr);
-        } catch (_) {}
       });
     }
 
@@ -244,9 +224,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
               _buildFilterChips(),
               Expanded(
                 child: RefreshIndicator(
-                  notificationPredicate: (notification) =>
-                      !SyncService().isOffline &&
-                      defaultScrollNotificationPredicate(notification),
+                  notificationPredicate: (notification) => !SyncService().isOffline && defaultScrollNotificationPredicate(notification),
                   onRefresh: () async => _refreshData(),
                   child: isInitialLoading
                       ? _buildSkeletonList()
@@ -287,33 +265,178 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
 
   Widget _buildSummaryHeader(ResourceProvider provider) {
     final targetDate = _selectedSingleDate ?? _getSystemActiveDate();
+    final systemActiveDate = _getSystemActiveDate();
 
-    final dashboardProv = context.watch<DashboardProvider>();
-    final summary = dashboardProv.summary;
-    final systemActiveDate = summary?.systemActiveDate;
+    // Hitung statistik berdasarkan tanggal aktif menggunakan ringkasan data dari server
+    final double displayIn = provider.totalPemasukan;
+    final double displayOut = provider.totalPengeluaran;
+    final int filterCount = provider.jurnalCount;
 
-    // Jika tanggal filter = system active date → pakai nilai dari dashboard summary
-    // (logika sama persis dengan Filament DashboardStatsWidget)
-    // Jika tanggal lain → fallback ke hitungan dari jurnal_keuangan
-    final bool isActiveDate =
-        systemActiveDate != null &&
-        DateUtils.isSameDay(targetDate, DateTime.parse(systemActiveDate));
-
-    final double displayIn = isActiveDate
-        ? (summary?.stats.pemasukan.today.total ?? provider.totalPemasukan)
-        : provider.totalPemasukan;
-    final double displayOut = isActiveDate
-        ? (summary?.stats.pengeluaran.today.total ?? provider.totalPengeluaran)
-        : provider.totalPengeluaran;
-
-    // Hitung langsung dari list yang difilter per tanggal (bukan dari global jurnalCount)
-    // Note: filterCount removed (not used) — rely on dashboard summary for totals
-
+    final isFilterActive = _selectedSingleDate != null && !DateUtils.isSameDay(_selectedSingleDate!, systemActiveDate);
     final dateText = DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
     final labelSuffix = DateFormat('d MMM', 'id_ID').format(targetDate);
 
+    if (isFilterActive) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        margin: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF01579B), Color(0xFF0288D1)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF01579B).withValues(alpha: 0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Filter Laporan',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Tanggal Laporan',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      InkWell(
+                        onTap: _showFilterSheet,
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.25),
+                              width: 0.5,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.calendar_month_rounded,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    dateText,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(
+                                Icons.arrow_drop_down_rounded,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  height: 40,
+                  width: 1,
+                  color: Colors.white24,
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Total Transaksi',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          '$filterCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildSummaryItem(
+                    'Masuk ($labelSuffix)',
+                    displayIn,
+                    Icons.arrow_downward_rounded,
+                    Colors.greenAccent,
+                  ),
+                ),
+                Container(width: 1, height: 40, color: Colors.white24),
+                Expanded(
+                  child: _buildSummaryItem(
+                    'Keluar ($labelSuffix)',
+                    displayOut,
+                    Icons.arrow_upward_rounded,
+                    Colors.orangeAccent,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
-      width: double.infinity,
       padding: const EdgeInsets.all(20),
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -333,68 +456,55 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
       ),
       child: Column(
         children: [
-          // Bagian 1: Info Tanggal Laporan & Total Transaksi
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Filter Tanggal Button
-              Flexible(
-                flex: 3,
-                child: InkWell(
-                  onTap: _showFilterSheet,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.25),
-                        width: 0.5,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.calendar_month_rounded,
-                          color: Colors.white,
-                          size: 14,
-                        ),
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: Text(
-                            dateText,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        const Icon(
-                          Icons.arrow_drop_down_rounded,
-                          color: Colors.white,
-                          size: 16,
-                        ),
-                      ],
+          const Text(
+            'Total Saldo Kas',
+            style: TextStyle(color: Colors.white70, fontSize: 13),
+          ),
+          const SizedBox(height: 4),
+          Consumer<DashboardProvider>(
+            builder: (context, dashboardProv, child) {
+              final double currentSaldo = dashboardProv.summary?.saldo ?? 0.0;
+              return Text(
+                CurrencyFormatter.formatRupiah(currentSaldo),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 10),
+          InkWell(
+            onTap: _showFilterSheet,
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.white30, width: 0.5),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.calendar_month_rounded, color: Colors.white, size: 14),
+                  const SizedBox(width: 6),
+                  Text(
+                    DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.arrow_drop_down_rounded, color: Colors.white, size: 16),
+                ],
               ),
-              const SizedBox(width: 8),
-              // (Removed) Total Transaksi badge per permintaan — gunakan angka di widget Dashboard
-            ],
+            ),
           ),
           const SizedBox(height: 20),
-
-          // Bagian 2: Pemasukan & Pengeluaran (Menyesuaikan dengan tanggal filter)
           Row(
             children: [
               Expanded(
@@ -405,11 +515,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
                   Colors.greenAccent,
                 ),
               ),
-              Container(
-                width: 1,
-                height: 35,
-                color: Colors.white.withValues(alpha: 0.15),
-              ),
+              Container(width: 1, height: 40, color: Colors.white24),
               Expanded(
                 child: _buildSummaryItem(
                   'Keluar ($labelSuffix)',
@@ -574,10 +680,7 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
   List<JurnalKeuangan> _getFilteredItems(List<JurnalKeuangan> items) {
     final targetDate = _selectedSingleDate ?? _getSystemActiveDate();
     return items.where((item) {
-      final matchesDate = DateUtils.isSameDay(
-        item.tanggal.toLocal(),
-        targetDate,
-      );
+      final matchesDate = DateUtils.isSameDay(item.tanggal.toLocal(), targetDate);
       if (!matchesDate) return false;
 
       if (_selectedFilter == 'Semua') return true;
@@ -708,4 +811,6 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
       ],
     );
   }
+
+
 }

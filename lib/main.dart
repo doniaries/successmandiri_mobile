@@ -10,7 +10,6 @@ import 'package:sawitappmobile/core/services/push_notification_service.dart';
 import 'package:sawitappmobile/features/auth/providers/auth_provider.dart';
 import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_provider.dart';
 import 'package:sawitappmobile/features/tambah_saldo/providers/tambah_saldo_provider.dart';
-import 'package:sawitappmobile/features/tutup_hari/providers/tutup_hari_provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:sawitappmobile/shared/providers/navigation_provider.dart';
@@ -28,14 +27,14 @@ import 'package:sawitappmobile/shared/screens/main_navigation_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  
   // 1. Inisialisasi cepat di level main
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('auth_token');
   final wizardCompleted = prefs.getBool('permission_wizard_completed') ?? false;
-
+  
   Widget initialScreen;
-
+  
   // 2. Tentukan halaman awal secara cerdas
   if (token != null && wizardCompleted) {
     initialScreen = const MainNavigationScreen();
@@ -60,7 +59,7 @@ void main() async {
   // 4. Lakukan inisialisasi non-kritis di latar belakang
   Future.delayed(const Duration(milliseconds: 100), () async {
     try {
-      SyncService();
+      SyncService(); 
       await NotificationService().init();
     } catch (e) {
       debugPrint('Background init error: $e');
@@ -68,43 +67,9 @@ void main() async {
   });
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   final Widget initialScreen;
   const MyApp({super.key, required this.initialScreen});
-
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      try {
-        final auth = Provider.of<AuthProvider>(context, listen: false);
-        if (auth.isAuthenticated) {
-          final rp = Provider.of<ResourceProvider>(context, listen: false);
-          final dp = Provider.of<DashboardProvider>(context, listen: false);
-          final tp = Provider.of<TambahSaldoProvider>(context, listen: false);
-          final doProv = Provider.of<TransaksiDoProvider>(
-            context,
-            listen: false,
-          );
-
-          // Fetch initial data from server / cache so UI shows up-to-date values
-          await Future.wait([
-            rp.fetchAllResources(),
-            dp.fetchSummary(),
-            tp.fetchRequests(),
-            doProv.fetchTransactions(),
-          ]);
-        }
-      } catch (e) {
-        debugPrint('Initial data fetch failed: $e');
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,16 +90,9 @@ class _MyAppState extends State<MyApp> {
             return provider;
           },
         ),
-        ChangeNotifierProvider(
-          create: (_) => TransaksiDoProvider(transaksiRepository),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => TambahSaldoProvider(tambahSaldoRepository),
-        ),
-        ChangeNotifierProvider(create: (_) => TutupHariProvider()),
-        ChangeNotifierProvider(
-          create: (_) => ResourceProvider(resourceRepository),
-        ),
+        ChangeNotifierProvider(create: (_) => TransaksiDoProvider(transaksiRepository)),
+        ChangeNotifierProvider(create: (_) => TambahSaldoProvider(tambahSaldoRepository)),
+        ChangeNotifierProvider(create: (_) => ResourceProvider(resourceRepository)),
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
         ChangeNotifierProvider(create: (_) => MainNavigationProvider()),
       ],
@@ -147,7 +105,10 @@ class _MyAppState extends State<MyApp> {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        supportedLocales: const [Locale('id', 'ID'), Locale('en', 'US')],
+        supportedLocales: const [
+          Locale('id', 'ID'),
+          Locale('en', 'US'),
+        ],
         locale: const Locale('id', 'ID'),
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
@@ -164,8 +125,9 @@ class _MyAppState extends State<MyApp> {
             PointerDeviceKind.stylus,
           },
         ),
-        home: widget.initialScreen,
+        home: initialScreen,
       ),
     );
   }
 }
+

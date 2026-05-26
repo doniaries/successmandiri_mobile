@@ -40,7 +40,7 @@ class ResourceRepository {
       if (page == 1) {
         // Hapus kode SharedPreferences, ganti dengan SQLite Cache
         final List<dynamic> listData = _extractListData(response.data);
-        await syncService.cacheData('penjual', listData, clear: true);
+        await syncService.cacheData('penjual', listData, clear: false);
         final pendingData = await syncService.getMergedOfflineData('penjual', ApiConstants.penjual);
         if (response.data is Map) {
           response.data['data'] = pendingData;
@@ -164,25 +164,6 @@ class ResourceRepository {
     }
   }
 
-  Future<void> addDebtPenjual(int id, Map<String, dynamic> data) async {
-    final url = '${ApiConstants.penjual}/$id/tambah-hutang';
-    final connectivity = await Connectivity().checkConnectivity();
-    if (connectivity.every((r) => r == ConnectivityResult.none)) {
-      await syncService.addToQueue(url, 'POST', data);
-      return;
-    }
-    try {
-      await _apiClient.dio.post(url, data: data);
-    } on DioException catch (e) {
-      if (e.response != null &&
-          (e.response!.statusCode ?? 0) >= 400 &&
-          (e.response!.statusCode ?? 0) < 500) {
-        rethrow;
-      }
-      await syncService.addToQueue(url, 'POST', data);
-    }
-  }
-
   Future<dynamic> getSupirPaginated({int page = 1}) async {
     try {
       final response = await _apiClient.dio
@@ -194,7 +175,7 @@ class ResourceRepository {
 
       if (page == 1) {
         final List<dynamic> listData = _extractListData(response.data);
-        await syncService.cacheData('supir', listData, clear: true);
+        await syncService.cacheData('supir', listData, clear: false);
         final pendingData = await syncService.getMergedOfflineData('supir', ApiConstants.supir);
         if (response.data is Map) {
           response.data['data'] = pendingData;
@@ -250,13 +231,8 @@ class ResourceRepository {
     final connectivity = await Connectivity().checkConnectivity();
     final isOffline = connectivity.every((r) => r == ConnectivityResult.none);
     if (isOffline) {
-      final qId = await syncService.addToQueue(
-        ApiConstants.supir,
-        'POST',
-        data,
-      );
-      data['id'] = -1 * qId;
-      return data;
+      await syncService.addToQueue(ApiConstants.supir, 'POST', data);
+      return {'offline': true};
     }
     try {
       final response = await _apiClient.dio.post(
@@ -270,13 +246,8 @@ class ResourceRepository {
           (e.response!.statusCode ?? 0) < 500) {
         rethrow;
       }
-      final qId = await syncService.addToQueue(
-        ApiConstants.supir,
-        'POST',
-        data,
-      );
-      data['id'] = -1 * qId;
-      return data;
+      await syncService.addToQueue(ApiConstants.supir, 'POST', data);
+      return {'offline': true};
     }
   }
 
@@ -318,25 +289,6 @@ class ResourceRepository {
     }
   }
 
-  Future<void> addDebtSupir(int id, Map<String, dynamic> data) async {
-    final url = '${ApiConstants.supir}/$id/tambah-hutang';
-    final connectivity = await Connectivity().checkConnectivity();
-    if (connectivity.every((r) => r == ConnectivityResult.none)) {
-      await syncService.addToQueue(url, 'POST', data);
-      return;
-    }
-    try {
-      await _apiClient.dio.post(url, data: data);
-    } on DioException catch (e) {
-      if (e.response != null &&
-          (e.response!.statusCode ?? 0) >= 400 &&
-          (e.response!.statusCode ?? 0) < 500) {
-        rethrow;
-      }
-      await syncService.addToQueue(url, 'POST', data);
-    }
-  }
-
   Future<dynamic> getPekerjaPaginated({int page = 1}) async {
     try {
       final response = await _apiClient.dio
@@ -347,7 +299,7 @@ class ResourceRepository {
           .timeout(const Duration(seconds: 15));
       if (page == 1) {
         final List<dynamic> listData = _extractListData(response.data);
-        await syncService.cacheData('pekerja', listData, clear: true);
+        await syncService.cacheData('pekerja', listData, clear: false);
         final pendingData = await syncService.getMergedOfflineData('pekerja', ApiConstants.pekerja);
         if (response.data is Map) {
           response.data['data'] = pendingData;
@@ -403,13 +355,8 @@ class ResourceRepository {
     final connectivity = await Connectivity().checkConnectivity();
     final isOffline = connectivity.every((r) => r == ConnectivityResult.none);
     if (isOffline) {
-      final qId = await syncService.addToQueue(
-        ApiConstants.pekerja,
-        'POST',
-        data,
-      );
-      data['id'] = -1 * qId;
-      return data;
+      await syncService.addToQueue(ApiConstants.pekerja, 'POST', data);
+      return {'offline': true};
     }
     try {
       final response = await _apiClient.dio.post(
@@ -423,13 +370,8 @@ class ResourceRepository {
           (e.response!.statusCode ?? 0) < 500) {
         rethrow;
       }
-      final qId = await syncService.addToQueue(
-        ApiConstants.pekerja,
-        'POST',
-        data,
-      );
-      data['id'] = -1 * qId;
-      return data;
+      await syncService.addToQueue(ApiConstants.pekerja, 'POST', data);
+      return {'offline': true};
     }
   }
 
@@ -471,25 +413,6 @@ class ResourceRepository {
     }
   }
 
-  Future<void> addDebtPekerja(int id, Map<String, dynamic> data) async {
-    final url = '${ApiConstants.pekerja}/$id/tambah-hutang';
-    final connectivity = await Connectivity().checkConnectivity();
-    if (connectivity.every((r) => r == ConnectivityResult.none)) {
-      await syncService.addToQueue(url, 'POST', data);
-      return;
-    }
-    try {
-      await _apiClient.dio.post(url, data: data);
-    } on DioException catch (e) {
-      if (e.response != null &&
-          (e.response!.statusCode ?? 0) >= 400 &&
-          (e.response!.statusCode ?? 0) < 500) {
-        rethrow;
-      }
-      await syncService.addToQueue(url, 'POST', data);
-    }
-  }
-
   Future<dynamic> getKendaraanPaginated({int page = 1}) async {
     try {
       final response = await _apiClient.dio
@@ -501,7 +424,7 @@ class ResourceRepository {
 
       if (page == 1) {
         final List<dynamic> listData = _extractListData(response.data);
-        await syncService.cacheData('kendaraan', listData, clear: true);
+        await syncService.cacheData('kendaraan', listData, clear: false);
         final pendingData = await syncService.getMergedOfflineData('kendaraan', ApiConstants.kendaraan);
         if (response.data is Map) {
           response.data['data'] = pendingData;
@@ -557,13 +480,8 @@ class ResourceRepository {
     final connectivity = await Connectivity().checkConnectivity();
     final isOffline = connectivity.every((r) => r == ConnectivityResult.none);
     if (isOffline) {
-      final qId = await syncService.addToQueue(
-        ApiConstants.kendaraan,
-        'POST',
-        data,
-      );
-      data['id'] = -1 * qId;
-      return data;
+      await syncService.addToQueue(ApiConstants.kendaraan, 'POST', data);
+      return {'offline': true};
     }
     try {
       final response = await _apiClient.dio.post(
@@ -593,7 +511,7 @@ class ResourceRepository {
 
       if (page == 1) {
         final List<dynamic> listData = _extractListData(response.data);
-        await syncService.cacheData('operasional', listData, clear: true);
+        await syncService.cacheData('operasional', listData, clear: false);
         final pendingData = await syncService.getMergedOfflineData('operasional', ApiConstants.operasional);
         if (response.data is Map) {
           response.data['data'] = pendingData;

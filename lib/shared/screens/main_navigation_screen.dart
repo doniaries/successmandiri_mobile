@@ -133,7 +133,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   Widget _buildBottomBar(int selectedIndex) {
     return Container(
-      height: 70,
+      height: 80,
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -144,16 +144,32 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.topCenter,
         children: [
-          _buildNavItem(0, Icons.grid_view_rounded, 'Beranda', selectedIndex),
-          _buildNavItem(1, Icons.local_shipping_rounded, 'Transaksi DO', selectedIndex),
-          
-          // Tombol + (Tambah DO) Sejajar di dalam Navbar
-          Expanded(
-            child: InkWell(
+          // Background Row
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            top: 20,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildNavItem(0, Icons.grid_view_rounded, 'Beranda', selectedIndex),
+                _buildNavItem(1, Icons.local_shipping_rounded, 'Transaksi DO', selectedIndex),
+                const SizedBox(width: 80), // Ruang seimbang untuk tombol tengah
+                _buildNavItem(2, Icons.receipt_long_rounded, 'Operasional', selectedIndex),
+                _buildNavItem(3, Icons.account_balance_wallet_rounded, 'Laporan', selectedIndex),
+              ],
+            ),
+          ),
+
+          // Large Centered "DO" Button
+          Positioned(
+            top: -15,
+            child: GestureDetector(
               onTap: () {
                 _onItemTapped(1); // Go to DO List
                 // Push Add screen on the nested navigator
@@ -162,49 +178,29 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                       builder: (context) => const AddTransaksiDoScreen()),
                 );
               },
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF01579B),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF01579B).withValues(alpha: 0.2),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+              child: Container(
+                width: 70,
+                height: 70,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF01579B),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 4),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF01579B).withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 5),
                     ),
-                    child: const Icon(
-                      Icons.add_rounded,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Buat DO',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF01579B),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
+                child: const Icon(
+                  Icons.add_rounded,
+                  color: Colors.white,
+                  size: 40,
+                ),
               ),
             ),
           ),
-          
-          _buildNavItem(2, Icons.receipt_long_rounded, 'Operasional', selectedIndex),
-          _buildNavItem(3, Icons.account_balance_wallet_rounded, 'Laporan', selectedIndex),
         ],
       ),
     );
