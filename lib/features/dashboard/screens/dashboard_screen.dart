@@ -24,6 +24,7 @@ import 'package:sawitappmobile/features/profile/screens/profile_screen.dart';
 import 'package:sawitappmobile/features/profile/screens/app_version_setting_screen.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/widgets/skeleton_loader.dart';
+import 'package:sawitappmobile/features/operasional/screens/operasional_screen.dart';
 import 'package:sawitappmobile/features/operasional/screens/operasional_detail_screen.dart';
 import 'package:sawitappmobile/features/operasional/screens/finance_journal_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
@@ -2314,7 +2315,11 @@ class _MenuGrid extends StatelessWidget {
           icon: Icons.payments_rounded,
           color: const Color(0xFFE74C3C),
           onTap: () {
-            // Disabled navigation to Operasional data as requested
+            context.read<ResourceProvider>().markAsSeen('operasional');
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const OperasionalScreen()),
+            );
           },
           badgeSelector: (c) => c.select<DashboardProvider, int>(
             (p) => p.summary?.operasionalTodayCount ?? 0,
