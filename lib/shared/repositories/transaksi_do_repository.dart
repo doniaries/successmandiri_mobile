@@ -94,6 +94,27 @@ class TransaksiDoRepository {
     }
   }
 
+  Future<List<dynamic>> getLocalTransaksiDo({String? tanggal}) async {
+    try {
+      final pendingData = await _syncService.getMergedOfflineData(
+        'transaksi_do',
+        ApiConstants.transaksiDo,
+      );
+
+      final filteredPending = pendingData.where((item) {
+        if (tanggal != null) {
+          final itemTanggal = item['tanggal']?.toString() ?? '';
+          if (!itemTanggal.startsWith(tanggal)) return false;
+        }
+        return true;
+      }).toList();
+
+      return filteredPending;
+    } catch (e) {
+      return [];
+    }
+  }
+
   Future<dynamic> getTransaksiDo({
     String? tanggal,
     int page = 1,
@@ -109,7 +130,8 @@ class TransaksiDoRepository {
 
       final data = _extractListData(response.data);
       if (page == 1) {
-        await _syncService.cacheData('transaksi_do', data);
+        // Jika sedang filter tanggal, jangan hapus seluruh tabel 'transaksi_do'
+        await _syncService.cacheData('transaksi_do', data, clear: tanggal == null);
 
         // Ambil data offline MURNI (yang belum di-sync / belum ada ID server positif)
         final offlineQueue = await _syncService.getOfflineQueueForEndpoint(

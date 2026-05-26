@@ -19,6 +19,7 @@ class TransaksiDoProvider with ChangeNotifier {
   final bool _isFetchingMore = false;
   bool _isSaving = false;
   bool _isRefreshing = false;
+  String? _currentTanggal;
 
   int _unreadCount = 0;
 
@@ -38,6 +39,8 @@ class TransaksiDoProvider with ChangeNotifier {
   int get unreadCount => _unreadCount;
   int get totalTransactions => _transactions.length;
 
+  String? get currentTanggal => _currentTanggal;
+
   void clearData() {
     _transactions.clear();
     _penjuals.clear();
@@ -52,22 +55,37 @@ class TransaksiDoProvider with ChangeNotifier {
 
   Future<void> fetchTransactions({String? tanggal}) async {
     if (_isRefreshing) return;
+    
+    // Update active date if provided
+    if (tanggal != null) {
+      _currentTanggal = tanggal;
+    }
+    
     _isRefreshing = true;
     if (_transactions.isEmpty) _isLoading = true;
     _errorMessage = null;
     _hasMore = false; // Disable pagination for DO transactions
     notifyListeners();
 
+    // 1. Tampilkan data dari SQLite (Local) terlebih dahulu agar cepat (Offline-first)
     try {
-      // Fetch all transactions by using page=1 with large limit from API
-      // or repeatedly fetch until no more data
+      final localDataRaw = await _repository.getLocalTransaksiDo(tanggal: _currentTanggal);
+      if (localDataRaw.isNotEmpty) {
+        _transactions = localDataRaw.map((json) => TransaksiDo.fromJson(json)).toList();
+        _isLoading = false;
+        notifyListeners();
+      }
+    } catch (_) {}
+
+    try {
+      // 2. Fetch data terbaru dari server di background
       List<TransaksiDo> allTransactions = [];
       int page = 1;
       bool hasMoreData = true;
 
       while (hasMoreData) {
         final dynamic response = await _repository.getTransaksiDo(
-          tanggal: tanggal,
+          tanggal: _currentTanggal,
           page: page,
         );
 

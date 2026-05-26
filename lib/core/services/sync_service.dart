@@ -280,6 +280,7 @@ class SyncService {
           await _db.deleteQueue(id);
           successCount++;
           syncedEndpoints.add(_getProcessName(endpoint));
+          await updatePendingCount(); // Update UI immediately so counter goes down
           debugPrint(
             'SyncService.syncNow: item synced id=$id endpoint=$endpoint method=$method',
           );
@@ -291,9 +292,13 @@ class SyncService {
             // Optionally, we could increment successCount, but it's technically a skip
             successCount++;
             syncedEndpoints.add(_getProcessName(endpoint));
+            await updatePendingCount(); // Update UI immediately for skipped item
           }
         }
       }
+
+      // Update UI immediately before heavy provider refresh
+      await updatePendingCount();
 
       if (successCount > 0) {
         debugPrint(

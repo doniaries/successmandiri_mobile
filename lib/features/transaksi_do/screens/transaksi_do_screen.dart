@@ -32,7 +32,16 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
       final dashboardProvider = context.read<DashboardProvider>();
 
       if (txProvider.transactions.isEmpty) {
-        txProvider.fetchTransactions();
+        final activeDateStr = dashboardProvider.summary?.systemActiveDate;
+        final systemActiveDate = activeDateStr != null 
+            ? DateTime.parse(activeDateStr) 
+            : DateTime.now();
+        final globalFilter = context.read<GlobalFilterProvider>();
+        final targetDate = globalFilter.selectedDate ?? systemActiveDate;
+        
+        txProvider.fetchTransactions(
+          tanggal: DateFormat('yyyy-MM-dd').format(targetDate),
+        );
       }
       if (dashboardProvider.summary == null) {
         dashboardProvider.fetchSummary();
@@ -545,8 +554,12 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
     );
 
     if (picked != null) {
+      if (!mounted) return;
       globalFilter.setDate(picked);
       dashboardProvider.fetchSummary(filterDate: picked);
+      
+      final formattedDate = DateFormat('yyyy-MM-dd').format(picked);
+      context.read<TransaksiDoProvider>().fetchTransactions(tanggal: formattedDate);
     }
   }
 

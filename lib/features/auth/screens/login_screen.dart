@@ -225,6 +225,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
                               autofillHints: const [AutofillHints.email],
+                              minLines: 1,
+                              maxLines: 3,
                               decoration: InputDecoration(
                                 labelText: "Email",
                                 hintText: "nama@email.com",
