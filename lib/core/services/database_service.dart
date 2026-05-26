@@ -109,10 +109,22 @@ class DatabaseService {
   Future<void> batchInsert(String table, List<Map<String, dynamic>> list) async {
     if (kIsWeb) return;
     final db = await database;
-    final batch = db!.batch();
-    for (var data in list) {
-      batch.insert(table, data, conflictAlgorithm: ConflictAlgorithm.replace);
+    
+    // Chunking: proses data secara bertahap (misal 500 per chunk)
+    // agar Thread UI tidak hang saat memproses puluhan ribu baris.
+    const int chunkSize = 500;
+    for (var i = 0; i < list.length; i += chunkSize) {
+      final batch = db!.batch();
+      final int end = (i + chunkSize < list.length) ? i + chunkSize : list.length;
+      final chunk = list.sublist(i, end);
+      
+      for (var data in chunk) {
+        batch.insert(table, data, conflictAlgorithm: ConflictAlgorithm.replace);
+      }
+      await batch.commit(noResult: true);
+      
+      // Beri jeda sangat singkat agar UI (Main Thread) bisa bernapas dan me-render frame.
+      await Future.delayed(const Duration(milliseconds: 15));
     }
-    await batch.commit(noResult: true);
   }
 }
