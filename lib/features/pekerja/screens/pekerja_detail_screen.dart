@@ -336,7 +336,7 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
                       letterSpacing: 1,
                     ),
                   ),
-                  if (_currentPekerja.hutang > 0) ...[
+                  if (_currentPekerja.sisaHutang > 0) ...[
                     const SizedBox(height: 12),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -387,9 +387,9 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
               _buildInfoRow(
                 Icons.account_balance_wallet_rounded, 
                 'Total Hutang', 
-                CurrencyFormatter.formatRupiah(_currentPekerja.hutang),
-                textColor: _currentPekerja.hutang > 0 ? Colors.orange[800] : Colors.green[700],
-                trailing: _currentPekerja.hutang > 0 ? TextButton.icon(
+                CurrencyFormatter.formatRupiah(_currentPekerja.sisaHutang),
+                textColor: _currentPekerja.sisaHutang > 0 ? Colors.orange[800] : Colors.green[700],
+                trailing: _currentPekerja.sisaHutang > 0 ? TextButton.icon(
                   onPressed: () async {
                     await Navigator.push(
                       context,

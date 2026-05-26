@@ -336,7 +336,7 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
                       letterSpacing: 1,
                     ),
                   ),
-                  if (_currentSupir.hutang != null && _currentSupir.hutang! > 0) ...[
+                  if (_currentSupir.sisaHutang != null && _currentSupir.sisaHutang! > 0) ...[
                     const SizedBox(height: 12),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -388,9 +388,9 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
               _buildInfoRow(
                 Icons.account_balance_wallet_rounded, 
                 'Total Hutang', 
-                CurrencyFormatter.formatRupiah(_currentSupir.hutang ?? 0),
-                textColor: (_currentSupir.hutang ?? 0) > 0 ? Colors.orange[800] : Colors.green[700],
-                trailing: (_currentSupir.hutang ?? 0) > 0 ? TextButton.icon(
+                CurrencyFormatter.formatRupiah(_currentSupir.sisaHutang ?? 0),
+                textColor: (_currentSupir.sisaHutang ?? 0) > 0 ? Colors.orange[800] : Colors.green[700],
+                trailing: (_currentSupir.sisaHutang ?? 0) > 0 ? TextButton.icon(
                   onPressed: () async {
                     await Navigator.push(
                       context,

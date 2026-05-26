@@ -7,6 +7,7 @@ import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.d
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/edit_transaksi_do_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
+import 'package:sawitappmobile/features/transaksi_do/screens/add_transaksi_do_screen.dart';
 
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 
@@ -100,6 +101,17 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddTransaksiDoScreen()),
+          );
+        },
+        backgroundColor: const Color(0xFF01579B),
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text('Tambah DO', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      ),
       body: RefreshIndicator(
         notificationPredicate: (notification) => !SyncService().isOffline && defaultScrollNotificationPredicate(notification),
         onRefresh: () async {
