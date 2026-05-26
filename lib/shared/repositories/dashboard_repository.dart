@@ -278,6 +278,8 @@ class DashboardRepository {
       totalPengajuanDana: 0,
       totalPengajuanCount: 0,
       tambahSaldoTodayCount: 0,
+      operasionalTodayCount: 0,
+      jurnalTodayCount: 0,
       perusahaanName: '-',
       namaKasir: '-',
       systemActiveDate: DateTime.now().toIso8601String().split('T')[0],
