@@ -331,21 +331,23 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                 physics: const AlwaysScrollableScrollPhysics(),
               ), // Dynamic list to enable RefreshIndicator
               Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.info_outline, size: 64, color: Colors.grey[300]),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Data ${widget.title} belum tersedia',
-                      style: TextStyle(color: Colors.grey[400]),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Tarik ke bawah untuk memuat ulang',
-                      style: TextStyle(color: Colors.grey[400], fontSize: 12),
-                    ),
-                  ],
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.info_outline, size: 64, color: Colors.grey[300]),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Data ${widget.title} tidak ditemukan',
+                        style: TextStyle(color: Colors.grey[400]),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Tarik ke bawah untuk memuat ulang',
+                        style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
