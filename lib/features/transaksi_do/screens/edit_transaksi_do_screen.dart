@@ -811,64 +811,19 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
 
                       // Potong Hutang (di-disable di form DO sesuai permintaan, dialihkan ke Operasional)
                       if (_currentSellerDebt > 0 || CurrencyInputFormatter.parse(_pembayaranHutangController.text) > 0) ...[
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.orange[50],
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.orange[200]!),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(Icons.warning_amber_rounded, color: Colors.orange[800], size: 20),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Penjual Memiliki Hutang',
-                                    style: TextStyle(
-                                      color: Colors.orange[900],
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Sisa Hutang: ${CurrencyFormatter.formatRupiah(_currentSellerDebt)}\n'
-                                '${CurrencyInputFormatter.parse(_pembayaranHutangController.text) > 0 ? "Pemotongan hutang pada DO ini: ${CurrencyFormatter.formatRupiah(CurrencyInputFormatter.parse(_pembayaranHutangController.text))}\n\n" : "\n"}'
-                                'Untuk menghindari kesalahan pengisian, pemotongan atau penambahan hutang dilakukan melalui menu Operasional.',
-                                style: TextStyle(color: Colors.orange[900], fontSize: 12, height: 1.4),
-                              ),
-                              const SizedBox(height: 12),
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton.icon(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => const AddOperasionalScreen(),
-                                      ),
-                                    );
-                                  },
-                                  icon: const Icon(Icons.account_balance_wallet_rounded, size: 18),
-                                  label: const Text('Kelola Hutang Penjual'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.orange[600],
-                                    foregroundColor: Colors.white,
-                                    elevation: 0,
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                        TextFormField(
+                          controller: _pembayaranHutangController,
+                          decoration: _getInputDecoration(
+                            label: 'Potong Hutang',
+                            icon: Icons.money_off_rounded,
+                            hint: '0',
+                            helperText: 'Sisa Hutang Penjual: ${CurrencyFormatter.formatRupiah(_currentSellerDebt)}',
+                          ).copyWith(prefixText: 'Rp '),
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                          keyboardType: TextInputType.number,
+                          textInputAction: TextInputAction.next,
+                          onFieldSubmitted: (_) => _caraBayarFocus.requestFocus(),
+                          inputFormatters: [CurrencyInputFormatter()],
                         ),
                         const SizedBox(height: 16),
                       ],
