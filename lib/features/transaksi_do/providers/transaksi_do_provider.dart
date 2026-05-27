@@ -159,9 +159,27 @@ class TransaksiDoProvider with ChangeNotifier {
         _repository.getSupirs(),
         _repository.getKendaraans(),
       ]);
-      _penjuals = results[0];
-      _supirs = results[1];
-      _kendaraans = results[2];
+      
+      void sortData(List<dynamic> list) {
+        list.sort((a, b) {
+          int idA = a['id'] ?? 0;
+          int idB = b['id'] ?? 0;
+          if (idA < 0 && idB >= 0) return -1;
+          if (idB < 0 && idA >= 0) return 1;
+          if (idA < 0 && idB < 0) return idA.compareTo(idB);
+          return idB.compareTo(idA);
+        });
+      }
+
+      _penjuals = List.from(results[0]);
+      sortData(_penjuals);
+      
+      _supirs = List.from(results[1]);
+      sortData(_supirs);
+      
+      _kendaraans = List.from(results[2]);
+      sortData(_kendaraans);
+      
       _isLoading = false;
       notifyListeners();
     } catch (e) {

@@ -30,6 +30,10 @@ class ResourceRepository {
 
   Future<dynamic> getPenjualPaginated({int page = 1}) async {
     try {
+      final connectivity = await Connectivity().checkConnectivity();
+      if (connectivity.contains(ConnectivityResult.none)) {
+        throw Exception('Offline');
+      }
       final response = await _apiClient.dio
           .get(
             ApiConstants.penjual,
@@ -178,6 +182,10 @@ class ResourceRepository {
 
   Future<dynamic> getSupirPaginated({int page = 1}) async {
     try {
+      final connectivity = await Connectivity().checkConnectivity();
+      if (connectivity.contains(ConnectivityResult.none)) {
+        throw Exception('Offline');
+      }
       final response = await _apiClient.dio
           .get(
             ApiConstants.supir,
@@ -314,6 +322,10 @@ class ResourceRepository {
 
   Future<dynamic> getPekerjaPaginated({int page = 1}) async {
     try {
+      final connectivity = await Connectivity().checkConnectivity();
+      if (connectivity.contains(ConnectivityResult.none)) {
+        throw Exception('Offline');
+      }
       final response = await _apiClient.dio
           .get(
             ApiConstants.pekerja,
@@ -449,6 +461,10 @@ class ResourceRepository {
 
   Future<dynamic> getKendaraanPaginated({int page = 1}) async {
     try {
+      final connectivity = await Connectivity().checkConnectivity();
+      if (connectivity.contains(ConnectivityResult.none)) {
+        throw Exception('Offline');
+      }
       final response = await _apiClient.dio
           .get(
             ApiConstants.kendaraan,
@@ -541,6 +557,10 @@ class ResourceRepository {
 
   Future<dynamic> getOperasionalPaginated({int page = 1, String? tanggal}) async {
     try {
+      final connectivity = await Connectivity().checkConnectivity();
+      if (connectivity.contains(ConnectivityResult.none)) {
+        throw Exception('Offline');
+      }
       final Map<String, dynamic> params = {'page': page, 'per_page': 10};
       if (tanggal != null) params['tanggal'] = tanggal;
 
