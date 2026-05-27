@@ -33,7 +33,6 @@ import 'package:sawitappmobile/features/operasional/models/operasional_model.dar
 import 'package:sawitappmobile/features/penjual/models/penjual_model.dart';
 import 'package:sawitappmobile/features/supir/models/supir_model.dart';
 
-import 'package:sawitappmobile/shared/widgets/live_date_time_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -1373,74 +1372,7 @@ class _DashboardHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const _HeaderTopRow(),
-                const SizedBox(height: 12),
-                Center(
-                  child: Consumer<DashboardProvider>(
-                    builder: (context, provider, _) {
-                      final activeDateStr = provider.summary?.systemActiveDate;
-                      if (activeDateStr != null) {
-                        final activeDate = DateTime.parse(activeDateStr);
-                        final formatted = DateFormat(
-                          'dd MMM yyyy',
-                          'id_ID',
-                        ).format(activeDate);
-                        return Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color.fromARGB(
-                                  255,
-                                  255,
-                                  255,
-                                  255,
-                                ).withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: Colors.amber.withValues(alpha: 0.5),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.event_available,
-                                    color: Color.fromARGB(255, 255, 255, 255),
-                                    size: 14,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    formatted,
-                                    style: const TextStyle(
-                                      color: Color.fromARGB(255, 237, 240, 240),
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            const LiveDateTimeWidget(
-                              color: Colors.white,
-                              isTransparentBg: true,
-                              showDate: false,
-                            ),
-                          ],
-                        );
-                      }
-                      return const LiveDateTimeWidget(
-                        color: Colors.white,
-                        isTransparentBg: true,
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 24),
                 const _CompanySelector(),
                 const SizedBox(height: 12),
                 const _BalanceCard(),
@@ -2171,8 +2103,65 @@ class _StatCardsState extends State<_StatCards> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [_buildPeriodToggle(filterDate)],
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Consumer<DashboardProvider>(
+              builder: (context, provider, _) {
+                final activeDateStr = provider.summary?.systemActiveDate;
+                if (activeDateStr != null) {
+                  final activeDate = DateTime.parse(activeDateStr);
+                  final formatted = DateFormat(
+                    'dd MMM yyyy',
+                    'id_ID',
+                  ).format(activeDate);
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(
+                            255,
+                            255,
+                            255,
+                            255,
+                          ).withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.amber.withValues(alpha: 0.5),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.event_available,
+                              color: Color.fromARGB(255, 255, 255, 255),
+                              size: 14,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              formatted,
+                              style: const TextStyle(
+                                color: Color.fromARGB(255, 237, 240, 240),
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+            _buildPeriodToggle(filterDate),
+          ],
         ),
         const SizedBox(height: 10),
         Container(
