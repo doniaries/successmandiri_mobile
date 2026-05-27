@@ -344,8 +344,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: TextFormField(
-                              readOnly: true,
+                            child: InkWell(
                               onTap: () async {
                                 final result =
                                     await SearchableSelectionModal.show(
@@ -364,34 +363,40 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                   _onPenjualChanged(result, provider);
                                 }
                               },
-                              key: ValueKey('penjual_$_selectedPenjualId'),
-                              initialValue: _selectedPenjualId != null
-                                  ? provider.penjuals
-                                        .firstWhere(
-                                          (p) =>
-                                              p['id'] == _selectedPenjualId,
-                                          orElse: () => {'nama': ''},
-                                        )['nama']
-                                        .toString()
-                                        .toUpperCase()
-                                  : null,
-                              decoration: _getInputDecoration(
-                                label: 'Nama Penjual',
-                                icon: Icons.person_rounded,
-                                hint: 'Pilih Penjual',
-                                suffixIcon: const Icon(
-                                  Icons.search,
-                                  size: 20,
-                                  color: Colors.grey,
+                              borderRadius: BorderRadius.circular(12),
+                              child: IgnorePointer(
+                                child: TextFormField(
+                                  readOnly: true,
+                                  key: ValueKey('penjual_$_selectedPenjualId'),
+                                  initialValue: _selectedPenjualId != null
+                                      ? provider.penjuals
+                                            .firstWhere(
+                                              (p) =>
+                                                  p['id'] == _selectedPenjualId,
+                                              orElse: () => {'nama': ''},
+                                            )['nama']
+                                            .toString()
+                                            .toUpperCase()
+                                      : null,
+                                  decoration: _getInputDecoration(
+                                    label: 'Nama Penjual',
+                                    icon: Icons.person_rounded,
+                                    hint: 'Pilih Penjual',
+                                    suffixIcon: const Icon(
+                                      Icons.search,
+                                      size: 20,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                  validator: (val) => _selectedPenjualId == null
+                                      ? 'Pilih penjual'
+                                      : null,
                                 ),
                               ),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13,
-                              ),
-                              validator: (val) => _selectedPenjualId == null
-                                  ? 'Pilih penjual'
-                                  : null,
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -502,8 +507,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
-                              child: TextFormField(
-                                readOnly: true,
+                              child: InkWell(
                                 onTap: () async {
                                   final result =
                                       await SearchableSelectionModal.show(
@@ -525,34 +529,40 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                     _onFieldChanged();
                                   }
                                 },
-                                key: ValueKey('supir_$_selectedSupirId'),
-                                initialValue: _selectedSupirId != null
-                                    ? provider.supirs
-                                          .firstWhere(
-                                            (s) =>
-                                                s['id'] == _selectedSupirId,
-                                            orElse: () => {'nama': ''},
-                                          )['nama']
-                                          .toString()
-                                          .toUpperCase()
-                                    : null,
-                                decoration: _getInputDecoration(
-                                  label: 'Nama Supir',
-                                  icon: Icons.local_shipping_outlined,
-                                  hint: 'Pilih Supir',
-                                  suffixIcon: const Icon(
-                                    Icons.search,
-                                    size: 20,
-                                    color: Colors.grey,
+                                borderRadius: BorderRadius.circular(12),
+                                child: IgnorePointer(
+                                  child: TextFormField(
+                                    readOnly: true,
+                                    key: ValueKey('supir_$_selectedSupirId'),
+                                    initialValue: _selectedSupirId != null
+                                        ? provider.supirs
+                                              .firstWhere(
+                                                (s) =>
+                                                    s['id'] == _selectedSupirId,
+                                                orElse: () => {'nama': ''},
+                                              )['nama']
+                                              .toString()
+                                              .toUpperCase()
+                                        : null,
+                                    decoration: _getInputDecoration(
+                                      label: 'Nama Supir',
+                                      icon: Icons.local_shipping_outlined,
+                                      hint: 'Pilih Supir',
+                                      suffixIcon: const Icon(
+                                        Icons.search,
+                                        size: 20,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                    ),
+                                    validator: (val) => _selectedSupirId == null
+                                        ? 'Pilih supir'
+                                        : null,
                                   ),
                                 ),
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 13,
-                                ),
-                                validator: (val) => _selectedSupirId == null
-                                    ? 'Pilih supir'
-                                    : null,
                               ),
                             ),
                             const SizedBox(width: 8),
