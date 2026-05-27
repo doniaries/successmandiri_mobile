@@ -26,7 +26,11 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<TambahSaldoProvider>().fetchRequests();
+      context.read<TambahSaldoProvider>().fetchData(useCache: true).then((_) {
+        if (mounted) {
+          context.read<TambahSaldoProvider>().fetchData(isRefresh: true, useCache: false);
+        }
+      });
     });
   }
 
@@ -127,7 +131,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                             }
 
                             // 3. Fetch latest requests list
-                            await provider.fetchRequests();
+                            await provider.fetchData(isRefresh: true, useCache: false);
 
                             // 4. Fetch latest summary for dashboard
                             if (context.mounted) {
@@ -624,7 +628,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
           ),
         );
       } else {
-        provider.fetchRequests(); // Restore visually on error
+        provider.fetchData(isRefresh: true, useCache: false); // Restore visually on error
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(

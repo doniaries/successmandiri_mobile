@@ -748,7 +748,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                             // clearAndFetch() → reset summary dulu agar nama perusahaan lama tidak tampil
                             await dashboardProvider.clearAndFetch();
                             txProvider.fetchTransactions();
-                            saldoProvider.fetchRequests();
+                            saldoProvider.fetchData(isRefresh: true, useCache: false);
                             resProvider.fetchAllResources();
                           }
                         },

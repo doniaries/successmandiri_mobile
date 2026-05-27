@@ -29,42 +29,56 @@ class TambahSaldoProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchRequests() async {
-    if (_requests.isEmpty) _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
+  Future<void> fetchData({bool isRefresh = false, bool useCache = true}) async {
+    if (_requests.isEmpty && !isRefresh) {
+      _isLoading = true;
+      notifyListeners();
+    }
 
-    // Fast Cache Load
     try {
-      if (_requests.isEmpty) {
-        final cache = await _repository.getTambahSaldo(forceOfflineFallback: true);
-        if (cache.isNotEmpty) {
-          _requests = cache;
+      // 1. Fast Cache Load
+      if (useCache && _requests.isEmpty) {
+        final cachedData = await _repository.getTambahSaldo(forceOfflineFallback: true);
+        if (cachedData.isNotEmpty) {
+          _requests = cachedData;
           _isLoading = false;
+          await _updateUnreadCount();
           notifyListeners();
         }
       }
-    } catch (_) {}
 
-    try {
-      _requests = await _repository.getTambahSaldo();
-      _isLoading = false;
-      
-      if (_requests.isNotEmpty) {
-        final prefs = await SharedPreferences.getInstance();
-        final lastSeenId = int.tryParse(prefs.getString('seen_state_tambah_saldo') ?? '0') ?? 0;
-        _unreadCount = _requests.where((r) => r.id > lastSeenId && r.status.toLowerCase() == 'pending').length;
-        _hasNewData = _unreadCount > 0;
+      // 2. Network Load
+      if (!useCache || isRefresh) {
+        _requests = await _repository.getTambahSaldo();
       } else {
-        _unreadCount = 0;
-        _hasNewData = false;
+        _repository.getTambahSaldo().then((newData) async {
+          _requests = newData;
+          await _updateUnreadCount();
+          notifyListeners();
+        }).catchError((_) {});
       }
-      
+
+      await _updateUnreadCount();
+      _isLoading = false;
       notifyListeners();
     } catch (e) {
+      if (_requests.isEmpty) {
+        _errorMessage = 'Gagal memuat data tambah saldo: $e';
+      }
       _isLoading = false;
-      _errorMessage = 'Gagal memuat data tambah saldo: $e';
       notifyListeners();
+    }
+  }
+
+  Future<void> _updateUnreadCount() async {
+    if (_requests.isNotEmpty) {
+      final prefs = await SharedPreferences.getInstance();
+      final lastSeenId = int.tryParse(prefs.getString('seen_state_tambah_saldo') ?? '0') ?? 0;
+      _unreadCount = _requests.where((r) => r.id > lastSeenId && r.status.toLowerCase() == 'pending').length;
+      _hasNewData = _unreadCount > 0;
+    } else {
+      _unreadCount = 0;
+      _hasNewData = false;
     }
   }
 
@@ -100,7 +114,7 @@ class TambahSaldoProvider with ChangeNotifier {
       } else {
         _errorMessage = null;
       }
-      await fetchRequests();
+      await fetchData(isRefresh: true, useCache: false);
 
       _isLoading = false;
       notifyListeners();
@@ -141,7 +155,7 @@ class TambahSaldoProvider with ChangeNotifier {
         _errorMessage = null;
       }
       
-      await fetchRequests();
+      await fetchData(isRefresh: true, useCache: false);
       _isLoading = false;
       notifyListeners();
       return true;
@@ -168,7 +182,7 @@ class TambahSaldoProvider with ChangeNotifier {
 
     try {
       await _repository.deleteTambahSaldo(id);
-      await fetchRequests();
+      await fetchData(isRefresh: true, useCache: false);
       _isLoading = false;
       notifyListeners();
       return true;

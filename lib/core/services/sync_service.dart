@@ -457,9 +457,9 @@ class SyncService {
             );
             await dp.fetchSummary();
             debugPrint(
-              'SyncService.syncNow: calling TambahSaldoProvider.fetchRequests',
+              'SyncService.syncNow: calling TambahSaldoProvider.fetchData',
             );
-            await tp.fetchRequests();
+            await tp.fetchData(isRefresh: true, useCache: false);
             debugPrint(
               'SyncService.syncNow: calling TransaksiDoProvider.fetchTransactions',
             );
