@@ -12,11 +12,13 @@ import 'package:sawitappmobile/features/operasional/models/operasional_model.dar
 class DashboardRepository {
   final ApiClient _apiClient = ApiClient();
 
-  Future<DashboardSummary> getSummary({String? date}) async {
+  Future<DashboardSummary> getSummary({String? date, bool forceOfflineFallback = false}) async {
     final prefs = await SharedPreferences.getInstance();
     final cacheKey = 'cached_dashboard_summary${date != null ? "_$date" : ""}';
 
     try {
+      if (forceOfflineFallback) throw Exception('Force Offline Fallback');
+      
       final response = await _apiClient.dio
           .get(
             ApiConstants.dashboardSummary,

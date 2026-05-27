@@ -21,10 +21,30 @@ import 'package:sawitappmobile/shared/repositories/resource_repository.dart';
 import 'package:sawitappmobile/features/splash/screens/splash_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/core/services/notification_service.dart';
-
+import 'package:sawitappmobile/core/services/backup_service.dart';
+import 'package:workmanager/workmanager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sawitappmobile/features/auth/screens/login_screen.dart';
 import 'package:sawitappmobile/shared/screens/main_navigation_screen.dart';
+
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    try {
+      debugPrint('Workmanager: Executing background task $task');
+      final syncService = SyncService();
+      await syncService.syncNow();
+      
+      // Lakukan auto backup tiap kali task background jalan
+      final backupService = BackupService();
+      await backupService.automaticSilentBackup();
+    } catch (err) {
+      debugPrint('Workmanager error: $err');
+      throw Exception(err);
+    }
+    return Future.value(true);
+  });
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -62,6 +82,21 @@ void main() async {
     try {
       SyncService(); 
       await NotificationService().init();
+      
+      // Initialize Workmanager
+      await Workmanager().initialize(
+        callbackDispatcher,
+      );
+      
+      // Daftarkan background task untuk sinkronisasi antrean offline
+      Workmanager().registerPeriodicTask(
+        "offlineSyncTask",
+        "syncQueue",
+        frequency: const Duration(minutes: 15),
+        constraints: Constraints(
+          networkType: NetworkType.connected, // Hanya jalan jika ada internet
+        ),
+      );
     } catch (e) {
       debugPrint('Background init error: $e');
     }

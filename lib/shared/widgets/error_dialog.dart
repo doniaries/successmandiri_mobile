@@ -50,56 +50,58 @@ class ErrorDialog extends StatelessWidget {
             ),
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              height: 80,
-              width: 80,
-              decoration: BoxDecoration(
-                color: Colors.red[50],
-                shape: BoxShape.circle,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                height: 80,
+                width: 80,
+                decoration: BoxDecoration(
+                  color: Colors.red[50],
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.error_outline_rounded,
+                  color: Colors.red[800],
+                  size: 60,
+                ),
               ),
-              child: Icon(
-                Icons.error_outline_rounded,
-                color: Colors.red[800],
-                size: 60,
+              const SizedBox(height: 20),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF2C3E50),
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-                color: Color(0xFF2C3E50),
+              const SizedBox(height: 12),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                  height: 1.5,
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-                height: 1.5,
+              const SizedBox(height: 24),
+              AppPrimaryButton(
+                text: 'MENGERTI',
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  if (onConfirm != null) {
+                    onConfirm!();
+                  }
+                },
+                backgroundColor: Colors.red[800],
+                borderRadius: 30,
+                verticalPadding: 15,
               ),
-            ),
-            const SizedBox(height: 24),
-            AppPrimaryButton(
-              text: 'MENGERTI',
-              onPressed: () {
-                Navigator.of(context).pop();
-                if (onConfirm != null) {
-                  onConfirm!();
-                }
-              },
-              backgroundColor: Colors.red[800],
-              borderRadius: 30,
-              verticalPadding: 15,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

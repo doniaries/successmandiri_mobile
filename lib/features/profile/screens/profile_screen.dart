@@ -12,6 +12,7 @@ import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.d
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sawitappmobile/core/services/push_notification_service.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
+import 'package:sawitappmobile/core/services/backup_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -327,6 +328,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onTap: () => _showChangePasswordDialog(context),
                       trailing: const Icon(
                         Icons.chevron_right_rounded,
+                        color: Color(0xFF01579B),
+                      ),
+                    ),
+                    
+                    _buildInfoTile(
+                      const Icon(
+                        Icons.backup_rounded,
+                        color: Color(0xFF01579B),
+                      ),
+                      'Backup Data',
+                      'Export Database Offline',
+                      onTap: () async {
+                        final backupService = BackupService();
+                        await backupService.backupAndShare(context);
+                      },
+                      trailing: const Icon(
+                        Icons.download_rounded,
                         color: Color(0xFF01579B),
                       ),
                     ),

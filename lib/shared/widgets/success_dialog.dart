@@ -88,51 +88,53 @@ class _SuccessDialogState extends State<SuccessDialog> {
             ),
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              height: 80,
-              width: 80,
-              decoration: BoxDecoration(
-                color: widget.isOffline ? Colors.orange[50] : Colors.blue[50],
-                shape: BoxShape.circle,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                height: 80,
+                width: 80,
+                decoration: BoxDecoration(
+                  color: widget.isOffline ? Colors.orange[50] : Colors.blue[50],
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  widget.isOffline ? Icons.cloud_off_rounded : Icons.check_circle_rounded,
+                  color: widget.isOffline ? Colors.orange[800] : Colors.blue[900],
+                  size: 60,
+                ),
               ),
-              child: Icon(
-                widget.isOffline ? Icons.cloud_off_rounded : Icons.check_circle_rounded,
-                color: widget.isOffline ? Colors.orange[800] : Colors.blue[900],
-                size: 60,
+              const SizedBox(height: 20),
+              Text(
+                widget.isOffline ? 'Tersimpan Offline' : widget.title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xFF2C3E50),
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              widget.isOffline ? 'Tersimpan Offline' : widget.title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w900,
-                color: Color(0xFF2C3E50),
+              const SizedBox(height: 12),
+              Text(
+                widget.message,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                  height: 1.5,
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              widget.message,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-                height: 1.5,
+              const SizedBox(height: 24),
+              AppPrimaryButton(
+                text: 'OK',
+                onPressed: _handleConfirm,
+                backgroundColor: widget.isOffline ? Colors.orange[800] : const Color(0xFF01579B),
+                borderRadius: 30,
+                verticalPadding: 15,
               ),
-            ),
-            const SizedBox(height: 24),
-            AppPrimaryButton(
-              text: 'OK',
-              onPressed: _handleConfirm,
-              backgroundColor: widget.isOffline ? Colors.orange[800] : const Color(0xFF01579B),
-              borderRadius: 30,
-              verticalPadding: 15,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

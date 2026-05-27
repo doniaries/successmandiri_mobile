@@ -104,13 +104,15 @@ class _SearchableSelectionModalState extends State<SearchableSelectionModal> {
       minChildSize: 0.5,
       maxChildSize: 0.9,
       builder: (context, scrollController) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Column(
-            children: [
+        return Padding(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              children: [
               // Handle
               Center(
                 child: Container(
@@ -270,8 +272,9 @@ class _SearchableSelectionModalState extends State<SearchableSelectionModal> {
               ),
             ],
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 }

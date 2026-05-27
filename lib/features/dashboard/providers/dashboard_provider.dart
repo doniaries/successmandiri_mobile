@@ -14,19 +14,32 @@ class DashboardProvider with ChangeNotifier {
   String? get error => _error;
 
   Future<void> fetchSummary({DateTime? filterDate}) async {
-    if (_summary == null || filterDate != null) _isLoading = true;
+    final dateStr = filterDate != null 
+        ? "${filterDate.year}-${filterDate.month.toString().padLeft(2, '0')}-${filterDate.day.toString().padLeft(2, '0')}"
+        : null;
+
+    if (_summary == null || filterDate != null) {
+      _isLoading = true;
+      notifyListeners();
+      
+      try {
+        final cached = await _repository.getSummary(date: dateStr, forceOfflineFallback: true);
+        if (filterDate != null && _summary?.saldo != null) {
+          _summary = cached.copyWith(saldo: _summary!.saldo);
+        } else {
+          _summary = cached;
+        }
+        _isLoading = false;
+        notifyListeners();
+      } catch (_) {}
+    }
+    
     _error = null;
-    notifyListeners();
 
     try {
-      final dateStr = filterDate != null 
-          ? "${filterDate.year}-${filterDate.month.toString().padLeft(2, '0')}-${filterDate.day.toString().padLeft(2, '0')}"
-          : null;
-      
       final newSummary = await _repository.getSummary(date: dateStr);
       
       if (filterDate != null && _summary?.saldo != null) {
-        // Pertahankan saldo saat ini jika filter tanggal aktif
         _summary = newSummary.copyWith(saldo: _summary!.saldo);
       } else {
         _summary = newSummary;

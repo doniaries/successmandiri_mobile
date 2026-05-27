@@ -346,12 +346,22 @@ class SyncService {
       debugPrint(
         'SyncService.syncNow: starting sync. queue size=${queue.length}',
       );
-      // Sequential sync instead of parallel
-      for (var item in queue) {
+      
+      const int batchSize = 20;
+      int processedCount = 0;
+
+      while (processedCount < queue.length) {
         if (_cancelRequested) {
           dev.log('SyncService.syncNow: cancel requested, breaking loop');
           break;
         }
+
+        final batch = queue.skip(processedCount).take(batchSize).toList();
+
+        for (var item in batch) {
+          if (_cancelRequested) {
+            break;
+          }
 
         final id = item['id'] as int;
         final endpoint = item['endpoint'] as String;
@@ -388,7 +398,15 @@ class SyncService {
           }
           // Error server (5xx) atau lainnya: lewati item ini, lanjut ke berikutnya
         }
+      } // end inner for
+
+      processedCount += batch.length;
+      
+      // Delay kecil antar batch untuk stabilitas koneksi
+      if (processedCount < queue.length) {
+        await Future.delayed(const Duration(milliseconds: 500));
       }
+    } // end while
 
       // Update UI immediately before heavy provider refresh
       await updatePendingCount();
@@ -545,7 +563,11 @@ class SyncService {
       final localData = await db.query(table, columns: ['id']);
       final localIds = localData.map((e) => e['id'] as int).where((id) => id > 0).toSet();
       
-      final remoteActiveIds = activeIds.map((e) => e as int).toSet();
+      final remoteActiveIds = activeIds.map((e) {
+        if (e is int) return e;
+        return int.tryParse(e.toString()) ?? 0;
+      }).where((id) => id > 0).toSet();
+      
       final idsToDelete = localIds.difference(remoteActiveIds);
 
       if (idsToDelete.isNotEmpty) {
@@ -600,77 +622,116 @@ class SyncService {
     }
   }
 
+  Future<void> syncMasterData(dynamic repository) async {
+    try {
+      await repository.getPenjuals();
+      await repository.getSupirs();
+      await repository.getPekerjas();
+      await repository.getKendaraans();
+    } catch (e) {
+      debugPrint('Error syncing master data tables: $e');
+    }
+  }
+
+  Future<void> syncOperasionalAndSaldo() async {
+    try {
+      final lastSyncOps = await getLastSyncTimestamp('operasional');
+      final queryParamsOps = <String, dynamic>{'all': true};
+      if (lastSyncOps != null) queryParamsOps['updated_since'] = lastSyncOps;
+      
+      final resOps = await _apiClient.dio.get('/operasional', queryParameters: queryParamsOps);
+      final dataOps = resOps.data['data'] ?? [];
+      final activeIdsOps = resOps.data['active_ids'];
+      await cacheDataIncremental('operasional', dataOps, activeIdsOps);
+    } catch(e) {
+        debugPrint('Error syncing operasional incremental: $e');
+    }
+
+    try {
+      final lastSyncTs = await getLastSyncTimestamp('tambah_saldo');
+      final queryParamsTs = <String, dynamic>{'all': true};
+      if (lastSyncTs != null) queryParamsTs['updated_since'] = lastSyncTs;
+      
+      final resTs = await _apiClient.dio.get('/tambah-saldo', queryParameters: queryParamsTs);
+      final dataTs = resTs.data['data'] ?? [];
+      final activeIdsTs = resTs.data['active_ids'];
+      await cacheDataIncremental('tambah_saldo', dataTs, activeIdsTs);
+    } catch(e) {
+        debugPrint('Error syncing tambah_saldo incremental: $e');
+    }
+  }
+
+  Future<void> syncTransactionsAndJurnal() async {
+    try {
+      final lastSyncDo = await getLastSyncTimestamp('transaksi_do');
+      final queryParamsDo = <String, dynamic>{'all': true};
+      if (lastSyncDo != null) queryParamsDo['updated_since'] = lastSyncDo;
+      
+      final resDo = await _apiClient.dio.get('/transaksi-do', queryParameters: queryParamsDo);
+      final dataDo = resDo.data['data'] ?? [];
+      final activeIdsDo = resDo.data['active_ids'];
+      await cacheDataIncremental('transaksi_do', dataDo, activeIdsDo);
+    } catch(e) {
+        debugPrint('Error syncing transaksi_do incremental: $e');
+    }
+
+    try {
+      final lastSyncJurnal = await getLastSyncTimestamp('jurnal_keuangan');
+      final queryParamsJurnal = <String, dynamic>{'all': true};
+      if (lastSyncJurnal != null) queryParamsJurnal['updated_since'] = lastSyncJurnal;
+      
+      final resJurnal = await _apiClient.dio.get('/jurnal-keuangan', queryParameters: queryParamsJurnal);
+      final dataJurnal = resJurnal.data['data'] ?? [];
+      final activeIdsJurnal = resJurnal.data['active_ids'];
+      await cacheDataIncremental('jurnal_keuangan', dataJurnal, activeIdsJurnal);
+    } catch(e) {
+        debugPrint('Error syncing jurnal_keuangan incremental: $e');
+    }
+  }
+
+  Future<void> syncUsersAndCompanies() async {
+    try {
+      final response = await _apiClient.dio.get('/users');
+      if (response.data != null) {
+        final List<dynamic> userData = response.data is List
+            ? response.data
+            : (response.data['data'] ?? []);
+        await cacheData('users', userData);
+      }
+    } catch (e) {
+      debugPrint('Error syncing users: $e');
+    }
+
+    try {
+      final response = await _apiClient.dio.get('/perusahaans');
+      if (response.data != null) {
+        final List<dynamic> compData = response.data is List
+            ? response.data
+            : (response.data['data'] ?? []);
+        await cacheData('perusahaans', compData);
+      }
+    } catch (e) {
+      debugPrint('Error syncing companies: $e');
+    }
+  }
+
   // Method to sync all master data from web to local DB
   Future<void> performFullSync(dynamic repository) async {
     final connectivity = await Connectivity().checkConnectivity();
     if (connectivity.contains(ConnectivityResult.none)) return;
 
     try {
-      // Sinkronisasi Master Data, Operasional, dan Tambah Saldo secara Incremental
-      try {
-        await repository.getPenjuals();
-        await repository.getSupirs();
-        await repository.getPekerjas();
-        await repository.getKendaraans();
-        
-        // Memanggil API khusus all=true untuk Operasional dan Tambah Saldo
-        // (Pastikan endpoint /api/v1/operasional dan /api/v1/tambah-saldo sudah dimodifikasi di backend)
-        
-        try {
-          final lastSyncOps = await getLastSyncTimestamp('operasional');
-          final queryParamsOps = <String, dynamic>{'all': true};
-          if (lastSyncOps != null) queryParamsOps['updated_since'] = lastSyncOps;
-          
-          final resOps = await _apiClient.dio.get('/operasional', queryParameters: queryParamsOps);
-          final dataOps = resOps.data['data'] ?? [];
-          final activeIdsOps = resOps.data['active_ids'];
-          await cacheDataIncremental('operasional', dataOps, activeIdsOps);
-        } catch(e) {
-           debugPrint('Error syncing operasional incremental: $e');
-        }
+      // 1. Sinkronisasi Data Master
+      await syncMasterData(repository);
+      
+      // 2. Sinkronisasi Operasional & Tambah Saldo
+      await syncOperasionalAndSaldo();
+      
+      // 3. Sinkronisasi Transaksi & Jurnal
+      await syncTransactionsAndJurnal();
 
-        try {
-          final lastSyncTs = await getLastSyncTimestamp('tambah_saldo');
-          final queryParamsTs = <String, dynamic>{'all': true};
-          if (lastSyncTs != null) queryParamsTs['updated_since'] = lastSyncTs;
-          
-          final resTs = await _apiClient.dio.get('/tambah-saldo', queryParameters: queryParamsTs);
-          final dataTs = resTs.data['data'] ?? [];
-          final activeIdsTs = resTs.data['active_ids'];
-          await cacheDataIncremental('tambah_saldo', dataTs, activeIdsTs);
-        } catch(e) {
-           debugPrint('Error syncing tambah_saldo incremental: $e');
-        }
-
-      } catch (e) {
-        debugPrint('Error syncing master data: $e');
-      }
-
-      // Sync Users (Karyawan) - Biasanya datanya kecil dan sering dibutuhkan
-      try {
-        final response = await _apiClient.dio.get('/users');
-        if (response.data != null) {
-          final List<dynamic> userData = response.data is List
-              ? response.data
-              : (response.data['data'] ?? []);
-          await cacheData('users', userData);
-        }
-      } catch (e) {
-        debugPrint('Error syncing users: $e');
-      }
-
-      // Sync Perusahaans (Unit Bisnis)
-      try {
-        final response = await _apiClient.dio.get('/perusahaans');
-        if (response.data != null) {
-          final List<dynamic> compData = response.data is List
-              ? response.data
-              : (response.data['data'] ?? []);
-          await cacheData('perusahaans', compData);
-        }
-      } catch (e) {
-        debugPrint('Error syncing companies: $e');
-      }
+      // 4. Sinkronisasi User & Perusahaan
+      await syncUsersAndCompanies();
 
       // Beri waktu Main Thread untuk bernapas kembali setelah sinkronisasi panjang
       await Future.delayed(const Duration(milliseconds: 50));
