@@ -968,9 +968,6 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                             hint: 'Tambahkan detail pembayaran...',
                           ),
                           maxLines: 2,
-                          validator: (val) => val == null || val.isEmpty
-                              ? 'Keterangan wajib diisi'
-                              : null,
                         ),
                         const SizedBox(height: 16),
                       ],
