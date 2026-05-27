@@ -18,8 +18,10 @@ class MainNavigationScreen extends StatefulWidget {
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
-
-  final List<GlobalKey<NavigatorState>> _navigatorKeys = List.generate(4, (_) => GlobalKey<NavigatorState>());
+  final List<GlobalKey<NavigatorState>> _navigatorKeys = List.generate(
+    4,
+    (_) => GlobalKey<NavigatorState>(),
+  );
 
   late final List<Widget> _screens = [
     _buildTabNavigator(0, const DashboardScreen()),
@@ -33,7 +35,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        
+
         final navProvider = context.read<MainNavigationProvider>();
         if (navProvider.selectedIndex != index) {
           return;
@@ -63,18 +65,18 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   void _onItemTapped(int index) {
     final navProvider = context.read<MainNavigationProvider>();
-    
+
     if (navProvider.selectedIndex == index) {
       // Jika tab yang sama diketuk, kembali ke halaman awal navigator tersebut (pop to root)
       _navigatorKeys[index].currentState?.popUntil((route) => route.isFirst);
     } else {
       navProvider.setIndex(index);
-      
+
       // Pastikan ketika pindah ke tab Transaksi DO (index 1), navigator selalu direset ke root (halaman index/list)
       if (index == 1) {
         _navigatorKeys[1].currentState?.popUntil((route) => route.isFirst);
       }
-      
+
       // Trigger auto-fetch if data is empty
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (index == 1) {
@@ -97,7 +99,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           children: [
             Icon(Icons.exit_to_app_rounded, color: Color(0xFF01579B)),
             SizedBox(width: 8),
-            Text('Keluar Aplikasi', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              'Keluar Aplikasi',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ],
         ),
         content: const Text(
@@ -112,7 +117,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             onPressed: () => Navigator.pop(context, true),
             child: const Text(
               'Keluar',
-              style: TextStyle(color: Color(0xFF01579B), fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Color(0xFF01579B),
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -124,7 +132,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     final selectedIndex = context.watch<MainNavigationProvider>().selectedIndex;
-    
+
     return Scaffold(
       body: IndexedStack(index: selectedIndex, children: _screens),
       bottomNavigationBar: _buildBottomBar(selectedIndex),
@@ -157,11 +165,33 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildNavItem(0, Icons.grid_view_rounded, 'Beranda', selectedIndex),
-                _buildNavItem(1, Icons.local_shipping_rounded, 'Transaksi DO', selectedIndex),
-                const SizedBox(width: 110), // Ruang seimbang untuk tombol tengah yang lebih lebar
-                _buildNavItem(2, Icons.receipt_long_rounded, 'Operasional', selectedIndex),
-                _buildNavItem(3, Icons.account_balance_wallet_rounded, 'Laporan', selectedIndex),
+                _buildNavItem(
+                  0,
+                  Icons.grid_view_rounded,
+                  'Beranda',
+                  selectedIndex,
+                ),
+                _buildNavItem(
+                  1,
+                  Icons.local_shipping_rounded,
+                  'Transaksi DO',
+                  selectedIndex,
+                ),
+                const SizedBox(
+                  width: 110,
+                ), // Ruang seimbang untuk tombol tengah yang lebih lebar
+                _buildNavItem(
+                  2,
+                  Icons.receipt_long_rounded,
+                  'Operasional',
+                  selectedIndex,
+                ),
+                _buildNavItem(
+                  3,
+                  Icons.account_balance_wallet_rounded,
+                  'Laporan',
+                  selectedIndex,
+                ),
               ],
             ),
           ),
@@ -175,11 +205,15 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 // Push Add screen on the nested navigator
                 _navigatorKeys[1].currentState?.push(
                   MaterialPageRoute(
-                      builder: (context) => const AddTransaksiDoScreen()),
+                    builder: (context) => const AddTransaksiDoScreen(),
+                  ),
                 );
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF01579B),
                   borderRadius: BorderRadius.circular(20),
@@ -194,14 +228,10 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.add_rounded,
-                      color: Colors.white,
-                      size: 18,
-                    ),
+                    Icon(Icons.add_rounded, color: Colors.white, size: 18),
                     SizedBox(width: 4),
                     Text(
-                      'Tambah DO',
+                      'DO',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
@@ -218,7 +248,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     );
   }
 
-  Widget _buildNavItem(int index, IconData icon, String label, int selectedIndex) {
+  Widget _buildNavItem(
+    int index,
+    IconData icon,
+    String label,
+    int selectedIndex,
+  ) {
     final isSelected = selectedIndex == index;
     return Expanded(
       child: InkWell(
@@ -253,6 +288,4 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       ),
     );
   }
-
 }
-

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/features/tambah_saldo/providers/tambah_saldo_provider.dart';
@@ -21,10 +22,25 @@ class TambahSaldoListScreen extends StatefulWidget {
 }
 
 class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
+  final ScrollController _scrollController = ScrollController();
+  bool _isFabExtended = true;
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(() {
+      if (_scrollController.position.userScrollDirection == ScrollDirection.reverse) {
+        if (_isFabExtended) setState(() => _isFabExtended = false);
+      } else if (_scrollController.position.userScrollDirection == ScrollDirection.forward) {
+        if (!_isFabExtended) setState(() => _isFabExtended = true);
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<TambahSaldoProvider>().fetchData(useCache: true).then((_) {
         if (mounted) {
@@ -159,6 +175,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                         },
                         child: filteredRequests.isEmpty
                             ? ListView(
+                                controller: _scrollController,
                                 physics: const AlwaysScrollableScrollPhysics(),
                                 children: [
                                   SizedBox(
@@ -182,6 +199,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                                 ],
                               )
                             : ListView.builder(
+                                controller: _scrollController,
                                 padding: const EdgeInsets.all(10),
                                 itemCount: filteredRequests.length,
                                 itemBuilder: (context, index) {
@@ -198,7 +216,8 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
+        isExtended: _isFabExtended,
         heroTag: 'tambah_saldo_fab',
         onPressed: () {
           Navigator.push(
@@ -208,7 +227,9 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
             ),
           );
         },
-        child: const Icon(Icons.add),
+        backgroundColor: const Color(0xFF01579B),
+        icon: const Icon(Icons.add_rounded, color: Colors.white),
+        label: const Text('Tambah Saldo', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
     );
   }

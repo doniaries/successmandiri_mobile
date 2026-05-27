@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/features/penjual/models/penjual_model.dart';
@@ -48,6 +49,15 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
   final ScrollController _activeScrollController = ScrollController();
   final ScrollController _inactiveScrollController = ScrollController();
   String _searchQuery = '';
+  bool _isFabExtended = true;
+
+  void _updateFabVisibility(ScrollController controller) {
+    if (controller.position.userScrollDirection == ScrollDirection.reverse) {
+      if (_isFabExtended) setState(() => _isFabExtended = false);
+    } else if (controller.position.userScrollDirection == ScrollDirection.forward) {
+      if (!_isFabExtended) setState(() => _isFabExtended = true);
+    }
+  }
 
   @override
   void initState() {
@@ -69,6 +79,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
   }
 
   void _onScroll() {
+    _updateFabVisibility(_scrollController);
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       final provider = context.read<ResourceProvider>();
@@ -81,6 +92,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
   }
 
   void _onActiveScroll() {
+    _updateFabVisibility(_activeScrollController);
     if (_activeScrollController.position.pixels >=
         _activeScrollController.position.maxScrollExtent - 200) {
       final provider = context.read<ResourceProvider>();
@@ -93,6 +105,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
   }
 
   void _onInactiveScroll() {
+    _updateFabVisibility(_inactiveScrollController);
     if (_inactiveScrollController.position.pixels >=
         _inactiveScrollController.position.maxScrollExtent - 200) {
       final provider = context.read<ResourceProvider>();
@@ -557,7 +570,8 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
+        isExtended: _isFabExtended,
         heroTag: 'resource_list_fab_${widget.resourceType}',
         onPressed: () {
           Widget screen;
@@ -583,7 +597,14 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
           );
         },
         backgroundColor: const Color(0xFF01579B),
-        child: const Icon(Icons.add, color: Colors.white),
+        icon: const Icon(Icons.add_rounded, color: Colors.white),
+        label: Text(
+          widget.resourceType == 'penjual' ? 'Tambah Penjual' :
+          widget.resourceType == 'supir' ? 'Tambah Supir' :
+          widget.resourceType == 'pekerja' ? 'Tambah Pekerja' :
+          widget.resourceType == 'operasional' ? 'Tambah Data' : 'Tambah',
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
       ),
     );
 

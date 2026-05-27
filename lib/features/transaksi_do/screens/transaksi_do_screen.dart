@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:sawitappmobile/shared/providers/global_filter_provider.dart';
@@ -24,10 +25,18 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   bool _isSearching = false;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  bool _isFabExtended = true;
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(() {
+      if (_scrollController.position.userScrollDirection == ScrollDirection.reverse) {
+        if (_isFabExtended) setState(() => _isFabExtended = false);
+      } else if (_scrollController.position.userScrollDirection == ScrollDirection.forward) {
+        if (!_isFabExtended) setState(() => _isFabExtended = true);
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final txProvider = context.read<TransaksiDoProvider>();
       final dashboardProvider = context.read<DashboardProvider>();
@@ -102,6 +111,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       floatingActionButton: FloatingActionButton.extended(
+        isExtended: _isFabExtended,
         onPressed: () {
           Navigator.push(
             context,

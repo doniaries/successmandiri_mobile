@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
@@ -22,6 +23,7 @@ class OperasionalScreen extends StatefulWidget {
 class _OperasionalScreenState extends State<OperasionalScreen> {
   final ScrollController _scrollController = ScrollController();
   String _currentFilter = 'Semua';
+  bool _isFabExtended = true;
 
   @override
   void initState() {
@@ -54,6 +56,12 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
   }
 
   void _onScroll() {
+    if (_scrollController.position.userScrollDirection == ScrollDirection.reverse) {
+      if (_isFabExtended) setState(() => _isFabExtended = false);
+    } else if (_scrollController.position.userScrollDirection == ScrollDirection.forward) {
+      if (!_isFabExtended) setState(() => _isFabExtended = true);
+    }
+
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       final provider = context.read<ResourceProvider>();
@@ -201,14 +209,16 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'fab_operasional',
+      floatingActionButton: FloatingActionButton.extended(
+        isExtended: _isFabExtended,
+        heroTag: 'operasional_fab',
         onPressed: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const AddOperasionalScreen()),
         ),
         backgroundColor: const Color(0xFF01579B),
-        child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+        icon: const Icon(Icons.add_rounded, color: Colors.white),
+        label: const Text('Tambah Data', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
     );
   }
