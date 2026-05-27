@@ -531,41 +531,36 @@ class ResourceRepository {
           .timeout(const Duration(seconds: 15));
 
       if (page == 1) {
-        final List<dynamic> listData = _extractListData(response.data);
+        final List<dynamic> serverData = _extractListData(response.data);
+        // Ambil hanya item dari offline_queue (belum terkirim ke server)
+        final pendingQueue = await syncService.getOfflineQueueForEndpoint(ApiConstants.operasional);
         
-        await syncService.cacheData('operasional', listData, clear: (tanggal == null));
-        
-        String? whereClause;
-        List<dynamic>? whereArgs;
-        if (tanggal != null) {
-          whereClause = 'tanggal LIKE ?';
-          whereArgs = ['$tanggal%'];
-        }
-        
-        final pendingData = await syncService.getMergedOfflineData(
-          'operasional', 
-          ApiConstants.operasional,
-          where: whereClause,
-          whereArgs: whereArgs,
-          orderBy: 'id DESC',
-        );
-        
-        final filteredPending = pendingData.where((item) {
+        final filteredPending = pendingQueue.where((item) {
           if (tanggal != null) {
-            final itemTanggal = item['tanggal']?.toString() ?? '';
-            if (!itemTanggal.startsWith(tanggal)) return false;
+            final data = item['data'];
+            if (data is Map) {
+              final itemTanggal = data['tanggal']?.toString() ?? '';
+              if (!itemTanggal.startsWith(tanggal)) return false;
+            }
           }
           return true;
+        }).map((item) {
+          final data = Map<String, dynamic>.from(item['data'] as Map);
+          data['id'] = item['id']; // already negative from getOfflineQueueForEndpoint
+          data['sisa_hutang'] ??= 0;
+          data['status'] ??= 'pending';
+          return data;
         }).toList();
 
         if (response.data is Map) {
-          response.data['data'] = filteredPending;
+          response.data['data'] = [...filteredPending, ...serverData];
         }
       }
 
       return response.data;
     } catch (e) {
       try {
+        // Fallback offline: ambil dari local SQLite cache + offline queue
         String? whereClause;
         List<dynamic>? whereArgs;
         if (tanggal != null) {
@@ -579,7 +574,6 @@ class ResourceRepository {
           whereArgs: whereArgs,
           orderBy: 'id DESC',
         );
-        
         final filteredPending = pendingData.where((item) {
           if (tanggal != null) {
             final itemTanggal = item['tanggal']?.toString() ?? '';

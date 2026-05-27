@@ -1373,70 +1373,79 @@ class _DashboardHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const _HeaderTopRow(),
-                Consumer<DashboardProvider>(
-                  builder: (context, provider, _) {
-                    final activeDateStr = provider.summary?.systemActiveDate;
-                    if (activeDateStr != null) {
-                      final activeDate = DateTime.parse(activeDateStr);
-                      final formatted = DateFormat(
-                        'dd MMM yyyy',
-                        'id_ID',
-                      ).format(activeDate);
-                      return Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.amber.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: Colors.amber.withValues(alpha: 0.5),
+                const SizedBox(height: 12),
+                Center(
+                  child: Consumer<DashboardProvider>(
+                    builder: (context, provider, _) {
+                      final activeDateStr = provider.summary?.systemActiveDate;
+                      if (activeDateStr != null) {
+                        final activeDate = DateTime.parse(activeDateStr);
+                        final formatted = DateFormat(
+                          'dd MMM yyyy',
+                          'id_ID',
+                        ).format(activeDate);
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color.fromARGB(
+                                  255,
+                                  255,
+                                  255,
+                                  255,
+                                ).withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: Colors.amber.withValues(alpha: 0.5),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.event_available,
+                                    color: Color.fromARGB(255, 255, 255, 255),
+                                    size: 14,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    formatted,
+                                    style: const TextStyle(
+                                      color: Color.fromARGB(255, 237, 240, 240),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.event_available,
-                                  color: Colors.amber,
-                                  size: 14,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Tgl: $formatted',
-                                  style: const TextStyle(
-                                    color: Colors.amber,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
+                            const SizedBox(width: 8),
+                            const LiveDateTimeWidget(
+                              color: Colors.white,
+                              isTransparentBg: true,
+                              showDate: false,
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          const LiveDateTimeWidget(
-                            color: Colors.white,
-                            isTransparentBg: true,
-                            showDate: false,
-                          ),
-                        ],
+                          ],
+                        );
+                      }
+                      return const LiveDateTimeWidget(
+                        color: Colors.white,
+                        isTransparentBg: true,
                       );
-                    }
-                    return const LiveDateTimeWidget(
-                      color: Colors.white,
-                      isTransparentBg: true,
-                    );
-                  },
+                    },
+                  ),
                 ),
-                SizedBox(height: 12),
-                _CompanySelector(),
-                SizedBox(height: 12),
-                _BalanceCard(),
-                SizedBox(height: 12),
-                _StatCardsSection(),
+                const SizedBox(height: 12),
+                const _CompanySelector(),
+                const SizedBox(height: 12),
+                const _BalanceCard(),
+                const SizedBox(height: 12),
+                const _StatCardsSection(),
               ],
             ),
           ),
@@ -2082,7 +2091,7 @@ class _StatCardsState extends State<_StatCards> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
@@ -2094,13 +2103,13 @@ class _StatCardsState extends State<_StatCards> {
           children: [
             Row(
               children: [
-                Icon(icon, color: color, size: 16),
+                Icon(icon, color: color, size: 18),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     title,
                     style: const TextStyle(
-                      fontSize: 10,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF333333),
                     ),
@@ -2110,14 +2119,14 @@ class _StatCardsState extends State<_StatCards> {
                 ),
               ],
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 10),
             FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
               child: Text(
                 value,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 18,
                   fontWeight: FontWeight.w900,
                   color: color,
                   letterSpacing: -0.3,
@@ -2125,11 +2134,11 @@ class _StatCardsState extends State<_StatCards> {
                 maxLines: 1,
               ),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 4),
             Text(
               subtitleStr,
               style: TextStyle(
-                fontSize: 8,
+                fontSize: 10,
                 color: Colors.grey[600],
                 fontWeight: FontWeight.w600,
               ),
@@ -2214,7 +2223,7 @@ class _StatCardsState extends State<_StatCards> {
                       color: const Color(0xFFE67E22),
                       title: 'Total Tonase',
                       value:
-                          '${NumberFormat.decimalPattern('id').format(stats.transaksi.today.tonase)} Kg',
+                          '${NumberFormat.compact(locale: 'id').format(stats.transaksi.today.tonase)} Kg',
                       subtitleStr: 'Total Tonase DO',
                     ),
                   ),

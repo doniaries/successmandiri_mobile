@@ -21,6 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isRememberMe = true;
   String? _savedEmail;
   String? _savedPassword;
+  List<String> _savedEmailsList = [];
 
   @override
   void initState() {
@@ -44,8 +45,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // Load remembered credentials if any
       final credentials = await authProvider.getRememberedCredentials();
+      final savedEmails = await authProvider.getSavedEmails();
       if (mounted) {
         setState(() {
+          _savedEmailsList = savedEmails;
           if (credentials['email'] != null && credentials['email']!.isNotEmpty) {
             _savedEmail = credentials['email'];
             _emailController.text = _savedEmail!;
@@ -225,8 +228,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
                               autofillHints: const [AutofillHints.email],
-                              minLines: 1,
-                              maxLines: 3,
+                              maxLines: 1,
                               decoration: InputDecoration(
                                 labelText: "Email",
                                 hintText: "nama@email.com",
@@ -234,15 +236,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   Icons.email_outlined,
                                   color: Color(0xFF01579B),
                                 ),
-                                suffixIcon: FutureBuilder<List<String>>(
-                                  future: Provider.of<AuthProvider>(
-                                    context,
-                                    listen: false,
-                                  ).getSavedEmails(),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.hasData &&
-                                        snapshot.data!.isNotEmpty) {
-                                      return PopupMenuButton<String>(
+                                suffixIcon: _savedEmailsList.isNotEmpty
+                                    ? PopupMenuButton<String>(
                                         tooltip: "Pilih Email",
                                         icon: const Icon(
                                           Icons.arrow_drop_down_circle_outlined,
@@ -252,7 +247,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           _emailController.text = value;
                                         },
                                         itemBuilder: (BuildContext context) {
-                                          return snapshot.data!.map((
+                                          return _savedEmailsList.map((
                                             String email,
                                           ) {
                                             return PopupMenuItem<String>(
@@ -261,11 +256,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                             );
                                           }).toList();
                                         },
-                                      );
-                                    }
-                                    return const SizedBox.shrink();
-                                  },
-                                ),
+                                      )
+                                    : null,
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),

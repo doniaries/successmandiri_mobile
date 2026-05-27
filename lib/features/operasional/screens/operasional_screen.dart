@@ -29,13 +29,20 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<ResourceProvider>();
-      if (provider.operasionals.isEmpty) {
-        _refreshData();
-      } else {
-        final dashboardProvider = context.read<DashboardProvider>();
-        if (dashboardProvider.summary == null) {
-          dashboardProvider.fetchSummary();
-        }
+      final globalFilter = context.read<GlobalFilterProvider>();
+      final dashboardProvider = context.read<DashboardProvider>();
+      
+      final targetDate = globalFilter.selectedDate ??
+          (dashboardProvider.summary?.systemActiveDate != null
+              ? DateTime.parse(dashboardProvider.summary!.systemActiveDate)
+              : DateTime.now());
+      final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
+
+      // Selalu tarik data terbaru untuk tanggal aktif saat halaman dibuka
+      provider.fetchResources('operasional', refresh: true, filters: {'tanggal': dateStr});
+
+      if (dashboardProvider.summary == null) {
+        dashboardProvider.fetchSummary();
       }
     });
   }
@@ -111,12 +118,10 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     DateTime systemActiveDate,
     DateTime? filterDate,
   ) {
-    // Dengan filter backend, data sudah difilter sesuai tanggal. Namun, offline queue mungkin mencampur, 
-    // jadi filter lokal tetap dipertahankan.
-    final targetDate = filterDate ?? systemActiveDate;
-    return allItems.where((item) {
-      return DateUtils.isSameDay(item.tanggal.toLocal(), targetDate);
-    }).toList();
+    // Backend sudah memfilter data berdasarkan tanggal.
+    // Kita langsung kembalikan semua data agar tidak tersembunyi karena perbedaan zona waktu lokal,
+    // sambil tetap memastikan item offline antrean juga muncul.
+    return allItems;
   }
 
   List<Operasional> _getFilteredItems(
