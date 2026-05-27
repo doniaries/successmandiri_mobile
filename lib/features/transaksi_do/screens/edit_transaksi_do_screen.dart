@@ -436,7 +436,8 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: InkWell(
+                            child: TextFormField(
+                              readOnly: true,
                               onTap: () async {
                                 final result =
                                     await SearchableSelectionModal.show(
@@ -455,38 +456,34 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                                   _onPenjualChanged(result, provider);
                                 }
                               },
-                              child: IgnorePointer(
-                                child: TextFormField(
-                                  key: ValueKey('penjual_$_selectedPenjualId'),
-                                  initialValue: _selectedPenjualId != null
-                                      ? provider.penjuals
-                                            .firstWhere(
-                                              (p) =>
-                                                  p['id'] == _selectedPenjualId,
-                                              orElse: () => {'nama': ''},
-                                            )['nama']
-                                            .toString()
-                                            .toUpperCase()
-                                      : null,
-                                  decoration: _getInputDecoration(
-                                    label: 'Nama Penjual',
-                                    icon: Icons.person_rounded,
-                                    hint: 'Pilih Penjual',
-                                    suffixIcon: const Icon(
-                                      Icons.search,
-                                      size: 20,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 13,
-                                  ),
-                                  validator: (val) => _selectedPenjualId == null
-                                      ? 'Pilih penjual'
-                                      : null,
+                              key: ValueKey('penjual_$_selectedPenjualId'),
+                              initialValue: _selectedPenjualId != null
+                                  ? provider.penjuals
+                                        .firstWhere(
+                                          (p) =>
+                                              p['id'] == _selectedPenjualId,
+                                          orElse: () => {'nama': ''},
+                                        )['nama']
+                                        .toString()
+                                        .toUpperCase()
+                                  : null,
+                              decoration: _getInputDecoration(
+                                label: 'Nama Penjual',
+                                icon: Icons.person_rounded,
+                                hint: 'Pilih Penjual',
+                                suffixIcon: const Icon(
+                                  Icons.search,
+                                  size: 20,
+                                  color: Colors.grey,
                                 ),
                               ),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                              validator: (val) => _selectedPenjualId == null
+                                  ? 'Pilih penjual'
+                                  : null,
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -596,7 +593,8 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
-                              child: InkWell(
+                              child: TextFormField(
+                                readOnly: true,
                                 onTap: () async {
                                   final result =
                                       await SearchableSelectionModal.show(
@@ -618,38 +616,34 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                                     _onFieldChanged();
                                   }
                                 },
-                                child: IgnorePointer(
-                                  child: TextFormField(
-                                    key: ValueKey('supir_$_selectedSupirId'),
-                                    initialValue: _selectedSupirId != null
-                                        ? provider.supirs
-                                              .firstWhere(
-                                                (s) =>
-                                                    s['id'] == _selectedSupirId,
-                                                orElse: () => {'nama': ''},
-                                              )['nama']
-                                              .toString()
-                                              .toUpperCase()
-                                        : null,
-                                    decoration: _getInputDecoration(
-                                      label: 'Nama Supir',
-                                      icon: Icons.local_shipping_outlined,
-                                      hint: 'Pilih Supir',
-                                      suffixIcon: const Icon(
-                                        Icons.search,
-                                        size: 20,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 13,
-                                    ),
-                                    validator: (val) => _selectedSupirId == null
-                                        ? 'Pilih supir'
-                                        : null,
+                                key: ValueKey('supir_$_selectedSupirId'),
+                                initialValue: _selectedSupirId != null
+                                    ? provider.supirs
+                                          .firstWhere(
+                                            (s) =>
+                                                s['id'] == _selectedSupirId,
+                                            orElse: () => {'nama': ''},
+                                          )['nama']
+                                          .toString()
+                                          .toUpperCase()
+                                    : null,
+                                decoration: _getInputDecoration(
+                                  label: 'Nama Supir',
+                                  icon: Icons.local_shipping_outlined,
+                                  hint: 'Pilih Supir',
+                                  suffixIcon: const Icon(
+                                    Icons.search,
+                                    size: 20,
+                                    color: Colors.grey,
                                   ),
                                 ),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
+                                validator: (val) => _selectedSupirId == null
+                                    ? 'Pilih supir'
+                                    : null,
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -693,6 +687,8 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                         ),
                         style: const TextStyle(fontWeight: FontWeight.w600),
                         textCapitalization: TextCapitalization.characters,
+                        textInputAction: TextInputAction.next,
+                        onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                       ),
                       const SizedBox(height: 16),
 
@@ -706,6 +702,8 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                         style: const TextStyle(fontWeight: FontWeight.w600),
                         keyboardType: TextInputType.number,
                         inputFormatters: [CurrencyInputFormatter()],
+                        textInputAction: TextInputAction.next,
+                        onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                         validator: (val) =>
                             val == null || val.isEmpty ? 'Isi harga' : null,
                       ),
@@ -719,6 +717,8 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                         ).copyWith(suffixText: ' Kg'),
                         style: const TextStyle(fontWeight: FontWeight.w600),
                         keyboardType: TextInputType.number,
+                        textInputAction: TextInputAction.next,
+                        onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                         validator: (val) =>
                             val == null || val.isEmpty ? 'Isi tonase' : null,
                       ),
@@ -756,6 +756,8 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                         ).copyWith(prefixText: 'Rp '),
                         style: const TextStyle(fontWeight: FontWeight.w600),
                         keyboardType: TextInputType.number,
+                        textInputAction: TextInputAction.next,
+                        onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                         inputFormatters: [CurrencyInputFormatter()],
                       ),
                       const SizedBox(height: 16),
@@ -768,6 +770,8 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                         ).copyWith(prefixText: 'Rp '),
                         style: const TextStyle(fontWeight: FontWeight.w600),
                         keyboardType: TextInputType.number,
+                        textInputAction: TextInputAction.done,
+                        onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
                         inputFormatters: [CurrencyInputFormatter()],
                       ),
                       const SizedBox(height: 16),
@@ -968,6 +972,8 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                             hint: 'Tambahkan detail pembayaran...',
                           ),
                           maxLines: 2,
+                          textInputAction: TextInputAction.done,
+                          onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
                         ),
                         const SizedBox(height: 16),
                       ],
