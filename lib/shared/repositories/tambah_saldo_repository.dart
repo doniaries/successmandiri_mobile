@@ -25,6 +25,7 @@ class TambahSaldoRepository {
     try {
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.every((r) => r == ConnectivityResult.none)) {
+        // Offline: baca dari SQLite cache + offline queue
         final mergedData = await _syncService.getMergedOfflineData(
           'tambah_saldo',
           ApiConstants.tambahSaldo,
@@ -32,16 +33,27 @@ class TambahSaldoRepository {
         return mergedData.map((e) => TambahSaldoModel.fromJson(e)).toList();
       }
 
+      // Online: ambil langsung dari server
       final response = await _apiClient.dio.get(ApiConstants.tambahSaldo).timeout(const Duration(seconds: 15));
-      final List<dynamic> data = _extractListData(response.data);
-      await _syncService.cacheData('tambah_saldo', data);
-      
-      final mergedData = await _syncService.getMergedOfflineData(
-        'tambah_saldo',
-        ApiConstants.tambahSaldo,
-      );
-      return mergedData.map((e) => TambahSaldoModel.fromJson(e)).toList();
+      final List<dynamic> serverData = _extractListData(response.data);
+
+      // Cache untuk keperluan offline
+      _syncService.cacheData('tambah_saldo', serverData); // fire-and-forget, tidak perlu await
+
+      // Ambil offline queue items (belum terkirim ke server)
+      final pendingQueue = await _syncService.getOfflineQueueForEndpoint(ApiConstants.tambahSaldo);
+      final pendingItems = pendingQueue.map((item) {
+        final data = Map<String, dynamic>.from(item['data'] as Map);
+        data['id'] = item['id']; // id negatif dari getOfflineQueueForEndpoint
+        data['status'] ??= 'pending';
+        return data;
+      }).toList();
+
+      // Gabungkan: offline items di depan + data server
+      final combined = [...pendingItems, ...serverData];
+      return combined.map((e) => TambahSaldoModel.fromJson(e as Map<String, dynamic>)).toList();
     } catch (e) {
+      // Fallback: baca dari SQLite cache + offline queue
       final mergedData = await _syncService.getMergedOfflineData(
         'tambah_saldo',
         ApiConstants.tambahSaldo,

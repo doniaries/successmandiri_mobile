@@ -38,12 +38,18 @@ class ResourceRepository {
           .timeout(const Duration(seconds: 15));
 
       if (page == 1) {
-        // Hapus kode SharedPreferences, ganti dengan SQLite Cache
-        final List<dynamic> listData = _extractListData(response.data);
-        await syncService.cacheData('penjual', listData, clear: false);
-        final pendingData = await syncService.getMergedOfflineData('penjual', ApiConstants.penjual);
+        final List<dynamic> serverData = _extractListData(response.data);
+        // Refresh cache dengan data terbaru dari server (clear dulu agar deleted items ikut hilang)
+        syncService.cacheData('penjual', serverData, clear: true);
+        // Gabungkan hanya offline queue items (belum terkirim) di depan
+        final pendingQueue = await syncService.getOfflineQueueForEndpoint(ApiConstants.penjual);
+        final pendingItems = pendingQueue.map((item) {
+          final data = Map<String, dynamic>.from(item['data'] as Map);
+          data['id'] = item['id'];
+          return data;
+        }).toList();
         if (response.data is Map) {
-          response.data['data'] = pendingData;
+          response.data['data'] = [...pendingItems, ...serverData];
         }
       }
 
@@ -180,11 +186,16 @@ class ResourceRepository {
           .timeout(const Duration(seconds: 15));
 
       if (page == 1) {
-        final List<dynamic> listData = _extractListData(response.data);
-        await syncService.cacheData('supir', listData, clear: false);
-        final pendingData = await syncService.getMergedOfflineData('supir', ApiConstants.supir);
+        final List<dynamic> serverData = _extractListData(response.data);
+        syncService.cacheData('supir', serverData, clear: true);
+        final pendingQueue = await syncService.getOfflineQueueForEndpoint(ApiConstants.supir);
+        final pendingItems = pendingQueue.map((item) {
+          final data = Map<String, dynamic>.from(item['data'] as Map);
+          data['id'] = item['id'];
+          return data;
+        }).toList();
         if (response.data is Map) {
-          response.data['data'] = pendingData;
+          response.data['data'] = [...pendingItems, ...serverData];
         }
       }
 
@@ -192,8 +203,8 @@ class ResourceRepository {
     } catch (e) {
       try {
         final pendingData = await syncService.getMergedOfflineData(
-          'supir', // <-- UBAH DARI 'penjual'
-          ApiConstants.supir, // <-- UBAH DARI ApiConstants.penjual
+          'supir',
+          ApiConstants.supir,
         );
         return {
           'data': pendingData,
@@ -310,11 +321,16 @@ class ResourceRepository {
           )
           .timeout(const Duration(seconds: 15));
       if (page == 1) {
-        final List<dynamic> listData = _extractListData(response.data);
-        await syncService.cacheData('pekerja', listData, clear: false);
-        final pendingData = await syncService.getMergedOfflineData('pekerja', ApiConstants.pekerja);
+        final List<dynamic> serverData = _extractListData(response.data);
+        syncService.cacheData('pekerja', serverData, clear: true);
+        final pendingQueue = await syncService.getOfflineQueueForEndpoint(ApiConstants.pekerja);
+        final pendingItems = pendingQueue.map((item) {
+          final data = Map<String, dynamic>.from(item['data'] as Map);
+          data['id'] = item['id'];
+          return data;
+        }).toList();
         if (response.data is Map) {
-          response.data['data'] = pendingData;
+          response.data['data'] = [...pendingItems, ...serverData];
         }
       }
 
@@ -441,11 +457,16 @@ class ResourceRepository {
           .timeout(const Duration(seconds: 15));
 
       if (page == 1) {
-        final List<dynamic> listData = _extractListData(response.data);
-        await syncService.cacheData('kendaraan', listData, clear: false);
-        final pendingData = await syncService.getMergedOfflineData('kendaraan', ApiConstants.kendaraan);
+        final List<dynamic> serverData = _extractListData(response.data);
+        syncService.cacheData('kendaraan', serverData, clear: true);
+        final pendingQueue = await syncService.getOfflineQueueForEndpoint(ApiConstants.kendaraan);
+        final pendingItems = pendingQueue.map((item) {
+          final data = Map<String, dynamic>.from(item['data'] as Map);
+          data['id'] = item['id'];
+          return data;
+        }).toList();
         if (response.data is Map) {
-          response.data['data'] = pendingData;
+          response.data['data'] = [...pendingItems, ...serverData];
         }
       }
 
