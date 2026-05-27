@@ -153,6 +153,42 @@ class TransaksiDoProvider with ChangeNotifier {
   Future<void> fetchFormData() async {
     _isLoading = true;
     notifyListeners();
+    
+    void sortData(List<dynamic> list) {
+      list.sort((a, b) {
+        int idA = a['id'] ?? 0;
+        int idB = b['id'] ?? 0;
+        if (idA < 0 && idB >= 0) return -1;
+        if (idB < 0 && idA >= 0) return 1;
+        if (idA < 0 && idB < 0) return idA.compareTo(idB);
+        return idB.compareTo(idA);
+      });
+    }
+
+    // 1. Tampilkan data dari SQLite (Local) terlebih dahulu agar cepat (Offline-first)
+    try {
+      final localResults = await Future.wait([
+        _repository.getLocalPenjuals(),
+        _repository.getLocalSupirs(),
+        _repository.getLocalKendaraans(),
+      ]);
+
+      if (localResults[0].isNotEmpty || localResults[1].isNotEmpty || localResults[2].isNotEmpty) {
+        _penjuals = List.from(localResults[0]);
+        sortData(_penjuals);
+        
+        _supirs = List.from(localResults[1]);
+        sortData(_supirs);
+        
+        _kendaraans = List.from(localResults[2]);
+        sortData(_kendaraans);
+        
+        _isLoading = false; // Langsung hilangkan loading
+        notifyListeners();
+      }
+    } catch (_) {}
+
+    // 2. Fetch data terbaru dari server di background
     try {
       final results = await Future.wait([
         _repository.getPenjuals(),
@@ -160,17 +196,6 @@ class TransaksiDoProvider with ChangeNotifier {
         _repository.getKendaraans(),
       ]);
       
-      void sortData(List<dynamic> list) {
-        list.sort((a, b) {
-          int idA = a['id'] ?? 0;
-          int idB = b['id'] ?? 0;
-          if (idA < 0 && idB >= 0) return -1;
-          if (idB < 0 && idA >= 0) return 1;
-          if (idA < 0 && idB < 0) return idA.compareTo(idB);
-          return idB.compareTo(idA);
-        });
-      }
-
       _penjuals = List.from(results[0]);
       sortData(_penjuals);
       
@@ -179,12 +204,10 @@ class TransaksiDoProvider with ChangeNotifier {
       
       _kendaraans = List.from(results[2]);
       sortData(_kendaraans);
-      
-      _isLoading = false;
-      notifyListeners();
     } catch (e) {
+      _errorMessage = 'Gagal memuat data form terbaru';
+    } finally {
       _isLoading = false;
-      _errorMessage = 'Gagal memuat data formulir.';
       notifyListeners();
     }
   }

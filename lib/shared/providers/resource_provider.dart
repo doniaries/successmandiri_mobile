@@ -260,7 +260,7 @@ class ResourceProvider with ChangeNotifier {
       dynamic lastResponse; // Store last response for summary
 
       // --- FAST CACHE LOAD (Cache-First) ---
-      if (page == 1 && refresh && _listIsEmpty(type)) {
+      if (page == 1 && _listIsEmpty(type)) {
         try {
           dynamic cacheResponse;
           switch (type) {
@@ -300,6 +300,9 @@ class ResourceProvider with ChangeNotifier {
             _processRawResponse(type, page, cacheResponse);
             _isLoading = false; // Turn off spinner instantly!
             notifyListeners();
+            if (!refresh) {
+              return; // Skip network fetch since data is already loaded from SQLite and user didn't explicitly refresh
+            }
           }
         } catch (_) {}
       }

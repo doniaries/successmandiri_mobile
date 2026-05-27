@@ -40,8 +40,8 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
               : DateTime.now());
       final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
 
-      // Selalu tarik data terbaru untuk tanggal aktif saat halaman dibuka
-      provider.fetchResources('operasional', refresh: true, filters: {'tanggal': dateStr});
+      // Tarik dari SQLite agar cepat (offline-first). Untuk update dari API, tarik ke bawah (pull to refresh).
+      provider.fetchResources('operasional', refresh: false, filters: {'tanggal': dateStr});
 
       if (dashboardProvider.summary == null) {
         dashboardProvider.fetchSummary();

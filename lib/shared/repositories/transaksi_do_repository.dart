@@ -38,6 +38,9 @@ class TransaksiDoRepository {
           .timeout(const Duration(seconds: 5));
           
       final serverData = _extractListData(response.data);
+      final List<dynamic>? activeIds = response.data is Map ? response.data['active_ids'] : null;
+      await _syncService.cacheDataIncremental('penjual', serverData, activeIds);
+      
       final pendingQueue = await _syncService.getOfflineQueueForEndpoint(ApiConstants.penjual);
       final pendingItems = pendingQueue.map((item) {
         final data = Map<String, dynamic>.from(item['data'] as Map);
@@ -68,6 +71,9 @@ class TransaksiDoRepository {
           .timeout(const Duration(seconds: 5));
           
       final serverData = _extractListData(response.data);
+      final List<dynamic>? activeIds = response.data is Map ? response.data['active_ids'] : null;
+      await _syncService.cacheDataIncremental('supir', serverData, activeIds);
+      
       final pendingQueue = await _syncService.getOfflineQueueForEndpoint(ApiConstants.supir);
       final pendingItems = pendingQueue.map((item) {
         final data = Map<String, dynamic>.from(item['data'] as Map);
@@ -98,6 +104,9 @@ class TransaksiDoRepository {
           .timeout(const Duration(seconds: 5));
           
       final serverData = _extractListData(response.data);
+      final List<dynamic>? activeIds = response.data is Map ? response.data['active_ids'] : null;
+      await _syncService.cacheDataIncremental('kendaraan', serverData, activeIds);
+      
       final pendingQueue = await _syncService.getOfflineQueueForEndpoint(ApiConstants.kendaraan);
       final pendingItems = pendingQueue.map((item) {
         final data = Map<String, dynamic>.from(item['data'] as Map);
@@ -115,6 +124,32 @@ class TransaksiDoRepository {
         return mergedData.isNotEmpty ? mergedData : [];
       } catch (_) {}
       rethrow;
+    }
+  }
+  Future<List<dynamic>> getLocalPenjuals() async {
+    try {
+      final mergedData = await _syncService.getMergedOfflineData('penjual', ApiConstants.penjual);
+      return mergedData.isNotEmpty ? mergedData : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<List<dynamic>> getLocalSupirs() async {
+    try {
+      final mergedData = await _syncService.getMergedOfflineData('supir', ApiConstants.supir);
+      return mergedData.isNotEmpty ? mergedData : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<List<dynamic>> getLocalKendaraans() async {
+    try {
+      final mergedData = await _syncService.getMergedOfflineData('kendaraan', ApiConstants.kendaraan);
+      return mergedData.isNotEmpty ? mergedData : [];
+    } catch (_) {
+      return [];
     }
   }
 

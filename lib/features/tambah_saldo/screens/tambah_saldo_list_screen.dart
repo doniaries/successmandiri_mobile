@@ -42,11 +42,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
       }
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<TambahSaldoProvider>().fetchData(useCache: true).then((_) {
-        if (mounted) {
-          context.read<TambahSaldoProvider>().fetchData(isRefresh: true, useCache: false);
-        }
-      });
+      context.read<TambahSaldoProvider>().fetchData(useCache: true);
     });
   }
 

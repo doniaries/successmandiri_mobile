@@ -36,10 +36,10 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       
-      // Fetch data sesuai tanggal yang sudah ditentukan
+      // Fetch data sesuai tanggal yang sudah ditentukan (tanpa memaksa dari API)
       context.read<ResourceProvider>().fetchResources(
         'jurnal_keuangan',
-        refresh: true,
+        refresh: false,
         filters: _buildApiFilters(),
       );
     });

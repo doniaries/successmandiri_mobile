@@ -50,12 +50,15 @@ class TambahSaldoProvider with ChangeNotifier {
       // 2. Network Load
       if (!useCache || isRefresh) {
         _requests = await _repository.getTambahSaldo();
-      } else {
+      } else if (_requests.isEmpty) {
+        // Cache was empty, fetch from network silently
         _repository.getTambahSaldo().then((newData) async {
           _requests = newData;
           await _updateUnreadCount();
           notifyListeners();
         }).catchError((_) {});
+      } else {
+        // Cache was loaded and user didn't refresh, skip network fetch!
       }
 
       await _updateUnreadCount();
