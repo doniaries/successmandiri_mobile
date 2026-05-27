@@ -53,6 +53,9 @@ class SyncService {
   CancelToken? _cancelToken;
 
   final ValueNotifier<int> pendingSyncCount = ValueNotifier(0);
+  int _retryCount = 0;
+  static const int _maxRetries = 5;
+  Timer? _retryTimer;
 
   factory SyncService() => _instance;
 
@@ -81,6 +84,59 @@ class SyncService {
     Connectivity().checkConnectivity().then((results) {
       _isOffline = results.any((r) => r == ConnectivityResult.none);
       _connectivityController.add(!_isOffline);
+    });
+  }
+
+  /// Cek apakah internet benar-benar bisa dijangkau (bukan hanya ada sinyal)
+  Future<bool> isInternetReachable() async {
+    try {
+      final response = await _apiClient.dio.get(
+        '/ping',
+        options: Options(
+          sendTimeout: const Duration(seconds: 5),
+          receiveTimeout: const Duration(seconds: 5),
+        ),
+      );
+      return response.statusCode != null;
+    } catch (_) {
+      // Jika /ping tidak ada, coba HEAD ke base URL — jika dapat response apapun, berarti online
+      try {
+        await _apiClient.dio.head(
+          '/',
+          options: Options(
+            sendTimeout: const Duration(seconds: 5),
+            receiveTimeout: const Duration(seconds: 5),
+            validateStatus: (_) => true, // terima status apapun
+          ),
+        );
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+  }
+
+  /// Jadwalkan retry sync jika sebelumnya gagal karena jaringan
+  void _scheduleRetry() {
+    _retryTimer?.cancel();
+    if (_retryCount >= _maxRetries) {
+      debugPrint('SyncService: max retries ($_maxRetries) reached, stopping retry.');
+      _retryCount = 0;
+      return;
+    }
+    // Exponential backoff: 30s, 60s, 120s, 240s, 480s
+    final delaySeconds = 30 * (1 << _retryCount).clamp(1, 16);
+    _retryCount++;
+    debugPrint('SyncService: scheduling retry #$_retryCount in ${delaySeconds}s...');
+    _retryTimer = Timer(Duration(seconds: delaySeconds), () async {
+      final reachable = await isInternetReachable();
+      if (reachable) {
+        debugPrint('SyncService: retry #$_retryCount — internet reachable, syncing...');
+        await syncNow();
+      } else {
+        debugPrint('SyncService: retry #$_retryCount — internet still unreachable, re-scheduling...');
+        _scheduleRetry();
+      }
     });
   }
 
@@ -260,8 +316,20 @@ class SyncService {
     final connectivity = await Connectivity().checkConnectivity();
     if (connectivity.contains(ConnectivityResult.none)) return;
 
+    // Verifikasi internet benar-benar aktif (bukan hanya ada sinyal WiFi/data)
+    final reachable = await isInternetReachable();
+    if (!reachable) {
+      debugPrint('SyncService.syncNow: internet not reachable despite connectivity, scheduling retry...');
+      _scheduleRetry();
+      return;
+    }
+
     final queue = await _db.query('offline_queue');
-    if (queue.isEmpty) return;
+    if (queue.isEmpty) {
+      _retryCount = 0; // Reset jika queue kosong
+      _retryTimer?.cancel();
+      return;
+    }
 
     _isSyncing = true;
     _cancelRequested = false;
@@ -304,13 +372,17 @@ class SyncService {
         } catch (e) {
           dev.log('Sync failed for item $id: $e');
           if (e is DioException && e.response?.statusCode == 422) {
-            dev.log('Item $id returned 422 Validation Error (possibly duplicate). Removing from queue.');
+            dev.log('Item $id returned 422 (duplicate). Removing from queue.');
             await _db.deleteQueue(id);
-            // Optionally, we could increment successCount, but it's technically a skip
             successCount++;
             syncedEndpoints.add(_getProcessName(endpoint));
-            await updatePendingCount(); // Update UI immediately for skipped item
+            await updatePendingCount();
+          } else if (e is DioException && e.response == null) {
+            // Error jaringan (timeout, no route) — hentikan loop, jadwalkan retry
+            dev.log('SyncService.syncNow: network error on item $id, stopping loop and scheduling retry...');
+            break;
           }
+          // Error server (5xx) atau lainnya: lewati item ini, lanjut ke berikutnya
         }
       }
 
@@ -408,6 +480,17 @@ class SyncService {
       _cancelRequested = false;
       _cancelToken = null;
       updatePendingCount();
+
+      // Jika masih ada item di queue, jadwalkan retry
+      final remaining = await _db.query('offline_queue');
+      if (remaining.isNotEmpty && !_cancelRequested) {
+        debugPrint('SyncService.syncNow: ${remaining.length} items remain, scheduling retry...');
+        _scheduleRetry();
+      } else {
+        // Semua berhasil, reset retry counter
+        _retryCount = 0;
+        _retryTimer?.cancel();
+      }
     }
   }
 
