@@ -37,8 +37,7 @@ class TambahSaldoRepository {
       final response = await _apiClient.dio.get(ApiConstants.tambahSaldo).timeout(const Duration(seconds: 15));
       final List<dynamic> serverData = _extractListData(response.data);
 
-      // Cache untuk keperluan offline
-      _syncService.cacheData('tambah_saldo', serverData); // fire-and-forget, tidak perlu await
+      // (Cache offline sekarang dikelola secara incremental oleh SyncService.performFullSync)
 
       // Ambil offline queue items (belum terkirim ke server)
       final pendingQueue = await _syncService.getOfflineQueueForEndpoint(ApiConstants.tambahSaldo);

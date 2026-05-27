@@ -508,7 +508,6 @@ class SyncService {
     } catch (_) {}
   }
 
-  /// Konversi endpoint API ke nama proses yang mudah dibaca
   String _getProcessName(String endpoint) {
     if (endpoint.contains('tambah-saldo')) return 'Tambah Saldo';
     if (endpoint.contains('transaksi-do')) return 'Transaksi DO';
@@ -520,6 +519,59 @@ class SyncService {
     if (endpoint.contains('pembayaran-hutang')) return 'Bayar Hutang';
     if (endpoint.contains('lansir')) return 'Lansir';
     return 'Data';
+  }
+
+  Future<String?> getLastSyncTimestamp(String table) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('last_sync_$table');
+  }
+
+  Future<void> setLastSyncTimestamp(String table, String timestamp) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('last_sync_$table', timestamp);
+  }
+
+  Future<void> cacheDataIncremental(
+    String table,
+    List<dynamic> list,
+    List<dynamic>? activeIds,
+  ) async {
+    final db = await DatabaseService().database;
+    if (db == null) return;
+
+    if (activeIds != null) {
+      // Hapus data lokal yang sudah tidak ada di backend
+      // Ambil semua ID lokal
+      final localData = await db.query(table, columns: ['id']);
+      final localIds = localData.map((e) => e['id'] as int).where((id) => id > 0).toSet();
+      
+      final remoteActiveIds = activeIds.map((e) => e as int).toSet();
+      final idsToDelete = localIds.difference(remoteActiveIds);
+
+      if (idsToDelete.isNotEmpty) {
+        for (int id in idsToDelete) {
+          await db.delete(table, where: 'id = ?', whereArgs: [id]);
+        }
+      }
+    }
+
+    if (list.isEmpty) return;
+
+    final mappedList = await compute(_mapDataForDb, {'table': table, 'list': list});
+    
+    // Beri jeda sangat singkat agar UI sempat bernapas
+    await Future.delayed(const Duration(milliseconds: 10));
+
+    if (mappedList.isNotEmpty) {
+      final batch = db.batch();
+      for (var item in mappedList) {
+        batch.insert(table, item, conflictAlgorithm: ConflictAlgorithm.replace);
+      }
+      await batch.commit(noResult: true);
+    }
+    
+    // Set last sync timestamp to current time (UTC)
+    await setLastSyncTimestamp(table, DateTime.now().toUtc().toIso8601String());
   }
 
   Future<void> cacheData(
@@ -554,18 +606,47 @@ class SyncService {
     if (connectivity.contains(ConnectivityResult.none)) return;
 
     try {
-      // Sinkronisasi Master Data (Penjual, Supir, Pekerja, Kendaraan) agar tersedia offline seluruhnya
+      // Sinkronisasi Master Data, Operasional, dan Tambah Saldo secara Incremental
       try {
         await repository.getPenjuals();
         await repository.getSupirs();
         await repository.getPekerjas();
         await repository.getKendaraans();
+        
+        // Memanggil API khusus all=true untuk Operasional dan Tambah Saldo
+        // (Pastikan endpoint /api/v1/operasional dan /api/v1/tambah-saldo sudah dimodifikasi di backend)
+        
+        try {
+          final lastSyncOps = await getLastSyncTimestamp('operasional');
+          final queryParamsOps = <String, dynamic>{'all': true};
+          if (lastSyncOps != null) queryParamsOps['updated_since'] = lastSyncOps;
+          
+          final resOps = await _apiClient.dio.get('/operasional', queryParameters: queryParamsOps);
+          final dataOps = resOps.data['data'] ?? [];
+          final activeIdsOps = resOps.data['active_ids'];
+          await cacheDataIncremental('operasional', dataOps, activeIdsOps);
+        } catch(e) {
+           debugPrint('Error syncing operasional incremental: $e');
+        }
+
+        try {
+          final lastSyncTs = await getLastSyncTimestamp('tambah_saldo');
+          final queryParamsTs = <String, dynamic>{'all': true};
+          if (lastSyncTs != null) queryParamsTs['updated_since'] = lastSyncTs;
+          
+          final resTs = await _apiClient.dio.get('/tambah-saldo', queryParameters: queryParamsTs);
+          final dataTs = resTs.data['data'] ?? [];
+          final activeIdsTs = resTs.data['active_ids'];
+          await cacheDataIncremental('tambah_saldo', dataTs, activeIdsTs);
+        } catch(e) {
+           debugPrint('Error syncing tambah_saldo incremental: $e');
+        }
+
       } catch (e) {
         debugPrint('Error syncing master data: $e');
       }
 
       // Sync Users (Karyawan) - Biasanya datanya kecil dan sering dibutuhkan
-
       try {
         final response = await _apiClient.dio.get('/users');
         if (response.data != null) {

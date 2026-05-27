@@ -43,8 +43,6 @@ class ResourceRepository {
 
       if (page == 1) {
         final List<dynamic> serverData = _extractListData(response.data);
-        // Refresh cache dengan data terbaru dari server (clear dulu agar deleted items ikut hilang)
-        syncService.cacheData('penjual', serverData, clear: true);
         // Gabungkan hanya offline queue items (belum terkirim) di depan
         final pendingQueue = await syncService.getOfflineQueueForEndpoint(ApiConstants.penjual);
         final pendingItems = pendingQueue.map((item) {
@@ -91,12 +89,18 @@ class ResourceRepository {
         return parseAndSort(mergedData);
       }
 
-      final response = await _apiClient.dio
-          .get(ApiConstants.penjual, queryParameters: {'all': true})
-          .timeout(const Duration(seconds: 5));
-      final List<dynamic> data = _extractListData(response.data);
+      final lastSync = await syncService.getLastSyncTimestamp('penjual');
+      final queryParams = <String, dynamic>{'all': true};
+      if (lastSync != null) queryParams['updated_since'] = lastSync;
 
-      await syncService.cacheData('penjual', data);
+      final response = await _apiClient.dio
+          .get(ApiConstants.penjual, queryParameters: queryParams)
+          .timeout(const Duration(seconds: 15));
+          
+      final List<dynamic> data = _extractListData(response.data);
+      final List<dynamic>? activeIds = response.data is Map ? response.data['active_ids'] : null;
+
+      await syncService.cacheDataIncremental('penjual', data, activeIds);
       final mergedData = await syncService.getMergedOfflineData('penjual', ApiConstants.penjual);
       return parseAndSort(mergedData);
     } catch (e) {
@@ -195,7 +199,6 @@ class ResourceRepository {
 
       if (page == 1) {
         final List<dynamic> serverData = _extractListData(response.data);
-        syncService.cacheData('supir', serverData, clear: true);
         final pendingQueue = await syncService.getOfflineQueueForEndpoint(ApiConstants.supir);
         final pendingItems = pendingQueue.map((item) {
           final data = Map<String, dynamic>.from(item['data'] as Map);
@@ -241,12 +244,18 @@ class ResourceRepository {
         return parseAndSort(mergedData);
       }
 
-      final response = await _apiClient.dio
-          .get(ApiConstants.supir, queryParameters: {'all': true})
-          .timeout(const Duration(seconds: 5));
-      final List<dynamic> data = _extractListData(response.data);
+      final lastSync = await syncService.getLastSyncTimestamp('supir');
+      final queryParams = <String, dynamic>{'all': true};
+      if (lastSync != null) queryParams['updated_since'] = lastSync;
 
-      await syncService.cacheData('supir', data);
+      final response = await _apiClient.dio
+          .get(ApiConstants.supir, queryParameters: queryParams)
+          .timeout(const Duration(seconds: 15));
+          
+      final List<dynamic> data = _extractListData(response.data);
+      final List<dynamic>? activeIds = response.data is Map ? response.data['active_ids'] : null;
+
+      await syncService.cacheDataIncremental('supir', data, activeIds);
       final mergedData = await syncService.getMergedOfflineData('supir', ApiConstants.supir);
       return parseAndSort(mergedData);
     } catch (e) {
@@ -334,7 +343,6 @@ class ResourceRepository {
           .timeout(const Duration(seconds: 15));
       if (page == 1) {
         final List<dynamic> serverData = _extractListData(response.data);
-        syncService.cacheData('pekerja', serverData, clear: true);
         final pendingQueue = await syncService.getOfflineQueueForEndpoint(ApiConstants.pekerja);
         final pendingItems = pendingQueue.map((item) {
           final data = Map<String, dynamic>.from(item['data'] as Map);
@@ -380,12 +388,18 @@ class ResourceRepository {
         return parseAndSort(mergedData);
       }
 
-      final response = await _apiClient.dio
-          .get(ApiConstants.pekerja, queryParameters: {'all': true})
-          .timeout(const Duration(seconds: 5));
-      final List<dynamic> data = _extractListData(response.data);
+      final lastSync = await syncService.getLastSyncTimestamp('pekerja');
+      final queryParams = <String, dynamic>{'all': true};
+      if (lastSync != null) queryParams['updated_since'] = lastSync;
 
-      await syncService.cacheData('pekerja', data);
+      final response = await _apiClient.dio
+          .get(ApiConstants.pekerja, queryParameters: queryParams)
+          .timeout(const Duration(seconds: 15));
+          
+      final List<dynamic> data = _extractListData(response.data);
+      final List<dynamic>? activeIds = response.data is Map ? response.data['active_ids'] : null;
+
+      await syncService.cacheDataIncremental('pekerja', data, activeIds);
       final mergedData = await syncService.getMergedOfflineData('pekerja', ApiConstants.pekerja);
       return parseAndSort(mergedData);
     } catch (e) {
@@ -474,7 +488,6 @@ class ResourceRepository {
 
       if (page == 1) {
         final List<dynamic> serverData = _extractListData(response.data);
-        syncService.cacheData('kendaraan', serverData, clear: true);
         final pendingQueue = await syncService.getOfflineQueueForEndpoint(ApiConstants.kendaraan);
         final pendingItems = pendingQueue.map((item) {
           final data = Map<String, dynamic>.from(item['data'] as Map);
@@ -514,12 +527,18 @@ class ResourceRepository {
         return mergedData.map((e) => Kendaraan.fromJson(e)).toList();
       }
 
-      final response = await _apiClient.dio
-          .get(ApiConstants.kendaraan, queryParameters: {'all': true})
-          .timeout(const Duration(seconds: 5));
-      final List<dynamic> data = _extractListData(response.data);
+      final lastSync = await syncService.getLastSyncTimestamp('kendaraan');
+      final queryParams = <String, dynamic>{'all': true};
+      if (lastSync != null) queryParams['updated_since'] = lastSync;
 
-      await syncService.cacheData('kendaraan', data);
+      final response = await _apiClient.dio
+          .get(ApiConstants.kendaraan, queryParameters: queryParams)
+          .timeout(const Duration(seconds: 15));
+          
+      final List<dynamic> data = _extractListData(response.data);
+      final List<dynamic>? activeIds = response.data is Map ? response.data['active_ids'] : null;
+
+      await syncService.cacheDataIncremental('kendaraan', data, activeIds);
       final mergedData = await syncService.getMergedOfflineData('kendaraan', ApiConstants.kendaraan);
       return mergedData.map((e) => Kendaraan.fromJson(e)).toList();
     } catch (e) {
