@@ -383,7 +383,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                       ? provider.penjuals
                                             .firstWhere(
                                               (p) =>
-                                                  p['id'] == _selectedPenjualId,
+                                                  p['id'].toString() == _selectedPenjualId.toString(),
                                               orElse: () => {'nama': ''},
                                             )['nama']
                                             .toString()
@@ -552,7 +552,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                         ? provider.supirs
                                               .firstWhere(
                                                 (s) =>
-                                                    s['id'] == _selectedSupirId,
+                                                    s['id'].toString() == _selectedSupirId.toString(),
                                                 orElse: () => {'nama': ''},
                                               )['nama']
                                               .toString()
@@ -923,12 +923,12 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
 
       final provider = context.read<TransaksiDoProvider>();
       final penjualNama = provider.penjuals.firstWhere(
-        (p) => p['id'] == _selectedPenjualId,
+        (p) => p['id'].toString() == _selectedPenjualId.toString(),
         orElse: () => {'nama': ''},
       )['nama'];
       
       final supirNama = _penjualSebagaiSupir ? penjualNama : provider.supirs.firstWhere(
-        (s) => s['id'] == _selectedSupirId,
+        (s) => s['id'].toString() == _selectedSupirId.toString(),
         orElse: () => {'nama': ''},
       )['nama'];
 
