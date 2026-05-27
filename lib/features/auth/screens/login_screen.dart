@@ -1,12 +1,216 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:sawitappmobile/features/auth/providers/auth_provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
 import 'package:sawitappmobile/shared/screens/main_navigation_screen.dart';
+import 'package:sawitappmobile/core/services/sync_service.dart';
 
+// ─── Enum status koneksi ────────────────────────────────────────────────────
+enum _ConnectionStatus { none, weak, strong }
+
+// ─── Widget badge sinyal ────────────────────────────────────────────────────
+class _ConnectivityBadge extends StatefulWidget {
+  const _ConnectivityBadge();
+
+  @override
+  State<_ConnectivityBadge> createState() => _ConnectivityBadgeState();
+}
+
+class _ConnectivityBadgeState extends State<_ConnectivityBadge>
+    with SingleTickerProviderStateMixin {
+  _ConnectionStatus _status = _ConnectionStatus.none;
+  Timer? _pollTimer;
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulseAnim;
+  StreamSubscription? _connectivitySub;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Pulse animation untuk badge
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+    _pulseAnim = Tween<double>(begin: 0.85, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+
+    _checkStatus();
+
+    // Cek ulang tiap 5 detik
+    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) => _checkStatus());
+
+    // Juga update saat connectivity berubah (disconnect/reconnect)
+    _connectivitySub = Connectivity().onConnectivityChanged.listen((_) {
+      _checkStatus();
+    });
+  }
+
+  Future<void> _checkStatus() async {
+    final connectivity = await Connectivity().checkConnectivity();
+    final hasInterface = !connectivity.every((r) => r == ConnectivityResult.none);
+
+    if (!hasInterface) {
+      if (mounted) setState(() => _status = _ConnectionStatus.none);
+      return;
+    }
+
+    // Ada sinyal — cek apakah server benar-benar bisa dijangkau
+    final reachable = await SyncService().isInternetReachable();
+    if (mounted) {
+      setState(() {
+        _status = reachable ? _ConnectionStatus.strong : _ConnectionStatus.weak;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    _connectivitySub?.cancel();
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cfg = _badgeConfig(_status);
+
+    return ScaleTransition(
+      scale: _status == _ConnectionStatus.none ? _pulseAnim : const AlwaysStoppedAnimation(1.0),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: cfg.bg,
+          borderRadius: BorderRadius.circular(50),
+          border: Border.all(color: cfg.border, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: cfg.glow,
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(cfg.icon, size: 16, color: cfg.color),
+            const SizedBox(width: 7),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  cfg.label,
+                  style: TextStyle(
+                    color: cfg.color,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+                Text(
+                  cfg.sublabel,
+                  style: TextStyle(
+                    color: cfg.color.withValues(alpha: 0.75),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(width: 6),
+            // Dot indicator
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 400),
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: cfg.dot,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(color: cfg.dot.withValues(alpha: 0.6), blurRadius: 6),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  _BadgeCfg _badgeConfig(_ConnectionStatus status) {
+    switch (status) {
+      case _ConnectionStatus.none:
+        return _BadgeCfg(
+          icon: Icons.wifi_off_rounded,
+          label: 'Mode Offline',
+          sublabel: 'Login & input data tetap bisa',
+          color: const Color(0xFFB71C1C),
+          bg: const Color(0xFFFFEBEE),
+          border: const Color(0xFFFFCDD2),
+          glow: const Color(0xFFE53935).withValues(alpha: 0.15),
+          dot: const Color(0xFFE53935),
+        );
+      case _ConnectionStatus.weak:
+        return _BadgeCfg(
+          icon: Icons.signal_wifi_statusbar_connected_no_internet_4_rounded,
+          label: 'Sinyal Lemah',
+          sublabel: 'Sinkron otomatis jika membaik',
+          color: const Color(0xFFE65100),
+          bg: const Color(0xFFFFF3E0),
+          border: const Color(0xFFFFCC80),
+          glow: const Color(0xFFFF6F00).withValues(alpha: 0.15),
+          dot: const Color(0xFFFF6F00),
+        );
+      case _ConnectionStatus.strong:
+        return _BadgeCfg(
+          icon: Icons.signal_wifi_4_bar_rounded,
+          label: 'Sinyal Kuat',
+          sublabel: 'Terhubung & siap sinkron',
+          color: const Color(0xFF2E7D32),
+          bg: const Color(0xFFE8F5E9),
+          border: const Color(0xFFA5D6A7),
+          glow: const Color(0xFF4CAF50).withValues(alpha: 0.15),
+          dot: const Color(0xFF4CAF50),
+        );
+    }
+  }
+}
+
+class _BadgeCfg {
+  final IconData icon;
+  final String label;
+  final String sublabel;
+  final Color color;
+  final Color bg;
+  final Color border;
+  final Color glow;
+  final Color dot;
+
+  const _BadgeCfg({
+    required this.icon,
+    required this.label,
+    required this.sublabel,
+    required this.color,
+    required this.bg,
+    required this.border,
+    required this.glow,
+    required this.dot,
+  });
+}
+
+// ─── Login Screen ────────────────────────────────────────────────────────────
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -95,14 +299,14 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF01579B), // Bank Blue Primary
-              const Color(0xFF0D47A1), // Navy Blue
-              const Color(0xFF002F6C), // Deep Navy
+              Color(0xFF01579B), // Bank Blue Primary
+              Color(0xFF0D47A1), // Navy Blue
+              Color(0xFF002F6C), // Deep Navy
             ],
           ),
         ),
@@ -120,6 +324,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: 10),
+
                     // Logo Section
                     Column(
                       children: [
@@ -180,7 +385,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+
+                    const SizedBox(height: 14),
+
+                    // ── Badge Status Koneksi ──────────────────────────────
+                    const _ConnectivityBadge(),
+
+                    const SizedBox(height: 14),
 
                     // Login Form
                     Container(
@@ -345,7 +556,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
 
                             const SizedBox(height: 12),
-
                             const SizedBox(height: 12),
 
                             // Login Button
@@ -432,3 +642,6 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+
+
+

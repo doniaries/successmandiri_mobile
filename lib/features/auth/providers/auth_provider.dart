@@ -36,9 +36,9 @@ class AuthProvider with ChangeNotifier {
       final result = await _authRepository
           .login(email, password, 'Mobile App')
           .timeout(
-            const Duration(seconds: 15),
+            const Duration(seconds: 8), // Cepat fallback ke offline
             onTimeout: () => throw Exception(
-              'Koneksi timeout (Ditunggu 15 detik tidak merespons)',
+              'Koneksi timeout (Ditunggu 8 detik tidak merespons)',
             ),
           );
       _user = result['user'];

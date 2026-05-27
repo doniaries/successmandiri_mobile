@@ -17,7 +17,11 @@ import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_prov
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 
-List<Map<String, dynamic>> _mapDataForDb(List<dynamic> list) {
+List<Map<String, dynamic>> _mapDataForDb(Map<String, dynamic> args) {
+  final list = args['list'] as List<dynamic>;
+  final table = args['table'] as String;
+  final tablesWithTanggal = ['operasional', 'transaksi_do'];
+  
   List<Map<String, dynamic>> mappedList = [];
   for (var item in list) {
     if (item is Map) {
@@ -27,7 +31,7 @@ List<Map<String, dynamic>> _mapDataForDb(List<dynamic> list) {
             'id': item['id'],
             'data': jsonEncode(item),
           };
-          if (item.containsKey('tanggal') && item['tanggal'] != null) {
+          if (tablesWithTanggal.contains(table) && item.containsKey('tanggal') && item['tanggal'] != null) {
             final t = item['tanggal'].toString();
             if (t.length >= 10) {
               mappedItem['tanggal'] = t.substring(0, 10);
@@ -530,7 +534,7 @@ class SyncService {
 
     // Pindahkan komputasi berat (jsonEncode looping) ke Background Isolate
     // menggunakan fungsi compute bawaan Flutter agar Main Thread (UI) tidak freeze
-    final mappedList = await compute(_mapDataForDb, list);
+    final mappedList = await compute(_mapDataForDb, {'table': table, 'list': list});
 
     if (clear) {
       await _db.clearTable(table);
