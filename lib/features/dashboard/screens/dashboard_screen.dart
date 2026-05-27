@@ -781,24 +781,28 @@ class DashboardScreenState extends State<DashboardScreen> {
           // Yield execution to the next event loop cycle to avoid notifyListeners() during build phase
           await Future.delayed(Duration.zero);
 
-          // Trigger asynchronous parallel fetching
-          final List<Future> fetches = [
-            txProvider.fetchTransactions().catchError((e) => null),
-            resProvider
-                .fetchResources('operasional', refresh: true)
-                .catchError((e) => null),
-          ];
-          if (isLeader) {
-            fetches.addAll([
-              resProvider
-                  .fetchResources('penjual', refresh: true)
-                  .catchError((e) => null),
-              resProvider
-                  .fetchResources('supir', refresh: true)
-                  .catchError((e) => null),
-            ]);
+          // Trigger asynchronous parallel fetching only if there are unread items or data is empty
+          final List<Future> fetches = [];
+          
+          if (txProvider.unreadCount > 0 || txProvider.transactions.isEmpty) {
+            fetches.add(txProvider.fetchTransactions().catchError((e) => null));
           }
-          await Future.wait(fetches);
+          if (resProvider.getUnreadCountFor('operasional') > 0 || resProvider.operasionals.isEmpty) {
+            fetches.add(resProvider.fetchResources('operasional', refresh: true).catchError((e) => null));
+          }
+          
+          if (isLeader) {
+            if (resProvider.getUnreadCountFor('penjual') > 0 || resProvider.penjuals.isEmpty) {
+              fetches.add(resProvider.fetchResources('penjual', refresh: true).catchError((e) => null));
+            }
+            if (resProvider.getUnreadCountFor('supir') > 0 || resProvider.supirs.isEmpty) {
+              fetches.add(resProvider.fetchResources('supir', refresh: true).catchError((e) => null));
+            }
+          }
+          
+          if (fetches.isNotEmpty) {
+            await Future.wait(fetches);
+          }
 
           final prefs = await SharedPreferences.getInstance();
           return {
