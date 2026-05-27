@@ -128,12 +128,12 @@ class TransaksiDoRepository {
   Future<dynamic> getTransaksiDo({
     String? tanggal,
     int page = 1,
-    int perPage = 20,
+    int perPage = 9999,
     bool forceOfflineFallback = false,
   }) async {
     try {
       if (forceOfflineFallback) throw Exception('Force Offline Fallback');
-      final queryParams = <String, dynamic>{'page': page, 'per_page': perPage};
+      final queryParams = <String, dynamic>{'page': page, 'per_page': perPage, 'all': true};
       if (tanggal != null) queryParams['tanggal'] = tanggal;
 
       final response = await _apiClient.dio
