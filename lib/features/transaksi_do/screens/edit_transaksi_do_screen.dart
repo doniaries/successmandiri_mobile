@@ -16,6 +16,7 @@ import 'package:sawitappmobile/features/supir/screens/add_supir_screen.dart';
 import 'package:sawitappmobile/shared/widgets/balance_validation_modal.dart';
 import 'package:sawitappmobile/features/transaksi_do/models/transaksi_do_model.dart';
 import 'package:sawitappmobile/core/constants/api_constants.dart';
+import 'package:sawitappmobile/features/operasional/screens/add_operasional_screen.dart';
 
 class EditTransaksiDoScreen extends StatefulWidget {
   final TransaksiDo transaction;
@@ -800,7 +801,7 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                               const SizedBox(height: 8),
                               Text(
                                 'Sisa Hutang: ${CurrencyFormatter.formatRupiah(_currentSellerDebt)}\n'
-                                '${CurrencyInputFormatter.parse(_pembayaranHutangController.text) > 0 ? "Pemotongan hutang pada DO ini: " + CurrencyFormatter.formatRupiah(CurrencyInputFormatter.parse(_pembayaranHutangController.text)) + "\n\n" : "\n"}'
+                                '${CurrencyInputFormatter.parse(_pembayaranHutangController.text) > 0 ? "Pemotongan hutang pada DO ini: ${CurrencyFormatter.formatRupiah(CurrencyInputFormatter.parse(_pembayaranHutangController.text))}\n\n" : "\n"}'
                                 'Untuk menghindari kesalahan pengisian, pemotongan atau penambahan hutang dilakukan melalui menu Operasional.',
                                 style: TextStyle(color: Colors.orange[900], fontSize: 12, height: 1.4),
                               ),

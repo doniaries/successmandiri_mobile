@@ -12,6 +12,7 @@ import 'package:sawitappmobile/shared/widgets/searchable_selection_modal.dart';
 import 'package:sawitappmobile/features/penjual/screens/add_penjual_screen.dart';
 import 'package:sawitappmobile/features/supir/screens/add_supir_screen.dart';
 import 'package:sawitappmobile/shared/widgets/balance_validation_modal.dart';
+import 'package:sawitappmobile/features/operasional/screens/add_operasional_screen.dart';
 
 class AddTransaksiDoScreen extends StatefulWidget {
   const AddTransaksiDoScreen({super.key});
