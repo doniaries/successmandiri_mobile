@@ -228,6 +228,7 @@ class _SearchableSelectionModalState extends State<SearchableSelectionModal> {
                       )
                     : ListView.builder(
                         controller: scrollController,
+                        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                         itemCount: _filteredItems.length,
                         itemBuilder: (context, index) {
                           final item = _filteredItems[index];
@@ -243,7 +244,10 @@ class _SearchableSelectionModalState extends State<SearchableSelectionModal> {
                           return Material(
                             color: Colors.transparent,
                             child: InkWell(
-                              onTap: () => Navigator.pop(context, id),
+                              onTap: () {
+                                FocusScope.of(context).unfocus();
+                                Navigator.pop(context, id);
+                              },
                               child: Container(
                                 width: double.infinity,
                                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),

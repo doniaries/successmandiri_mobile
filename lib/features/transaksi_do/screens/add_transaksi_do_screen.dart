@@ -362,7 +362,10 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                       addNewLabel: 'TAMBAH PENJUAL BARU',
                                     );
                                 if (result != null) {
-                                  await provider.fetchFormData();
+                                  final isNew = !provider.penjuals.any((p) => p['id'] == result);
+                                  if (isNew) {
+                                    await provider.fetchFormData();
+                                  }
                                   _onPenjualChanged(result, provider);
                                 }
                               },
@@ -525,7 +528,10 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                         addNewLabel: 'TAMBAH SUPIR BARU',
                                       );
                                   if (result != null) {
-                                    await provider.fetchFormData();
+                                    final isNew = !provider.supirs.any((s) => s['id'] == result);
+                                    if (isNew) {
+                                      await provider.fetchFormData();
+                                    }
                                     setState(() {
                                       _selectedSupirId = result;
                                     });
