@@ -370,14 +370,22 @@ class ResourceProvider with ChangeNotifier {
         // Update counts
         if (lastResponse is Map && lastResponse['total'] != null) {
           int totalNum = int.tryParse(lastResponse['total'].toString()) ?? 0;
-          if (type == 'pekerja') _totalPekerja = totalNum;
-          else if (type == 'penjual') _totalPenjual = totalNum;
-          else if (type == 'supir') _totalSupir = totalNum;
+          if (type == 'pekerja') {
+            _totalPekerja = totalNum;
+          } else if (type == 'penjual') {
+            _totalPenjual = totalNum;
+          } else if (type == 'supir') {
+            _totalSupir = totalNum;
+          }
         } else {
           int totalNum = allRawData.length;
-          if (type == 'pekerja') _totalPekerja = totalNum;
-          else if (type == 'penjual') _totalPenjual = totalNum;
-          else if (type == 'supir') _totalSupir = totalNum;
+          if (type == 'pekerja') {
+            _totalPekerja = totalNum;
+          } else if (type == 'penjual') {
+            _totalPenjual = totalNum;
+          } else if (type == 'supir') {
+            _totalSupir = totalNum;
+          }
         }
 
         // Capture summary if present
@@ -385,9 +393,13 @@ class ResourceProvider with ChangeNotifier {
           double totalHutang = double.tryParse(
             lastResponse['summary']['total_hutang']?.toString() ?? '0.0',
           ) ?? 0.0;
-          if (type == 'pekerja') _totalHutangPekerja = totalHutang;
-          else if (type == 'penjual') _totalHutangPenjual = totalHutang;
-          else if (type == 'supir') _totalHutangSupir = totalHutang;
+          if (type == 'pekerja') {
+            _totalHutangPekerja = totalHutang;
+          } else if (type == 'penjual') {
+            _totalHutangPenjual = totalHutang;
+          } else if (type == 'supir') {
+            _totalHutangSupir = totalHutang;
+          }
         }
 
         await _checkNewDataFor(type);

@@ -16,7 +16,6 @@ import 'package:sawitappmobile/features/supir/screens/add_supir_screen.dart';
 import 'package:sawitappmobile/shared/widgets/balance_validation_modal.dart';
 import 'package:sawitappmobile/features/transaksi_do/models/transaksi_do_model.dart';
 import 'package:sawitappmobile/core/constants/api_constants.dart';
-import 'package:sawitappmobile/features/operasional/screens/add_operasional_screen.dart';
 
 class EditTransaksiDoScreen extends StatefulWidget {
   final TransaksiDo transaction;
@@ -232,7 +231,9 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
       }
     }
 
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void _onPenjualChanged(int? val, TransaksiDoProvider provider) {
