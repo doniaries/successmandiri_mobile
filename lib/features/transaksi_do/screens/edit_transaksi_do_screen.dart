@@ -47,6 +47,7 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
   final _tonaseFocus = FocusNode();
   final _upahBongkarFocus = FocusNode();
   final _biayaLainFocus = FocusNode();
+  final _caraBayarFocus = FocusNode();
 
   DateTime _selectedDate = DateTime.now();
   int? _selectedPenjualId;
@@ -156,6 +157,7 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
     _tonaseFocus.dispose();
     _upahBongkarFocus.dispose();
     _biayaLainFocus.dispose();
+    _caraBayarFocus.dispose();
 
     super.dispose();
   }
@@ -801,8 +803,8 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                         ).copyWith(prefixText: 'Rp '),
                         style: const TextStyle(fontWeight: FontWeight.w600),
                         keyboardType: TextInputType.number,
-                        textInputAction: TextInputAction.done,
-                        onFieldSubmitted: (_) => _biayaLainFocus.unfocus(),
+                        textInputAction: TextInputAction.next,
+                        onFieldSubmitted: (_) => _caraBayarFocus.requestFocus(),
                         inputFormatters: [CurrencyInputFormatter()],
                       ),
                       const SizedBox(height: 16),
@@ -962,8 +964,9 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Cara Bayar
+                      // Cara Bayar (urutan sesuai Filament)
                       DropdownButtonFormField<String>(
+                        focusNode: _caraBayarFocus,
                         initialValue:
                             _currentCaraBayarOptions.contains(
                               _selectedCaraBayar,
