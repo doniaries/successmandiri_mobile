@@ -235,7 +235,10 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
     setState(() {
       _selectedPenjualId = val;
       if (val != null) {
-        final penjual = provider.penjuals.firstWhere((p) => p['id'] == val);
+        final penjual = provider.penjuals.firstWhere(
+          (p) => p['id'] == val,
+          orElse: () => {'sisa_hutang': 0},
+        );
         final double sisaHutangDb =
             double.tryParse(penjual['sisa_hutang']?.toString() ?? '0') ?? 0;
 

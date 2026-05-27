@@ -240,27 +240,30 @@ class _SearchableSelectionModalState extends State<SearchableSelectionModal> {
                             subLabelValue = double.tryParse(_getProperty(item, widget.subLabelKey!));
                           }
 
-                          return InkWell(
-                            onTap: () => Navigator.pop(context, id),
-                            child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                              color: isSelected ? const Color(0xFFE3F2FD).withValues(alpha: 0.5) : Colors.transparent,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          label.toUpperCase(),
-                                          style: TextStyle(
-                                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                                            color: isSelected ? const Color(0xFF01579B) : Colors.black87,
-                                            fontSize: 14,
+                          return Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () => Navigator.pop(context, id),
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                                color: isSelected ? const Color(0xFFE3F2FD).withValues(alpha: 0.5) : Colors.transparent,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            label.toUpperCase(),
+                                            style: TextStyle(
+                                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                              color: isSelected ? const Color(0xFF01579B) : Colors.black87,
+                                              fontSize: 16,
+                                            ),
                                           ),
-                                        ),
+
                                         if (subLabelValue != null && subLabelValue > 0) ...[
                                           const SizedBox(height: 4),
                                           Text(
@@ -275,9 +278,10 @@ class _SearchableSelectionModalState extends State<SearchableSelectionModal> {
                                       ],
                                     ),
                                   ),
-                                  if (isSelected)
-                                    const Icon(Icons.check_circle_rounded, color: Color(0xFF01579B)),
-                                ],
+                                    if (isSelected)
+                                      const Icon(Icons.check_circle_rounded, color: Color(0xFF01579B)),
+                                  ],
+                                ),
                               ),
                             ),
                           );

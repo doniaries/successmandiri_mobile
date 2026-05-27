@@ -31,13 +31,21 @@ class TransaksiDoRepository {
   Future<List<dynamic>> getPenjuals() async {
     try {
       final response = await _apiClient.dio
-          // ✅ Tambahkan per_page: 9999 di sini
           .get(
             ApiConstants.penjual,
             queryParameters: {'all': true, 'per_page': 9999},
           )
           .timeout(const Duration(seconds: 5));
-      return _extractListData(response.data);
+          
+      final serverData = _extractListData(response.data);
+      final pendingQueue = await _syncService.getOfflineQueueForEndpoint(ApiConstants.penjual);
+      final pendingItems = pendingQueue.map((item) {
+        final data = Map<String, dynamic>.from(item['data'] as Map);
+        data['id'] = item['id'];
+        return data;
+      }).toList();
+      
+      return [...pendingItems, ...serverData];
     } catch (e) {
       try {
         final mergedData = await _syncService.getMergedOfflineData(
@@ -53,13 +61,21 @@ class TransaksiDoRepository {
   Future<List<dynamic>> getSupirs() async {
     try {
       final response = await _apiClient.dio
-          // ✅ Tambahkan per_page: 9999 di sini
           .get(
             ApiConstants.supir,
             queryParameters: {'all': true, 'per_page': 9999},
           )
           .timeout(const Duration(seconds: 5));
-      return _extractListData(response.data);
+          
+      final serverData = _extractListData(response.data);
+      final pendingQueue = await _syncService.getOfflineQueueForEndpoint(ApiConstants.supir);
+      final pendingItems = pendingQueue.map((item) {
+        final data = Map<String, dynamic>.from(item['data'] as Map);
+        data['id'] = item['id'];
+        return data;
+      }).toList();
+      
+      return [...pendingItems, ...serverData];
     } catch (e) {
       try {
         final mergedData = await _syncService.getMergedOfflineData(
@@ -75,13 +91,21 @@ class TransaksiDoRepository {
   Future<List<dynamic>> getKendaraans() async {
     try {
       final response = await _apiClient.dio
-          // ✅ Tambahkan per_page: 9999 di sini
           .get(
             ApiConstants.kendaraan,
             queryParameters: {'all': true, 'per_page': 9999},
           )
           .timeout(const Duration(seconds: 5));
-      return _extractListData(response.data);
+          
+      final serverData = _extractListData(response.data);
+      final pendingQueue = await _syncService.getOfflineQueueForEndpoint(ApiConstants.kendaraan);
+      final pendingItems = pendingQueue.map((item) {
+        final data = Map<String, dynamic>.from(item['data'] as Map);
+        data['id'] = item['id'];
+        return data;
+      }).toList();
+      
+      return [...pendingItems, ...serverData];
     } catch (e) {
       try {
         final mergedData = await _syncService.getMergedOfflineData(
