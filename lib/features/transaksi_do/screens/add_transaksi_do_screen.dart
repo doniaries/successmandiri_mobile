@@ -37,6 +37,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
   final _tonaseFocus = FocusNode();
   final _upahBongkarFocus = FocusNode();
   final _biayaLainFocus = FocusNode();
+  final _potongHutangFocus = FocusNode();
   final _caraBayarFocus = FocusNode();
 
   DateTime _selectedDate = DateTime.now();
@@ -177,6 +178,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
     _tonaseFocus.dispose();
     _upahBongkarFocus.dispose();
     _biayaLainFocus.dispose();
+    _potongHutangFocus.dispose();
     _caraBayarFocus.dispose();
 
     super.dispose();
@@ -712,7 +714,13 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                         style: const TextStyle(fontWeight: FontWeight.w600),
                         keyboardType: TextInputType.number,
                         textInputAction: TextInputAction.next,
-                        onFieldSubmitted: (_) => _caraBayarFocus.requestFocus(),
+                        onFieldSubmitted: (_) {
+                          if (_currentSellerDebt > 0 || CurrencyInputFormatter.parse(_pembayaranHutangController.text) > 0) {
+                            _potongHutangFocus.requestFocus();
+                          } else {
+                            _caraBayarFocus.requestFocus();
+                          }
+                        },
                         inputFormatters: [CurrencyInputFormatter()],
                       ),
                       const SizedBox(height: 16),
@@ -721,6 +729,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                       if (_currentSellerDebt > 0) ...[
                         TextFormField(
                           controller: _pembayaranHutangController,
+                          focusNode: _potongHutangFocus,
                           decoration: _getInputDecoration(
                             label: 'Potong Hutang',
                             icon: Icons.money_off_rounded,
