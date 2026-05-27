@@ -307,10 +307,18 @@ class ResourceProvider with ChangeNotifier {
         } catch (_) {}
       }
       
-      // For 'pekerja', fetch ALL data instead of paginating
-      if (type == 'pekerja' && page == 1) {
+      // For master data ('pekerja', 'penjual', 'supir'), fetch ALL data instead of paginating
+      if ((type == 'pekerja' || type == 'penjual' || type == 'supir') && page == 1) {
         while (hasMore) {
-          final response = await _repository.getPekerjaPaginated(page: page);
+          dynamic response;
+          if (type == 'pekerja') {
+            response = await _repository.getPekerjaPaginated(page: page);
+          } else if (type == 'penjual') {
+            response = await _repository.getPenjualPaginated(page: page);
+          } else if (type == 'supir') {
+            response = await _repository.getSupirPaginated(page: page);
+          }
+          
           lastResponse = response; // Store last response
           List<dynamic> rawData = [];
 
@@ -327,21 +335,49 @@ class ResourceProvider with ChangeNotifier {
           page++;
         }
 
-        final items = allRawData.map((e) => Pekerja.fromJson(e)).toList();
-        _pekerjas.clear();
-        _pekerjas.addAll(items);
-        _pekerjas.sort((a, b) {
-          if (a.id < 0 && b.id >= 0) return -1;
-          if (b.id < 0 && a.id >= 0) return 1;
-          if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
-          return b.id.compareTo(a.id);
-        });
+        if (type == 'pekerja') {
+          final items = allRawData.map((e) => Pekerja.fromJson(e)).toList();
+          _pekerjas.clear();
+          _pekerjas.addAll(items);
+          _pekerjas.sort((a, b) {
+            if (a.id < 0 && b.id >= 0) return -1;
+            if (b.id < 0 && a.id >= 0) return 1;
+            if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
+            return b.id.compareTo(a.id);
+          });
+        } else if (type == 'penjual') {
+          final items = allRawData.map((e) => Penjual.fromJson(e)).toList();
+          _penjuals.clear();
+          _penjuals.addAll(items);
+          _penjuals.sort((a, b) {
+            if (a.id < 0 && b.id >= 0) return -1;
+            if (b.id < 0 && a.id >= 0) return 1;
+            if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
+            return b.id.compareTo(a.id);
+          });
+        } else if (type == 'supir') {
+          final items = allRawData.map((e) => Supir.fromJson(e)).toList();
+          _supirs.clear();
+          _supirs.addAll(items);
+          _supirs.sort((a, b) {
+            if (a.id < 0 && b.id >= 0) return -1;
+            if (b.id < 0 && a.id >= 0) return 1;
+            if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
+            return b.id.compareTo(a.id);
+          });
+        }
 
         // Update counts
         if (lastResponse is Map && lastResponse['total'] != null) {
-          _totalPekerja = int.tryParse(lastResponse['total'].toString()) ?? 0;
+          int totalNum = int.tryParse(lastResponse['total'].toString()) ?? 0;
+          if (type == 'pekerja') _totalPekerja = totalNum;
+          else if (type == 'penjual') _totalPenjual = totalNum;
+          else if (type == 'supir') _totalSupir = totalNum;
         } else {
-          _totalPekerja = items.length;
+          int totalNum = allRawData.length;
+          if (type == 'pekerja') _totalPekerja = totalNum;
+          else if (type == 'penjual') _totalPenjual = totalNum;
+          else if (type == 'supir') _totalSupir = totalNum;
         }
 
         // Capture summary if present
@@ -349,7 +385,9 @@ class ResourceProvider with ChangeNotifier {
           double totalHutang = double.tryParse(
             lastResponse['summary']['total_hutang']?.toString() ?? '0.0',
           ) ?? 0.0;
-          _totalHutangPekerja = totalHutang;
+          if (type == 'pekerja') _totalHutangPekerja = totalHutang;
+          else if (type == 'penjual') _totalHutangPenjual = totalHutang;
+          else if (type == 'supir') _totalHutangSupir = totalHutang;
         }
 
         await _checkNewDataFor(type);
@@ -800,7 +838,7 @@ class ResourceProvider with ChangeNotifier {
       return result;
     } catch (e) {
       debugPrint('Error adding penjual: $e');
-      _errorMessage = e.toString();
+      _setErrorMessageFromException(e);
       return null;
     }
   }
@@ -820,7 +858,7 @@ class ResourceProvider with ChangeNotifier {
       return result;
     } catch (e) {
       debugPrint('Error adding supir: $e');
-      _errorMessage = e.toString();
+      _setErrorMessageFromException(e);
       return null;
     }
   }
@@ -862,7 +900,7 @@ class ResourceProvider with ChangeNotifier {
       return result;
     } catch (e) {
       debugPrint('Error adding pekerja: $e');
-      _errorMessage = e.toString();
+      _setErrorMessageFromException(e);
       return null;
     }
   }
@@ -1138,6 +1176,31 @@ class ResourceProvider with ChangeNotifier {
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  void _setErrorMessageFromException(dynamic e) {
+    if (e is DioException) {
+      final responseData = e.response?.data;
+      if (responseData is Map) {
+        if (responseData['errors'] != null && (responseData['errors'] as Map).isNotEmpty) {
+          final Map errors = responseData['errors'];
+          final firstError = errors.values.first;
+          if (firstError is List && firstError.isNotEmpty) {
+            _errorMessage = firstError.first.toString();
+          } else {
+            _errorMessage = firstError.toString();
+          }
+        } else if (responseData['message'] != null) {
+          _errorMessage = responseData['message'].toString();
+        } else {
+          _errorMessage = e.message;
+        }
+      } else {
+        _errorMessage = e.message;
+      }
+    } else {
+      _errorMessage = e.toString();
     }
   }
 
