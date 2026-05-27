@@ -465,7 +465,10 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                                       addNewLabel: 'TAMBAH PENJUAL BARU',
                                     );
                                 if (result != null) {
-                                  await provider.fetchFormData();
+                                  final isNew = !provider.penjuals.any((p) => p['id'] == result);
+                                  if (isNew) {
+                                    await provider.fetchFormData();
+                                  }
                                   _onPenjualChanged(result, provider);
                                 }
                               },
