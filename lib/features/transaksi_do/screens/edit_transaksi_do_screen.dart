@@ -43,6 +43,11 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
   final _keteranganPembayaranController = TextEditingController();
   final _nomorDoController = TextEditingController();
 
+  final _hargaSatuanFocus = FocusNode();
+  final _tonaseFocus = FocusNode();
+  final _upahBongkarFocus = FocusNode();
+  final _biayaLainFocus = FocusNode();
+
   DateTime _selectedDate = DateTime.now();
   int? _selectedPenjualId;
   int? _selectedSupirId;
@@ -146,6 +151,12 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
     _sisaHutangController.dispose();
     _sisaBayarController.dispose();
     _nomorDoController.dispose();
+
+    _hargaSatuanFocus.dispose();
+    _tonaseFocus.dispose();
+    _upahBongkarFocus.dispose();
+    _biayaLainFocus.dispose();
+
     super.dispose();
   }
 
@@ -688,12 +699,13 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                         style: const TextStyle(fontWeight: FontWeight.w600),
                         textCapitalization: TextCapitalization.characters,
                         textInputAction: TextInputAction.next,
-                        onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+                        onFieldSubmitted: (_) => _hargaSatuanFocus.requestFocus(),
                       ),
                       const SizedBox(height: 16),
 
                       TextFormField(
                         controller: _hargaSatuanController,
+                        focusNode: _hargaSatuanFocus,
                         decoration: _getInputDecoration(
                           label: 'Harga Satuan',
                           icon: Icons.payments_outlined,
@@ -703,13 +715,14 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                         keyboardType: TextInputType.number,
                         inputFormatters: [CurrencyInputFormatter()],
                         textInputAction: TextInputAction.next,
-                        onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+                        onFieldSubmitted: (_) => _tonaseFocus.requestFocus(),
                         validator: (val) =>
                             val == null || val.isEmpty ? 'Isi harga' : null,
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _tonaseController,
+                        focusNode: _tonaseFocus,
                         decoration: _getInputDecoration(
                           label: 'Tonase (Kg)',
                           icon: Icons.scale_rounded,
@@ -718,7 +731,7 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                         style: const TextStyle(fontWeight: FontWeight.w600),
                         keyboardType: TextInputType.number,
                         textInputAction: TextInputAction.next,
-                        onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+                        onFieldSubmitted: (_) => _upahBongkarFocus.requestFocus(),
                         validator: (val) =>
                             val == null || val.isEmpty ? 'Isi tonase' : null,
                       ),
@@ -749,6 +762,7 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _upahBongkarController,
+                        focusNode: _upahBongkarFocus,
                         decoration: _getInputDecoration(
                           label: 'Upah Bongkar',
                           icon: Icons.handyman_outlined,
@@ -757,12 +771,13 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                         style: const TextStyle(fontWeight: FontWeight.w600),
                         keyboardType: TextInputType.number,
                         textInputAction: TextInputAction.next,
-                        onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+                        onFieldSubmitted: (_) => _biayaLainFocus.requestFocus(),
                         inputFormatters: [CurrencyInputFormatter()],
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
                         controller: _biayaLainController,
+                        focusNode: _biayaLainFocus,
                         decoration: _getInputDecoration(
                           label: 'Biaya Lain/Pengambilan',
                           icon: Icons.more_horiz_rounded,
@@ -771,7 +786,7 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                         style: const TextStyle(fontWeight: FontWeight.w600),
                         keyboardType: TextInputType.number,
                         textInputAction: TextInputAction.done,
-                        onFieldSubmitted: (_) => FocusScope.of(context).unfocus(),
+                        onFieldSubmitted: (_) => _biayaLainFocus.unfocus(),
                         inputFormatters: [CurrencyInputFormatter()],
                       ),
                       const SizedBox(height: 16),

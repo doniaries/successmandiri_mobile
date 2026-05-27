@@ -235,7 +235,16 @@ class TransaksiDoProvider with ChangeNotifier {
         _errorMessage = 'Koneksi bermasalah. Transaksi disimpan di antrean offline.';
         // Tetap return true karena dianggap "berhasil disimpan" di lokal
       } else {
-        await fetchTransactions(); // Refresh list hanya jika online berhasil
+        if (result is Map && result['data'] != null) {
+          try {
+            final newDo = TransaksiDo.fromJson(result['data']);
+            _transactions.insert(0, newDo);
+          } catch (e) {
+            await fetchTransactions();
+          }
+        } else {
+          await fetchTransactions();
+        }
       }
 
       _isSaving = false;
@@ -293,11 +302,22 @@ class TransaksiDoProvider with ChangeNotifier {
       );
 
       if (result is Map && result['offline'] == true) {
-        _errorMessage = 'Koneksi bermasalah. Transaksi disimpan di antrean offline.';
+        _errorMessage = 'Koneksi bermasalah. Perubahan disimpan di antrean offline.';
       } else {
-        await fetchTransactions();
+        if (result is Map && result['data'] != null) {
+          try {
+            final updatedDo = TransaksiDo.fromJson(result['data']);
+            final index = _transactions.indexWhere((t) => t.id == id);
+            if (index != -1) {
+              _transactions[index] = updatedDo;
+            }
+          } catch (e) {
+            await fetchTransactions();
+          }
+        } else {
+          await fetchTransactions();
+        }
       }
-
       _isSaving = false;
       notifyListeners();
       return true;
