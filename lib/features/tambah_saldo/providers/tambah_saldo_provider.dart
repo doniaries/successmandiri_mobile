@@ -34,6 +34,18 @@ class TambahSaldoProvider with ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
 
+    // Fast Cache Load
+    try {
+      if (_requests.isEmpty) {
+        final cache = await _repository.getTambahSaldo(forceOfflineFallback: true);
+        if (cache.isNotEmpty) {
+          _requests = cache;
+          _isLoading = false;
+          notifyListeners();
+        }
+      }
+    } catch (_) {}
+
     try {
       _requests = await _repository.getTambahSaldo();
       _isLoading = false;

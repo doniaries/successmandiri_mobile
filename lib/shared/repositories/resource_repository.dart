@@ -28,8 +28,9 @@ class ResourceRepository {
     return [];
   }
 
-  Future<dynamic> getPenjualPaginated({int page = 1}) async {
+  Future<dynamic> getPenjualPaginated({int page = 1, bool forceOfflineFallback = false}) async {
     try {
+      if (forceOfflineFallback) throw Exception('Force Offline Fallback');
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
         throw Exception('Offline');
@@ -43,7 +44,6 @@ class ResourceRepository {
 
       if (page == 1) {
         final List<dynamic> serverData = _extractListData(response.data);
-        // Gabungkan hanya offline queue items (belum terkirim) di depan
         final pendingQueue = await syncService.getOfflineQueueForEndpoint(ApiConstants.penjual);
         final pendingItems = pendingQueue.map((item) {
           final data = Map<String, dynamic>.from(item['data'] as Map);
@@ -53,20 +53,43 @@ class ResourceRepository {
         if (response.data is Map) {
           response.data['data'] = [...pendingItems, ...serverData];
         }
+        final cacheKey = 'cache_penjual_list';
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(cacheKey, jsonEncode(response.data));
       }
 
       return response.data;
     } catch (e) {
       try {
+        final cacheKey = 'cache_penjual_list';
+        final prefs = await SharedPreferences.getInstance();
+        final cachedStr = prefs.getString(cacheKey);
+
         final pendingData = await syncService.getMergedOfflineData(
           'penjual',
           ApiConstants.penjual,
         );
-        return {
-          'data': pendingData,
-          'current_page': 1,
-          'last_page': 1,
-        };
+
+        if (cachedStr != null) {
+          final cachedData = jsonDecode(cachedStr);
+          if (pendingData.isNotEmpty) {
+            final List existingList = _extractListData(cachedData);
+            final combinedList = [...pendingData, ...existingList];
+            if (cachedData is Map) {
+              cachedData['data'] = combinedList;
+            } else {
+              return combinedList;
+            }
+          }
+          return cachedData;
+        } else if (pendingData.isNotEmpty) {
+          return {
+            'data': pendingData,
+            'current_page': 1,
+            'last_page': 1,
+            'total': pendingData.length,
+          };
+        }
       } catch (_) {}
       rethrow;
     }
@@ -184,8 +207,9 @@ class ResourceRepository {
     }
   }
 
-  Future<dynamic> getSupirPaginated({int page = 1}) async {
+  Future<dynamic> getSupirPaginated({int page = 1, bool forceOfflineFallback = false}) async {
     try {
+      if (forceOfflineFallback) throw Exception('Force Offline Fallback');
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
         throw Exception('Offline');
@@ -208,20 +232,43 @@ class ResourceRepository {
         if (response.data is Map) {
           response.data['data'] = [...pendingItems, ...serverData];
         }
+        final cacheKey = 'cache_supir_list';
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(cacheKey, jsonEncode(response.data));
       }
 
       return response.data;
     } catch (e) {
       try {
+        final cacheKey = 'cache_supir_list';
+        final prefs = await SharedPreferences.getInstance();
+        final cachedStr = prefs.getString(cacheKey);
+
         final pendingData = await syncService.getMergedOfflineData(
           'supir',
           ApiConstants.supir,
         );
-        return {
-          'data': pendingData,
-          'current_page': 1,
-          'last_page': 1,
-        };
+
+        if (cachedStr != null) {
+          final cachedData = jsonDecode(cachedStr);
+          if (pendingData.isNotEmpty) {
+            final List existingList = _extractListData(cachedData);
+            final combinedList = [...pendingData, ...existingList];
+            if (cachedData is Map) {
+              cachedData['data'] = combinedList;
+            } else {
+              return combinedList;
+            }
+          }
+          return cachedData;
+        } else if (pendingData.isNotEmpty) {
+          return {
+            'data': pendingData,
+            'current_page': 1,
+            'last_page': 1,
+            'total': pendingData.length,
+          };
+        }
       } catch (_) {}
       rethrow;
     }
@@ -329,8 +376,9 @@ class ResourceRepository {
     }
   }
 
-  Future<dynamic> getPekerjaPaginated({int page = 1}) async {
+  Future<dynamic> getPekerjaPaginated({int page = 1, bool forceOfflineFallback = false}) async {
     try {
+      if (forceOfflineFallback) throw Exception('Force Offline Fallback');
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
         throw Exception('Offline');
@@ -352,20 +400,43 @@ class ResourceRepository {
         if (response.data is Map) {
           response.data['data'] = [...pendingItems, ...serverData];
         }
+        final cacheKey = 'cache_pekerja_list';
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(cacheKey, jsonEncode(response.data));
       }
 
       return response.data;
     } catch (e) {
       try {
+        final cacheKey = 'cache_pekerja_list';
+        final prefs = await SharedPreferences.getInstance();
+        final cachedStr = prefs.getString(cacheKey);
+
         final pendingData = await syncService.getMergedOfflineData(
           'pekerja',
           ApiConstants.pekerja,
         );
-        return {
-          'data': pendingData,
-          'current_page': 1,
-          'last_page': 1,
-        };
+
+        if (cachedStr != null) {
+          final cachedData = jsonDecode(cachedStr);
+          if (pendingData.isNotEmpty) {
+            final List existingList = _extractListData(cachedData);
+            final combinedList = [...pendingData, ...existingList];
+            if (cachedData is Map) {
+              cachedData['data'] = combinedList;
+            } else {
+              return combinedList;
+            }
+          }
+          return cachedData;
+        } else if (pendingData.isNotEmpty) {
+          return {
+            'data': pendingData,
+            'current_page': 1,
+            'last_page': 1,
+            'total': pendingData.length,
+          };
+        }
       } catch (_) {}
       rethrow;
     }
@@ -473,8 +544,9 @@ class ResourceRepository {
     }
   }
 
-  Future<dynamic> getKendaraanPaginated({int page = 1}) async {
+  Future<dynamic> getKendaraanPaginated({int page = 1, bool forceOfflineFallback = false}) async {
     try {
+      if (forceOfflineFallback) throw Exception('Force Offline Fallback');
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
         throw Exception('Offline');
@@ -497,20 +569,43 @@ class ResourceRepository {
         if (response.data is Map) {
           response.data['data'] = [...pendingItems, ...serverData];
         }
+        final cacheKey = 'cache_kendaraan_list';
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(cacheKey, jsonEncode(response.data));
       }
 
       return response.data;
     } catch (e) {
       try {
+        final cacheKey = 'cache_kendaraan_list';
+        final prefs = await SharedPreferences.getInstance();
+        final cachedStr = prefs.getString(cacheKey);
+
         final pendingData = await syncService.getMergedOfflineData(
           'kendaraan',
           ApiConstants.kendaraan,
         );
-        return {
-          'data': pendingData,
-          'current_page': 1,
-          'last_page': 1,
-        };
+
+        if (cachedStr != null) {
+          final cachedData = jsonDecode(cachedStr);
+          if (pendingData.isNotEmpty) {
+            final List existingList = _extractListData(cachedData);
+            final combinedList = [...pendingData, ...existingList];
+            if (cachedData is Map) {
+              cachedData['data'] = combinedList;
+            } else {
+              return combinedList;
+            }
+          }
+          return cachedData;
+        } else if (pendingData.isNotEmpty) {
+          return {
+            'data': pendingData,
+            'current_page': 1,
+            'last_page': 1,
+            'total': pendingData.length,
+          };
+        }
       } catch (_) {}
       rethrow;
     }
@@ -574,8 +669,9 @@ class ResourceRepository {
     }
   }
 
-  Future<dynamic> getOperasionalPaginated({int page = 1, String? tanggal}) async {
+  Future<dynamic> getOperasionalPaginated({int page = 1, String? tanggal, bool forceOfflineFallback = false}) async {
     try {
+      if (forceOfflineFallback) throw Exception('Force Offline Fallback');
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.contains(ConnectivityResult.none)) {
         throw Exception('Offline');
@@ -592,7 +688,6 @@ class ResourceRepository {
 
       if (page == 1) {
         final List<dynamic> serverData = _extractListData(response.data);
-        // Ambil hanya item dari offline_queue (belum terkirim ke server)
         final pendingQueue = await syncService.getOfflineQueueForEndpoint(ApiConstants.operasional);
         
         final filteredPending = pendingQueue.where((item) {
@@ -615,12 +710,19 @@ class ResourceRepository {
         if (response.data is Map) {
           response.data['data'] = [...filteredPending, ...serverData];
         }
+
+        final cacheKey = 'cache_operasional_list_${tanggal ?? ''}';
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(cacheKey, jsonEncode(response.data));
       }
 
       return response.data;
     } catch (e) {
       try {
-        // Fallback offline: ambil dari local SQLite cache + offline queue
+        final cacheKey = 'cache_operasional_list_${tanggal ?? ''}';
+        final prefs = await SharedPreferences.getInstance();
+        final cachedStr = prefs.getString(cacheKey);
+
         String? whereClause;
         List<dynamic>? whereArgs;
         if (tanggal != null) {
@@ -642,11 +744,26 @@ class ResourceRepository {
           return true;
         }).toList();
 
-        return {
-          'data': filteredPending,
-          'current_page': 1,
-          'last_page': 1,
-        };
+        if (cachedStr != null) {
+          final cachedData = jsonDecode(cachedStr);
+          if (filteredPending.isNotEmpty) {
+            final List existingList = _extractListData(cachedData);
+            final combinedList = [...filteredPending, ...existingList];
+            if (cachedData is Map) {
+              cachedData['data'] = combinedList;
+            } else {
+              return combinedList;
+            }
+          }
+          return cachedData;
+        } else if (filteredPending.isNotEmpty) {
+          return {
+            'data': filteredPending,
+            'current_page': 1,
+            'last_page': 1,
+            'total': filteredPending.length,
+          };
+        }
       } catch (_) {}
       rethrow;
     }
@@ -678,12 +795,35 @@ class ResourceRepository {
     return Operasional.fromJson(response.data);
   }
 
-  Future<dynamic> getUsersPaginated({int page = 1}) async {
-    final response = await _apiClient.dio.get(
-      '/users',
-      queryParameters: {'page': page, 'per_page': 10},
-    );
-    return response.data;
+  Future<dynamic> getUsersPaginated({int page = 1, bool forceOfflineFallback = false}) async {
+    try {
+      if (forceOfflineFallback) throw Exception('Force Offline Fallback');
+      final connectivity = await Connectivity().checkConnectivity();
+      if (connectivity.contains(ConnectivityResult.none)) {
+        throw Exception('Offline');
+      }
+      final response = await _apiClient.dio.get(
+        '/users',
+        queryParameters: {'page': page, 'per_page': 10},
+      ).timeout(const Duration(seconds: 15));
+      
+      if (page == 1) {
+        final cacheKey = 'cache_user_list';
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(cacheKey, jsonEncode(response.data));
+      }
+      return response.data;
+    } catch (e) {
+      try {
+        final cacheKey = 'cache_user_list';
+        final prefs = await SharedPreferences.getInstance();
+        final cachedStr = prefs.getString(cacheKey);
+        if (cachedStr != null) {
+          return jsonDecode(cachedStr);
+        }
+      } catch (_) {}
+      rethrow;
+    }
   }
 
   Future<dynamic> getJurnalPaginated({
@@ -691,8 +831,10 @@ class ResourceRepository {
     String? startDate,
     String? endDate,
     String? jenisTransaksi,
+    bool forceOfflineFallback = false,
   }) async {
     try {
+      if (forceOfflineFallback) throw Exception('Force Offline Fallback');
       final Map<String, dynamic> params = {'page': page, 'per_page': 10};
       if (startDate != null) params['start_date'] = startDate;
       if (endDate != null) params['end_date'] = endDate;

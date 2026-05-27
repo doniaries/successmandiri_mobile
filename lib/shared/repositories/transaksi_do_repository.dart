@@ -129,8 +129,10 @@ class TransaksiDoRepository {
     String? tanggal,
     int page = 1,
     int perPage = 20,
+    bool forceOfflineFallback = false,
   }) async {
     try {
+      if (forceOfflineFallback) throw Exception('Force Offline Fallback');
       final queryParams = <String, dynamic>{'page': page, 'per_page': perPage};
       if (tanggal != null) queryParams['tanggal'] = tanggal;
 

@@ -259,6 +259,51 @@ class ResourceProvider with ChangeNotifier {
       bool hasMore = true;
       dynamic lastResponse; // Store last response for summary
 
+      // --- FAST CACHE LOAD (Cache-First) ---
+      if (page == 1 && refresh && _listIsEmpty(type)) {
+        try {
+          dynamic cacheResponse;
+          switch (type) {
+            case 'penjual':
+              cacheResponse = await _repository.getPenjualPaginated(page: page, forceOfflineFallback: true);
+              break;
+            case 'supir':
+              cacheResponse = await _repository.getSupirPaginated(page: page, forceOfflineFallback: true);
+              break;
+            case 'pekerja':
+              // Pekerja is handled specially below, but we could try loading cache if needed.
+              break;
+            case 'kendaraan':
+              cacheResponse = await _repository.getKendaraanPaginated(page: page, forceOfflineFallback: true);
+              break;
+            case 'operasional':
+              cacheResponse = await _repository.getOperasionalPaginated(
+                page: page,
+                tanggal: filters?['tanggal'],
+                forceOfflineFallback: true,
+              );
+              break;
+            case 'jurnal_keuangan':
+              cacheResponse = await _repository.getJurnalPaginated(
+                page: page,
+                startDate: filters?['start_date'],
+                endDate: filters?['end_date'],
+                jenisTransaksi: filters?['jenis_transaksi'],
+                forceOfflineFallback: true,
+              );
+              break;
+            case 'user':
+              cacheResponse = await _repository.getUsersPaginated(page: page, forceOfflineFallback: true);
+              break;
+          }
+          if (cacheResponse != null) {
+            _processRawResponse(type, page, cacheResponse);
+            _isLoading = false; // Turn off spinner instantly!
+            notifyListeners();
+          }
+        } catch (_) {}
+      }
+      
       // For 'pekerja', fetch ALL data instead of paginating
       if (type == 'pekerja' && page == 1) {
         while (hasMore) {
@@ -340,157 +385,7 @@ class ResourceProvider with ChangeNotifier {
             return;
         }
 
-        List<dynamic> rawData = [];
-        bool hasMoreData = false;
-
-        if (response is Map) {
-          rawData = response['data'] ?? [];
-          hasMoreData = response['next_page_url'] != null;
-
-          if (response['summary'] != null) {
-            _serverTotalPemasukan = double.tryParse(
-              response['summary']['total_pemasukan']?.toString() ?? '0',
-            ) ?? 0;
-            _serverTotalPengeluaran = double.tryParse(
-              response['summary']['total_pengeluaran']?.toString() ?? '0',
-            ) ?? 0;
-
-            double totalHutang = double.tryParse(
-              response['summary']['total_hutang']?.toString() ?? '0.0',
-            ) ?? 0.0;
-            switch (type) {
-              case 'penjual':
-                _totalHutangPenjual = totalHutang;
-                break;
-              case 'supir':
-                _totalHutangSupir = totalHutang;
-                break;
-            }
-          }
-        } else if (response is List) {
-          rawData = response;
-          hasMoreData = false;
-        }
-
-        switch (type) {
-          case 'penjual':
-            final items = rawData.map((e) => Penjual.fromJson(e)).toList();
-            if (page == 1) _penjuals.clear();
-            for (var item in items) {
-              if (!_penjuals.any((e) => e.id == item.id)) {
-                _penjuals.add(item);
-              }
-            }
-            _penjuals.sort((a, b) {
-              if (a.id < 0 && b.id >= 0) return -1;
-              if (b.id < 0 && a.id >= 0) return 1;
-              if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
-              return b.id.compareTo(a.id);
-            });
-            break;
-          case 'supir':
-            final items = rawData.map((e) => Supir.fromJson(e)).toList();
-            if (page == 1) _supirs.clear();
-            for (var item in items) {
-              if (!_supirs.any((e) => e.id == item.id)) {
-                _supirs.add(item);
-              }
-            }
-            _supirs.sort((a, b) {
-              if (a.id < 0 && b.id >= 0) return -1;
-              if (b.id < 0 && a.id >= 0) return 1;
-              if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
-              return b.id.compareTo(a.id);
-            });
-            break;
-          case 'kendaraan':
-            final items = rawData.map((e) => Kendaraan.fromJson(e)).toList();
-            if (page == 1) _kendaraans.clear();
-            for (var item in items) {
-              if (!_kendaraans.any((e) => e.id == item.id)) {
-                _kendaraans.add(item);
-              }
-            }
-            _kendaraans.sort((a, b) {
-              if (a.id < 0 && b.id >= 0) return -1;
-              if (b.id < 0 && a.id >= 0) return 1;
-              if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
-              return b.id.compareTo(a.id);
-            });
-            break;
-          case 'operasional':
-            final items = rawData.map((e) => Operasional.fromJson(e)).toList();
-            if (page == 1) _operasionals.clear();
-            for (var item in items) {
-              if (!_operasionals.any((e) => e.id == item.id)) {
-                _operasionals.add(item);
-              }
-            }
-            _operasionals.sort((a, b) {
-              if (a.id < 0 && b.id >= 0) return -1;
-              if (b.id < 0 && a.id >= 0) return 1;
-              if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
-              return b.id.compareTo(a.id);
-            });
-            break;
-          case 'jurnal_keuangan':
-            final items = rawData.map((e) => JurnalKeuangan.fromJson(e)).toList();
-            if (page == 1) _jurnalKeuangans.clear();
-            for (var item in items) {
-              if (!_jurnalKeuangans.any((e) => e.id == item.id)) {
-                _jurnalKeuangans.add(item);
-              }
-            }
-            _jurnalKeuangans.sort((a, b) {
-              if (a.id < 0 && b.id >= 0) return -1;
-              if (b.id < 0 && a.id >= 0) return 1;
-              if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
-              return b.id.compareTo(a.id);
-            });
-            break;
-          case 'user':
-            final items = rawData.map((e) => User.fromJson(e)).toList();
-            if (page == 1) _users.clear();
-            for (var item in items) {
-              if (!_users.any((e) => e.id == item.id)) {
-                _users.add(item);
-              }
-            }
-            _users.sort((a, b) {
-              if (a.id < 0 && b.id >= 0) return -1;
-              if (b.id < 0 && a.id >= 0) return 1;
-              if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
-              return b.id.compareTo(a.id);
-            });
-            break;
-        }
-
-        _currentPage[type] = page + 1;
-        _hasMore[type] = hasMoreData;
-
-        if (response is Map && response['total'] != null) {
-          int total = int.tryParse(response['total'].toString()) ?? 0;
-          switch (type) {
-            case 'penjual':
-              _totalPenjual = total;
-              break;
-            case 'supir':
-              _totalSupir = total;
-              break;
-            case 'kendaraan':
-              _totalKendaraan = total;
-              break;
-            case 'operasional':
-              _totalOperasional = total;
-              break;
-            case 'jurnal_keuangan':
-              _totalJurnal = total;
-              break;
-            case 'user':
-              _totalUser = total;
-              break;
-          }
-        }
+        _processRawResponse(type, page, response);
 
         await _checkNewDataFor(type);
       }
@@ -718,6 +613,173 @@ class ResourceProvider with ChangeNotifier {
     _hasNewData.updateAll((key, value) => false);
     _unreadCounts.updateAll((key, value) => 0);
     notifyListeners();
+  }
+
+  bool _listIsEmpty(String type) {
+    switch (type) {
+      case 'penjual': return _penjuals.isEmpty;
+      case 'supir': return _supirs.isEmpty;
+      case 'pekerja': return _pekerjas.isEmpty;
+      case 'kendaraan': return _kendaraans.isEmpty;
+      case 'operasional': return _operasionals.isEmpty;
+      case 'jurnal_keuangan': return _jurnalKeuangans.isEmpty;
+      case 'user': return _users.isEmpty;
+    }
+    return true;
+  }
+
+  void _processRawResponse(String type, int page, dynamic response) {
+    List<dynamic> rawData = [];
+    bool hasMoreData = false;
+
+    if (response is Map) {
+      rawData = response['data'] ?? [];
+      hasMoreData = response['next_page_url'] != null;
+
+      if (response['summary'] != null) {
+        _serverTotalPemasukan = double.tryParse(
+          response['summary']['total_pemasukan']?.toString() ?? '0',
+        ) ?? 0;
+        _serverTotalPengeluaran = double.tryParse(
+          response['summary']['total_pengeluaran']?.toString() ?? '0',
+        ) ?? 0;
+
+        double totalHutang = double.tryParse(
+          response['summary']['total_hutang']?.toString() ?? '0.0',
+        ) ?? 0.0;
+        switch (type) {
+          case 'penjual':
+            _totalHutangPenjual = totalHutang;
+            break;
+          case 'supir':
+            _totalHutangSupir = totalHutang;
+            break;
+        }
+      }
+    } else if (response is List) {
+      rawData = response;
+      hasMoreData = false;
+    }
+
+    switch (type) {
+      case 'penjual':
+        final items = rawData.map((e) => Penjual.fromJson(e)).toList();
+        if (page == 1) _penjuals.clear();
+        for (var item in items) {
+          if (!_penjuals.any((e) => e.id == item.id)) {
+            _penjuals.add(item);
+          }
+        }
+        _penjuals.sort((a, b) {
+          if (a.id < 0 && b.id >= 0) return -1;
+          if (b.id < 0 && a.id >= 0) return 1;
+          if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
+          return b.id.compareTo(a.id);
+        });
+        break;
+      case 'supir':
+        final items = rawData.map((e) => Supir.fromJson(e)).toList();
+        if (page == 1) _supirs.clear();
+        for (var item in items) {
+          if (!_supirs.any((e) => e.id == item.id)) {
+            _supirs.add(item);
+          }
+        }
+        _supirs.sort((a, b) {
+          if (a.id < 0 && b.id >= 0) return -1;
+          if (b.id < 0 && a.id >= 0) return 1;
+          if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
+          return b.id.compareTo(a.id);
+        });
+        break;
+      case 'kendaraan':
+        final items = rawData.map((e) => Kendaraan.fromJson(e)).toList();
+        if (page == 1) _kendaraans.clear();
+        for (var item in items) {
+          if (!_kendaraans.any((e) => e.id == item.id)) {
+            _kendaraans.add(item);
+          }
+        }
+        _kendaraans.sort((a, b) {
+          if (a.id < 0 && b.id >= 0) return -1;
+          if (b.id < 0 && a.id >= 0) return 1;
+          if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
+          return b.id.compareTo(a.id);
+        });
+        break;
+      case 'operasional':
+        final items = rawData.map((e) => Operasional.fromJson(e)).toList();
+        if (page == 1) _operasionals.clear();
+        for (var item in items) {
+          if (!_operasionals.any((e) => e.id == item.id)) {
+            _operasionals.add(item);
+          }
+        }
+        _operasionals.sort((a, b) {
+          if (a.id < 0 && b.id >= 0) return -1;
+          if (b.id < 0 && a.id >= 0) return 1;
+          if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
+          return b.id.compareTo(a.id);
+        });
+        break;
+      case 'jurnal_keuangan':
+        final items = rawData.map((e) => JurnalKeuangan.fromJson(e)).toList();
+        if (page == 1) _jurnalKeuangans.clear();
+        for (var item in items) {
+          if (!_jurnalKeuangans.any((e) => e.id == item.id)) {
+            _jurnalKeuangans.add(item);
+          }
+        }
+        _jurnalKeuangans.sort((a, b) {
+          if (a.id < 0 && b.id >= 0) return -1;
+          if (b.id < 0 && a.id >= 0) return 1;
+          if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
+          return b.id.compareTo(a.id);
+        });
+        break;
+      case 'user':
+        final items = rawData.map((e) => User.fromJson(e)).toList();
+        if (page == 1) _users.clear();
+        for (var item in items) {
+          if (!_users.any((e) => e.id == item.id)) {
+            _users.add(item);
+          }
+        }
+        _users.sort((a, b) {
+          if (a.id < 0 && b.id >= 0) return -1;
+          if (b.id < 0 && a.id >= 0) return 1;
+          if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
+          return b.id.compareTo(a.id);
+        });
+        break;
+    }
+
+    _currentPage[type] = page + 1;
+    _hasMore[type] = hasMoreData;
+
+    if (response is Map && response['total'] != null) {
+      int total = int.tryParse(response['total'].toString()) ?? 0;
+      switch (type) {
+        case 'penjual':
+          _totalPenjual = total;
+          break;
+        case 'supir':
+          _totalSupir = total;
+          break;
+        case 'kendaraan':
+          _totalKendaraan = total;
+          break;
+        case 'operasional':
+          _totalOperasional = total;
+          break;
+        case 'jurnal_keuangan':
+          _totalJurnal = total;
+          break;
+        case 'user':
+          _totalUser = total;
+          break;
+      }
+    }
   }
 
   Future<dynamic> addPenjual(Map<String, dynamic> data) async {

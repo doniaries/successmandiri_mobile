@@ -21,8 +21,9 @@ class TambahSaldoRepository {
     return [];
   }
 
-  Future<List<TambahSaldoModel>> getTambahSaldo({String? status}) async {
+  Future<List<TambahSaldoModel>> getTambahSaldo({String? status, bool forceOfflineFallback = false}) async {
     try {
+      if (forceOfflineFallback) throw Exception('Force Offline Fallback');
       final connectivity = await Connectivity().checkConnectivity();
       if (connectivity.every((r) => r == ConnectivityResult.none)) {
         // Offline: baca dari SQLite cache + offline queue
