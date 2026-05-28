@@ -6,7 +6,7 @@ class ApiConstants {
   static String get baseUrl {
     if (kDebugMode && useLocalInDebug) {
       if (kIsWeb) return 'http://127.0.0.1:8000/api';
-      return 'http://192.168.1.5:8000/api'; // IP Lokal Wi-Fi Laptop/PC
+      return 'http://192.168.1.12:8000/api'; // IP Lokal Wi-Fi Laptop/PC
     }
     // Selalu gunakan Produksi (Online) agar data sinkron dengan sawit.successmandiri.com
     return 'https://sawit.successmandiri.com/api';

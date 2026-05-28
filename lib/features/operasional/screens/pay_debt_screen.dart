@@ -199,54 +199,53 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                 ),
                 const SizedBox(height: 20),
                 if (_selectedPihakType != null) ...[
-                  DropdownButtonFormField<int>(
-                    isExpanded: true,
-                    initialValue: _selectedPihakId,
-                    decoration: _inputDecoration(
-                      'Pilih Nama Pembayar',
-                      Icons.person_rounded,
-                    ),
-                    items:
-                        (_selectedPihakType == 'App\\Models\\Penjual'
-                                ? provider.penjualDebtors
-                                : _selectedPihakType == 'App\\Models\\Supir'
-                                ? provider.supirDebtors
-                                : provider.pekerjaDebtors)
-                            .map(
-                              (dynamic e) => DropdownMenuItem<int>(
-                                value: e.id as int,
-                                child: Text(
-                                  '${e.nama} (${CurrencyFormatter.formatRupiah(e.sisaHutang ?? 0)})',
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                  Builder(builder: (context) {
+                    final List<dynamic> items = (_selectedPihakType == 'App\\Models\\Penjual'
+                        ? provider.penjualDebtors
+                        : _selectedPihakType == 'App\\Models\\Supir'
+                        ? provider.supirDebtors
+                        : provider.pekerjaDebtors) as List<dynamic>;
+
+                    final isValueInItems = items.any((e) => (e as dynamic).id == _selectedPihakId);
+
+                    return DropdownButtonFormField<int>(
+                      isExpanded: true,
+                      initialValue: isValueInItems ? _selectedPihakId : null,
+                      decoration: _inputDecoration(
+                        'Pilih Nama Pembayar',
+                        Icons.person_rounded,
+                      ),
+                      items: items
+                          .map(
+                            (e) => DropdownMenuItem<int>(
+                              value: (e as dynamic).id as int,
+                              child: Text(
+                                '${(e as dynamic).nama} (${CurrencyFormatter.formatRupiah((e as dynamic).sisaHutang ?? 0)})',
+                                overflow: TextOverflow.ellipsis,
                               ),
-                            )
-                            .toList(),
-                    onChanged: (val) {
-                      setState(() {
-                        _selectedPihakId = val;
-                        final List<dynamic> debtors = (_selectedPihakType == 'App\\Models\\Penjual'
-                                ? provider.penjualDebtors
-                                : _selectedPihakType == 'App\\Models\\Supir'
-                                ? provider.supirDebtors
-                                : provider.pekerjaDebtors);
-                        dynamic found;
-                        for (var e in debtors) {
-                          if (e.id == val) {
-                            found = e;
-                            break;
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedPihakId = val;
+                          dynamic found;
+                          try {
+                            found = items.firstWhere((e) => (e as dynamic).id == val);
+                          } catch (_) {
+                            found = null;
                           }
-                        }
-                        _selectedPihak = found;
-                        if (found != null) {
-                          _nominalController.text =
-                              CurrencyFormatter.formatNumber(found.sisaHutang ?? 0);
-                        }
-                      });
-                    },
-                    validator: (val) =>
-                        val == null ? 'Pilih nama pembayar' : null,
-                  ),
+                          _selectedPihak = found;
+                          if (found != null) {
+                            _nominalController.text =
+                                CurrencyFormatter.formatNumber((found as dynamic).sisaHutang ?? 0);
+                          }
+                        });
+                      },
+                      validator: (val) =>
+                          val == null ? 'Pilih nama pembayar' : null,
+                    );
+                  }),
                   const SizedBox(height: 20),
                 ],
                 InkWell(
