@@ -884,11 +884,11 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                         const SizedBox(height: 16),
                       ],
 
-                      const SizedBox(height: 16),
-
-                      const SizedBox(height: 24),
-
-                      const SizedBox(height: 24),
+                      SizedBox(
+                        height: (_selectedCaraBayar == 'tunai' || _selectedCaraBayar == 'transfer')
+                            ? 8
+                            : 8,
+                      ),
 
                       AppPrimaryButton(
                         text: 'SIMPAN TRANSAKSI',
