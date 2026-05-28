@@ -304,6 +304,14 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
           backgroundColor: const Color(0xFF01579B),
           foregroundColor: Colors.white,
         ),
+        bottomNavigationBar: Padding(
+          padding: EdgeInsets.fromLTRB(16, 8, 16, MediaQuery.of(context).padding.bottom + 8),
+          child: AppPrimaryButton(
+            text: 'SIMPAN TRANSAKSI',
+            onPressed: provider.isLoading || provider.isSaving ? null : _submitForm,
+            isLoading: provider.isLoading || provider.isSaving,
+          ),
+        ),
         body: provider.isLoading && provider.penjuals.isEmpty
             ? const Center(child: AppLoadingIndicator())
             : SingleChildScrollView(
@@ -659,6 +667,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                         ).copyWith(suffixText: ' Kg'),
                         style: const TextStyle(fontWeight: FontWeight.w600),
                         keyboardType: TextInputType.number,
+                        inputFormatters: [CurrencyInputFormatter()],
                         textInputAction: TextInputAction.next,
                         onFieldSubmitted: (_) => _upahBongkarFocus.requestFocus(),
                         validator: (val) =>
@@ -753,11 +762,13 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                           label: 'Total Bayar ke Penjual',
                           icon: Icons.account_balance_wallet_rounded,
                           fillColor: const Color(0xFFE3F2FD),
+                        ).copyWith(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         ),
                         style: const TextStyle(
                           fontWeight: FontWeight.w900,
                           color: Colors.green,
-                          fontSize: 22,
+                          fontSize: 16,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -772,14 +783,14 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                           final bool isLow = currentSaldo < 500000;
                           return Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 10,
+                              horizontal: 12,
+                              vertical: 7,
                             ),
                             decoration: BoxDecoration(
                               color: isLow
                                   ? Colors.red[100]
                                   : const Color(0xFFFFD54F),
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(10),
                               border: isLow
                                   ? Border.all(color: Colors.red[300]!)
                                   : null,
@@ -790,16 +801,15 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                   isLow
                                       ? Icons.warning_amber_rounded
                                       : Icons.account_balance_rounded,
-                                  size: 18,
+                                  size: 16,
                                   color: isLow
                                       ? Colors.red[700]
                                       : Colors.black87,
                                 ),
-                                const SizedBox(width: 10),
+                                const SizedBox(width: 8),
                                 Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
                                         isLow
@@ -807,7 +817,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                             : 'Kondisi Saldo Saat Ini',
                                         style: TextStyle(
                                           fontSize: 10,
-                                          fontWeight: FontWeight.w800,
+                                          fontWeight: FontWeight.w700,
                                           color: isLow
                                               ? Colors.red[900]
                                               : Colors.black87,
@@ -818,12 +828,12 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                           currentSaldo,
                                         ),
                                         style: TextStyle(
-                                          fontSize: 24,
+                                          fontSize: 14,
                                           fontWeight: FontWeight.w900,
                                           color: isLow
                                               ? Colors.red[900]
                                               : Colors.black,
-                                          letterSpacing: -0.5,
+                                          letterSpacing: -0.3,
                                         ),
                                       ),
                                     ],
@@ -884,17 +894,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                         const SizedBox(height: 16),
                       ],
 
-                      SizedBox(
-                        height: (_selectedCaraBayar == 'tunai' || _selectedCaraBayar == 'transfer')
-                            ? 8
-                            : 8,
-                      ),
-
-                      AppPrimaryButton(
-                        text: 'SIMPAN TRANSAKSI',
-                        onPressed: _submitForm,
-                        isLoading: provider.isLoading || provider.isSaving,
-                      ),
+                      const SizedBox(height: 8),
                     ],
                   ),
                 ),
