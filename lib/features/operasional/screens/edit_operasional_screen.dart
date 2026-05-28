@@ -267,7 +267,7 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
                 DropdownButtonFormField<String>(
                   initialValue: _selectedPihakType,
                   decoration: _inputDecoration(
-                    'Tipe Pihak (Opsional)',
+                    'Jenis Pihak',
                     Icons.group_rounded,
                   ),
                   items: const [
@@ -291,6 +291,13 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
                       _selectedPihak = null;
                       _selectedPihakId = null;
                     });
+                  },
+                  validator: (val) {
+                    final isHutang = _selectedKategori == 'Tambah Hutang' || _selectedKategori == 'Bayar Hutang';
+                    if (isHutang && (val == null || val.isEmpty)) {
+                      return 'Jenis pihak wajib diisi untuk transaksi hutang';
+                    }
+                    return null;
                   },
                 ),
                 const SizedBox(height: 20),
@@ -398,7 +405,16 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
                                     suffixIcon: const Icon(Icons.search, size: 20, color: Colors.grey),
                                   ),
                                   style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-                                  validator: (val) => _selectedPihakType != null && _selectedPihakId == null ? 'Pilih pihak' : null,
+                                  validator: (val) {
+                                    if (_selectedPihakType != null && _selectedPihakId == null) {
+                                      return 'Pilih pihak';
+                                    }
+                                    final isHutang = _selectedKategori == 'Tambah Hutang' || _selectedKategori == 'Bayar Hutang';
+                                    if (isHutang && _selectedPihakId == null) {
+                                      return 'Nama pihak wajib diisi untuk transaksi hutang';
+                                    }
+                                    return null;
+                                  },
                                 ),
                               ),
                             ),
