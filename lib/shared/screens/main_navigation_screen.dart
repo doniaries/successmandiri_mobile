@@ -141,7 +141,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   Widget _buildBottomBar(int selectedIndex) {
     return Container(
-      height: 80,
+      height: 64,
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -161,7 +161,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             left: 0,
             right: 0,
             bottom: 0,
-            top: 20,
+            top: 12,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -198,7 +198,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
           // Large Centered "DO" Button
           Positioned(
-            top: 22,
+            top: 14,
             child: GestureDetector(
               onTap: () {
                 _onItemTapped(1); // Go to DO List

@@ -450,7 +450,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 6),
 
                       // Penjual sebagai Supir Checkbox
                       InkWell(
@@ -462,20 +462,22 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                             }
                           });
                         },
-                        borderRadius: BorderRadius.circular(12),
-                        child: Container(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 4,
-                            vertical: 8,
+                            vertical: 4,
                           ),
                           child: Row(
                             children: [
                               SizedBox(
-                                height: 24,
-                                width: 24,
+                                height: 20,
+                                width: 20,
                                 child: Checkbox(
                                   value: _penjualSebagaiSupir,
                                   activeColor: const Color(0xFF01579B),
+                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  visualDensity: VisualDensity.compact,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(4),
                                   ),
@@ -489,35 +491,20 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                   },
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Penjual sekaligus Supir?',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: Color(0xFF455A64),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      'Centang ini jika penjual yang membawa sendiri kendaraannya. Sistem akan menyembunyikan pilihan Nama Supir.',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                  ],
+                              const SizedBox(width: 8),
+                              Text(
+                                'Penjual sekaligus Supir?',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey[700],
                                 ),
                               ),
                             ],
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 8),
 
                       // Supir Dropdown (Hidden if penjual_sebagai_supir)
                       if (!_penjualSebagaiSupir) ...[
