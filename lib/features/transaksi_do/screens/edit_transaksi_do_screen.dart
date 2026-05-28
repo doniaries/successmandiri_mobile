@@ -771,13 +771,13 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                           prefixStyle: const TextStyle(
                             color: Colors.black,
                             fontWeight: FontWeight.w900,
-                            fontSize: 20,
+                            fontSize: 16,
                           ),
                         ),
                         style: const TextStyle(
                           fontWeight: FontWeight.w900,
                           color: Colors.black,
-                          fontSize: 20,
+                          fontSize: 16,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -846,11 +846,18 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                           label: 'Total Bayar ke Penjual',
                           icon: Icons.account_balance_wallet_rounded,
                           fillColor: const Color(0xFFE3F2FD),
-                        ).copyWith(prefixText: 'Rp '),
+                          prefixStyle: const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 24,
+                          ),
+                        ).copyWith(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        ),
                         style: const TextStyle(
                           fontWeight: FontWeight.w900,
-                          color: Colors.green,
-                          fontSize: 22,
+                          color: Colors.black,
+                          fontSize: 24,
                         ),
                       ),
                       const SizedBox(height: 16),

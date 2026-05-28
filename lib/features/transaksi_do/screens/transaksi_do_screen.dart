@@ -646,7 +646,24 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   }
 
   Widget _buildTransactionCard(dynamic tx) {
-    final isTunai = tx.caraBayar?.toLowerCase() == 'tunai';
+    final String caraBayarStr = tx.caraBayar?.toLowerCase() ?? 'tunai';
+    
+    MaterialColor statusColor;
+    IconData statusIcon;
+    
+    if (caraBayarStr == 'belum dibayar') {
+      statusColor = Colors.red;
+      statusIcon = Icons.warning_rounded;
+    } else if (caraBayarStr == 'tunai') {
+      statusColor = Colors.green;
+      statusIcon = Icons.payments_rounded;
+    } else if (caraBayarStr == 'cair di luar' || caraBayarStr == 'cair diluar') {
+      statusColor = Colors.orange;
+      statusIcon = Icons.outbound_rounded;
+    } else {
+      statusColor = Colors.blue;
+      statusIcon = Icons.account_balance_rounded;
+    }
     
     return Dismissible(
       key: Key('dismiss_do_${tx.id}'),
@@ -787,12 +804,12 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: (isTunai ? Colors.green : Colors.blue).withValues(alpha: 0.1),
+                                color: statusColor.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Icon(
-                                isTunai ? Icons.payments_rounded : Icons.account_balance_rounded,
-                                color: isTunai ? Colors.green[700] : Colors.blue[700],
+                                statusIcon,
+                                color: statusColor[700],
                                 size: 18,
                               ),
                             ),
@@ -817,7 +834,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                                     style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.w700,
-                                      color: isTunai ? Colors.green[600] : Colors.blue[600],
+                                      color: statusColor[600],
                                     ),
                                   ),
                                 ],
@@ -836,15 +853,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w900,
-                              color: isTunai ? Colors.green[700] : Colors.blue[700],
-                            ),
-                          ),
-                          Text(
-                            'Sub: ${CurrencyFormatter.formatRupiah(tx.subTotal)}',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.grey[500],
+                              color: statusColor[700],
                             ),
                           ),
                         ],
