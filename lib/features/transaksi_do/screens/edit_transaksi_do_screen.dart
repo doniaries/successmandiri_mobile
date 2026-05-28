@@ -700,7 +700,9 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                                           const AddSupirScreen(),
                                     ),
                                   );
-                                  if (mounted) provider.fetchFormData();
+                                  if (mounted) {
+                                    provider.fetchFormData();
+                                  }
                                 },
                               ),
                             ),
@@ -709,20 +711,7 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
                         const SizedBox(height: 16),
                       ],
 
-                      // Kendaraan Dropdown (No Polisi)
-                      TextFormField(
-                        controller: _noPolisiController,
-                        decoration: _getInputDecoration(
-                          label: 'No Kendaraan',
-                          icon: Icons.numbers_rounded,
-                          hint: 'Masukkan nomor polisi',
-                        ),
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                        textCapitalization: TextCapitalization.characters,
-                        textInputAction: TextInputAction.next,
-                        onFieldSubmitted: (_) => _hargaSatuanFocus.requestFocus(),
-                      ),
-                      const SizedBox(height: 16),
+
 
                       TextFormField(
                         controller: _hargaSatuanController,
