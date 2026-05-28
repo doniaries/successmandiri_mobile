@@ -39,10 +39,11 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
     'Bahan Bakar': 'bahan_bakar',
     'Perawatan': 'perawatan',
     'Lain-lain': 'lain_lain',
+    'Pemasukan Lainnya': 'pemasukan_lainnya',
   };
 
   String _getOperasionalType(String kategoriLabel) {
-    if (kategoriLabel == 'Bayar Hutang') {
+    if (kategoriLabel == 'Bayar Hutang' || kategoriLabel == 'Pemasukan Lainnya') {
       return 'Pemasukan';
     }
     return 'Pengeluaran';
