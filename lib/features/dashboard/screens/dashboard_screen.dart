@@ -772,84 +772,46 @@ class DashboardScreenState extends State<DashboardScreen> {
     final txProvider = context.read<TransaksiDoProvider>();
     final resProvider = context.read<ResourceProvider>();
 
+    // Ambil seen state dari cache secara sinkron (tidak menunggu)
+    final prefs = SharedPreferences.getInstance();
+
+    // Fetch di background — panel langsung terbuka dari cache
+    Future.microtask(() async {
+      final List<Future> fetches = [];
+      if (txProvider.unreadCount > 0 || txProvider.transactions.isEmpty) {
+        fetches.add(txProvider.fetchTransactions().catchError((e) => null));
+      }
+      if (resProvider.getUnreadCountFor('operasional') > 0 || resProvider.operasionals.isEmpty) {
+        fetches.add(resProvider.fetchResources('operasional', refresh: true).catchError((e) => null));
+      }
+      if (isLeader) {
+        if (resProvider.getUnreadCountFor('penjual') > 0 || resProvider.penjuals.isEmpty) {
+          fetches.add(resProvider.fetchResources('penjual', refresh: true).catchError((e) => null));
+        }
+        if (resProvider.getUnreadCountFor('supir') > 0 || resProvider.supirs.isEmpty) {
+          fetches.add(resProvider.fetchResources('supir', refresh: true).catchError((e) => null));
+        }
+      }
+      if (fetches.isNotEmpty) await Future.wait(fetches);
+    });
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (context) => FutureBuilder<Map<String, dynamic>>(
-        future: () async {
-          // Yield execution to the next event loop cycle to avoid notifyListeners() during build phase
-          await Future.delayed(Duration.zero);
-
-          // Trigger asynchronous parallel fetching only if there are unread items or data is empty
-          final List<Future> fetches = [];
-          
-          if (txProvider.unreadCount > 0 || txProvider.transactions.isEmpty) {
-            fetches.add(txProvider.fetchTransactions().catchError((e) => null));
-          }
-          if (resProvider.getUnreadCountFor('operasional') > 0 || resProvider.operasionals.isEmpty) {
-            fetches.add(resProvider.fetchResources('operasional', refresh: true).catchError((e) => null));
-          }
-          
-          if (isLeader) {
-            if (resProvider.getUnreadCountFor('penjual') > 0 || resProvider.penjuals.isEmpty) {
-              fetches.add(resProvider.fetchResources('penjual', refresh: true).catchError((e) => null));
-            }
-            if (resProvider.getUnreadCountFor('supir') > 0 || resProvider.supirs.isEmpty) {
-              fetches.add(resProvider.fetchResources('supir', refresh: true).catchError((e) => null));
-            }
-          }
-          
-          if (fetches.isNotEmpty) {
-            await Future.wait(fetches);
-          }
-
-          final prefs = await SharedPreferences.getInstance();
-          return {
-            'transaksi_do': prefs.getString('seen_state_transaksi_do') ?? '',
-            'operasional': prefs.getString('seen_state_operasional') ?? '',
-            'penjual': prefs.getString('seen_state_penjual') ?? '',
-            'supir': prefs.getString('seen_state_supir') ?? '',
-          };
-        }(),
+      builder: (context) => FutureBuilder<SharedPreferences>(
+        future: prefs,
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return Container(
-              height: MediaQuery.of(context).size.height * 0.7,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30),
-                  topRight: Radius.circular(30),
-                ),
-              ),
-              child: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(color: Color(0xFF01579B)),
-                    SizedBox(height: 16),
-                    Text(
-                      'Memuat notifikasi terbaru...',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-
-          final seenStates = snapshot.data!;
+          // Tampilkan langsung dari cache provider tanpa tunggu API
+          final sp = snapshot.data;
           final lastSeenDoId =
-              int.tryParse(seenStates['transaksi_do'] ?? '0') ?? 0;
+              int.tryParse(sp?.getString('seen_state_transaksi_do') ?? '0') ?? 0;
           final lastSeenOperasionalId =
-              int.tryParse(seenStates['operasional'] ?? '0') ?? 0;
+              int.tryParse(sp?.getString('seen_state_operasional') ?? '0') ?? 0;
           final lastSeenPenjualId =
-              int.tryParse(seenStates['penjual'] ?? '0') ?? 0;
-          final lastSeenSupirId = int.tryParse(seenStates['supir'] ?? '0') ?? 0;
+              int.tryParse(sp?.getString('seen_state_penjual') ?? '0') ?? 0;
+          final lastSeenSupirId =
+              int.tryParse(sp?.getString('seen_state_supir') ?? '0') ?? 0;
 
           final transactions = txProvider.transactions;
           final latestOperasional = resProvider.operasionals;
@@ -869,44 +831,35 @@ class DashboardScreenState extends State<DashboardScreen> {
               .where((s) => s.id > lastSeenSupirId)
               .toList();
 
-          final allNotifications =
-              [
-                ...filteredTransactions.map(
-                  (t) => {
-                    'type': 'do',
-                    'data': t,
-                    'id': 'do_${t.id}',
-                    'time': t.tanggal,
-                  },
-                ),
-                ...filteredOperasional.map(
-                  (o) => {
-                    'type': 'operasional',
-                    'data': o,
-                    'id': 'operasional_${o.id}',
-                    'time': o.tanggal,
-                  },
-                ),
-                ...filteredPenjuals.map(
-                  (p) => {
-                    'type': 'penjual',
-                    'data': p,
-                    'id': 'penjual_${p.id}',
-                    'time': p.createdAt ?? DateTime.now(),
-                  },
-                ),
-                ...filteredSupirs.map(
-                  (s) => {
-                    'type': 'supir',
-                    'data': s,
-                    'id': 'supir_${s.id}',
-                    'time': s.createdAt ?? DateTime.now(),
-                  },
-                ),
-              ]..sort(
-                (a, b) =>
-                    (b['time'] as DateTime).compareTo(a['time'] as DateTime),
-              );
+          final allNotifications = [
+            ...filteredTransactions.map((t) => {
+              'type': 'do',
+              'data': t,
+              'id': 'do_${t.id}',
+              'time': t.tanggal,
+            }),
+            ...filteredOperasional.map((o) => {
+              'type': 'operasional',
+              'data': o,
+              'id': 'operasional_${o.id}',
+              'time': o.tanggal,
+            }),
+            ...filteredPenjuals.map((p) => {
+              'type': 'penjual',
+              'data': p,
+              'id': 'penjual_${p.id}',
+              'time': p.createdAt ?? DateTime.now(),
+            }),
+            ...filteredSupirs.map((s) => {
+              'type': 'supir',
+              'data': s,
+              'id': 'supir_${s.id}',
+              'time': s.createdAt ?? DateTime.now(),
+            }),
+          ]..sort(
+            (a, b) =>
+                (b['time'] as DateTime).compareTo(a['time'] as DateTime),
+          );
 
           return Container(
             height: MediaQuery.of(context).size.height * 0.7,
@@ -944,15 +897,12 @@ class DashboardScreenState extends State<DashboardScreen> {
                       if (allNotifications.isNotEmpty)
                         TextButton.icon(
                           onPressed: () async {
-                            final txProvider = context
-                                .read<TransaksiDoProvider>();
-                            final saldoProvider = context
-                                .read<TambahSaldoProvider>();
-                            final resProvider = context
-                                .read<ResourceProvider>();
-                            await txProvider.markAsSeen();
-                            await saldoProvider.markAsSeen();
-                            await resProvider.markAllAsSeen();
+                            final txProv = context.read<TransaksiDoProvider>();
+                            final saldoProv = context.read<TambahSaldoProvider>();
+                            final resProv = context.read<ResourceProvider>();
+                            await txProv.markAsSeen();
+                            await saldoProv.markAsSeen();
+                            await resProv.markAllAsSeen();
                             if (context.mounted) {
                               Navigator.pop(context);
                               ScaffoldMessenger.of(context).showSnackBar(
@@ -982,7 +932,23 @@ class DashboardScreenState extends State<DashboardScreen> {
                 ),
                 Expanded(
                   child: allNotifications.isEmpty
-                      ? const Center(child: Text('Belum ada aktivitas terbaru'))
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.check_circle_outline_rounded,
+                                  size: 48, color: Colors.grey[300]),
+                              const SizedBox(height: 12),
+                              Text(
+                                'Semua sudah terbaca',
+                                style: TextStyle(
+                                  color: Colors.grey[500],
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
                       : ListView.builder(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           itemCount: allNotifications.length.clamp(0, 15),
@@ -999,7 +965,13 @@ class DashboardScreenState extends State<DashboardScreen> {
           );
         },
       ),
-    );
+    ).then((_) {
+      // Auto-mark semua sebagai sudah dibaca saat panel ditutup
+      if (mounted) {
+        txProvider.markAsSeen();
+        resProvider.markAllAsSeen();
+      }
+    });
   }
 
   Widget _buildNotificationItem(
@@ -2216,7 +2188,7 @@ class _StatCardsState extends State<_StatCards> {
                       color: const Color(0xFFE67E22),
                       title: 'Total Tonase',
                       value:
-                          '${NumberFormat.compact(locale: 'id').format(stats.transaksi.today.tonase)} Kg',
+                          '${NumberFormat('#,###', 'id_ID').format(stats.transaksi.today.tonase)} Kg',
                       subtitleStr: 'Total Tonase DO',
                     ),
                   ),
