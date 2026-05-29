@@ -21,104 +21,46 @@ class OperasionalScreen extends StatefulWidget {
 }
 
 class _OperasionalScreenState extends State<OperasionalScreen> {
-  final ScrollController _scrollController = ScrollController();
   String _currentFilter = 'Semua';
+  final ScrollController _scrollController = ScrollController();
   bool _isFabExtended = true;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = context.read<ResourceProvider>();
-      final globalFilter = context.read<GlobalFilterProvider>();
-      final dashboardProvider = context.read<DashboardProvider>();
-      
-      final targetDate = globalFilter.selectedDate ??
-          (dashboardProvider.summary?.systemActiveDate != null
-              ? DateTime.parse(dashboardProvider.summary!.systemActiveDate)
-              : DateTime.now());
-      final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
-
-      // Tarik dari SQLite agar cepat (offline-first). Untuk update dari API, tarik ke bawah (pull to refresh).
-      provider.fetchResources('operasional', refresh: false, filters: {'tanggal': dateStr});
-
-      if (dashboardProvider.summary == null) {
-        dashboardProvider.fetchSummary();
-      }
-    });
   }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
   }
 
   void _onScroll() {
-    if (_scrollController.position.userScrollDirection == ScrollDirection.reverse) {
+    if (_scrollController.position.userScrollDirection ==
+        ScrollDirection.reverse) {
       if (_isFabExtended) setState(() => _isFabExtended = false);
-    } else if (_scrollController.position.userScrollDirection == ScrollDirection.forward) {
+    } else if (_scrollController.position.userScrollDirection ==
+        ScrollDirection.forward) {
       if (!_isFabExtended) setState(() => _isFabExtended = true);
-    }
-
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      final provider = context.read<ResourceProvider>();
-      if (!provider.isLoading &&
-          !provider.isFetchingMore('operasional') &&
-          !provider.isRefreshingFor('operasional') &&
-          provider.hasMore('operasional')) {
-        provider.fetchResources('operasional');
-      }
     }
   }
 
   Future<void> _refreshData() async {
-    if (SyncService().isOffline) return;
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-    final provider = context.read<ResourceProvider>();
-    final dashboardProvider = context.read<DashboardProvider>();
     final globalFilter = context.read<GlobalFilterProvider>();
+    final dashboardProvider = context.read<DashboardProvider>();
+    final dateStr = globalFilter.selectedDate != null
+        ? DateFormat('yyyy-MM-dd').format(globalFilter.selectedDate!)
+        : null;
 
-    scaffoldMessenger.showSnackBar(
-      const SnackBar(
-        content: Text('Memulai Sinkronisasi Operasional...'),
-        duration: Duration(seconds: 1),
-        behavior: SnackBarBehavior.floating,
-      ),
+    await context.read<ResourceProvider>().fetchResources(
+      'operasional',
+      refresh: true,
+      filters: dateStr != null ? {'tanggal': dateStr} : null,
     );
-
-    try {
-      final targetDate = globalFilter.selectedDate ??
-          (dashboardProvider.summary?.systemActiveDate != null
-              ? DateTime.parse(dashboardProvider.summary!.systemActiveDate)
-              : DateTime.now());
-      final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
-
-      await SyncService().syncNow();
-      await provider.syncMasterData();
-      await provider.fetchResources('operasional', refresh: true, filters: {'tanggal': dateStr});
-      await dashboardProvider.fetchSummary(filterDate: globalFilter.selectedDate);
-
-      if (!mounted) return;
-      scaffoldMessenger.showSnackBar(
-        const SnackBar(
-          content: Text('Sinkronisasi Operasional Selesai'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      scaffoldMessenger.showSnackBar(
-        SnackBar(
-          content: Text('Gagal sinkron: $e'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
+    await dashboardProvider.fetchSummary(filterDate: globalFilter.selectedDate);
   }
 
   List<Operasional> _getFilteredDateItems(
@@ -127,8 +69,6 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     DateTime? filterDate,
   ) {
     // Backend sudah memfilter data berdasarkan tanggal.
-    // Kita langsung kembalikan semua data agar tidak tersembunyi karena perbedaan zona waktu lokal,
-    // sambil tetap memastikan item offline antrean juga muncul.
     return allItems;
   }
 
@@ -137,8 +77,11 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     DateTime systemActiveDate,
     DateTime? filterDate,
   ) {
-    List<Operasional> items =
-        _getFilteredDateItems(allItems, systemActiveDate, filterDate);
+    List<Operasional> items = _getFilteredDateItems(
+      allItems,
+      systemActiveDate,
+      filterDate,
+    );
     if (_currentFilter != 'Semua') {
       items = items
           .where(
@@ -182,9 +125,13 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
       if (!mounted) return;
       globalFilter.setDate(picked);
       dashboardProvider.fetchSummary(filterDate: picked);
-      
+
       final dateStr = DateFormat('yyyy-MM-dd').format(picked);
-      context.read<ResourceProvider>().fetchResources('operasional', refresh: true, filters: {'tanggal': dateStr});
+      context.read<ResourceProvider>().fetchResources(
+        'operasional',
+        refresh: true,
+        filters: {'tanggal': dateStr},
+      );
     }
   }
 
@@ -218,7 +165,10 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
         ),
         backgroundColor: const Color(0xFF01579B),
         icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: const Text('Tambah Data', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        label: const Text(
+          'Tambah Data',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }
@@ -253,8 +203,6 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
     );
   }
 
-  /// Widget summary — pemasukan & pengeluaran dihitung dari data operasional
-  /// lokal yang difilter berdasarkan tanggal aktif (bukan dari dashboard stats).
   Widget _buildSummaryHeader() {
     return SliverToBoxAdapter(
       child: Consumer2<ResourceProvider, GlobalFilterProvider>(
@@ -266,13 +214,17 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
               : DateTime.now();
 
           final targetDate = globalFilter.selectedDate ?? systemActiveDate;
-          final dateText =
-              DateFormat('dd MMMM yyyy', 'id_ID').format(targetDate);
-          final isFilterActive = globalFilter.selectedDate != null &&
+          final dateText = DateFormat(
+            'dd MMMM yyyy',
+            'id_ID',
+          ).format(targetDate);
+          final isFilterActive =
+              globalFilter.selectedDate != null &&
               !DateUtils.isSameDay(
-                  globalFilter.selectedDate!, systemActiveDate);
+                globalFilter.selectedDate!,
+                systemActiveDate,
+              );
 
-          // Hitung dari data operasional lokal filtered by tanggal
           final filteredDateItems = _getFilteredDateItems(
             resourceProvider.operasionals,
             systemActiveDate,
@@ -314,7 +266,6 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Label + tombol filter tanggal
                 Row(
                   children: [
                     Expanded(
@@ -334,7 +285,9 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12),
@@ -346,8 +299,11 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.calendar_month_rounded,
-                                color: Colors.white, size: 14),
+                            const Icon(
+                              Icons.calendar_month_rounded,
+                              color: Colors.white,
+                              size: 14,
+                            ),
                             const SizedBox(width: 6),
                             Text(
                               dateText,
@@ -358,8 +314,11 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                               ),
                             ),
                             const SizedBox(width: 4),
-                            const Icon(Icons.arrow_drop_down_rounded,
-                                color: Colors.white, size: 16),
+                            const Icon(
+                              Icons.arrow_drop_down_rounded,
+                              color: Colors.white,
+                              size: 16,
+                            ),
                           ],
                         ),
                       ),
@@ -367,7 +326,6 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                // Pemasukan & Pengeluaran dari data operasional lokal
                 Row(
                   children: [
                     Expanded(
@@ -431,10 +389,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
         const SizedBox(height: 2),
         Text(
           '$count transaksi',
-          style: const TextStyle(
-            color: Colors.white54,
-            fontSize: 10,
-          ),
+          style: const TextStyle(color: Colors.white54, fontSize: 10),
         ),
       ],
     );
@@ -465,8 +420,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
           color: isSelected ? const Color(0xFF01579B) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color:
-                isSelected ? const Color(0xFF01579B) : Colors.grey[300]!,
+            color: isSelected ? const Color(0xFF01579B) : Colors.grey[300]!,
           ),
           boxShadow: isSelected
               ? [
@@ -551,7 +505,8 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                 }
                 return null;
               },
-              childCount: items.length +
+              childCount:
+                  items.length +
                   (provider.isFetchingMoreFor('operasional') ? 1 : 0),
             ),
           ),
@@ -562,10 +517,11 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
 
   Widget _buildOperasionalItem(Operasional item) {
     final isPengeluaran = item.operasional.toLowerCase() == 'pengeluaran';
-    final color =
-        isPengeluaran ? const Color(0xFFC62828) : const Color(0xFF2E7D32);
+    final color = isPengeluaran
+        ? const Color(0xFFC62828)
+        : const Color(0xFF2E7D32);
 
-    return Container(
+    final container = Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -584,8 +540,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-                  OperasionalDetailScreen(operasional: item),
+              builder: (context) => OperasionalDetailScreen(operasional: item),
             ),
           ),
           borderRadius: BorderRadius.circular(16),
@@ -626,22 +581,22 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                                 item.namaPihak!.isNotEmpty &&
                                 item.namaPihak != '-'
                             ? (item.keterangan != null &&
-                                    item.keterangan!.isNotEmpty &&
-                                    item.keterangan != '-'
-                                ? '${item.namaPihak} (${item.keterangan})'
-                                : item.namaPihak!)
+                                      item.keterangan!.isNotEmpty &&
+                                      item.keterangan != '-'
+                                  ? '${item.namaPihak} (${item.keterangan})'
+                                  : item.namaPihak!)
                             : (item.keterangan ?? '-'),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontSize: 13, color: Colors.grey[600]),
+                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        DateFormat('dd MMM yyyy • HH:mm', 'id_ID')
-                            .format(item.tanggal),
-                        style: TextStyle(
-                            fontSize: 11, color: Colors.grey[400]),
+                        DateFormat(
+                          'dd MMM yyyy • HH:mm',
+                          'id_ID',
+                        ).format(item.tanggal),
+                        style: TextStyle(fontSize: 11, color: Colors.grey[400]),
                       ),
                     ],
                   ),
@@ -660,12 +615,89 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
         ),
       ),
     );
+
+    return Dismissible(
+      key: Key('operasional-${item.id}'),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Icon(Icons.delete, color: Colors.white),
+      ),
+      confirmDismiss: (direction) async {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) {
+            return AlertDialog(
+              title: const Text('Hapus Transaksi'),
+              content: const Text(
+                'Apakah Anda yakin ingin menghapus transaksi ini?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext, false),
+                  child: const Text('Batal'),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  child: const Text(
+                    'Hapus',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+
+        if (confirmed != true) return false;
+
+        final provider = context.read<ResourceProvider>();
+        final success = await provider.deleteResource(
+          'operasional',
+          item.id,
+        );
+        if (!success) return false;
+
+        final deletedSnapshot = item;
+        if (!mounted) return true;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Operasional dihapus'),
+            action: SnackBarAction(
+              label: 'Undo',
+              onPressed: () async {
+                final Map<String, dynamic> payload = {
+                  'tanggal': deletedSnapshot.tanggal.toUtc().toIso8601String(),
+                  'operasional': deletedSnapshot.operasional,
+                  'kategori': deletedSnapshot.kategori,
+                  'nominal': deletedSnapshot.nominal,
+                  'keterangan': deletedSnapshot.keterangan ?? '',
+                  'pihak_id': deletedSnapshot.pihakId,
+                  'pihak_type': deletedSnapshot.pihakType,
+                };
+                await provider.addOperasional(payload);
+              },
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+
+        return true;
+      },
+      child: container,
+    );
   }
 
   Widget _buildSkeletonItem() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-      child: const SkeletonLoader(
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      child: SkeletonLoader(
         height: 90,
         width: double.infinity,
         borderRadius: 16,

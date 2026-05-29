@@ -54,7 +54,8 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
   void _updateFabVisibility(ScrollController controller) {
     if (controller.position.userScrollDirection == ScrollDirection.reverse) {
       if (_isFabExtended) setState(() => _isFabExtended = false);
-    } else if (controller.position.userScrollDirection == ScrollDirection.forward) {
+    } else if (controller.position.userScrollDirection ==
+        ScrollDirection.forward) {
       if (!_isFabExtended) setState(() => _isFabExtended = true);
     }
   }
@@ -335,7 +336,11 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.info_outline, size: 64, color: Colors.grey[300]),
+                      Icon(
+                        Icons.info_outline,
+                        size: 64,
+                        color: Colors.grey[300],
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         'Data ${widget.title} tidak ditemukan',
@@ -601,11 +606,19 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
         backgroundColor: const Color(0xFF01579B),
         icon: const Icon(Icons.add_rounded, color: Colors.white),
         label: Text(
-          widget.resourceType == 'penjual' ? 'Tambah Penjual' :
-          widget.resourceType == 'supir' ? 'Tambah Supir' :
-          widget.resourceType == 'pekerja' ? 'Tambah Pekerja' :
-          widget.resourceType == 'operasional' ? 'Tambah Data' : 'Tambah',
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          widget.resourceType == 'penjual'
+              ? 'Tambah Penjual'
+              : widget.resourceType == 'supir'
+              ? 'Tambah Supir'
+              : widget.resourceType == 'pekerja'
+              ? 'Tambah Pekerja'
+              : widget.resourceType == 'operasional'
+              ? 'Tambah Data'
+              : 'Tambah',
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
@@ -747,7 +760,10 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                 ),
               )
             : null,
-        trailing: (hutang != null && hutang > 0 && (item is Penjual || item is Supir || item is Pekerja))
+        trailing:
+            (hutang != null &&
+                hutang > 0 &&
+                (item is Penjual || item is Supir || item is Pekerja))
             ? ElevatedButton.icon(
                 onPressed: () async {
                   await Navigator.push(
@@ -757,25 +773,36 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                         pihakType: item is Penjual
                             ? 'App\\Models\\Penjual'
                             : item is Supir
-                                ? 'App\\Models\\Supir'
-                                : 'App\\Models\\Pekerja',
+                            ? 'App\\Models\\Supir'
+                            : 'App\\Models\\Pekerja',
                         pihakId: item.id,
                       ),
                     ),
                   );
                   if (mounted && context.mounted) {
-                    context.read<ResourceProvider>().fetchResources(widget.resourceType, refresh: true);
+                    context.read<ResourceProvider>().fetchResources(
+                      widget.resourceType,
+                      refresh: true,
+                    );
                   }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.orange,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 0,
                 ),
                 icon: const Icon(Icons.payment, size: 16),
-                label: const Text('Bayar', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                label: const Text(
+                  'Bayar',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
               )
             : Container(
                 padding: const EdgeInsets.all(4),
@@ -858,6 +885,115 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
         },
       ),
     );
+
+    if (item is Operasional) {
+      return Dismissible(
+        key: Key('operasional-${item.id}'),
+        direction: DismissDirection.endToStart,
+        background: Container(
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 20),
+          decoration: BoxDecoration(
+            color: Colors.red,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const Icon(Icons.delete, color: Colors.white),
+        ),
+        confirmDismiss: (direction) async {
+          final TextEditingController confirmCtrl = TextEditingController();
+          final confirmed = await showDialog<bool>(
+            context: context,
+            builder: (dialogContext) {
+              return AlertDialog(
+                title: const Text('Hapus Transaksi'),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Ketik HAPUS untuk mengonfirmasi penghapusan transaksi ini.',
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: confirmCtrl,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: 'Ketik HAPUS',
+                      ),
+                    ),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(dialogContext, false),
+                    child: const Text('Batal'),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                    ),
+                    onPressed: () {
+                      final val = confirmCtrl.text.trim().toUpperCase();
+                      if (val != 'HAPUS') {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Ketik HAPUS untuk mengonfirmasi.'),
+                            backgroundColor: Colors.orange,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                        return;
+                      }
+                      Navigator.pop(dialogContext, true);
+                    },
+                    child: const Text('Hapus'),
+                  ),
+                ],
+              );
+            },
+          );
+
+          if (confirmed != true) return false;
+
+          final success = await context.read<ResourceProvider>().deleteResource(
+            'operasional',
+            item.id,
+          );
+          if (!success) return false;
+
+          // show undo snackbar
+          final deletedSnapshot = item;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Operasional dihapus'),
+              action: SnackBarAction(
+                label: 'Undo',
+                onPressed: () async {
+                  // try to recreate
+                  final Map<String, dynamic> payload = {
+                    'tanggal': deletedSnapshot.tanggal
+                        .toUtc()
+                        .toIso8601String(),
+                    'operasional': deletedSnapshot.operasional,
+                    'kategori': deletedSnapshot.kategori,
+                    'nominal': deletedSnapshot.nominal,
+                    'keterangan': deletedSnapshot.keterangan ?? '',
+                    'pihak_id': deletedSnapshot.pihakId,
+                    'pihak_type': deletedSnapshot.pihakType,
+                  };
+                  await context.read<ResourceProvider>().addOperasional(
+                    payload,
+                  );
+                },
+              ),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+
+          return true;
+        },
+        child: tile,
+      );
+    }
 
     return tile;
   }

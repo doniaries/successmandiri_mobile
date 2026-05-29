@@ -6,10 +6,26 @@ import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:sawitappmobile/features/operasional/screens/edit_operasional_screen.dart';
 
-class OperasionalDetailScreen extends StatelessWidget {
+class OperasionalDetailScreen extends StatefulWidget {
   final Operasional operasional;
+  final VoidCallback? onDeleted;
 
-  const OperasionalDetailScreen({super.key, required this.operasional});
+  const OperasionalDetailScreen({
+    super.key,
+    required this.operasional,
+    this.onDeleted,
+  });
+
+  @override
+  State<OperasionalDetailScreen> createState() =>
+      _OperasionalDetailScreenState();
+}
+
+class _OperasionalDetailScreenState extends State<OperasionalDetailScreen> {
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
   void _showDeleteConfirmation(BuildContext context) {
     showDialog(
@@ -17,7 +33,9 @@ class OperasionalDetailScreen extends StatelessWidget {
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Hapus Transaksi'),
-          content: const Text('Apakah Anda yakin ingin menghapus transaksi operasional ini?'),
+          content: const Text(
+            'Apakah Anda yakin ingin menghapus transaksi ini?',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
@@ -26,8 +44,10 @@ class OperasionalDetailScreen extends StatelessWidget {
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () async {
-                Navigator.pop(dialogContext); // Close dialog
-                final success = await context.read<ResourceProvider>().deleteResource('operasional', operasional.id);
+                Navigator.pop(dialogContext);
+                final success = await context
+                    .read<ResourceProvider>()
+                    .deleteResource('operasional', widget.operasional.id);
                 if (context.mounted) {
                   if (success) {
                     context.read<DashboardProvider>().fetchSummary();
@@ -38,11 +58,15 @@ class OperasionalDetailScreen extends StatelessWidget {
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
-                    Navigator.pop(context); // Pop detail screen
+                    widget.onDeleted?.call();
+                    Navigator.pop(context);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(context.read<ResourceProvider>().errorMessage ?? 'Gagal menghapus operasional'),
+                        content: Text(
+                          context.read<ResourceProvider>().errorMessage ??
+                              'Gagal menghapus operasional',
+                        ),
                         backgroundColor: Colors.red,
                         behavior: SnackBarBehavior.floating,
                       ),
@@ -60,14 +84,19 @@ class OperasionalDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    final currencyFormat = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
     final dateFormat = DateFormat('dd MMMM yyyy HH:mm', 'id_ID');
 
-    final bool isPengeluaran = operasional.operasional.toLowerCase() == 'pengeluaran';
+    final bool isPengeluaran =
+        widget.operasional.operasional.toLowerCase() == 'pengeluaran';
 
     String labelPihak = 'Pihak Terkait';
-    if (operasional.pihakType != null) {
-      final type = operasional.pihakType!.toLowerCase();
+    if (widget.operasional.pihakType != null) {
+      final type = widget.operasional.pihakType!.toLowerCase();
       if (type.contains('penjual')) {
         labelPihak = 'Penjual';
       } else if (type.contains('supir')) {
@@ -80,7 +109,10 @@ class OperasionalDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Detail Operasional', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Detail Operasional',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -91,7 +123,8 @@ class OperasionalDetailScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => EditOperasionalScreen(operasional: operasional),
+                    builder: (context) =>
+                        EditOperasionalScreen(operasional: widget.operasional),
                   ),
                 );
               } else if (value == 'delete') {
@@ -133,14 +166,16 @@ class OperasionalDetailScreen extends StatelessWidget {
               padding: const EdgeInsets.all(25),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: isPengeluaran 
-                    ? [const Color(0xFF01579B), const Color(0xFF0D47A1)] 
-                    : [const Color(0xFF2ECC71), const Color(0xFF27AE60)],
+                  colors: isPengeluaran
+                      ? [const Color(0xFF01579B), const Color(0xFF0D47A1)]
+                      : [const Color(0xFF2ECC71), const Color(0xFF27AE60)],
                 ),
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: (isPengeluaran ? const Color(0xFF0D47A1) : Colors.green).withValues(alpha: 0.3),
+                    color:
+                        (isPengeluaran ? const Color(0xFF0D47A1) : Colors.green)
+                            .withValues(alpha: 0.3),
                     blurRadius: 15,
                     offset: const Offset(0, 8),
                   ),
@@ -149,55 +184,95 @@ class OperasionalDetailScreen extends StatelessWidget {
               child: Column(
                 children: [
                   Text(
-                    operasional.kategoriLabel ?? operasional.kategori,
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500),
+                    widget.operasional.kategoriLabel ??
+                        widget.operasional.kategori,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    currencyFormat.format(operasional.nominal),
-                    style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900),
+                    currencyFormat.format(widget.operasional.nominal),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      operasional.operasional.toUpperCase(),
-                      style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1),
+                      widget.operasional.operasional.toUpperCase(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 30),
-            
+
             // Details
             _buildInfoSection('Informasi Utama', [
-              _buildInfoRow(Icons.calendar_today_rounded, 'Tanggal', dateFormat.format(operasional.tanggal)),
-              _buildInfoRow(Icons.category_rounded, 'Kategori', operasional.kategoriLabel ?? operasional.kategori),
-              if (operasional.namaPihak != null)
-                _buildInfoRow(Icons.person_rounded, labelPihak, operasional.namaPihak!),
-              if (operasional.userName != null && operasional.userName!.isNotEmpty && operasional.userName != '-')
-                _buildInfoRow(Icons.account_circle_rounded, 'Pencatat', operasional.userName!),
+              _buildInfoRow(
+                Icons.calendar_today_rounded,
+                'Tanggal',
+                dateFormat.format(widget.operasional.tanggal),
+              ),
+              _buildInfoRow(
+                Icons.category_rounded,
+                'Kategori',
+                widget.operasional.kategoriLabel ?? widget.operasional.kategori,
+              ),
+              if (widget.operasional.namaPihak != null)
+                _buildInfoRow(
+                  Icons.person_rounded,
+                  labelPihak,
+                  widget.operasional.namaPihak!,
+                ),
+              if (widget.operasional.userName != null &&
+                  widget.operasional.userName!.isNotEmpty &&
+                  widget.operasional.userName != '-')
+                _buildInfoRow(
+                  Icons.account_circle_rounded,
+                  'Pencatat',
+                  widget.operasional.userName!,
+                ),
             ]),
-            
+
             const SizedBox(height: 20),
-            
+
             _buildInfoSection('Keterangan', [
               Text(
-                operasional.keterangan ?? 'Tidak ada keterangan tambahan.',
-                style: TextStyle(fontSize: 15, color: Colors.grey[700], height: 1.5),
+                widget.operasional.keterangan ??
+                    'Tidak ada keterangan tambahan.',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: Colors.grey[700],
+                  height: 1.5,
+                ),
               ),
             ]),
-            
+
             const SizedBox(height: 30),
-            
+
             // Subtle footer info
             Text(
-              'ID Transaksi: #${operasional.id}',
+              'ID Transaksi: #${widget.operasional.id}',
               style: TextStyle(color: Colors.grey[400], fontSize: 12),
             ),
           ],
@@ -220,7 +295,11 @@ class OperasionalDetailScreen extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF2C3E50)),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF2C3E50),
+            ),
           ),
           const SizedBox(height: 20),
           ...children,
@@ -243,7 +322,14 @@ class OperasionalDetailScreen extends StatelessWidget {
             child: Icon(icon, size: 18, color: const Color(0xFF01579B)),
           ),
           const SizedBox(width: 15),
-          Text(label, style: TextStyle(color: Colors.grey[500], fontSize: 14, fontWeight: FontWeight.w500)),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.grey[500],
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
           const Spacer(),
           Text(
             value,
