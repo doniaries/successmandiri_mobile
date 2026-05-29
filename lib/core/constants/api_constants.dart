@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 class ApiConstants {
-  static const bool useLocalInDebug = true;
+  static const bool useLocalInDebug = false; // true = IP lokal, false = produksi
+
 
   static String get baseUrl {
     if (kDebugMode && useLocalInDebug) {
