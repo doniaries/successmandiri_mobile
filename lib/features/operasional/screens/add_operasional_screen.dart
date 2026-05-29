@@ -32,14 +32,14 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
   dynamic _selectedPihak; // Added to store full object for debt info
 
   final Map<String, String> _kategoriMap = {
-    'Tambah Hutang': 'pinjaman',
-    'Bayar Hutang': 'bayar_hutang',
-    'Pijak Gas': 'pijakan_gas',
-    'Uang Jalan': 'uang_jalan',
     'Bahan Bakar': 'bahan_bakar',
-    'Perawatan': 'perawatan',
-    'Lain-lain': 'lain_lain',
+    'Bayar Hutang': 'bayar_hutang',
     'Pemasukan Lainnya': 'pemasukan_lainnya',
+    'Pengeluaran Lainnya': 'pengeluaran_lainnya',
+    'Perawatan': 'perawatan',
+    'Pijak Gas': 'pijakan_gas',
+    'Tambah Hutang': 'pinjaman',
+    'Uang Jalan': 'uang_jalan',
   };
 
   String _getOperasionalType(String kategoriLabel) {

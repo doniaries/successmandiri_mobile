@@ -35,14 +35,14 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
   dynamic _selectedPihak;
 
   final Map<String, String> _kategoriMap = {
-    'Tambah Hutang': 'pinjaman',
-    'Bayar Hutang': 'bayar_hutang',
-    'Pijak Gas': 'pijakan_gas',
-    'Uang Jalan': 'uang_jalan',
     'Bahan Bakar': 'bahan_bakar',
-    'Perawatan': 'perawatan',
-    'Lain-lain': 'lain_lain',
+    'Bayar Hutang': 'bayar_hutang',
     'Pemasukan Lainnya': 'pemasukan_lainnya',
+    'Pengeluaran Lainnya': 'pengeluaran_lainnya',
+    'Perawatan': 'perawatan',
+    'Pijak Gas': 'pijakan_gas',
+    'Tambah Hutang': 'pinjaman',
+    'Uang Jalan': 'uang_jalan',
   };
 
   String _getOperasionalType(String kategoriLabel) {
@@ -65,7 +65,7 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
     // Find category label from slug
     _selectedKategori = _kategoriMap.entries.firstWhere(
       (entry) => entry.value == widget.operasional.kategori,
-      orElse: () => const MapEntry('Lain-lain', 'lain_lain'),
+      orElse: () => const MapEntry('Pengeluaran Lainnya', 'pengeluaran_lainnya'),
     ).key;
 
     _selectedPihakType = widget.operasional.pihakType;
