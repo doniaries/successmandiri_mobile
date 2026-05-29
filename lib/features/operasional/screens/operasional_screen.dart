@@ -629,6 +629,8 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
         child: const Icon(Icons.delete, color: Colors.white),
       ),
       confirmDismiss: (direction) async {
+        final provider = context.read<ResourceProvider>();
+        final scaffoldMessenger = ScaffoldMessenger.of(context);
         final confirmed = await showDialog<bool>(
           context: context,
           builder: (dialogContext) {
@@ -657,7 +659,6 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
 
         if (confirmed != true) return false;
 
-        final provider = context.read<ResourceProvider>();
         final success = await provider.deleteResource(
           'operasional',
           item.id,
@@ -666,7 +667,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
 
         final deletedSnapshot = item;
         if (!mounted) return true;
-        ScaffoldMessenger.of(context).showSnackBar(
+        scaffoldMessenger.showSnackBar(
           SnackBar(
             content: const Text('Operasional dihapus'),
             action: SnackBarAction(

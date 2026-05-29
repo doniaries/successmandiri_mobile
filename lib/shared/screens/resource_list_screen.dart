@@ -900,27 +900,15 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
           child: const Icon(Icons.delete, color: Colors.white),
         ),
         confirmDismiss: (direction) async {
-          final TextEditingController confirmCtrl = TextEditingController();
+          final provider = context.read<ResourceProvider>();
+          final scaffoldMessenger = ScaffoldMessenger.of(context);
           final confirmed = await showDialog<bool>(
             context: context,
             builder: (dialogContext) {
               return AlertDialog(
                 title: const Text('Hapus Transaksi'),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'Ketik HAPUS untuk mengonfirmasi penghapusan transaksi ini.',
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: confirmCtrl,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Ketik HAPUS',
-                      ),
-                    ),
-                  ],
+                content: const Text(
+                  'Apakah Anda yakin ingin menghapus transaksi ini?',
                 ),
                 actions: [
                   TextButton(
@@ -931,21 +919,11 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red,
                     ),
-                    onPressed: () {
-                      final val = confirmCtrl.text.trim().toUpperCase();
-                      if (val != 'HAPUS') {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Ketik HAPUS untuk mengonfirmasi.'),
-                            backgroundColor: Colors.orange,
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                        return;
-                      }
-                      Navigator.pop(dialogContext, true);
-                    },
-                    child: const Text('Hapus'),
+                    onPressed: () => Navigator.pop(dialogContext, true),
+                    child: const Text(
+                      'Hapus',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ],
               );
@@ -954,7 +932,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
 
           if (confirmed != true) return false;
 
-          final success = await context.read<ResourceProvider>().deleteResource(
+          final success = await provider.deleteResource(
             'operasional',
             item.id,
           );
@@ -962,13 +940,13 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
 
           // show undo snackbar
           final deletedSnapshot = item;
-          ScaffoldMessenger.of(context).showSnackBar(
+          if (!mounted) return true;
+          scaffoldMessenger.showSnackBar(
             SnackBar(
               content: const Text('Operasional dihapus'),
               action: SnackBarAction(
                 label: 'Undo',
                 onPressed: () async {
-                  // try to recreate
                   final Map<String, dynamic> payload = {
                     'tanggal': deletedSnapshot.tanggal
                         .toUtc()
@@ -980,9 +958,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                     'pihak_id': deletedSnapshot.pihakId,
                     'pihak_type': deletedSnapshot.pihakType,
                   };
-                  await context.read<ResourceProvider>().addOperasional(
-                    payload,
-                  );
+                  await provider.addOperasional(payload);
                 },
               ),
               behavior: SnackBarBehavior.floating,
