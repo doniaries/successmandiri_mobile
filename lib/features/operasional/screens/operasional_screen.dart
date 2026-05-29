@@ -29,6 +29,32 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchWithCurrentFilter();
+    });
+  }
+
+  Future<void> _fetchWithCurrentFilter() async {
+    if (!mounted) return;
+    final globalFilter = context.read<GlobalFilterProvider>();
+    final dashboardProvider = context.read<DashboardProvider>();
+
+    // Gunakan tanggal aktif dari GlobalFilter, atau fallback ke systemActiveDate
+    DateTime? targetDate = globalFilter.selectedDate;
+    if (targetDate == null) {
+      final activeDateStr = dashboardProvider.summary?.systemActiveDate;
+      if (activeDateStr != null) {
+        targetDate = DateTime.tryParse(activeDateStr);
+      }
+    }
+    targetDate ??= DateTime.now();
+
+    final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
+    await context.read<ResourceProvider>().fetchResources(
+      'operasional',
+      refresh: true,
+      filters: {'tanggal': dateStr},
+    );
   }
 
   @override
@@ -51,16 +77,23 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
   Future<void> _refreshData() async {
     final globalFilter = context.read<GlobalFilterProvider>();
     final dashboardProvider = context.read<DashboardProvider>();
-    final dateStr = globalFilter.selectedDate != null
-        ? DateFormat('yyyy-MM-dd').format(globalFilter.selectedDate!)
-        : null;
 
+    DateTime? targetDate = globalFilter.selectedDate;
+    if (targetDate == null) {
+      final activeDateStr = dashboardProvider.summary?.systemActiveDate;
+      if (activeDateStr != null) {
+        targetDate = DateTime.tryParse(activeDateStr);
+      }
+    }
+    targetDate ??= DateTime.now();
+
+    final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
     await context.read<ResourceProvider>().fetchResources(
       'operasional',
       refresh: true,
-      filters: dateStr != null ? {'tanggal': dateStr} : null,
+      filters: {'tanggal': dateStr},
     );
-    await dashboardProvider.fetchSummary(filterDate: globalFilter.selectedDate);
+    await dashboardProvider.fetchSummary(filterDate: targetDate);
   }
 
   List<Operasional> _getFilteredDateItems(
