@@ -160,7 +160,9 @@ class TransaksiDoDetailScreen extends StatelessWidget {
             const SizedBox(height: 25),
 
             // Details
-            _buildInfoSection('Pihak Terkait', [
+            _buildInfoSection('Informasi Lengkap', [
+              const Text('Pihak Terkait', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
+              const SizedBox(height: 10),
               _buildInfoRow(
                 Icons.store,
                 'Penjual',
@@ -176,11 +178,14 @@ class TransaksiDoDetailScreen extends StatelessWidget {
                 'No. Polisi',
                 transaction.noPolisi ?? 'N/A',
               ),
-            ]),
+              
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 10),
+                child: Divider(),
+              ),
 
-            const SizedBox(height: 20),
-
-            _buildInfoSection('Rincian Pembayaran', [
+              const Text('Rincian Pembayaran', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
+              const SizedBox(height: 10),
               _buildInfoRow(
                 Icons.calculate,
                 'Sub Total',
@@ -193,7 +198,7 @@ class TransaksiDoDetailScreen extends StatelessWidget {
               ),
               _buildInfoRow(
                 Icons.add_circle_outline,
-                'Biaya Lain/Pengambilan',
+                'Biaya Lain/Peng.',
                 CurrencyFormatter.formatRupiah(transaction.biayaLain),
               ),
               if (transaction.keteranganBiayaLain != null)
@@ -208,7 +213,6 @@ class TransaksiDoDetailScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-              const Divider(),
               _buildInfoRow(
                 Icons.history,
                 'Hutang Awal',
@@ -219,7 +223,6 @@ class TransaksiDoDetailScreen extends StatelessWidget {
                 'Bayar Hutang',
                 CurrencyFormatter.formatRupiah(transaction.pembayaranHutang),
               ),
-              const Divider(),
               _buildInfoRow(
                 Icons.account_balance_wallet_rounded,
                 'Total Bersih',
@@ -227,11 +230,14 @@ class TransaksiDoDetailScreen extends StatelessWidget {
                 isBold: true,
                 color: const Color(0xFF01579B),
               ),
-            ]),
 
-            const SizedBox(height: 20),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 10),
+                child: Divider(),
+              ),
 
-            _buildInfoSection('Status & Pembayaran', [
+              const Text('Status & Pembayaran', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
+              const SizedBox(height: 10),
               _buildInfoRow(
                 Icons.payment,
                 'Cara Bayar',
@@ -254,7 +260,6 @@ class TransaksiDoDetailScreen extends StatelessWidget {
               ),
               if (transaction.keteranganPembayaran != null &&
                   transaction.keteranganPembayaran!.isNotEmpty) ...[
-                const Divider(),
                 _buildInfoRow(
                   Icons.description_outlined,
                   'Keterangan',
@@ -263,7 +268,6 @@ class TransaksiDoDetailScreen extends StatelessWidget {
               ],
               if (transaction.buktiTransfer != null &&
                   transaction.buktiTransfer!.isNotEmpty) ...[
-                const Divider(),
                 const SizedBox(height: 10),
                 const Row(
                   children: [

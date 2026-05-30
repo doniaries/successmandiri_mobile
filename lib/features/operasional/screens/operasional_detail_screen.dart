@@ -227,7 +227,8 @@ class _OperasionalDetailScreenState extends State<OperasionalDetailScreen> {
             const SizedBox(height: 30),
 
             // Details
-            _buildInfoSection('Informasi Utama', [
+            // Details
+            _buildInfoSection('Informasi Lengkap', [
               _buildInfoRow(
                 Icons.calendar_today_rounded,
                 'Tanggal',
@@ -252,11 +253,20 @@ class _OperasionalDetailScreenState extends State<OperasionalDetailScreen> {
                   'Pencatat',
                   widget.operasional.userName!,
                 ),
-            ]),
 
-            const SizedBox(height: 20),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 10),
+                child: Divider(),
+              ),
 
-            _buildInfoSection('Keterangan', [
+              const Row(
+                children: [
+                  Icon(Icons.description_outlined, size: 18, color: Color(0xFF01579B)),
+                  SizedBox(width: 15),
+                  Text('Keterangan', style: TextStyle(color: Colors.black54, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              const SizedBox(height: 10),
               Text(
                 widget.operasional.keterangan ??
                     'Tidak ada keterangan tambahan.',

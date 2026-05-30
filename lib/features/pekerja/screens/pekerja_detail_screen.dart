@@ -442,9 +442,12 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
             const SizedBox(height: 24),
             
             // Info Sections
+            // Info Sections
             _buildInfoSection(
-              'Informasi Kontak & Posisi',
+              'Informasi Lengkap',
               [
+                const Text('Informasi Kontak & Posisi', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
+                const SizedBox(height: 10),
                 _buildInfoRow(
                   Icons.phone_android_rounded, 
                   'Telepon', 
@@ -456,47 +459,51 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
                 ),
                 _buildInfoRow(Icons.info_outline_rounded, 'Posisi', _currentPekerja.posisi),
                 _buildInfoRow(Icons.location_on_rounded, 'Alamat', _currentPekerja.alamat ?? '-', isMultiLine: true),
+                
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  child: Divider(),
+                ),
+                
+                const Text('Posisi Keuangan', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
+                const SizedBox(height: 10),
+                _buildInfoRow(
+                  Icons.account_balance_wallet_rounded, 
+                  'Total Hutang', 
+                  CurrencyFormatter.formatRupiah(_currentPekerja.sisaHutang),
+                  textColor: _currentPekerja.sisaHutang > 0 ? Colors.orange[800] : Colors.green[700],
+                  trailing: _currentPekerja.sisaHutang > 0 ? TextButton.icon(
+                    onPressed: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PayDebtScreen(
+                            pihakType: 'App\\Models\\Pekerja',
+                            pihakId: _currentPekerja.id,
+                          ),
+                        ),
+                      );
+                      _fetchDetail();
+                    },
+                    icon: const Icon(Icons.payment_rounded, size: 18),
+                    label: const Text('Bayar'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF01579B),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                    ),
+                  ) : TextButton.icon(
+                    onPressed: () => _showTambahHutangDialog('pekerja', _currentPekerja.id),
+                    icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
+                    label: const Text('Tambah Hutang Awal'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.orange[800],
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                    ),
+                  ),
+                ),
               ],
               onTap: _showEditBottomSheet,
             ),
-
-            const SizedBox(height: 24),
-            _buildInfoSection('Posisi Keuangan', [
-              _buildInfoRow(
-                Icons.account_balance_wallet_rounded, 
-                'Total Hutang', 
-                CurrencyFormatter.formatRupiah(_currentPekerja.sisaHutang),
-                textColor: _currentPekerja.sisaHutang > 0 ? Colors.orange[800] : Colors.green[700],
-                trailing: _currentPekerja.sisaHutang > 0 ? TextButton.icon(
-                  onPressed: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PayDebtScreen(
-                          pihakType: 'App\\Models\\Pekerja',
-                          pihakId: _currentPekerja.id,
-                        ),
-                      ),
-                    );
-                    _fetchDetail();
-                  },
-                  icon: const Icon(Icons.payment_rounded, size: 18),
-                  label: const Text('Bayar'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: const Color(0xFF01579B),
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                  ),
-                ) : TextButton.icon(
-                  onPressed: () => _showTambahHutangDialog('pekerja', _currentPekerja.id),
-                  icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
-                  label: const Text('Tambah Hutang'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.orange[800],
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                  ),
-                ),
-              ),
-            ]),
 
             const SizedBox(height: 24),
             _buildHistorySection(),

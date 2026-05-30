@@ -443,9 +443,12 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
             
             // Info Sections
             // Info Sections
+            // Info Sections
             _buildInfoSection(
-              'Informasi Kontak & Status',
+              'Informasi Lengkap',
               [
+                const Text('Informasi Kontak & Status', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
+                const SizedBox(height: 10),
                 _buildInfoRow(
                   Icons.phone_android_rounded, 
                   'Telepon', 
@@ -457,47 +460,51 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
                 ),
                 _buildInfoRow(Icons.info_outline_rounded, 'Status', _currentSupir.status ?? 'Aktif'),
                 _buildInfoRow(Icons.location_on_rounded, 'Alamat', _currentSupir.alamat ?? '-', isMultiLine: true),
+                
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  child: Divider(),
+                ),
+                
+                const Text('Status Keuangan', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
+                const SizedBox(height: 10),
+                _buildInfoRow(
+                  Icons.account_balance_wallet_rounded, 
+                  'Total Hutang', 
+                  CurrencyFormatter.formatRupiah(_currentSupir.sisaHutang ?? 0),
+                  textColor: (_currentSupir.sisaHutang ?? 0) > 0 ? Colors.orange[800] : Colors.green[700],
+                  trailing: (_currentSupir.sisaHutang ?? 0) > 0 ? TextButton.icon(
+                    onPressed: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PayDebtScreen(
+                            pihakType: 'App\\Models\\Supir',
+                            pihakId: _currentSupir.id,
+                          ),
+                        ),
+                      );
+                      _fetchDetail();
+                    },
+                    icon: const Icon(Icons.payment_rounded, size: 18),
+                    label: const Text('Bayar'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF01579B),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                    ),
+                  ) : TextButton.icon(
+                    onPressed: () => _showTambahHutangDialog('supir', _currentSupir.id),
+                    icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
+                    label: const Text('Tambah Hutang Awal'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.orange[800],
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                    ),
+                  ),
+                ),
               ],
               onTap: _showEditBottomSheet,
             ),
-
-            const SizedBox(height: 24),
-            _buildInfoSection('Status Keuangan', [
-              _buildInfoRow(
-                Icons.account_balance_wallet_rounded, 
-                'Total Hutang', 
-                CurrencyFormatter.formatRupiah(_currentSupir.sisaHutang ?? 0),
-                textColor: (_currentSupir.sisaHutang ?? 0) > 0 ? Colors.orange[800] : Colors.green[700],
-                trailing: (_currentSupir.sisaHutang ?? 0) > 0 ? TextButton.icon(
-                  onPressed: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PayDebtScreen(
-                          pihakType: 'App\\Models\\Supir',
-                          pihakId: _currentSupir.id,
-                        ),
-                      ),
-                    );
-                    _fetchDetail();
-                  },
-                  icon: const Icon(Icons.payment_rounded, size: 18),
-                  label: const Text('Bayar'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: const Color(0xFF01579B),
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                  ),
-                ) : TextButton.icon(
-                  onPressed: () => _showTambahHutangDialog('supir', _currentSupir.id),
-                  icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
-                  label: const Text('Tambah Hutang'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.orange[800],
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                  ),
-                ),
-              ),
-            ]),
 
             const SizedBox(height: 24),
             _buildHistorySection(),
