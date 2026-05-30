@@ -446,7 +446,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
           });
         }
       },
-      selectedColor: const Color(0xFF01579B).withOpacity(0.2),
+      selectedColor: const Color(0xFF01579B).withValues(alpha: 0.2),
       labelStyle: TextStyle(
         color: isSelected ? const Color(0xFF01579B) : Colors.black87,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
