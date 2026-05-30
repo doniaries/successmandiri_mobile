@@ -525,6 +525,10 @@ class ResourceRepository {
     }
   }
 
+  Future<void> tambahHutang(String type, int id, Map<String, dynamic> data) async {
+    await _apiClient.dio.post('/api/$type/$id/tambah-hutang', data: data);
+  }
+
   Future<void> deletePekerja(int id) async {
     final url = '${ApiConstants.pekerja}/$id';
     final connectivity = await Connectivity().checkConnectivity();

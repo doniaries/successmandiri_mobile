@@ -225,6 +225,83 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
     );
   }
 
+  void _showTambahHutangDialog(String type, int id) {
+    final TextEditingController nominalController = TextEditingController();
+    final _formKey = GlobalKey<FormState>();
+    bool isSubmitting = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              title: const Text('Tambah Hutang Awal'),
+              content: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('Masukkan nominal hutang awal yang terlewat atau baru untuk supir ini.'),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: nominalController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: 'Nominal Hutang (Rp)',
+                        border: OutlineInputBorder(),
+                        prefixText: 'Rp ',
+                      ),
+                      validator: (val) {
+                        if (val == null || val.isEmpty) return 'Wajib diisi';
+                        if (double.tryParse(val) == null) return 'Angka tidak valid';
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isSubmitting ? null : () => Navigator.pop(context),
+                  child: const Text('Batal'),
+                ),
+                ElevatedButton(
+                  onPressed: isSubmitting ? null : () async {
+                    if (!_formKey.currentState!.validate()) return;
+                    setStateDialog(() => isSubmitting = true);
+                    
+                    final success = await context.read<ResourceProvider>().tambahHutang(
+                      type, 
+                      id, 
+                      double.parse(nominalController.text), 
+                      'Penambahan hutang awal manual'
+                    );
+
+                    setStateDialog(() => isSubmitting = false);
+                    if (success) {
+                      Navigator.pop(context);
+                      _fetchDetail();
+                      SuccessDialog.show(context, title: 'Berhasil', message: 'Hutang awal berhasil ditambahkan.');
+                    } else {
+                      final err = context.read<ResourceProvider>().errorMessage ?? 'Gagal menambahkan hutang.';
+                      ErrorDialog.show(context, title: 'Gagal', message: err);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.orange[800], foregroundColor: Colors.white),
+                  child: isSubmitting 
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                    : const Text('Simpan'),
+                ),
+              ],
+            );
+          }
+        );
+      }
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -409,7 +486,15 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
                     foregroundColor: const Color(0xFF01579B),
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                   ),
-                ) : null,
+                ) : TextButton.icon(
+                  onPressed: () => _showTambahHutangDialog('supir', _currentSupir.id),
+                  icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
+                  label: const Text('Tambah Hutang'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.orange[800],
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                ),
               ),
             ]),
 

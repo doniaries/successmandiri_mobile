@@ -159,11 +159,18 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
                 const SizedBox(height: 20),
                 _buildTextField(
                   controller: _hutangController,
-                  label: 'Hutang Awal (Opsional jika migrasi data lama)',
+                  label: 'Hutang Awal (Wajib diisi, ketik 0 jika tidak ada)',
                   icon: Icons.account_balance_wallet_outlined,
                   keyboardType: TextInputType.number,
                   inputFormatters: [CurrencyInputFormatter()],
                   prefixText: 'Rp ',
+                  helperText: '⚠️ Wajib diisi jika ada hutang awal. Jika tidak ada, isi 0.',
+                  validator: (val) {
+                    if (val == null || val.isEmpty) {
+                      return 'Hutang awal wajib diisi (ketik 0 jika tidak ada)';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 20),
                 _buildTextField(
@@ -195,6 +202,7 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
     String? Function(String?)? validator,
     List<TextInputFormatter>? inputFormatters,
     String? prefixText,
+    String? helperText,
   }) {
     return TextFormField(
       controller: controller,
@@ -204,6 +212,9 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
       inputFormatters: inputFormatters,
       decoration: InputDecoration(
         labelText: label,
+        helperText: helperText,
+        helperMaxLines: 2,
+        helperStyle: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
         prefixIcon: Icon(icon, color: const Color(0xFF01579B)),
         prefixText: prefixText,
         prefixStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),

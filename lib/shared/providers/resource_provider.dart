@@ -1114,6 +1114,42 @@ class ResourceProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> tambahHutang(String type, int id, double nominal, String keterangan) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _repository.tambahHutang(type, id, {
+        'nominal': nominal,
+        'keterangan': keterangan,
+      });
+      // Refresh the resource details
+      await fetchResources(type, refresh: true);
+      return true;
+    } catch (e) {
+      debugPrint('Error tambahHutang $type: $e');
+      if (e is DioException) {
+        final responseData = e.response?.data;
+        if (responseData is Map) {
+          _errorMessage = responseData['message']?.toString() ??
+              (responseData['errors'] != null
+                  ? (responseData['errors'] as Map).values.first?.toString()
+                  : null) ??
+              e.message;
+        } else {
+          _errorMessage = e.message;
+        }
+      } else {
+        _errorMessage = e.toString();
+      }
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<bool> updateResourceStatus(String type, int id, bool isActive) async {
     _isLoading = true;
     _errorMessage = null;
