@@ -49,6 +49,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
   final ScrollController _activeScrollController = ScrollController();
   final ScrollController _inactiveScrollController = ScrollController();
   String _searchQuery = '';
+  String _hutangFilter = 'Semua';
   bool _isFabExtended = true;
 
   void _updateFabVisibility(ScrollController controller) {
@@ -391,23 +392,70 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
   }
 
   Widget _buildSearchBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: TextField(
-        decoration: InputDecoration(
-          hintText: 'Cari...',
-          prefixIcon: const Icon(Icons.search),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (widget.resourceType == 'penjual' || widget.resourceType == 'supir' || widget.resourceType == 'pekerja')
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildFilterChip('Semua'),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('Berhutang'),
+                  const SizedBox(width: 8),
+                  _buildFilterChip('Lunas / Tidak Ada'),
+                ],
+              ),
+            ),
+          ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: TextField(
+            decoration: InputDecoration(
+              hintText: 'Cari...',
+              prefixIcon: const Icon(Icons.search),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+            ),
+            onChanged: (value) {
+              setState(() {
+                _searchQuery = value;
+              });
+            },
           ),
         ),
-        onChanged: (value) {
+      ],
+    );
+  }
+
+  Widget _buildFilterChip(String label) {
+    final isSelected = _hutangFilter == label;
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (selected) {
+        if (selected) {
           setState(() {
-            _searchQuery = value;
+            _hutangFilter = label;
           });
-        },
+        }
+      },
+      selectedColor: const Color(0xFF01579B).withOpacity(0.2),
+      labelStyle: TextStyle(
+        color: isSelected ? const Color(0xFF01579B) : Colors.black87,
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: isSelected ? const Color(0xFF01579B) : Colors.grey[300]!,
+        ),
       ),
     );
   }
@@ -528,6 +576,22 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                       return nopol.contains(query) || jenis.contains(query);
                     }
                     if (i is User) return i.name.toLowerCase().contains(query);
+                    return true;
+                  }).toList();
+                }
+
+                if (_hutangFilter != 'Semua' && hasTabs) {
+                  items = items.where((i) {
+                    double hutang = 0;
+                    if (i is Penjual) hutang = i.sisaHutang ?? 0;
+                    if (i is Supir) hutang = i.sisaHutang ?? 0;
+                    if (i is Pekerja) hutang = i.sisaHutang;
+
+                    if (_hutangFilter == 'Berhutang') {
+                      return hutang > 0;
+                    } else if (_hutangFilter == 'Lunas / Tidak Ada') {
+                      return hutang <= 0;
+                    }
                     return true;
                   }).toList();
                 }
@@ -760,62 +824,18 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                 ),
               )
             : null,
-        trailing:
-            (hutang != null &&
-                hutang > 0 &&
-                (item is Penjual || item is Supir || item is Pekerja))
-            ? ElevatedButton.icon(
-                onPressed: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PayDebtScreen(
-                        pihakType: item is Penjual
-                            ? 'App\\Models\\Penjual'
-                            : item is Supir
-                            ? 'App\\Models\\Supir'
-                            : 'App\\Models\\Pekerja',
-                        pihakId: item.id,
-                      ),
-                    ),
-                  );
-                  if (mounted && context.mounted) {
-                    context.read<ResourceProvider>().fetchResources(
-                      widget.resourceType,
-                      refresh: true,
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
-                ),
-                icon: const Icon(Icons.payment, size: 16),
-                label: const Text(
-                  'Bayar',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                ),
-              )
-            : Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.chevron_right_rounded,
-                  color: Colors.grey[400],
-                  size: 20,
-                ),
-              ),
+        trailing: Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            Icons.chevron_right_rounded,
+            color: Colors.grey[400],
+            size: 20,
+          ),
+        ),
         onTap: () {
           if (item is Operasional) {
             Navigator.push(

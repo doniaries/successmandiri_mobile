@@ -58,7 +58,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
             setState(() {
               _selectedPihak = pihak;
               _selectedPihakId = pihak.id;
-              _nominalController.text = (pihak.sisaHutang ?? 0).toInt().toString();
+              // _nominalController.text = (pihak.sisaHutang ?? 0).toInt().toString(); // Disabled auto-fill
             });
           } catch (e) {
             // Silently fail if firstWhere doesn't find a match (e.g. invalid widget.pihakId)
@@ -236,10 +236,10 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                             found = null;
                           }
                           _selectedPihak = found;
-                          if (found != null) {
-                            _nominalController.text =
-                                CurrencyFormatter.formatNumber((found as dynamic).sisaHutang ?? 0);
-                          }
+                          // if (found != null) {
+                          //   _nominalController.text =
+                          //       CurrencyFormatter.formatNumber((found as dynamic).sisaHutang ?? 0);
+                          // } // Disabled auto-fill
                         });
                       },
                       validator: (val) =>

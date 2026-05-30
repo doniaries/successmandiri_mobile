@@ -1830,12 +1830,19 @@ class _CompanySelector extends StatelessWidget {
         child: Row(
           children: [
             if (logo != null)
-              ClipOval(
-                child: CachedNetworkImage(
-                  imageUrl: ApiConstants.normalizeUrl(logo) ?? '',
-                  width: 28,
-                  height: 28,
-                  fit: BoxFit.contain,
+              Container(
+                width: 36,
+                height: 36,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                padding: const EdgeInsets.all(4),
+                child: ClipOval(
+                  child: CachedNetworkImage(
+                    imageUrl: ApiConstants.normalizeUrl(logo) ?? '',
+                    fit: BoxFit.contain,
+                  ),
                 ),
               )
             else
