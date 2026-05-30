@@ -473,35 +473,49 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
                   'Total Hutang', 
                   CurrencyFormatter.formatRupiah(_currentSupir.sisaHutang ?? 0),
                   textColor: (_currentSupir.sisaHutang ?? 0) > 0 ? Colors.orange[800] : Colors.green[700],
-                  trailing: (_currentSupir.sisaHutang ?? 0) > 0 ? TextButton.icon(
-                    onPressed: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PayDebtScreen(
-                            pihakType: 'App\\Models\\Supir',
-                            pihakId: _currentSupir.id,
+                ),
+                const SizedBox(height: 12),
+                if ((_currentSupir.sisaHutang ?? 0) > 0)
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PayDebtScreen(
+                              pihakType: 'App\\Models\\Supir',
+                              pihakId: _currentSupir.id,
+                            ),
                           ),
-                        ),
-                      );
-                      _fetchDetail();
-                    },
-                    icon: const Icon(Icons.payment_rounded, size: 18),
-                    label: const Text('Bayar'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFF01579B),
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                        );
+                        _fetchDetail();
+                      },
+                      icon: const Icon(Icons.payment_rounded, size: 20),
+                      label: const Text('Bayar Hutang'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF01579B),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
                     ),
-                  ) : TextButton.icon(
-                    onPressed: () => _showTambahHutangDialog('supir', _currentSupir.id),
-                    icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
-                    label: const Text('Tambah Hutang Awal'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.orange[800],
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                  )
+                else
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _showTambahHutangDialog('supir', _currentSupir.id),
+                      icon: const Icon(Icons.add_circle_outline_rounded, size: 20),
+                      label: const Text('Tambah Hutang Awal'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.orange[800],
+                        side: BorderSide(color: Colors.orange[800]!),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
                     ),
                   ),
-                ),
               ],
               onTap: _showEditBottomSheet,
             ),
