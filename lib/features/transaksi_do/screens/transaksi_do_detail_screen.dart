@@ -131,14 +131,14 @@ class TransaksiDoDetailScreen extends StatelessWidget {
                     transaction.nomor,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 22,
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     dateFormat.format(transaction.tanggal),
-                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                    style: const TextStyle(color: Colors.white70, fontSize: 16),
                   ),
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 15),
@@ -311,14 +311,14 @@ class TransaksiDoDetailScreen extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(color: Colors.white70, fontSize: 12),
+          style: const TextStyle(color: Colors.white70, fontSize: 14),
         ),
         const SizedBox(height: 4),
         Text(
           value,
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 16,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -341,7 +341,7 @@ class TransaksiDoDetailScreen extends StatelessWidget {
           Text(
             title,
             style: const TextStyle(
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),
@@ -361,17 +361,17 @@ class TransaksiDoDetailScreen extends StatelessWidget {
     Color? color,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: Colors.grey[400]),
+          Icon(icon, size: 24, color: Colors.grey[400]),
           const SizedBox(width: 15),
-          Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+          Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 16)),
           const Spacer(),
           Text(
             value,
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 16,
               fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
               color: color ?? Colors.black87,
             ),

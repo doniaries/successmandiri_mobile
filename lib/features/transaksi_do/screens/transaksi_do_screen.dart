@@ -6,10 +6,9 @@ import 'package:sawitappmobile/shared/providers/global_filter_provider.dart';
 import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_provider.dart';
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
-import 'package:sawitappmobile/features/transaksi_do/screens/edit_transaksi_do_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/add_transaksi_do_screen.dart';
-
+import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_detail_screen.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 
 class TransaksiDoScreen extends StatefulWidget {
@@ -304,7 +303,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
           0, (sum, t) => sum + t.subTotal);
 
         return Container(
-          margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          margin: const EdgeInsets.fromLTRB(16, 12, 16, 20),
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
@@ -580,71 +579,6 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
     return const SliverToBoxAdapter(child: SizedBox.shrink());
   }
 
-  Future<void> _confirmDelete(dynamic tx) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
-            const SizedBox(width: 12),
-            const Text(
-              'Hapus Transaksi',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-          ],
-        ),
-        content: Text(
-          'Apakah Anda yakin ingin menghapus transaksi DO #${tx.nomor} senilai ${CurrencyFormatter.formatRupiah(tx.subTotal)}?',
-          style: const TextStyle(fontSize: 14),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Batal', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            child: const Text('Hapus', style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && mounted) {
-      final provider = context.read<TransaksiDoProvider>();
-      final scaffoldMessenger = ScaffoldMessenger.of(context);
-      final success = await provider.deleteTransaction(tx.id);
-      
-      if (mounted) {
-        if (success) {
-          scaffoldMessenger.showSnackBar(
-            SnackBar(
-              content: Text('Transaksi DO #${tx.nomor} berhasil dihapus'),
-              backgroundColor: Colors.green,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-          context.read<DashboardProvider>().fetchSummary();
-        } else {
-          scaffoldMessenger.showSnackBar(
-            SnackBar(
-              content: Text(provider.errorMessage ?? 'Gagal menghapus transaksi'),
-              backgroundColor: Colors.red,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
-      }
-    }
-  }
-
   Widget _buildTransactionCard(dynamic tx) {
     final String caraBayarStr = tx.caraBayar?.toLowerCase() ?? 'tunai';
     
@@ -761,6 +695,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey[300]!, width: 1.5),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.03),
@@ -778,7 +713,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
               await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => EditTransaksiDoScreen(transaction: tx, popParent: false),
+                  builder: (context) => TransaksiDoDetailScreen(transaction: tx),
                 ),
               );
               if (mounted) {
@@ -889,75 +824,42 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                             ),
                             const SizedBox(height: 4),
                             Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Icon(Icons.access_time_rounded, size: 12, color: Colors.grey[400]),
-                                const SizedBox(width: 4),
-                                Text(
-                                  DateFormat('dd MMM yyyy • HH:mm', 'id_ID').format(tx.tanggal),
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.grey[500],
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                Row(
+                                  children: [
+                                    Icon(Icons.access_time_rounded, size: 14, color: Colors.blueGrey[400]),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      DateFormat('dd MMM yyyy • HH:mm', 'id_ID').format(tx.tanggal),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.blueGrey[600],
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Icon(Icons.scale_rounded, size: 15, color: Colors.blue[600]),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${NumberFormat.decimalPattern('id').format(tx.tonase)} kg',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.blue[700],
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      // Tombol Aksi (Edit & Hapus) dengan Desain Compact Chips
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Material(
-                            color: Colors.blueAccent.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(10),
-                            child: InkWell(
-                              onTap: () async {
-                                final txProvider = context.read<TransaksiDoProvider>();
-                                final dashProvider = context.read<DashboardProvider>();
-                                await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => EditTransaksiDoScreen(transaction: tx, popParent: false),
-                                  ),
-                                );
-                                if (mounted) {
-                                  txProvider.fetchTransactions();
-                                  dashProvider.fetchSummary();
-                                }
-                              },
-                              borderRadius: BorderRadius.circular(10),
-                              child: const Padding(
-                                padding: EdgeInsets.all(8),
-                                child: Icon(
-                                  Icons.edit_rounded,
-                                  color: Colors.blueAccent,
-                                  size: 18,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Material(
-                            color: Colors.redAccent.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(10),
-                            child: InkWell(
-                              onTap: () => _confirmDelete(tx),
-                              borderRadius: BorderRadius.circular(10),
-                              child: const Padding(
-                                padding: EdgeInsets.all(8),
-                                child: Icon(
-                                  Icons.delete_outline_rounded,
-                                  color: Colors.redAccent,
-                                  size: 18,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                      // Tombol Aksi dipindah ke Detail Screen
                     ],
                   ),
                 ],

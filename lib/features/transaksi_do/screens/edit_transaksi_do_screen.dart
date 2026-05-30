@@ -116,6 +116,8 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final provider = context.read<TransaksiDoProvider>();
       await provider.fetchFormData();
+      
+      if (!mounted) return;
 
       // Hitung hutang aktual penjual jika data master penjual telah termuat
       if (_selectedPenjualId != null && provider.penjuals.isNotEmpty) {
