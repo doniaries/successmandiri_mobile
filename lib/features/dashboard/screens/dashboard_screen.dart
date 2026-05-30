@@ -94,8 +94,8 @@ class DashboardScreenState extends State<DashboardScreen> {
     final dashboard = context.watch<DashboardProvider>();
     final summary = dashboard.summary;
     final items = _selectedTransactionTab == 0
-        ? summary?.transactions ?? []
-        : summary?.latestOperasional ?? [];
+        ? (summary?.transactions ?? []).take(5).toList()
+        : (summary?.latestOperasional ?? []).take(5).toList();
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -370,121 +370,211 @@ class DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildPremiumTransactionItem(TransaksiDo tx) {
+    final String caraBayarStr = tx.caraBayar?.toLowerCase() ?? 'tunai';
+    
+    MaterialColor statusColor;
+    IconData statusIcon;
+    
+    if (caraBayarStr == 'belum dibayar') {
+      statusColor = Colors.red;
+      statusIcon = Icons.warning_rounded;
+    } else if (caraBayarStr == 'tunai') {
+      statusColor = Colors.green;
+      statusIcon = Icons.payments_rounded;
+    } else if (caraBayarStr == 'cair di luar' || caraBayarStr == 'cair diluar') {
+      statusColor = Colors.orange;
+      statusIcon = Icons.outbound_rounded;
+    } else {
+      statusColor = Colors.blue;
+      statusIcon = Icons.account_balance_rounded;
+    }
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey[300]!, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: InkWell(
-        onTap: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => TransaksiDoDetailScreen(transaction: tx),
-          ),
-        ),
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEBF5FB),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: const Icon(
-                  Icons.receipt_long_rounded,
-                  color: Color(0xFF2980B9),
-                  size: 22,
-                ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () async {
+            final dashProvider = context.read<DashboardProvider>();
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TransaksiDoDetailScreen(transaction: tx),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            );
+            if (mounted) {
+              dashProvider.fetchSummary();
+            }
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Baris 1: Status Pembayaran, Nomor DO & Subtotal Nominal
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      tx.nomor,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 15,
-                        color: Color(0xFF1A1A1A),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      tx.penjualNama ?? 'Tanpa Nama',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    CurrencyFormatter.formatRupiah(tx.subTotal),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w900,
-                      color: Color(0xFF2980B9),
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (tx.id < 0) ...[
-                          const Icon(
-                            Icons.access_time_rounded,
-                            size: 10,
-                            color: Colors.orange,
+                    // Sisi Kiri: Icon + Nomor DO + Cara Bayar
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: statusColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              statusIcon,
+                              color: statusColor[700],
+                              size: 18,
+                            ),
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _getShortDoNumber(tx.nomor),
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF1E293B),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  (tx.caraBayar ?? 'Tunai').toUpperCase(),
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: statusColor[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Sisi Kanan: Nominal Sisa Bayar
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
                         Text(
-                          DateFormat(
-                            'dd MMM, HH:mm',
-                            'id_ID',
-                          ).format(tx.tanggal),
+                          CurrencyFormatter.formatRupiah(tx.sisaBayar),
                           style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w900,
+                            color: statusColor[700],
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+                const SizedBox(height: 10),
+                // Divider Halus Pemisah Konten
+                Container(
+                  height: 1,
+                  color: Colors.grey[100],
+                ),
+                const SizedBox(height: 10),
+                // Baris 2: Nama Penjual/Supir, Tanggal & Tombol Aksi Mandiri
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Info Nama & Tanggal
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${tx.penjualNama} • ${tx.displaySupirNama}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey[700],
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.access_time_rounded, size: 14, color: Colors.blueGrey[400]),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    DateFormat('dd MMM yyyy • HH:mm', 'id_ID').format(tx.tanggal),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.blueGrey[600],
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  Icon(Icons.scale_rounded, size: 15, color: Colors.blue[600]),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${NumberFormat.decimalPattern('id').format(tx.tonase)} kg',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.blue[700],
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  String _getShortDoNumber(String nomor) {
+    if (nomor.startsWith('DO-')) {
+      final parts = nomor.split('-');
+      if (parts.length >= 4) {
+        // format: DO-P3-20260525-001 -> DO-001
+        return 'DO-${parts.last}';
+      }
+    }
+    return nomor;
   }
 
   Widget _buildOperasionalItem(Operasional item) {
