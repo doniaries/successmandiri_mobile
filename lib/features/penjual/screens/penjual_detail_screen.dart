@@ -227,7 +227,7 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
 
   void _showTambahHutangDialog(String type, int id) {
     final TextEditingController nominalController = TextEditingController();
-    final _formKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
     bool isSubmitting = false;
 
     showDialog(
@@ -239,7 +239,7 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
             return AlertDialog(
               title: const Text('Tambah Hutang Awal'),
               content: Form(
-                key: _formKey,
+                key: formKey,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -269,7 +269,7 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
                 ),
                 ElevatedButton(
                   onPressed: isSubmitting ? null : () async {
-                    if (!_formKey.currentState!.validate()) return;
+                    if (!formKey.currentState!.validate()) return;
                     setStateDialog(() => isSubmitting = true);
                     
                     final success = await context.read<ResourceProvider>().tambahHutang(
@@ -279,6 +279,7 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
                       'Penambahan hutang awal manual'
                     );
 
+                    if (!context.mounted) return;
                     setStateDialog(() => isSubmitting = false);
                     if (success) {
                       Navigator.pop(context);
