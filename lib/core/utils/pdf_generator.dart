@@ -2,213 +2,133 @@ import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:sawitappmobile/features/transaksi_do/models/transaksi_do_model.dart';
-import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:intl/intl.dart';
 
 class PdfGenerator {
   static Future<Uint8List> generateTransaksiDoPdf(TransaksiDo transaction) async {
     final pdf = pw.Document();
 
-    // Font setup
-    // Use default fonts, or you can load a custom font if needed
     final theme = pw.ThemeData.withFont(
       base: pw.Font.helvetica(),
       bold: pw.Font.helveticaBold(),
       italic: pw.Font.helveticaOblique(),
     );
 
-    final dateFormat = DateFormat('dd MMMM yyyy HH:mm', 'id_ID');
+    final dateFormat = DateFormat('dd/MM/yyyy HH:mm');
+    final numberFormat = NumberFormat.decimalPattern('id');
+
+    // Custom Page Size: 165mm x 210mm
+    final pageFormat = PdfPageFormat(165 * PdfPageFormat.mm, 210 * PdfPageFormat.mm, marginAll: 8 * PdfPageFormat.mm);
 
     pdf.addPage(
       pw.Page(
-        pageFormat: PdfPageFormat.a4,
+        pageFormat: pageFormat,
         theme: theme,
         build: (pw.Context context) {
-          return pw.Container(
-            padding: const pw.EdgeInsets.all(24),
+          return pw.DefaultTextStyle(
+            style: const pw.TextStyle(fontSize: 9),
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                // Header
-                pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Text(
-                          'DELIVERY ORDER (DO)',
-                          style: pw.TextStyle(
-                            fontSize: 24,
-                            fontWeight: pw.FontWeight.bold,
-                            color: PdfColors.blue800,
-                          ),
-                        ),
-                        pw.SizedBox(height: 8),
-                        pw.Text(
-                          transaction.perusahaanNama ?? 'Perusahaan Sawit',
-                          style: pw.TextStyle(
-                            fontSize: 14,
-                            color: PdfColors.grey700,
-                          ),
-                        ),
-                      ],
-                    ),
-                    pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.end,
-                      children: [
-                        pw.Text(
-                          'No: ${transaction.nomor}',
-                          style: pw.TextStyle(
-                            fontSize: 16,
-                            fontWeight: pw.FontWeight.bold,
-                          ),
-                        ),
-                        pw.SizedBox(height: 4),
-                        pw.Text(
-                          dateFormat.format(transaction.tanggal),
-                          style: const pw.TextStyle(
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-
-                pw.SizedBox(height: 30),
-                pw.Divider(color: PdfColors.grey400),
-                pw.SizedBox(height: 20),
-
-                // Pihak Terkait
-                pw.Text(
-                  'PIHAK TERKAIT',
-                  style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: PdfColors.grey600),
-                ),
-                pw.SizedBox(height: 10),
-                _buildInfoRow('Penjual', transaction.penjualNama ?? '-'),
-                _buildInfoRow('Supir', transaction.displaySupirNama),
-                _buildInfoRow('No. Polisi', transaction.noPolisi ?? '-'),
-
-                pw.SizedBox(height: 20),
-                pw.Divider(color: PdfColors.grey300),
-                pw.SizedBox(height: 20),
-
-                // Detail Barang
-                pw.Text(
-                  'DETAIL TRANSAKSI',
-                  style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: PdfColors.grey600),
-                ),
-                pw.SizedBox(height: 10),
-                
-                // Table
-                pw.Table(
-                  border: pw.TableBorder.all(color: PdfColors.grey300),
-                  children: [
-                    pw.TableRow(
-                      decoration: const pw.BoxDecoration(color: PdfColors.grey200),
-                      children: [
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text('Deskripsi', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text('Jumlah', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text('Total', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                        ),
-                      ],
-                    ),
-                    pw.TableRow(
-                      children: [
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text('Kelapa Sawit (${transaction.tonase} Kg @ ${CurrencyFormatter.formatRupiah(transaction.hargaSatuan)})'),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text('${transaction.tonase} Kg'),
-                        ),
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.all(8),
-                          child: pw.Text(CurrencyFormatter.formatRupiah(transaction.subTotal)),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-
-                pw.SizedBox(height: 20),
-
-                // Rincian Pembayaran
+                // Header Container
                 pw.Container(
-                  alignment: pw.Alignment.centerRight,
-                  child: pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.end,
+                  padding: const pw.EdgeInsets.only(bottom: 5),
+                  margin: const pw.EdgeInsets.only(bottom: 8),
+                  decoration: const pw.BoxDecoration(
+                    border: pw.Border(bottom: pw.BorderSide(width: 1)),
+                  ),
+                  child: pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
-                      _buildSummaryRow('Sub Total:', CurrencyFormatter.formatRupiah(transaction.subTotal)),
-                      _buildSummaryRow('Upah Bongkar:', '- ${CurrencyFormatter.formatRupiah(transaction.upahBongkar)}'),
-                      _buildSummaryRow('Biaya Lain/Peng.:', '- ${CurrencyFormatter.formatRupiah(transaction.biayaLain)}'),
-                      if (transaction.keteranganBiayaLain != null && transaction.keteranganBiayaLain!.isNotEmpty)
-                        pw.Padding(
-                          padding: const pw.EdgeInsets.only(bottom: 4),
-                          child: pw.Text(
-                            '(${transaction.keteranganBiayaLain})',
-                            style: pw.TextStyle(fontSize: 10, fontStyle: pw.FontStyle.italic, color: PdfColors.grey600),
-                          ),
+                      pw.Expanded(
+                        child: pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.center,
+                          children: [
+                            pw.Text(
+                              transaction.perusahaanNama ?? 'Perusahaan Sawit',
+                              style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+                            ),
+                            // Alamat dan telepon (bisa dikosongkan karena tidak ada di model mobile,
+                            // atau diganti placeholder)
+                          ],
                         ),
-                      _buildSummaryRow('Hutang Awal:', CurrencyFormatter.formatRupiah(transaction.hutangAwal)),
-                      _buildSummaryRow('Bayar Hutang:', '- ${CurrencyFormatter.formatRupiah(transaction.pembayaranHutang)}'),
-                      pw.Container(width: 250, child: pw.Divider(color: PdfColors.grey400)),
-                      pw.SizedBox(height: 5),
-                      _buildSummaryRow('Total Bersih:', CurrencyFormatter.formatRupiah(transaction.sisaBayar), isBold: true, isTotal: true),
+                      ),
+                      // QR Code container bisa dikosongkan untuk versi mobile
+                      pw.Container(
+                        margin: const pw.EdgeInsets.only(left: 10),
+                        child: pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.end,
+                          children: [
+                            // Placeholder untuk QR agar layout seimbang jika diperlukan
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
 
-                pw.SizedBox(height: 30),
-                pw.Divider(color: PdfColors.grey300),
-                pw.SizedBox(height: 20),
+                // Title
+                pw.Container(
+                  alignment: pw.Alignment.center,
+                  margin: const pw.EdgeInsets.symmetric(vertical: 8),
+                  child: pw.Text(
+                    'BUKTI TRANSAKSI DO',
+                    style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+                  ),
+                ),
 
-                // Status
-                pw.Row(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Expanded(
-                      child: pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.start,
-                        children: [
-                          pw.Text(
-                            'INFORMASI PEMBAYARAN',
-                            style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: PdfColors.grey600),
-                          ),
-                          pw.SizedBox(height: 8),
-                          pw.Text('Metode: ${(transaction.caraBayar ?? '-').toUpperCase()}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                          pw.SizedBox(height: 4),
-                          pw.Text('Sisa Hutang: ${CurrencyFormatter.formatRupiah(transaction.sisaHutangPenjual)}'),
-                          if (transaction.keteranganPembayaran != null && transaction.keteranganPembayaran!.isNotEmpty) ...[
-                            pw.SizedBox(height: 4),
-                            pw.Text('Keterangan: ${transaction.keteranganPembayaran}'),
+                // Table
+                pw.Container(
+                  margin: const pw.EdgeInsets.only(bottom: 30),
+                  child: pw.Table(
+                    border: pw.TableBorder.all(width: 1, color: PdfColors.black),
+                    columnWidths: {
+                      0: const pw.FixedColumnWidth(100),
+                      1: const pw.FlexColumnWidth(),
+                    },
+                    children: [
+                      _buildTableRow('Nomor DO', transaction.nomor, isBoldRight: true),
+                      _buildTableRow('Tanggal & Waktu', dateFormat.format(transaction.tanggal.toLocal())),
+                      _buildTableRow('Nama Penjual', transaction.penjualNama ?? 'N/A'),
+                      _buildTableRow('Nama Supir', transaction.displaySupirNama),
+                      _buildTableRow('Nomor Polisi', transaction.noPolisi ?? 'N/A'),
+                      _buildTableRow('Tonase (Kg)', numberFormat.format(transaction.tonase)),
+                      _buildTableRow('Harga Satuan', 'Rp${numberFormat.format(transaction.hargaSatuan)}'),
+                      _buildTableRow('Sub Total', 'Rp${numberFormat.format(transaction.subTotal)}'),
+                      _buildTableRow('Upah Bongkar', 'Rp${numberFormat.format(transaction.upahBongkar)}'),
+                      _buildTableRow('Biaya Lain', 'Rp${numberFormat.format(transaction.biayaLain)}'),
+                      _buildTableRow('Hutang Awal', 'Rp${numberFormat.format(transaction.hutangAwal)}'),
+                      _buildTableRow('Pembayaran Hutang', 'Rp${numberFormat.format(transaction.pembayaranHutang)}'),
+                      _buildTableRow('Sisa Hutang', 'Rp${numberFormat.format(transaction.sisaHutangPenjual)}', isBoldRight: true),
+                      _buildTableRow('Cara Bayar', transaction.caraBayar ?? ''),
+                      _buildTableRow('Sisa Bayar', 'Rp${numberFormat.format(transaction.sisaBayar)}', isBoldRight: true),
+                      if (transaction.isMismatch)
+                        pw.TableRow(
+                          children: [
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+                              child: pw.Text('Catatan Penting', style: const pw.TextStyle(color: PdfColors.red)),
+                            ),
+                            pw.Padding(
+                              padding: const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+                              child: pw.Text('Rekap manual dengan inputan tidak Cocok', style: pw.TextStyle(color: PdfColors.red, fontWeight: pw.FontWeight.bold)),
+                            ),
                           ],
-                        ],
-                      ),
-                    ),
-                    pw.Expanded(
-                      child: pw.Column(
-                        crossAxisAlignment: pw.CrossAxisAlignment.center,
-                        children: [
-                          pw.SizedBox(height: 40),
-                          pw.Text('_______________________'),
-                          pw.SizedBox(height: 4),
-                          pw.Text('Tanda Tangan / Cap', style: const pw.TextStyle(fontSize: 10)),
-                        ],
-                      ),
-                    ),
-                  ],
+                        ),
+                    ],
+                  ),
+                ),
+
+                // Footer
+                pw.Container(
+                  alignment: pw.Alignment.center,
+                  margin: const pw.EdgeInsets.only(top: 10),
+                  padding: const pw.EdgeInsets.only(top: 5),
+                  child: pw.Text(
+                    'Dicetak pada: ${dateFormat.format(DateTime.now())} melalui Aplikasi Mobile',
+                    style: const pw.TextStyle(fontSize: 8),
+                  ),
                 ),
               ],
             ),
@@ -220,58 +140,18 @@ class PdfGenerator {
     return await pdf.save();
   }
 
-  static pw.Widget _buildInfoRow(String label, String value) {
-    return pw.Padding(
-      padding: const pw.EdgeInsets.only(bottom: 6),
-      child: pw.Row(
-        children: [
-          pw.SizedBox(
-            width: 100,
-            child: pw.Text(label, style: pw.TextStyle(color: PdfColors.grey700)),
-          ),
-          pw.Text(': '),
-          pw.Expanded(
-            child: pw.Text(value, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static pw.Widget _buildSummaryRow(String label, String value, {bool isBold = false, bool isTotal = false}) {
-    return pw.Padding(
-      padding: const pw.EdgeInsets.only(bottom: 6),
-      child: pw.Row(
-        mainAxisSize: pw.MainAxisSize.min,
-        mainAxisAlignment: pw.MainAxisAlignment.end,
-        children: [
-          pw.SizedBox(
-            width: 120,
-            child: pw.Text(
-              label, 
-              textAlign: pw.TextAlign.right,
-              style: pw.TextStyle(
-                color: isTotal ? PdfColors.black : PdfColors.grey700,
-                fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal,
-                fontSize: isTotal ? 14 : 12,
-              )
-            ),
-          ),
-          pw.SizedBox(width: 15),
-          pw.SizedBox(
-            width: 120,
-            child: pw.Text(
-              value,
-              textAlign: pw.TextAlign.right,
-              style: pw.TextStyle(
-                fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal,
-                fontSize: isTotal ? 16 : 12,
-                color: isTotal ? PdfColors.blue800 : PdfColors.black,
-              ),
-            ),
-          ),
-        ],
-      ),
+  static pw.TableRow _buildTableRow(String label, String value, {bool isBoldRight = false}) {
+    return pw.TableRow(
+      children: [
+        pw.Padding(
+          padding: const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+          child: pw.Text(label),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+          child: pw.Text(value, style: pw.TextStyle(fontWeight: isBoldRight ? pw.FontWeight.bold : pw.FontWeight.normal)),
+        ),
+      ],
     );
   }
 }
