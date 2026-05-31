@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:sawitappmobile/features/transaksi_do/models/transaksi_do_model.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PdfGenerator {
   static Future<Uint8List> generateTransaksiDoPdf(TransaksiDo transaction) async {
@@ -20,6 +22,19 @@ class PdfGenerator {
     // Custom Page Size: 165mm x 210mm
     final pageFormat = PdfPageFormat(165 * PdfPageFormat.mm, 210 * PdfPageFormat.mm, marginAll: 8 * PdfPageFormat.mm);
 
+    // Get Kasir Name and Printed By
+    String kasirName = 'Kasir';
+    String dicetakOleh = 'Admin';
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userStr = prefs.getString('cached_user');
+      if (userStr != null) {
+        final Map<String, dynamic> userMap = jsonDecode(userStr);
+        kasirName = userMap['perusahaan_kasir'] ?? userMap['nama_kasir'] ?? 'Kasir';
+        dicetakOleh = userMap['name'] ?? 'Admin';
+      }
+    } catch (_) {}
+
     pdf.addPage(
       pw.Page(
         pageFormat: pageFormat,
@@ -32,35 +47,49 @@ class PdfGenerator {
               children: [
                 // Header Container
                 pw.Container(
-                  padding: const pw.EdgeInsets.only(bottom: 5),
                   margin: const pw.EdgeInsets.only(bottom: 8),
-                  decoration: const pw.BoxDecoration(
-                    border: pw.Border(bottom: pw.BorderSide(width: 1)),
-                  ),
                   child: pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
+                      // Spacer untuk menyimbangkan agar teks perusahaan tetap di tengah jika qr dikanan
+                      pw.SizedBox(width: 50),
+                      
                       pw.Expanded(
                         child: pw.Column(
                           crossAxisAlignment: pw.CrossAxisAlignment.center,
                           children: [
-                            pw.Text(
-                              transaction.perusahaanNama ?? 'Perusahaan Sawit',
-                              style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+                            pw.Container(
+                              padding: const pw.EdgeInsets.only(bottom: 5),
+                              decoration: const pw.BoxDecoration(
+                                border: pw.Border(bottom: pw.BorderSide(width: 1)),
+                              ),
+                              child: pw.Text(
+                                transaction.perusahaanNama ?? 'Perusahaan Sawit',
+                                style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+                                textAlign: pw.TextAlign.center,
+                              ),
                             ),
-                            // Alamat dan telepon (bisa dikosongkan karena tidak ada di model mobile,
-                            // atau diganti placeholder)
+                            // Alamat dan telepon (bisa dikosongkan karena tidak ada di model mobile)
                           ],
                         ),
                       ),
-                      // QR Code container bisa dikosongkan untuk versi mobile
+                      
+                      // QR Code container dikanan
                       pw.Container(
+                        width: 50,
                         margin: const pw.EdgeInsets.only(left: 10),
                         child: pw.Column(
                           crossAxisAlignment: pw.CrossAxisAlignment.end,
                           children: [
-                            // Placeholder untuk QR agar layout seimbang jika diperlukan
+                            pw.BarcodeWidget(
+                              barcode: pw.Barcode.qrCode(),
+                              data: transaction.nomor,
+                              width: 40,
+                              height: 40,
+                            ),
+                            pw.SizedBox(height: 2),
+                            pw.Text('Scan QR', style: const pw.TextStyle(fontSize: 6)),
                           ],
                         ),
                       ),
@@ -122,12 +151,30 @@ class PdfGenerator {
 
                 // Footer
                 pw.Container(
-                  alignment: pw.Alignment.center,
                   margin: const pw.EdgeInsets.only(top: 10),
                   padding: const pw.EdgeInsets.only(top: 5),
-                  child: pw.Text(
-                    'Dicetak pada: ${dateFormat.format(DateTime.now())} melalui Aplikasi Mobile',
-                    style: const pw.TextStyle(fontSize: 8),
+                  child: pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: pw.CrossAxisAlignment.end,
+                    children: [
+                      pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Text(
+                            'Kasir: $kasirName',
+                            style: const pw.TextStyle(fontSize: 8),
+                          ),
+                          pw.Text(
+                            'Dicetak oleh: $dicetakOleh',
+                            style: const pw.TextStyle(fontSize: 8),
+                          ),
+                        ],
+                      ),
+                      pw.Text(
+                        'Dicetak pada: ${dateFormat.format(DateTime.now())}',
+                        style: const pw.TextStyle(fontSize: 8),
+                      ),
+                    ],
                   ),
                 ),
               ],
