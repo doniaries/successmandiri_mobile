@@ -7,6 +7,8 @@ import 'package:sawitappmobile/features/transaksi_do/models/transaksi_do_model.d
 import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_provider.dart';
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/edit_transaksi_do_screen.dart';
+import 'package:sawitappmobile/core/utils/pdf_generator.dart';
+import 'package:printing/printing.dart';
 
 class TransaksiDoDetailScreen extends StatelessWidget {
   final TransaksiDo transaction;
@@ -75,6 +77,32 @@ class TransaksiDoDetailScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.share, color: Colors.blue),
+            tooltip: 'Bagikan PDF',
+            onPressed: () async {
+              try {
+                // Tampilkan loading indicator
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Menyiapkan PDF...'), duration: Duration(seconds: 1)),
+                );
+                
+                final pdfBytes = await PdfGenerator.generateTransaksiDoPdf(transaction);
+                
+                // Gunakan package printing untuk membagikan/menyimpan PDF secara offline
+                await Printing.sharePdf(
+                  bytes: pdfBytes,
+                  filename: 'DO_${transaction.nomor}.pdf',
+                );
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Gagal membuat PDF: $e')),
+                  );
+                }
+              }
+            },
+          ),
           PopupMenuButton<String>(
             onSelected: (value) {
               if (value == 'edit') {

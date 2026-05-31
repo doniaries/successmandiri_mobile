@@ -616,4 +616,17 @@ class TransaksiDoRepository {
       );
     }
   }
+
+  Future<String?> getPrintUrl(int id) async {
+    try {
+      final response = await _apiClient.dio.get('${ApiConstants.transaksiDo}/$id/print-url');
+      if (response.data['success'] == true) {
+        return response.data['data']['url'];
+      }
+      return null;
+    } catch (e) {
+      dev.log('Error getting print URL: $e');
+      return null;
+    }
+  }
 }

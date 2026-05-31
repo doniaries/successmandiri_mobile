@@ -380,5 +380,17 @@ class TransaksiDoProvider with ChangeNotifier {
       return false;
     }
   }
+
+  Future<String?> getPrintUrl(int id) async {
+    _isLoading = true;
+    notifyListeners();
+    
+    final url = await _repository.getPrintUrl(id);
+    
+    _isLoading = false;
+    notifyListeners();
+    
+    return url;
+  }
 }
 
