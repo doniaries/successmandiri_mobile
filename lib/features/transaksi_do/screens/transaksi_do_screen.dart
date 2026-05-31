@@ -10,7 +10,8 @@ import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/add_transaksi_do_screen.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_detail_screen.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
-
+import 'package:sawitappmobile/core/utils/pdf_generator.dart';
+import 'package:printing/printing.dart';
 class TransaksiDoScreen extends StatefulWidget {
   const TransaksiDoScreen({super.key});
 
@@ -859,7 +860,23 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                           ],
                         ),
                       ),
-                      // Tombol Aksi dipindah ke Detail Screen
+                      // Tombol Aksi dipindah ke Detail Screen, tapi ada tombol Cetak/Share
+                      IconButton(
+                        icon: const Icon(Icons.share, color: Colors.blue),
+                        onPressed: () async {
+                          try {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Menyiapkan PDF...'), duration: Duration(seconds: 1)),
+                            );
+                            final pdfBytes = await PdfGenerator.generateTransaksiDoPdf(tx);
+                            await Printing.sharePdf(bytes: pdfBytes, filename: 'DO_${tx.nomor}.pdf');
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal membuat PDF: $e')));
+                            }
+                          }
+                        },
+                      ),
                     ],
                   ),
                 ],

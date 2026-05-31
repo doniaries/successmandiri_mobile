@@ -332,6 +332,41 @@ class TransaksiDoDetailScreen extends StatelessWidget {
                 ),
               ],
             ]),
+            const SizedBox(height: 20),
+            // Tombol Cetak / Share di bawah
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  try {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Menyiapkan PDF...'), duration: Duration(seconds: 1)),
+                    );
+                    final pdfBytes = await PdfGenerator.generateTransaksiDoPdf(transaction);
+                    await Printing.sharePdf(bytes: pdfBytes, filename: 'DO_${transaction.nomor}.pdf');
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal membuat PDF: $e')));
+                    }
+                  }
+                },
+                icon: const Icon(Icons.print_rounded),
+                label: const Text('Cetak / Bagikan DO'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF01579B),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
           ],
         ),
       ),

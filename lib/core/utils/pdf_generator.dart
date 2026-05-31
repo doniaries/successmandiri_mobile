@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -164,7 +163,7 @@ class PdfGenerator {
                         ),
                       _buildSummaryRow('Hutang Awal:', CurrencyFormatter.formatRupiah(transaction.hutangAwal)),
                       _buildSummaryRow('Bayar Hutang:', '- ${CurrencyFormatter.formatRupiah(transaction.pembayaranHutang)}'),
-                      pw.Divider(width: 250, color: PdfColors.grey400),
+                      pw.Container(width: 250, child: pw.Divider(color: PdfColors.grey400)),
                       pw.SizedBox(height: 5),
                       _buildSummaryRow('Total Bersih:', CurrencyFormatter.formatRupiah(transaction.sisaBayar), isBold: true, isTotal: true),
                     ],
