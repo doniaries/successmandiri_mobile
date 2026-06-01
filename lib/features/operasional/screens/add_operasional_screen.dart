@@ -148,8 +148,10 @@ class _AddOperasionalScreenState extends State<AddOperasionalScreen> {
           title: 'Simpan Berhasil!',
           message:
               'Transaksi operasional $_selectedOperasional sebesar ${CurrencyFormatter.formatRupiah(nominalValue)} telah disimpan.',
-          onConfirm: () =>
-              Navigator.of(context).pop(),
+          onConfirm: () {
+            Navigator.of(context).pop();
+            Navigator.of(context).pop(true);
+          },
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
