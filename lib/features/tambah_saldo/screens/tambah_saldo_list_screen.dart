@@ -107,13 +107,6 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                       systemActiveDate,
                       globalFilter.selectedDate,
                     ),
-                    _buildFilterInfoWidget(
-                      provider,
-                      dashboardProvider,
-                      filteredRequests,
-                      systemActiveDate,
-                      globalFilter.selectedDate,
-                    ),
                     Expanded(
                       child: RefreshIndicator(
                         notificationPredicate: (notification) =>
@@ -809,113 +802,6 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildFilterInfoWidget(
-    TambahSaldoProvider provider,
-    DashboardProvider dashboardProvider,
-    List<TambahSaldoModel> filtered,
-    DateTime systemActiveDate,
-    DateTime? selectedDate,
-  ) {
-    if (selectedDate == null) return const SizedBox.shrink();
-    if (DateUtils.isSameDay(selectedDate, systemActiveDate)) {
-      return const SizedBox.shrink();
-    }
-
-    final formattedFilterDate = DateFormat(
-      'dd MMMM yyyy',
-      'id_ID',
-    ).format(selectedDate);
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFE67E22).withValues(alpha: 0.15),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFE67E22).withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.filter_alt_rounded,
-              color: Color(0xFFE67E22),
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Menampilkan Filter Saldo',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  formattedFilterDate,
-                  style: const TextStyle(
-                    color: Color(0xFF1E293B),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Jumlah: ${filtered.length} Transaksi ditemukan',
-                  style: const TextStyle(
-                    color: Color(0xFF2E7D32),
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          TextButton.icon(
-            onPressed: () {
-              context.read<GlobalFilterProvider>().setDate(null);
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red[700],
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              backgroundColor: Colors.red[50],
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-            ),
-            icon: const Icon(Icons.close_rounded, size: 16),
-            label: const Text(
-              'Reset',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
       ),
     );
   }

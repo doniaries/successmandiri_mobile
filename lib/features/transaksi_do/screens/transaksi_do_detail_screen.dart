@@ -9,6 +9,7 @@ import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_prov
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/edit_transaksi_do_screen.dart';
 import 'package:sawitappmobile/core/utils/pdf_generator.dart';
+import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_pdf_preview_screen.dart';
 import 'package:printing/printing.dart';
 
 class TransaksiDoDetailScreen extends StatelessWidget {
@@ -81,27 +82,15 @@ class TransaksiDoDetailScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.share, color: Colors.blue),
             tooltip: 'Bagikan PDF',
-            onPressed: () async {
-              try {
-                // Tampilkan loading indicator
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Menyiapkan PDF...'), duration: Duration(seconds: 1)),
-                );
-                
-                final pdfBytes = await PdfGenerator.generateTransaksiDoPdf(transaction);
-                
-                // Gunakan package printing untuk membagikan/menyimpan PDF secara offline
-                await Printing.sharePdf(
-                  bytes: pdfBytes,
-                  filename: 'DO_${transaction.nomor}.pdf',
-                );
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Gagal membuat PDF: $e')),
-                  );
-                }
-              }
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TransaksiDoPdfPreviewScreen(
+                    transaction: transaction,
+                  ),
+                ),
+              );
             },
           ),
           PopupMenuButton<String>(
@@ -340,18 +329,15 @@ class TransaksiDoDetailScreen extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () async {
-                  try {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Menyiapkan PDF...'), duration: Duration(seconds: 1)),
-                    );
-                    final pdfBytes = await PdfGenerator.generateTransaksiDoPdf(transaction);
-                    await Printing.sharePdf(bytes: pdfBytes, filename: 'DO_${transaction.nomor}.pdf');
-                  } catch (e) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal membuat PDF: $e')));
-                    }
-                  }
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => TransaksiDoPdfPreviewScreen(
+                        transaction: transaction,
+                      ),
+                    ),
+                  );
                 },
                 icon: const Icon(Icons.print_rounded),
                 label: const Text('Cetak / Bagikan DO'),
