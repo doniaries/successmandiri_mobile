@@ -343,14 +343,14 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF01579B), Color(0xFF0D47A1)],
+                  colors: [Color(0xFFE67E22), Color(0xFFD35400)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF01579B).withValues(alpha: 0.3),
+                    color: const Color(0xFFE67E22).withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 6),
                   ),
@@ -454,7 +454,7 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
                   'Telepon', 
                   _currentSupir.telepon ?? '-',
                   trailing: _currentSupir.telepon != null ? IconButton(
-                    icon: const Icon(Icons.call, color: Color(0xFF01579B)),
+                    icon: const Icon(Icons.call, color: Color(0xFFE67E22)),
                     onPressed: () => _makePhoneCall(_currentSupir.telepon!),
                   ) : null,
                 ),
@@ -494,7 +494,7 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
                       icon: const Icon(Icons.payment_rounded, size: 20),
                       label: const Text('Bayar Hutang'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF01579B),
+                        backgroundColor: const Color(0xFFE67E22),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -641,13 +641,13 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: onTap != null 
-              ? const Color(0xFF01579B).withValues(alpha: 0.3) 
+              ? const Color(0xFFE67E22).withValues(alpha: 0.3) 
               : Colors.grey[200]!,
             width: onTap != null ? 1.5 : 1,
           ),
           boxShadow: onTap != null ? [
             BoxShadow(
-              color: const Color(0xFF01579B).withValues(alpha: 0.05),
+              color: const Color(0xFFE67E22).withValues(alpha: 0.05),
               blurRadius: 12,
               offset: const Offset(0, 4),
             )
@@ -665,7 +665,7 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
                       width: 4,
                       height: 16,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF01579B),
+                        color: const Color(0xFFE67E22),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -677,7 +677,7 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
                   ],
                 ),
                 if (onTap != null)
-                  const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF01579B)),
+                  const Icon(Icons.edit_outlined, size: 18, color: Color(0xFFE67E22)),
               ],
             ),
             const SizedBox(height: 20),
@@ -700,7 +700,7 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
               color: Colors.grey[50],
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, size: 20, color: const Color(0xFF01579B)),
+            child: Icon(icon, size: 20, color: const Color(0xFFE67E22)),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -839,7 +839,7 @@ class _SupirEditBottomSheetState extends State<_SupirEditBottomSheet> {
               const SizedBox(height: 16),
               const Row(
                 children: [
-                  Icon(Icons.edit_outlined, color: Color(0xFF01579B)),
+                  Icon(Icons.edit_outlined, color: Color(0xFFE67E22)),
                   SizedBox(width: 8),
                   Text(
                     'Edit Informasi Kontak',
@@ -870,7 +870,7 @@ class _SupirEditBottomSheetState extends State<_SupirEditBottomSheet> {
                 initialValue: _status,
                 decoration: InputDecoration(
                   labelText: 'Status Supir',
-                  prefixIcon: const Icon(Icons.info_outline, color: Color(0xFF01579B)),
+                  prefixIcon: const Icon(Icons.info_outline, color: Color(0xFFE67E22)),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -893,7 +893,7 @@ class _SupirEditBottomSheetState extends State<_SupirEditBottomSheet> {
               ElevatedButton(
                 onPressed: _isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF01579B),
+                  backgroundColor: const Color(0xFFE67E22),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -925,7 +925,7 @@ class _SupirEditBottomSheetState extends State<_SupirEditBottomSheet> {
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: const Color(0xFF01579B)),
+        prefixIcon: Icon(icon, color: const Color(0xFFE67E22)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -933,7 +933,7 @@ class _SupirEditBottomSheetState extends State<_SupirEditBottomSheet> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF01579B), width: 2),
+          borderSide: const BorderSide(color: Color(0xFFE67E22), width: 2),
         ),
         filled: true,
         fillColor: Colors.grey[50],

@@ -38,42 +38,6 @@ class PdfGenerator {
     final pageTheme = pw.PageTheme(
       pageFormat: pageFormat,
       theme: theme,
-      buildBackground: (pw.Context context) {
-        return pw.FullPage(
-          ignoreMargins: true,
-          child: pw.ClipRect(
-            child: pw.Opacity(
-              opacity: 0.08,
-              child: pw.Transform.rotateBox(
-                angle: -0.5,
-                child: pw.Column(
-                  mainAxisAlignment: pw.MainAxisAlignment.center,
-                  crossAxisAlignment: pw.CrossAxisAlignment.center,
-                  children: List.generate(
-                    15,
-                    (i) => pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.center,
-                      children: List.generate(
-                        5,
-                        (j) => pw.Padding(
-                          padding: const pw.EdgeInsets.all(25),
-                          child: pw.Text(
-                            transaction.perusahaanNama ?? 'CV SUCCESS MANDIRI',
-                            style: pw.TextStyle(
-                              fontSize: 20,
-                              fontWeight: pw.FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
     );
 
     pdf.addPage(

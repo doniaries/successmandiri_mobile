@@ -145,7 +145,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF01579B),
+              primary: Color(0xFFE74C3C),
               onPrimary: Colors.white,
               onSurface: Color(0xFF2C3E50),
             ),
@@ -178,7 +178,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
             !SyncService().isOffline &&
             defaultScrollNotificationPredicate(notification),
         onRefresh: _refreshData,
-        color: const Color(0xFF01579B),
+        color: const Color(0xFFE74C3C),
         child: CustomScrollView(
           controller: _scrollController,
           physics: const AlwaysScrollableScrollPhysics(),
@@ -197,7 +197,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
           context,
           MaterialPageRoute(builder: (context) => const AddOperasionalScreen()),
         ),
-        backgroundColor: const Color(0xFF01579B),
+        backgroundColor: const Color(0xFFE74C3C),
         icon: const Icon(Icons.add_rounded, color: Colors.white),
         label: const Text(
           'Tambah Data',
@@ -284,14 +284,14 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
             margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF01579B), Color(0xFF0D47A1), Color(0xFF002F6C)],
+                colors: [Color(0xFFE74C3C), Color(0xFFC0392B), Color(0xFFA93226)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF01579B).withValues(alpha: 0.3),
+                  color: const Color(0xFFE74C3C).withValues(alpha: 0.3),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -451,15 +451,15 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF01579B) : Colors.white,
+          color: isSelected ? const Color(0xFFE74C3C) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? const Color(0xFF01579B) : Colors.grey[300]!,
+            color: isSelected ? const Color(0xFFE74C3C) : Colors.grey[300]!,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFF01579B).withValues(alpha: 0.2),
+                    color: const Color(0xFFE74C3C).withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),

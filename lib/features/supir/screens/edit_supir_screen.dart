@@ -118,7 +118,7 @@ class _EditSupirScreenState extends State<EditSupirScreen> {
                 initialValue: _status,
                 decoration: InputDecoration(
                   labelText: 'Status Supir',
-                  prefixIcon: const Icon(Icons.info_outline, color: Color(0xFF01579B)),
+                  prefixIcon: const Icon(Icons.info_outline, color: Color(0xFFE67E22)),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -141,7 +141,7 @@ class _EditSupirScreenState extends State<EditSupirScreen> {
               ElevatedButton(
                 onPressed: _isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF01579B),
+                  backgroundColor: const Color(0xFFE67E22),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -173,7 +173,7 @@ class _EditSupirScreenState extends State<EditSupirScreen> {
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: const Color(0xFF01579B)),
+        prefixIcon: Icon(icon, color: const Color(0xFFE67E22)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -181,7 +181,7 @@ class _EditSupirScreenState extends State<EditSupirScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF01579B), width: 2),
+          borderSide: const BorderSide(color: Color(0xFFE67E22), width: 2),
         ),
         filled: true,
         fillColor: Colors.grey[50],

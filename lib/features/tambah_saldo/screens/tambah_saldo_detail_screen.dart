@@ -116,14 +116,14 @@ class TambahSaldoDetailScreen extends StatelessWidget {
               padding: const EdgeInsets.all(25),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF01579B), Color(0xFF0D47A1), Color(0xFF002F6C)],
+                  colors: [Color(0xFFF39C12), Color(0xFFD68910), Color(0xFFB9770E)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(25),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF01579B).withValues(alpha: 0.3),
+                    color: const Color(0xFFF39C12).withValues(alpha: 0.3),
                     blurRadius: 10,
                     offset: const Offset(0, 5),
                   ),

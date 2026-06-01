@@ -181,7 +181,7 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
             'Ubah Operasional',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          backgroundColor: const Color(0xFF01579B),
+          backgroundColor: const Color(0xFFE74C3C),
           foregroundColor: Colors.white,
           elevation: 0,
         ),
@@ -209,7 +209,7 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
                       children: [
                         const Icon(
                           Icons.calendar_today_rounded,
-                          color: Color(0xFF01579B),
+                          color: Color(0xFFE74C3C),
                           size: 20,
                         ),
                         const SizedBox(width: 15),
@@ -424,13 +424,13 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
                           Container(
                             margin: const EdgeInsets.only(top: 4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF01579B).withValues(alpha: 0.1),
+                              color: const Color(0xFFE74C3C).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: IconButton(
                               icon: const Icon(
                                 Icons.add,
-                                color: Color(0xFF01579B),
+                                color: Color(0xFFE74C3C),
                               ),
                               onPressed: () async {
                                 Widget? screen;
@@ -530,7 +530,7 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon, color: const Color(0xFF01579B), size: 20),
+      prefixIcon: Icon(icon, color: const Color(0xFFE74C3C), size: 20),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -538,7 +538,7 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFF01579B), width: 2),
+        borderSide: const BorderSide(color: Color(0xFFE74C3C), width: 2),
       ),
       filled: true,
       fillColor: Colors.grey[50],

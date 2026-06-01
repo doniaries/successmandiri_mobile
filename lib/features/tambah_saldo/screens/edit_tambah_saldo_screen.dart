@@ -51,7 +51,7 @@ class _EditTambahSaldoScreenState extends State<EditTambahSaldoScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF01579B),
+              primary: Color(0xFFF39C12),
               onPrimary: Colors.white,
               onSurface: Colors.black,
             ),
@@ -77,7 +77,7 @@ class _EditTambahSaldoScreenState extends State<EditTambahSaldoScreen> {
           'Ubah Saldo',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: const Color(0xFF01579B),
+        backgroundColor: const Color(0xFFF39C12),
         foregroundColor: Colors.white,
         elevation: 0,
       ),
@@ -99,7 +99,7 @@ class _EditTambahSaldoScreenState extends State<EditTambahSaldoScreen> {
                       prefixText: 'Rp ',
                       prefixIcon: const Icon(
                         Icons.account_balance_wallet_outlined,
-                        color: Color(0xFF01579B),
+                        color: Color(0xFFF39C12),
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -111,7 +111,7 @@ class _EditTambahSaldoScreenState extends State<EditTambahSaldoScreen> {
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(
-                          color: Color(0xFF01579B),
+                          color: Color(0xFFF39C12),
                           width: 2,
                         ),
                       ),
@@ -139,7 +139,7 @@ class _EditTambahSaldoScreenState extends State<EditTambahSaldoScreen> {
                         labelText: 'Tanggal Transaksi',
                         prefixIcon: const Icon(
                           Icons.calendar_today_outlined,
-                          color: Color(0xFF01579B),
+                          color: Color(0xFFF39C12),
                         ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -173,7 +173,7 @@ class _EditTambahSaldoScreenState extends State<EditTambahSaldoScreen> {
                       labelText: 'Keterangan',
                       prefixIcon: const Icon(
                         Icons.note_outlined,
-                        color: Color(0xFF01579B),
+                        color: Color(0xFFF39C12),
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -185,7 +185,7 @@ class _EditTambahSaldoScreenState extends State<EditTambahSaldoScreen> {
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(
-                          color: Color(0xFF01579B),
+                          color: Color(0xFFF39C12),
                           width: 2,
                         ),
                       ),

@@ -224,7 +224,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
             ),
           );
         },
-        backgroundColor: const Color(0xFF01579B),
+        backgroundColor: const Color(0xFFF39C12),
         icon: const Icon(Icons.add_rounded, color: Colors.white),
         label: const Text('Tambah Saldo', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
@@ -260,7 +260,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF01579B), Color(0xFF0D47A1), Color(0xFF002F6C)],
+          colors: [Color(0xFFF39C12), Color(0xFFD68910), Color(0xFFB9770E)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

@@ -168,14 +168,14 @@ class _OperasionalDetailScreenState extends State<OperasionalDetailScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: isPengeluaran
-                      ? [const Color(0xFF01579B), const Color(0xFF0D47A1), const Color(0xFF002F6C)]
+                      ? [const Color(0xFFE74C3C), const Color(0xFFC0392B), const Color(0xFFA93226)]
                       : [const Color(0xFF2ECC71), const Color(0xFF27AE60)],
                 ),
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
                     color:
-                        (isPengeluaran ? const Color(0xFF0D47A1) : Colors.green)
+                        (isPengeluaran ? const Color(0xFFC0392B) : Colors.green)
                             .withValues(alpha: 0.3),
                     blurRadius: 15,
                     offset: const Offset(0, 8),
@@ -262,7 +262,7 @@ class _OperasionalDetailScreenState extends State<OperasionalDetailScreen> {
 
               const Row(
                 children: [
-                  Icon(Icons.description_outlined, size: 18, color: Color(0xFF01579B)),
+                  Icon(Icons.description_outlined, size: 18, color: Color(0xFFE74C3C)),
                   SizedBox(width: 15),
                   Text('Keterangan', style: TextStyle(color: Colors.black54, fontWeight: FontWeight.bold)),
                 ],
@@ -330,7 +330,7 @@ class _OperasionalDetailScreenState extends State<OperasionalDetailScreen> {
               color: Colors.grey[50],
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, size: 18, color: const Color(0xFF01579B)),
+            child: Icon(icon, size: 18, color: const Color(0xFFE74C3C)),
           ),
           const SizedBox(width: 15),
           Text(

@@ -343,14 +343,14 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF01579B), Color(0xFF0D47A1)],
+                  colors: [Color(0xFF8E44AD), Color(0xFF7D3C98)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF01579B).withValues(alpha: 0.3),
+                    color: const Color(0xFF8E44AD).withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 6),
                   ),
@@ -453,7 +453,7 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
                   'Telepon', 
                   _currentPekerja.telepon ?? '-',
                   trailing: _currentPekerja.telepon != null ? IconButton(
-                    icon: const Icon(Icons.call, color: Color(0xFF01579B)),
+                    icon: const Icon(Icons.call, color: Color(0xFF8E44AD)),
                     onPressed: () => _makePhoneCall(_currentPekerja.telepon!),
                   ) : null,
                 ),
@@ -493,7 +493,7 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
                       icon: const Icon(Icons.payment_rounded, size: 20),
                       label: const Text('Bayar Hutang'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF01579B),
+                        backgroundColor: const Color(0xFF8E44AD),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -640,13 +640,13 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: onTap != null 
-              ? const Color(0xFF01579B).withValues(alpha: 0.3) 
+              ? const Color(0xFF8E44AD).withValues(alpha: 0.3) 
               : Colors.grey[200]!,
             width: onTap != null ? 1.5 : 1,
           ),
           boxShadow: onTap != null ? [
             BoxShadow(
-              color: const Color(0xFF01579B).withValues(alpha: 0.05),
+              color: const Color(0xFF8E44AD).withValues(alpha: 0.05),
               blurRadius: 12,
               offset: const Offset(0, 4),
             )
@@ -664,7 +664,7 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
                       width: 4,
                       height: 16,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF01579B),
+                        color: const Color(0xFF8E44AD),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -676,7 +676,7 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
                   ],
                 ),
                 if (onTap != null)
-                  const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF01579B)),
+                  const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF8E44AD)),
               ],
             ),
             const SizedBox(height: 20),
@@ -699,7 +699,7 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
               color: Colors.grey[50],
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, size: 20, color: const Color(0xFF01579B)),
+            child: Icon(icon, size: 20, color: const Color(0xFF8E44AD)),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -838,7 +838,7 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
               const SizedBox(height: 16),
               const Row(
                 children: [
-                  Icon(Icons.edit_outlined, color: Color(0xFF01579B)),
+                  Icon(Icons.edit_outlined, color: Color(0xFF8E44AD)),
                   SizedBox(width: 8),
                   Text(
                     'Edit Informasi Kontak',
@@ -869,7 +869,7 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
                 initialValue: _posisi,
                 decoration: InputDecoration(
                   labelText: 'Posisi Pekerja',
-                  prefixIcon: const Icon(Icons.info_outline, color: Color(0xFF01579B)),
+                  prefixIcon: const Icon(Icons.info_outline, color: Color(0xFF8E44AD)),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -892,7 +892,7 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
               ElevatedButton(
                 onPressed: _isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF01579B),
+                  backgroundColor: const Color(0xFF8E44AD),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -924,7 +924,7 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: const Color(0xFF01579B)),
+        prefixIcon: Icon(icon, color: const Color(0xFF8E44AD)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -932,7 +932,7 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF01579B), width: 2),
+          borderSide: const BorderSide(color: Color(0xFF8E44AD), width: 2),
         ),
         filled: true,
         fillColor: Colors.grey[50],

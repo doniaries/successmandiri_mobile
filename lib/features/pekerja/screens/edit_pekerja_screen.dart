@@ -118,7 +118,7 @@ class _EditPekerjaScreenState extends State<EditPekerjaScreen> {
                 initialValue: _posisi,
                 decoration: InputDecoration(
                   labelText: 'Posisi Pekerja',
-                  prefixIcon: const Icon(Icons.info_outline, color: Color(0xFF01579B)),
+                  prefixIcon: const Icon(Icons.info_outline, color: Color(0xFF8E44AD)),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -141,7 +141,7 @@ class _EditPekerjaScreenState extends State<EditPekerjaScreen> {
               ElevatedButton(
                 onPressed: _isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF01579B),
+                  backgroundColor: const Color(0xFF8E44AD),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -173,7 +173,7 @@ class _EditPekerjaScreenState extends State<EditPekerjaScreen> {
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: const Color(0xFF01579B)),
+        prefixIcon: Icon(icon, color: const Color(0xFF8E44AD)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -181,7 +181,7 @@ class _EditPekerjaScreenState extends State<EditPekerjaScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF01579B), width: 2),
+          borderSide: const BorderSide(color: Color(0xFF8E44AD), width: 2),
         ),
         filled: true,
         fillColor: Colors.grey[50],
