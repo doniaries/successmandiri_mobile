@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/features/operasional/models/operasional_model.dart';
@@ -167,7 +168,7 @@ class _OperasionalDetailScreenState extends State<OperasionalDetailScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: isPengeluaran
-                      ? [const Color(0xFF01579B), const Color(0xFF0D47A1)]
+                      ? [const Color(0xFF01579B), const Color(0xFF0D47A1), const Color(0xFF002F6C)]
                       : [const Color(0xFF2ECC71), const Color(0xFF27AE60)],
                 ),
                 borderRadius: BorderRadius.circular(24),

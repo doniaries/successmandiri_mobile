@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -259,7 +260,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFE67E22), Color(0xFFF39C12)],
+          colors: [Color(0xFF01579B), Color(0xFF0D47A1), Color(0xFF002F6C)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -468,7 +469,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                         fit: BoxFit.scaleDown,
                         child: Text(
                           CurrencyFormatter.formatRupiah(currentSaldo),
-                          style: const TextStyle(
+                          style: GoogleFonts.inter(
                             color: Colors.white,
                             fontSize: 18,
                             fontWeight: FontWeight.w900,
@@ -489,17 +490,17 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.add_circle_outline_rounded,
                             color: Colors.white70,
                             size: 14,
                           ),
-                          SizedBox(width: 6),
+                          const SizedBox(width: 6),
                           Text(
                             'Tambah Saldo',
-                            style: TextStyle(
+                            style: GoogleFonts.inter(
                               color: Colors.white70,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -512,7 +513,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                         fit: BoxFit.scaleDown,
                         child: Text(
                           CurrencyFormatter.formatRupiah(totalNominal),
-                          style: const TextStyle(
+                          style: GoogleFonts.inter(
                             color: Colors.white,
                             fontSize: 18,
                             fontWeight: FontWeight.w900,
@@ -570,13 +571,13 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.redAccent),
-            SizedBox(width: 8),
+            const Icon(Icons.warning_amber_rounded, color: Colors.redAccent),
+            const SizedBox(width: 8),
             Text(
               'Hapus Transaksi',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: GoogleFonts.inter(fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -586,13 +587,13 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Batal', style: TextStyle(color: Colors.grey)),
+            child: Text('Batal', style: GoogleFonts.inter(color: Colors.grey)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text(
+            child: Text(
               'Ya, Hapus',
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 color: Colors.redAccent,
                 fontWeight: FontWeight.bold,
               ),
@@ -670,19 +671,19 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
           color: Colors.redAccent.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Text(
               'Hapus',
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               ),
             ),
-            SizedBox(width: 8),
-            Icon(Icons.delete_outline_rounded, color: Colors.white, size: 28),
+            const SizedBox(width: 8),
+            const Icon(Icons.delete_outline_rounded, color: Colors.white, size: 28),
           ],
         ),
       ),
@@ -713,7 +714,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
             ),
             title: Text(
               CurrencyFormatter.formatRupiah(request.nominal),
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              style: GoogleFonts.inter(fontWeight: FontWeight.w900, fontSize: 18),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

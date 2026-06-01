@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
@@ -114,18 +115,28 @@ class TambahSaldoDetailScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(25),
               decoration: BoxDecoration(
-                color: const Color(0xFF01579B).withValues(alpha: 0.1),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF01579B), Color(0xFF0D47A1), Color(0xFF002F6C)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: BorderRadius.circular(25),
-                border: Border.all(color: const Color(0xFF01579B).withValues(alpha: 0.2)),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF01579B).withValues(alpha: 0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
               ),
               child: Column(
                 children: [
-                  const Icon(Icons.payments_rounded, color: Color(0xFF01579B), size: 60),
+                  const Icon(Icons.payments_rounded, color: Colors.white, size: 60),
                   const SizedBox(height: 15),
                   Text(
                     CurrencyFormatter.formatRupiah(request.nominal),
                     style: const TextStyle(
-                      color: Color(0xFF01579B), 
+                      color: Colors.white, 
                       fontSize: 24, 
                       fontWeight: FontWeight.bold
                     ),
@@ -133,7 +144,7 @@ class TambahSaldoDetailScreen extends StatelessWidget {
                   const SizedBox(height: 5),
                   const Text(
                     'TRANSAKSI BERHASIL',
-                    style: TextStyle(color: Colors.green, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1),
+                    style: TextStyle(color: Colors.greenAccent, fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1),
                   ),
                 ],
               ),
@@ -188,9 +199,9 @@ class TambahSaldoDetailScreen extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  style: const TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 14,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w900,
                     color: Colors.black87,
                   ),
                 ),

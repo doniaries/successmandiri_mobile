@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -283,7 +284,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
             margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF01579B), Color(0xFF0288D1)],
+                colors: [Color(0xFF01579B), Color(0xFF0D47A1), Color(0xFF002F6C)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -413,9 +414,9 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
         const SizedBox(height: 4),
         Text(
           CurrencyFormatter.formatRupiah(amount),
-          style: const TextStyle(
+          style: GoogleFonts.inter(
             color: Colors.white,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w900,
             fontSize: 14,
           ),
         ),
@@ -636,7 +637,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                 ),
                 Text(
                   CurrencyFormatter.formatRupiah(item.nominal),
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 16,
                     fontWeight: FontWeight.w900,
                     color: color,
