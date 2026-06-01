@@ -116,13 +116,13 @@ class _AppVersionSettingScreenState extends State<AppVersionSettingScreen> {
               const SizedBox(height: 32),
 
               _buildTextField(
-                label: 'Versi Aplikasi',
+                label: 'Versi Aplikasi (Otomatis)',
                 controller: _versionController,
-                hint: 'Contoh: 1.0.5',
+                hint: 'Akan terisi otomatis',
                 icon: Icons.update_rounded,
                 validator: (v) =>
                     v!.isEmpty ? 'Versi tidak boleh kosong' : null,
-                enabled: !_isSaving,
+                enabled: false,
               ),
               const SizedBox(height: 20),
 

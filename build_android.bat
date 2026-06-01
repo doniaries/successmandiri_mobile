@@ -7,8 +7,15 @@ echo               MEMULAI PROSES BUILD ANDROID APK
 echo =============================================================
 echo.
 
-set /p BUILD_NAME="1. Masukkan Build Name (contoh: 1.0.0): "
-set /p BUILD_NUMBER="2. Masukkan Build Number (contoh: 1, 2, 3): "
+set /p BUILD_NAME="1. Masukkan Versi Aplikasi (contoh: 1.0.5): "
+for /f "tokens=1,2,3 delims=." %%a in ("%BUILD_NAME%") do (
+    set BUILD_NUMBER=%%c
+)
+if "%BUILD_NUMBER%"=="" (
+    echo [ERROR] Format versi harus memiliki 3 angka, dipisahkan titik (contoh: 1.0.5)
+    goto END
+)
+echo 2. Build Number otomatis: %BUILD_NUMBER%
 echo.
 
 echo 3. Membersihkan cache build (flutter clean)...

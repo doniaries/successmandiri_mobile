@@ -13,6 +13,7 @@ import 'package:sawitappmobile/shared/repositories/resource_repository.dart';
 import 'package:sawitappmobile/core/services/seen_state_service.dart';
 import 'package:sawitappmobile/core/constants/api_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class ResourceProvider with ChangeNotifier {
   final ResourceRepository _repository;
@@ -123,6 +124,17 @@ class ResourceProvider with ChangeNotifier {
       _appCreator = settings['app_creator'] ?? 'Don Borland';
       _appLogoUrl = ApiConstants.normalizeUrl(settings['app_logo_url']);
       _changelog = settings['changelog'] ?? 'Riwayat perubahan aplikasi.';
+
+      // Timpa app_version dari sistem aslinya
+      try {
+        final packageInfo = await PackageInfo.fromPlatform();
+        if (packageInfo.version.isNotEmpty) {
+          final versionParts = packageInfo.version.split('.');
+          final major = versionParts.isNotEmpty ? versionParts[0] : '1';
+          final minor = versionParts.length > 1 ? versionParts[1] : '0';
+          _appVersion = '$major.$minor.${packageInfo.buildNumber}';
+        }
+      } catch (_) {}
     } catch (e) {
       debugPrint('ResourceProvider.fetchAppSettings error: $e');
       // Safely apply fallback values
@@ -130,6 +142,17 @@ class ResourceProvider with ChangeNotifier {
       _appCreator = 'Don Borland';
       _appLogoUrl = null;
       _changelog = 'Riwayat perubahan aplikasi.';
+
+      // Coba ambil dari sistem juga meski api gagal
+      try {
+        final packageInfo = await PackageInfo.fromPlatform();
+        if (packageInfo.version.isNotEmpty) {
+          final versionParts = packageInfo.version.split('.');
+          final major = versionParts.isNotEmpty ? versionParts[0] : '1';
+          final minor = versionParts.length > 1 ? versionParts[1] : '0';
+          _appVersion = '$major.$minor.${packageInfo.buildNumber}';
+        }
+      } catch (_) {}
     } finally {
       notifyListeners();
     }
