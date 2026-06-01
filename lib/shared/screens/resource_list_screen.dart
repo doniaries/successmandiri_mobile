@@ -174,7 +174,6 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
 
     String titleLabel = 'Total';
     IconData countIcon = Icons.people_alt_rounded;
-    IconData countIcon = Icons.people_alt_rounded;
 
     if (widget.resourceType == 'penjual') {
       titleLabel = 'Total Penjual';
@@ -491,7 +490,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
         foregroundColor: Colors.black,
         elevation: 0,
         bottom: hasTabs
-            ? const TabBar(
+            ? TabBar(
                 labelColor: themeColor,
                 unselectedLabelColor: Colors.grey,
                 indicatorColor: themeColor,

@@ -8,9 +8,7 @@ import 'package:sawitappmobile/features/transaksi_do/models/transaksi_do_model.d
 import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_provider.dart';
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/edit_transaksi_do_screen.dart';
-import 'package:sawitappmobile/core/utils/pdf_generator.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_pdf_preview_screen.dart';
-import 'package:printing/printing.dart';
 
 class TransaksiDoDetailScreen extends StatelessWidget {
   final TransaksiDo transaction;
