@@ -442,7 +442,7 @@ class TransaksiDoDetailScreen extends StatelessWidget {
           const Spacer(),
           Text(
             value,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.inter(
               fontSize: fontSize ?? 16,
               fontWeight: FontWeight.w900,
               color: color ?? Colors.black,

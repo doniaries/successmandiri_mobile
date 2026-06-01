@@ -437,7 +437,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
           fit: BoxFit.scaleDown,
           child: Text(
             value,
-            style: const TextStyle(
+            style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 13,
               fontWeight: FontWeight.w900,
@@ -787,7 +787,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                         children: [
                           Text(
                             CurrencyFormatter.formatRupiah(tx.sisaBayar),
-                            style: TextStyle(
+                            style: GoogleFonts.inter(
                               fontSize: 15,
                               fontWeight: FontWeight.w900,
                               color: statusColor[700],
@@ -816,7 +816,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                           children: [
                             Text(
                               '${tx.penjualNama} • ${tx.displaySupirNama}',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.inter(
                                 fontSize: 12,
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
@@ -848,10 +848,10 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                                     const SizedBox(width: 4),
                                     Text(
                                       '${NumberFormat.decimalPattern('id').format(tx.tonase)} kg',
-                                      style: TextStyle(
+                                      style: GoogleFonts.inter(
                                         fontSize: 13,
                                         color: Colors.blue[700],
-                                        fontWeight: FontWeight.bold,
+                                        fontWeight: FontWeight.w900,
                                       ),
                                     ),
                                   ],
