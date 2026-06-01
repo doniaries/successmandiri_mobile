@@ -447,12 +447,15 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                             size: 14,
                           ),
                           SizedBox(width: 6),
-                          Text(
-                            'Saldo Perusahaan',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
+                          Flexible(
+                            child: Text(
+                              'Saldo Perusahaan',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],

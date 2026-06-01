@@ -186,14 +186,16 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                       child: Text('Pekerja'),
                     ),
                   ],
-                  onChanged: (val) {
-                    setState(() {
-                      _selectedPihakType = val;
-                      _selectedPihak = null;
-                      _selectedPihakId = null;
-                      _nominalController.clear();
-                    });
-                  },
+                  onChanged: widget.pihakType != null
+                      ? null
+                      : (val) {
+                          setState(() {
+                            _selectedPihakType = val;
+                            _selectedPihak = null;
+                            _selectedPihakId = null;
+                            _nominalController.clear();
+                          });
+                        },
                   validator: (val) =>
                       val == null ? 'Pilih tipe pembayar' : null,
                 ),
@@ -231,28 +233,26 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                             (e) => DropdownMenuItem<int>(
                               value: (e as dynamic).id as int,
                               child: Text(
-                                '${(e as dynamic).nama} (${CurrencyFormatter.formatRupiah((e as dynamic).sisaHutang ?? 0)})',
+                                '${(e as dynamic).nama}',
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           )
                           .toList(),
-                      onChanged: (val) {
-                        setState(() {
-                          _selectedPihakId = val;
-                          dynamic found;
-                          try {
-                            found = uniqueItems.firstWhere((e) => (e as dynamic).id == val);
-                          } catch (_) {
-                            found = null;
-                          }
-                          _selectedPihak = found;
-                          // if (found != null) {
-                          //   _nominalController.text =
-                          //       CurrencyFormatter.formatNumber((found as dynamic).sisaHutang ?? 0);
-                          // } // Disabled auto-fill
-                        });
-                      },
+                      onChanged: widget.pihakId != null
+                          ? null
+                          : (val) {
+                              setState(() {
+                                _selectedPihakId = val;
+                                dynamic found;
+                                try {
+                                  found = uniqueItems.firstWhere((e) => (e as dynamic).id == val);
+                                } catch (_) {
+                                  found = null;
+                                }
+                                _selectedPihak = found;
+                              });
+                            },
                       validator: (val) =>
                           val == null ? 'Pilih nama pembayar' : null,
                     );
@@ -369,6 +369,10 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: Colors.grey[300]!),
+      ),
+      disabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey[200]!),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
