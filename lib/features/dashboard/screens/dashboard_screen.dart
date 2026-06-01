@@ -2418,12 +2418,16 @@ class _MenuGrid extends StatelessWidget {
           label: 'Transaksi DO',
           icon: Icons.local_shipping_rounded,
           color: const Color(0xFF01579B),
-          onTap: () {
+          onTap: () async {
             context.read<TransaksiDoProvider>().markAsSeen();
-            Navigator.push(
+            await Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const TransaksiDoScreen()),
             );
+            if (context.mounted) {
+              final picked = context.read<GlobalFilterProvider>().selectedDate;
+              context.read<DashboardProvider>().fetchSummary(filterDate: picked);
+            }
           },
           badgeSelector: (c) => c.select<DashboardProvider, int>(
             (p) => p.summary?.stats.transaksi.today.count ?? 0,
@@ -2433,11 +2437,16 @@ class _MenuGrid extends StatelessWidget {
           label: 'Tambah Saldo',
           icon: Icons.add_to_photos_rounded,
           color: const Color(0xFFF39C12),
-          onTap: () {
-            Navigator.push(
+          onTap: () async {
+            context.read<TambahSaldoProvider>().markAsSeen();
+            await Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const TambahSaldoListScreen()),
             );
+            if (context.mounted) {
+              final picked = context.read<GlobalFilterProvider>().selectedDate;
+              context.read<DashboardProvider>().fetchSummary(filterDate: picked);
+            }
           },
           badgeSelector: (c) => c.select<DashboardProvider, int>(
             (p) => p.summary?.tambahSaldoTodayCount ?? 0,
@@ -2447,12 +2456,16 @@ class _MenuGrid extends StatelessWidget {
           label: 'Operasional',
           icon: Icons.payments_rounded,
           color: const Color(0xFFE74C3C),
-          onTap: () {
+          onTap: () async {
             context.read<ResourceProvider>().markAsSeen('operasional');
-            Navigator.push(
+            await Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const OperasionalScreen()),
             );
+            if (context.mounted) {
+              final picked = context.read<GlobalFilterProvider>().selectedDate;
+              context.read<DashboardProvider>().fetchSummary(filterDate: picked);
+            }
           },
           badgeSelector: (c) => c.select<DashboardProvider, int>(
             (p) => p.summary?.operasionalTodayCount ?? 0,
@@ -2519,11 +2532,15 @@ class _MenuGrid extends StatelessWidget {
           label: 'Laporan',
           icon: Icons.auto_stories_rounded,
           color: const Color(0xFF2980B9),
-          onTap: () {
-            Navigator.push(
+          onTap: () async {
+            await Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const FinanceJournalScreen()),
             );
+            if (context.mounted) {
+              final picked = context.read<GlobalFilterProvider>().selectedDate;
+              context.read<DashboardProvider>().fetchSummary(filterDate: picked);
+            }
           },
           badgeSelector: (c) => c.select<DashboardProvider, int>(
             (p) => p.summary?.jurnalTodayCount ?? 0,

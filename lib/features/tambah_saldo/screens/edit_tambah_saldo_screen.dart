@@ -92,6 +92,41 @@ class _EditTambahSaldoScreenState extends State<EditTambahSaldoScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  InkWell(
+                    onTap: () => _selectDate(context),
+                    child: InputDecorator(
+                      decoration: InputDecoration(
+                        labelText: 'Tanggal Transaksi',
+                        prefixIcon: const Icon(
+                          Icons.calendar_today_outlined,
+                          color: Color(0xFFF39C12),
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[50],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            DateFormat(
+                              'dd MMMM yyyy',
+                              'id_ID',
+                            ).format(_selectedDate),
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          const Icon(Icons.arrow_drop_down, color: Colors.grey),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                   TextFormField(
                     controller: _nominalController,
                     decoration: InputDecoration(
@@ -130,41 +165,6 @@ class _EditTambahSaldoScreenState extends State<EditTambahSaldoScreen> {
                       }
                       return null;
                     },
-                  ),
-                  const SizedBox(height: 20),
-                  InkWell(
-                    onTap: () => _selectDate(context),
-                    child: InputDecorator(
-                      decoration: InputDecoration(
-                        labelText: 'Tanggal Transaksi',
-                        prefixIcon: const Icon(
-                          Icons.calendar_today_outlined,
-                          color: Color(0xFFF39C12),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey[300]!),
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey[50],
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            DateFormat(
-                              'dd MMMM yyyy',
-                              'id_ID',
-                            ).format(_selectedDate),
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                          const Icon(Icons.arrow_drop_down, color: Colors.grey),
-                        ],
-                      ),
-                    ),
                   ),
                   const SizedBox(height: 20),
                   TextFormField(
