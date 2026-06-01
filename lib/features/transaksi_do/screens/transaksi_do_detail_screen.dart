@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/core/constants/api_constants.dart';
@@ -158,15 +159,16 @@ class TransaksiDoDetailScreen extends StatelessWidget {
                   Text(
                     transaction.nomor,
                     style: const TextStyle(
+                      fontFamily: 'SF Pro Display',
                       color: Colors.white,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   Text(
                     dateFormat.format(transaction.tanggal),
-                    style: const TextStyle(color: Colors.white70, fontSize: 16),
+                    style: const TextStyle(fontFamily: 'SF Pro Display', color: Colors.white70, fontSize: 16),
                   ),
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 15),
@@ -256,7 +258,8 @@ class TransaksiDoDetailScreen extends StatelessWidget {
                 'Total Bersih',
                 CurrencyFormatter.formatRupiah(transaction.sisaBayar),
                 isBold: true,
-                color: const Color(0xFF01579B),
+                color: Colors.green[800], // Dark green
+                fontSize: 18,
               ),
 
               const Padding(
@@ -378,12 +381,13 @@ class TransaksiDoDetailScreen extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(color: Colors.white70, fontSize: 14),
+          style: const TextStyle(fontFamily: 'SF Pro Display', color: Colors.white70, fontSize: 14),
         ),
         const SizedBox(height: 4),
         Text(
           value,
           style: const TextStyle(
+            fontFamily: 'SF Pro Display',
             color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -426,6 +430,7 @@ class TransaksiDoDetailScreen extends StatelessWidget {
     String value, {
     bool isBold = false,
     Color? color,
+    double? fontSize,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -433,14 +438,14 @@ class TransaksiDoDetailScreen extends StatelessWidget {
         children: [
           Icon(icon, size: 24, color: Colors.grey[400]),
           const SizedBox(width: 15),
-          Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 16, fontWeight: FontWeight.w600)),
+          Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 16, fontWeight: FontWeight.w500)),
           const Spacer(),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: color ?? Colors.black87,
+            style: GoogleFonts.poppins(
+              fontSize: fontSize ?? 16,
+              fontWeight: FontWeight.w900,
+              color: color ?? Colors.black,
             ),
           ),
         ],
