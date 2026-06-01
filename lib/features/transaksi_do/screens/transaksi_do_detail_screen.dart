@@ -433,13 +433,13 @@ class TransaksiDoDetailScreen extends StatelessWidget {
         children: [
           Icon(icon, size: 24, color: Colors.grey[400]),
           const SizedBox(width: 15),
-          Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 16)),
+          Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 16, fontWeight: FontWeight.w600)),
           const Spacer(),
           Text(
             value,
             style: TextStyle(
               fontSize: 16,
-              fontWeight: isBold ? FontWeight.bold : FontWeight.w500,
+              fontWeight: FontWeight.bold,
               color: color ?? Colors.black87,
             ),
           ),

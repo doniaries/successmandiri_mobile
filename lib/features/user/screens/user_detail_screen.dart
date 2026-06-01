@@ -208,7 +208,7 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+              Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 12, fontWeight: FontWeight.w600)),
               const SizedBox(height: 4),
               Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
             ],
