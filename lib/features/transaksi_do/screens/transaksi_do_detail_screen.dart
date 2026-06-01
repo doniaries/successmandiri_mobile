@@ -159,7 +159,7 @@ class TransaksiDoDetailScreen extends StatelessWidget {
                     transaction.nomor,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 28,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -175,7 +175,7 @@ class TransaksiDoDetailScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildHeaderInfo('Tonase', '${transaction.tonase} kg'),
+                      _buildHeaderInfo('Tonase', '${NumberFormat.decimalPattern('id').format(transaction.tonase)} kg'),
                       _buildHeaderInfo(
                         'Harga',
                         CurrencyFormatter.formatRupiah(transaction.hargaSatuan),
