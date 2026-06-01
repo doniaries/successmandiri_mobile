@@ -206,7 +206,18 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                         ? provider.supirDebtors
                         : provider.pekerjaDebtors) as List<dynamic>;
 
-                    final isValueInItems = items.any((e) => (e as dynamic).id == _selectedPihakId);
+                    // Cegah duplicate items (bisa terjadi jika API mengirim data ganda)
+                    final List<dynamic> uniqueItems = [];
+                    final Set<int> seenIds = {};
+                    for (var item in items) {
+                      final id = (item as dynamic).id as int;
+                      if (!seenIds.contains(id)) {
+                        seenIds.add(id);
+                        uniqueItems.add(item);
+                      }
+                    }
+
+                    final isValueInItems = uniqueItems.any((e) => (e as dynamic).id == _selectedPihakId);
 
                     return DropdownButtonFormField<int>(
                       isExpanded: true,
@@ -215,7 +226,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                         'Pilih Nama Pembayar',
                         Icons.person_rounded,
                       ),
-                      items: items
+                      items: uniqueItems
                           .map(
                             (e) => DropdownMenuItem<int>(
                               value: (e as dynamic).id as int,
@@ -231,7 +242,7 @@ class _PayDebtScreenState extends State<PayDebtScreen> {
                           _selectedPihakId = val;
                           dynamic found;
                           try {
-                            found = items.firstWhere((e) => (e as dynamic).id == val);
+                            found = uniqueItems.firstWhere((e) => (e as dynamic).id == val);
                           } catch (_) {
                             found = null;
                           }
