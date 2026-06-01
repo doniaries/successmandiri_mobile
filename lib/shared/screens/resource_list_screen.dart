@@ -132,7 +132,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
     }
   }
 
-  Widget _buildSummaryCards(ResourceProvider provider, List<dynamic> items) {
+  Widget _buildSummaryCards(ResourceProvider provider, List<dynamic> items, Color themeColor) {
     // 1. Hitung Total Keseluruhan Orang (Menggunakan data server di Provider)
     int totalCount = items.length; // Fallback default
     if (widget.resourceType == 'penjual') {
@@ -174,20 +174,17 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
 
     String titleLabel = 'Total';
     IconData countIcon = Icons.people_alt_rounded;
-    Color themeColor = const Color(0xFF01579B);
+    IconData countIcon = Icons.people_alt_rounded;
 
     if (widget.resourceType == 'penjual') {
       titleLabel = 'Total Penjual';
       countIcon = Icons.store_rounded;
-      themeColor = const Color(0xFF0288D1);
     } else if (widget.resourceType == 'supir') {
       titleLabel = 'Total Supir';
       countIcon = Icons.local_shipping_rounded;
-      themeColor = const Color(0xFF00897B);
     } else if (widget.resourceType == 'pekerja') {
       titleLabel = 'Total Pekerja';
       countIcon = Icons.engineering_rounded;
-      themeColor = const Color(0xFF7B1FA2);
     }
 
     return Container(
@@ -321,6 +318,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
     ResourceProvider provider,
     List<dynamic> items,
     ScrollController controller,
+    Color themeColor,
   ) {
     if (provider.isLoading && items.isEmpty) {
       return _buildSkeletons();
@@ -384,14 +382,14 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
           !SyncService().isOffline &&
           defaultScrollNotificationPredicate(notification),
       onRefresh: _refreshData,
-      color: const Color(0xFF01579B),
+      color: themeColor,
       child: listBody,
     );
 
     return scrollableList;
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(Color themeColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -402,11 +400,11 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _buildFilterChip('Semua'),
+                  _buildFilterChip('Semua', themeColor),
                   const SizedBox(width: 8),
-                  _buildFilterChip('Berhutang'),
+                  _buildFilterChip('Berhutang', themeColor),
                   const SizedBox(width: 8),
-                  _buildFilterChip('Lunas / Tidak Ada'),
+                  _buildFilterChip('Lunas / Tidak Ada', themeColor),
                 ],
               ),
             ),
@@ -434,7 +432,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
     );
   }
 
-  Widget _buildFilterChip(String label) {
+  Widget _buildFilterChip(String label, Color themeColor) {
     final isSelected = _hutangFilter == label;
     return ChoiceChip(
       label: Text(label),
@@ -446,15 +444,15 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
           });
         }
       },
-      selectedColor: const Color(0xFF01579B).withValues(alpha: 0.2),
+      selectedColor: themeColor.withValues(alpha: 0.2),
       labelStyle: TextStyle(
-        color: isSelected ? const Color(0xFF01579B) : Colors.black87,
+        color: isSelected ? themeColor : Colors.black87,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
         side: BorderSide(
-          color: isSelected ? const Color(0xFF01579B) : Colors.grey[300]!,
+          color: isSelected ? themeColor : Colors.grey[300]!,
         ),
       ),
     );
@@ -473,6 +471,15 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
         widget.resourceType == 'penjual' ||
         widget.resourceType == 'supir' ||
         widget.resourceType == 'pekerja';
+        
+    Color themeColor = const Color(0xFF01579B);
+    if (widget.resourceType == 'penjual') {
+      themeColor = const Color(0xFF27AE60);
+    } else if (widget.resourceType == 'supir') {
+      themeColor = const Color(0xFFE67E22);
+    } else if (widget.resourceType == 'pekerja') {
+      themeColor = const Color(0xFF8E44AD);
+    }
 
     Widget scaffold = Scaffold(
       appBar: AppBar(
@@ -485,9 +492,9 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
         elevation: 0,
         bottom: hasTabs
             ? const TabBar(
-                labelColor: Color(0xFF01579B),
+                labelColor: themeColor,
                 unselectedLabelColor: Colors.grey,
-                indicatorColor: Color(0xFF01579B),
+                indicatorColor: themeColor,
                 indicatorWeight: 3,
                 indicatorSize: TabBarIndicatorSize.tab,
                 labelStyle: TextStyle(
@@ -510,7 +517,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
           if (!hasTabs &&
               (widget.resourceType == 'kendaraan' ||
                   widget.resourceType == 'user'))
-            _buildSearchBar(),
+            _buildSearchBar(themeColor),
           Expanded(
             child: Consumer<ResourceProvider>(
               builder: (context, provider, child) {
@@ -613,8 +620,8 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
 
                   return Column(
                     children: [
-                      _buildSummaryCards(provider, items),
-                      _buildSearchBar(),
+                      _buildSummaryCards(provider, items, themeColor),
+                      _buildSearchBar(themeColor),
                       Expanded(
                         child: TabBarView(
                           children: [
@@ -622,11 +629,13 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                               provider,
                               activeItems,
                               _activeScrollController,
+                              themeColor,
                             ),
                             _buildListContent(
                               provider,
                               inactiveItems,
                               _inactiveScrollController,
+                              themeColor,
                             ),
                           ],
                         ),
@@ -635,7 +644,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                   );
                 }
 
-                return _buildListContent(provider, items, _scrollController);
+                return _buildListContent(provider, items, _scrollController, themeColor);
               },
             ),
           ),
@@ -667,7 +676,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
             MaterialPageRoute(builder: (context) => screen),
           );
         },
-        backgroundColor: const Color(0xFF01579B),
+        backgroundColor: themeColor,
         icon: const Icon(Icons.add_rounded, color: Colors.white),
         label: Text(
           widget.resourceType == 'penjual'
@@ -706,19 +715,19 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
       subtitle = item.telepon;
       hutang = item.sisaHutang;
       icon = Icons.store_rounded;
-      iconColor = const Color(0xFF01579B);
+      iconColor = const Color(0xFF27AE60);
     } else if (item is Supir) {
       name = item.nama.toUpperCase();
       subtitle = item.status;
       hutang = item.sisaHutang;
       icon = Icons.person_rounded;
-      iconColor = const Color(0xFF01579B);
+      iconColor = const Color(0xFFE67E22);
     } else if (item is Pekerja) {
       name = item.nama.toUpperCase();
       subtitle = item.posisi;
       hutang = item.sisaHutang;
       icon = Icons.engineering_rounded;
-      iconColor = const Color(0xFF00796B);
+      iconColor = const Color(0xFF8E44AD);
     } else if (item is Kendaraan) {
       name = item.nopol;
       subtitle = item.jenis;
