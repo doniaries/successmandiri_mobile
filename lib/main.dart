@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:sawitappmobile/core/navigation/navigation_service.dart';
 import 'package:sawitappmobile/core/network/api_client.dart';
 import 'package:sawitappmobile/core/services/push_notification_service.dart';
@@ -153,6 +154,7 @@ class MyApp extends StatelessWidget {
             primary: const Color(0xFF01579B),
           ),
           useMaterial3: true,
+          textTheme: GoogleFonts.poppinsTextTheme(),
         ),
         scrollBehavior: const MaterialScrollBehavior().copyWith(
           dragDevices: {
