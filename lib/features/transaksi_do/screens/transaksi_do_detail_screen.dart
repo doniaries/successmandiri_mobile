@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/core/constants/api_constants.dart';
@@ -444,7 +444,7 @@ class TransaksiDoDetailScreen extends StatelessWidget {
             value,
             style: GoogleFonts.inter(
               fontSize: fontSize ?? 16,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.bold,
               color: color ?? Colors.black,
             ),
           ),

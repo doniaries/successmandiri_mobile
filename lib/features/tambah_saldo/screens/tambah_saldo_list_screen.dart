@@ -383,7 +383,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 16,
-                                      fontWeight: FontWeight.w900,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),
@@ -429,7 +429,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 20,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
@@ -472,7 +472,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                           style: GoogleFonts.inter(
                             color: Colors.white,
                             fontSize: 18,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
@@ -500,7 +500,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                           const SizedBox(width: 6),
                           Text(
                             'Tambah Saldo',
-                            style: GoogleFonts.inter(
+                            style: TextStyle(
                               color: Colors.white70,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -516,7 +516,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
                           style: GoogleFonts.inter(
                             color: Colors.white,
                             fontSize: 18,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
@@ -577,7 +577,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
             const SizedBox(width: 8),
             Text(
               'Hapus Transaksi',
-              style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -587,13 +587,13 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text('Batal', style: GoogleFonts.inter(color: Colors.grey)),
+            child: Text('Batal', style: TextStyle(color: Colors.grey)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: Text(
               'Ya, Hapus',
-              style: GoogleFonts.inter(
+              style: TextStyle(
                 color: Colors.redAccent,
                 fontWeight: FontWeight.bold,
               ),
@@ -676,7 +676,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
           children: [
             Text(
               'Hapus',
-              style: GoogleFonts.inter(
+              style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
@@ -714,7 +714,7 @@ class _TambahSaldoListScreenState extends State<TambahSaldoListScreen> {
             ),
             title: Text(
               CurrencyFormatter.formatRupiah(request.nominal),
-              style: GoogleFonts.inter(fontWeight: FontWeight.w900, fontSize: 18),
+              style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 18),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

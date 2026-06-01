@@ -154,7 +154,7 @@ class MyApp extends StatelessWidget {
             primary: const Color(0xFF01579B),
           ),
           useMaterial3: true,
-          textTheme: GoogleFonts.interTextTheme(),
+          textTheme: GoogleFonts.poppinsTextTheme(),
         ),
         scrollBehavior: const MaterialScrollBehavior().copyWith(
           dragDevices: {

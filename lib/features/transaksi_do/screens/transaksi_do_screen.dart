@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:sawitappmobile/shared/providers/global_filter_provider.dart';
 import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_provider.dart';
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
@@ -440,7 +440,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
             style: GoogleFonts.inter(
               color: Colors.white,
               fontSize: 13,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),
@@ -789,7 +789,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                             CurrencyFormatter.formatRupiah(tx.sisaBayar),
                             style: GoogleFonts.inter(
                               fontSize: 15,
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.bold,
                               color: statusColor[700],
                             ),
                           ),
@@ -851,7 +851,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
                                       style: GoogleFonts.inter(
                                         fontSize: 13,
                                         color: Colors.blue[700],
-                                        fontWeight: FontWeight.w900,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ],

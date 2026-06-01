@@ -218,7 +218,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
       title: const Text(
         'Operasional',
         style: TextStyle(
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.bold,
           fontSize: 22,
           color: Color(0xFF2C3E50),
         ),
@@ -416,7 +416,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
           CurrencyFormatter.formatRupiah(amount),
           style: GoogleFonts.inter(
             color: Colors.white,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.bold,
             fontSize: 14,
           ),
         ),
@@ -639,7 +639,7 @@ class _OperasionalScreenState extends State<OperasionalScreen> {
                   CurrencyFormatter.formatRupiah(item.nominal),
                   style: GoogleFonts.inter(
                     fontSize: 16,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.bold,
                     color: color,
                   ),
                 ),

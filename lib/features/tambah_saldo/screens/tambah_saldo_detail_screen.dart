@@ -201,7 +201,7 @@ class TambahSaldoDetailScreen extends StatelessWidget {
                   value,
                   style: GoogleFonts.inter(
                     fontSize: 14,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
                 ),

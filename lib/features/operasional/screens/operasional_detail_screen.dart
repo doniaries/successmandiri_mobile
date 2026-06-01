@@ -199,7 +199,7 @@ class _OperasionalDetailScreenState extends State<OperasionalDetailScreen> {
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 32,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -344,10 +344,10 @@ class _OperasionalDetailScreenState extends State<OperasionalDetailScreen> {
           const Spacer(),
           Text(
             value,
-            style: const TextStyle(
+            style: GoogleFonts.inter(
               fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF2C3E50),
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF2C3E50),
             ),
           ),
         ],
