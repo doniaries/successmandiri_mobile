@@ -285,16 +285,25 @@ class ResourceProvider with ChangeNotifier {
           dynamic cacheResponse;
           switch (type) {
             case 'penjual':
-              cacheResponse = await _repository.getPenjualPaginated(page: page, forceOfflineFallback: true);
+              cacheResponse = await _repository.getPenjualPaginated(
+                page: page,
+                forceOfflineFallback: true,
+              );
               break;
             case 'supir':
-              cacheResponse = await _repository.getSupirPaginated(page: page, forceOfflineFallback: true);
+              cacheResponse = await _repository.getSupirPaginated(
+                page: page,
+                forceOfflineFallback: true,
+              );
               break;
             case 'pekerja':
               // Pekerja is handled specially below, but we could try loading cache if needed.
               break;
             case 'kendaraan':
-              cacheResponse = await _repository.getKendaraanPaginated(page: page, forceOfflineFallback: true);
+              cacheResponse = await _repository.getKendaraanPaginated(
+                page: page,
+                forceOfflineFallback: true,
+              );
               break;
             case 'operasional':
               cacheResponse = await _repository.getOperasionalPaginated(
@@ -313,7 +322,10 @@ class ResourceProvider with ChangeNotifier {
               );
               break;
             case 'user':
-              cacheResponse = await _repository.getUsersPaginated(page: page, forceOfflineFallback: true);
+              cacheResponse = await _repository.getUsersPaginated(
+                page: page,
+                forceOfflineFallback: true,
+              );
               break;
           }
           if (cacheResponse != null) {
@@ -326,30 +338,43 @@ class ResourceProvider with ChangeNotifier {
           }
         } catch (_) {}
       }
-      
+
       // For master data ('pekerja', 'penjual', 'supir'), fetch ALL data efficiently using repository methods
       // This avoids slow sequential pagination and prevents duplicate data from shifting pages
-      if ((type == 'pekerja' || type == 'penjual' || type == 'supir') && page == 1) {
+      if ((type == 'pekerja' || type == 'penjual' || type == 'supir') &&
+          page == 1) {
         if (type == 'pekerja') {
           final items = await _repository.getPekerjas();
           _pekerjas.clear();
           _pekerjas.addAll(items);
           _totalPekerja = _pekerjas.length;
-          _totalHutangPekerja = _pekerjas.fold(0.0, (sum, item) => sum + (double.tryParse(item.sisaHutang.toString()) ?? 0.0));
+          _totalHutangPekerja = _pekerjas.fold(
+            0.0,
+            (sum, item) =>
+                sum + (double.tryParse(item.sisaHutang.toString()) ?? 0.0),
+          );
         } else if (type == 'penjual') {
           final items = await _repository.getPenjuals();
           _penjuals.clear();
           _penjuals.addAll(items);
           _totalPenjual = _penjuals.length;
-          _totalHutangPenjual = _penjuals.fold(0.0, (sum, item) => sum + (double.tryParse(item.sisaHutang.toString()) ?? 0.0));
+          _totalHutangPenjual = _penjuals.fold(
+            0.0,
+            (sum, item) =>
+                sum + (double.tryParse(item.sisaHutang.toString()) ?? 0.0),
+          );
         } else if (type == 'supir') {
           final items = await _repository.getSupirs();
           _supirs.clear();
           _supirs.addAll(items);
           _totalSupir = _supirs.length;
-          _totalHutangSupir = _supirs.fold(0.0, (sum, item) => sum + (double.tryParse(item.sisaHutang.toString()) ?? 0.0));
+          _totalHutangSupir = _supirs.fold(
+            0.0,
+            (sum, item) =>
+                sum + (double.tryParse(item.sisaHutang.toString()) ?? 0.0),
+          );
         }
-        
+
         await _checkNewDataFor(type);
       } else {
         // Original pagination logic for other types
@@ -618,13 +643,20 @@ class ResourceProvider with ChangeNotifier {
 
   bool _listIsEmpty(String type) {
     switch (type) {
-      case 'penjual': return _penjuals.isEmpty;
-      case 'supir': return _supirs.isEmpty;
-      case 'pekerja': return _pekerjas.isEmpty;
-      case 'kendaraan': return _kendaraans.isEmpty;
-      case 'operasional': return _operasionals.isEmpty;
-      case 'jurnal_keuangan': return _jurnalKeuangans.isEmpty;
-      case 'user': return _users.isEmpty;
+      case 'penjual':
+        return _penjuals.isEmpty;
+      case 'supir':
+        return _supirs.isEmpty;
+      case 'pekerja':
+        return _pekerjas.isEmpty;
+      case 'kendaraan':
+        return _kendaraans.isEmpty;
+      case 'operasional':
+        return _operasionals.isEmpty;
+      case 'jurnal_keuangan':
+        return _jurnalKeuangans.isEmpty;
+      case 'user':
+        return _users.isEmpty;
     }
     return true;
   }
@@ -638,16 +670,22 @@ class ResourceProvider with ChangeNotifier {
       hasMoreData = response['next_page_url'] != null;
 
       if (response['summary'] != null) {
-        _serverTotalPemasukan = double.tryParse(
-          response['summary']['total_pemasukan']?.toString() ?? '0',
-        ) ?? 0;
-        _serverTotalPengeluaran = double.tryParse(
-          response['summary']['total_pengeluaran']?.toString() ?? '0',
-        ) ?? 0;
+        _serverTotalPemasukan =
+            double.tryParse(
+              response['summary']['total_pemasukan']?.toString() ?? '0',
+            ) ??
+            0;
+        _serverTotalPengeluaran =
+            double.tryParse(
+              response['summary']['total_pengeluaran']?.toString() ?? '0',
+            ) ??
+            0;
 
-        double totalHutang = double.tryParse(
-          response['summary']['total_hutang']?.toString() ?? '0.0',
-        ) ?? 0.0;
+        double totalHutang =
+            double.tryParse(
+              response['summary']['total_hutang']?.toString() ?? '0.0',
+            ) ??
+            0.0;
         switch (type) {
           case 'penjual':
             _totalHutangPenjual = totalHutang;
@@ -1044,7 +1082,8 @@ class ResourceProvider with ChangeNotifier {
         // Ambil pesan dari body response (422 hutang, 422 ada transaksi)
         final responseData = e.response?.data;
         if (responseData is Map) {
-          _errorMessage = responseData['message']?.toString() ??
+          _errorMessage =
+              responseData['message']?.toString() ??
               (responseData['errors'] != null
                   ? (responseData['errors'] as Map).values.first?.toString()
                   : null) ??
@@ -1062,7 +1101,12 @@ class ResourceProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> tambahHutang(String type, int id, double nominal, String keterangan) async {
+  Future<bool> tambahHutang(
+    String type,
+    int id,
+    double nominal,
+    String keterangan,
+  ) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -1080,7 +1124,8 @@ class ResourceProvider with ChangeNotifier {
       if (e is DioException) {
         final responseData = e.response?.data;
         if (responseData is Map) {
-          _errorMessage = responseData['message']?.toString() ??
+          _errorMessage =
+              responseData['message']?.toString() ??
               (responseData['errors'] != null
                   ? (responseData['errors'] as Map).values.first?.toString()
                   : null) ??
@@ -1179,7 +1224,8 @@ class ResourceProvider with ChangeNotifier {
     if (e is DioException) {
       final responseData = e.response?.data;
       if (responseData is Map) {
-        if (responseData['errors'] != null && (responseData['errors'] as Map).isNotEmpty) {
+        if (responseData['errors'] != null &&
+            (responseData['errors'] as Map).isNotEmpty) {
           final Map errors = responseData['errors'];
           final firstError = errors.values.first;
           if (firstError is List && firstError.isNotEmpty) {
