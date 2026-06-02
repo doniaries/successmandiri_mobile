@@ -282,58 +282,104 @@ class ResourceProvider with ChangeNotifier {
       // --- FAST CACHE LOAD (Cache-First) ---
       if (page == 1 && _listIsEmpty(type)) {
         try {
-          dynamic cacheResponse;
-          switch (type) {
-            case 'penjual':
-              cacheResponse = await _repository.getPenjualPaginated(
-                page: page,
-                forceOfflineFallback: true,
-              );
-              break;
-            case 'supir':
-              cacheResponse = await _repository.getSupirPaginated(
-                page: page,
-                forceOfflineFallback: true,
-              );
-              break;
-            case 'pekerja':
-              // Pekerja is handled specially below, but we could try loading cache if needed.
-              break;
-            case 'kendaraan':
-              cacheResponse = await _repository.getKendaraanPaginated(
-                page: page,
-                forceOfflineFallback: true,
-              );
-              break;
-            case 'operasional':
-              cacheResponse = await _repository.getOperasionalPaginated(
-                page: page,
-                tanggal: filters?['tanggal'],
-                forceOfflineFallback: true,
-              );
-              break;
-            case 'jurnal_keuangan':
-              cacheResponse = await _repository.getJurnalPaginated(
-                page: page,
-                startDate: filters?['start_date'],
-                endDate: filters?['end_date'],
-                jenisTransaksi: filters?['jenis_transaksi'],
-                forceOfflineFallback: true,
-              );
-              break;
-            case 'user':
-              cacheResponse = await _repository.getUsersPaginated(
-                page: page,
-                forceOfflineFallback: true,
-              );
-              break;
-          }
-          if (cacheResponse != null) {
-            _processRawResponse(type, page, cacheResponse);
-            _isLoading = false; // Turn off spinner instantly!
-            notifyListeners();
-            if (!refresh) {
-              return; // Skip network fetch since data is already loaded from SQLite and user didn't explicitly refresh
+          if (type == 'penjual' || type == 'supir' || type == 'pekerja') {
+            final endpoint = type == 'penjual'
+                ? ApiConstants.penjual
+                : (type == 'supir' ? ApiConstants.supir : ApiConstants.pekerja);
+            final mergedData = await _repository.syncService
+                .getMergedOfflineData(type, endpoint);
+
+            if (mergedData.isNotEmpty) {
+              if (type == 'penjual') {
+                final list = mergedData
+                    .map((e) => Penjual.fromJson(e))
+                    .toList();
+                list.sort((a, b) => b.id.compareTo(a.id));
+                _penjuals.clear();
+                _penjuals.addAll(list);
+                _totalPenjual = _penjuals.length;
+                _totalHutangPenjual = _penjuals.fold(
+                  0.0,
+                  (sum, item) =>
+                      sum +
+                      (double.tryParse(item.sisaHutang.toString()) ?? 0.0),
+                );
+              } else if (type == 'supir') {
+                final list = mergedData.map((e) => Supir.fromJson(e)).toList();
+                list.sort((a, b) => b.id.compareTo(a.id));
+                _supirs.clear();
+                _supirs.addAll(list);
+                _totalSupir = _supirs.length;
+                _totalHutangSupir = _supirs.fold(
+                  0.0,
+                  (sum, item) =>
+                      sum +
+                      (double.tryParse(item.sisaHutang.toString()) ?? 0.0),
+                );
+              } else if (type == 'pekerja') {
+                final list = mergedData
+                    .map((e) => Pekerja.fromJson(e))
+                    .toList();
+                list.sort((a, b) => b.id.compareTo(a.id));
+                _pekerjas.clear();
+                _pekerjas.addAll(list);
+                _totalPekerja = _pekerjas.length;
+                _totalHutangPekerja = _pekerjas.fold(
+                  0.0,
+                  (sum, item) =>
+                      sum +
+                      (double.tryParse(item.sisaHutang.toString()) ?? 0.0),
+                );
+              }
+
+              _isLoading = false;
+              notifyListeners();
+
+              // We STILL want to fetch network updates silently if refresh == true
+              // Tapi jika refresh == false, kita return agar tidak fetch
+              if (!refresh) {
+                return;
+              }
+            }
+          } else {
+            dynamic cacheResponse;
+            switch (type) {
+              case 'kendaraan':
+                cacheResponse = await _repository.getKendaraanPaginated(
+                  page: page,
+                  forceOfflineFallback: true,
+                );
+                break;
+              case 'operasional':
+                cacheResponse = await _repository.getOperasionalPaginated(
+                  page: page,
+                  tanggal: filters?['tanggal'],
+                  forceOfflineFallback: true,
+                );
+                break;
+              case 'jurnal_keuangan':
+                cacheResponse = await _repository.getJurnalPaginated(
+                  page: page,
+                  startDate: filters?['start_date'],
+                  endDate: filters?['end_date'],
+                  jenisTransaksi: filters?['jenis_transaksi'],
+                  forceOfflineFallback: true,
+                );
+                break;
+              case 'user':
+                cacheResponse = await _repository.getUsersPaginated(
+                  page: page,
+                  forceOfflineFallback: true,
+                );
+                break;
+            }
+            if (cacheResponse != null) {
+              _processRawResponse(type, page, cacheResponse);
+              _isLoading = false; // Turn off spinner instantly!
+              notifyListeners();
+              if (!refresh) {
+                return; // Skip network fetch
+              }
             }
           }
         } catch (_) {}
