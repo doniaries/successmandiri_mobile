@@ -31,20 +31,13 @@ set DEFAULT_VER=%V_MAJ%.%V_MIN%.%NEW_PAT%
 :: Tambah build number otomatis
 set /a NEW_BUILD_NUM=CUR_BUILD_NUM+1
 
-set BUILD_INPUT=
-set /p BUILD_INPUT="1. Masukkan Versi Aplikasi (Tekan Enter untuk otomatis %DEFAULT_VER%+%NEW_BUILD_NUM%): "
-if "%BUILD_INPUT%"=="" set BUILD_INPUT=%DEFAULT_VER%+%NEW_BUILD_NUM%
+set BUILD_NAME=
+set /p BUILD_NAME="1. Masukkan Versi Aplikasi (3 digit, contoh: 1.5.4) [Tekan Enter untuk %DEFAULT_VER%]: "
+if "%BUILD_NAME%"=="" set BUILD_NAME=%DEFAULT_VER%
 
-:: Pisahkan input menjadi Version Name dan Build Number
-for /f "tokens=1* delims=+" %%a in ("%BUILD_INPUT%") do (
-    set BUILD_NAME=%%a
-    set BUILD_NUMBER=%%b
-)
-
-if "%BUILD_NUMBER%"=="" (
-    echo [ERROR] Format harus menyertakan build number dengan tanda + ^(contoh: 1.5.4+1^)
-    goto END
-)
+set BUILD_NUMBER=
+set /p BUILD_NUMBER="2. Masukkan Build Number (angka, contoh: 1) [Tekan Enter untuk %NEW_BUILD_NUM%]: "
+if "%BUILD_NUMBER%"=="" set BUILD_NUMBER=%NEW_BUILD_NUM%
 
 echo.
 echo 2. Memperbarui versi di pubspec.yaml ke %BUILD_NAME%+%BUILD_NUMBER%...
