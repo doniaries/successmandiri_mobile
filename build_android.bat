@@ -31,34 +31,41 @@ set DEFAULT_VER=%V_MAJ%.%V_MIN%.%NEW_PAT%
 :: Tambah build number otomatis
 set /a NEW_BUILD_NUM=CUR_BUILD_NUM+1
 
-set BUILD_NAME=
-set /p BUILD_NAME="1. Masukkan Versi Aplikasi (Tekan Enter untuk otomatis versi %DEFAULT_VER%): "
-if "%BUILD_NAME%"=="" set BUILD_NAME=%DEFAULT_VER%
+set BUILD_INPUT=
+set /p BUILD_INPUT="1. Masukkan Versi Aplikasi (Tekan Enter untuk otomatis %DEFAULT_VER%+%NEW_BUILD_NUM%): "
+if "%BUILD_INPUT%"=="" set BUILD_INPUT=%DEFAULT_VER%+%NEW_BUILD_NUM%
 
-set BUILD_NUMBER=
-set /p BUILD_NUMBER="2. Masukkan Build Number (Tekan Enter untuk otomatis build %NEW_BUILD_NUM%): "
-if "%BUILD_NUMBER%"=="" set BUILD_NUMBER=%NEW_BUILD_NUM%
+:: Pisahkan input menjadi Version Name dan Build Number
+for /f "tokens=1* delims=+" %%a in ("%BUILD_INPUT%") do (
+    set BUILD_NAME=%%a
+    set BUILD_NUMBER=%%b
+)
+
+if "%BUILD_NUMBER%"=="" (
+    echo [ERROR] Format harus menyertakan build number dengan tanda + ^(contoh: 1.5.4+1^)
+    goto END
+)
 
 echo.
-echo 3. Memperbarui versi di pubspec.yaml ke %BUILD_NAME%+%BUILD_NUMBER%...
+echo 2. Memperbarui versi di pubspec.yaml ke %BUILD_NAME%+%BUILD_NUMBER%...
 powershell -Command "(Get-Content pubspec.yaml) -replace '^version:.*', 'version: %BUILD_NAME%+%BUILD_NUMBER%' | Set-Content pubspec.yaml"
 echo.
 
-echo 4. Membersihkan cache build (flutter clean)...
+echo 3. Membersihkan cache build (flutter clean)...
 call flutter clean
 if %ERRORLEVEL% NEQ 0 goto GAGAL
 
-echo 5. Mengambil dependensi Flutter...
+echo 4. Mengambil dependensi Flutter...
 call flutter pub get
 if %ERRORLEVEL% NEQ 0 goto GAGAL
 
 echo.
-echo 6. Memulai kompilasi Release APK (Versi %BUILD_NAME%_%BUILD_NUMBER%)...
+echo 5. Memulai kompilasi Release APK (Versi %BUILD_NAME%_%BUILD_NUMBER%)...
 call flutter build apk --release --build-name=%BUILD_NAME% --build-number=%BUILD_NUMBER%
 if %ERRORLEVEL% NEQ 0 goto GAGAL
 
 echo.
-echo 7. Menyalin dan mengubah nama APK...
+echo 6. Menyalin dan mengubah nama APK...
 if exist "build\app\outputs\flutter-apk\app-release.apk" (
     copy "build\app\outputs\flutter-apk\app-release.apk" "mysawit_v%BUILD_NAME%_%BUILD_NUMBER%.apk" /Y
 ) else if exist "build\app\outputs\apk\release\app-release.apk" (
