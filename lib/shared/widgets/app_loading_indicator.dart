@@ -3,12 +3,19 @@ import 'package:sawitappmobile/shared/widgets/custom_loading_logo.dart';
 
 class AppLoadingIndicator extends StatelessWidget {
   final double size;
-  const AppLoadingIndicator({super.key, this.size = 60});
+  const AppLoadingIndicator({super.key, this.size = 40});
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: AnimatedPulsingLogo(size: size),
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: const CircularProgressIndicator(
+          color: Color(0xFF01579B),
+          strokeWidth: 3,
+        ),
+      ),
     );
   }
 }
@@ -27,35 +34,7 @@ class AppLoadingOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        child,
-        if (isLoading)
-          Container(
-            color: Colors.white.withValues(alpha: 0.7), // Subtle white overlay instead of dark
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const AppLoadingIndicator(size: 90),
-                  if (message != null) ...[
-                    const SizedBox(height: 20),
-                    Text(
-                      message!,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF01579B), // Use primary color for text
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ),
-      ],
-    );
+    return child;
   }
 }
 

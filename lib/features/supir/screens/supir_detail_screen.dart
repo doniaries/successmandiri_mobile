@@ -22,6 +22,7 @@ class SupirDetailScreen extends StatefulWidget {
 class _SupirDetailScreenState extends State<SupirDetailScreen> {
   late Supir _currentSupir;
   bool _isLoading = true;
+  bool _isProcessing = false;
 
   @override
   void initState() {
@@ -83,7 +84,7 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
     );
 
     if (confirmed == true && mounted) {
-      setState(() => _isLoading = true);
+      setState(() => _isProcessing = true);
       try {
         final success = await context.read<ResourceProvider>().updateResourceStatus(
               'supir',
@@ -92,7 +93,7 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
             );
 
         if (mounted) {
-          setState(() => _isLoading = false);
+          setState(() => _isProcessing = false);
           if (success) {
             SuccessDialog.show(
               context,
@@ -110,7 +111,7 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
         }
       } catch (e) {
         if (mounted) {
-          setState(() => _isLoading = false);
+          setState(() => _isProcessing = false);
           ErrorDialog.show(
             context,
             title: 'Error',
@@ -172,7 +173,7 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
       try {
         final success = await context.read<ResourceProvider>().deleteResource('supir', _currentSupir.id);
         if (mounted) {
-          setState(() => _isLoading = false);
+          setState(() => _isProcessing = false);
           if (success) {
             SuccessDialog.show(context, title: 'Berhasil', message: 'Data Supir berhasil dihapus.');
             Navigator.pop(context);
@@ -204,7 +205,7 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
         }
       } catch (e) {
         if (mounted) {
-          setState(() => _isLoading = false);
+          setState(() => _isProcessing = false);
           ErrorDialog.show(context, title: 'Error', message: e.toString());
         }
       }
@@ -323,12 +324,12 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
               color: _currentSupir.isActive ? Colors.red : Colors.green,
             ),
             tooltip: _currentSupir.isActive ? 'Nonaktifkan' : 'Aktifkan',
-            onPressed: _isLoading ? null : _handleToggleStatus,
+            onPressed: _isProcessing ? null : _handleToggleStatus,
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
             tooltip: 'Hapus Supir',
-            onPressed: _isLoading ? null : _handleDelete,
+            onPressed: _isProcessing ? null : _handleDelete,
           ),
           const SizedBox(width: 8),
         ],

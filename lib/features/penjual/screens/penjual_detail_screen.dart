@@ -23,6 +23,7 @@ class PenjualDetailScreen extends StatefulWidget {
 class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
   late Penjual _currentPenjual;
   bool _isLoading = true;
+  bool _isProcessing = false;
 
   @override
   void initState() {
@@ -84,7 +85,7 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
     );
 
     if (confirmed == true && mounted) {
-      setState(() => _isLoading = true);
+      setState(() => _isProcessing = true);
       try {
         final success = await context.read<ResourceProvider>().updateResourceStatus(
               'penjual',
@@ -93,7 +94,7 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
             );
 
         if (mounted) {
-          setState(() => _isLoading = false);
+          setState(() => _isProcessing = false);
           if (success) {
             SuccessDialog.show(
               context,
@@ -111,7 +112,7 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
         }
       } catch (e) {
         if (mounted) {
-          setState(() => _isLoading = false);
+          setState(() => _isProcessing = false);
           ErrorDialog.show(
             context,
             title: 'Error',
@@ -169,11 +170,11 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
     );
 
     if (confirmed == true && mounted) {
-      setState(() => _isLoading = true);
+      setState(() => _isProcessing = true);
       try {
         final success = await context.read<ResourceProvider>().deleteResource('penjual', _currentPenjual.id);
         if (mounted) {
-          setState(() => _isLoading = false);
+          setState(() => _isProcessing = false);
           if (success) {
             SuccessDialog.show(context, title: 'Berhasil', message: 'Data Penjual berhasil dihapus.');
             Navigator.pop(context); // Go back after delete
@@ -205,7 +206,7 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
         }
       } catch (e) {
         if (mounted) {
-          setState(() => _isLoading = false);
+          setState(() => _isProcessing = false);
           ErrorDialog.show(context, title: 'Error', message: e.toString());
         }
       }
@@ -324,12 +325,12 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
               color: _currentPenjual.isActive ? Colors.red : Colors.green,
             ),
             tooltip: _currentPenjual.isActive ? 'Nonaktifkan' : 'Aktifkan',
-            onPressed: _isLoading ? null : _handleToggleStatus,
+            onPressed: _isProcessing ? null : _handleToggleStatus,
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
             tooltip: 'Hapus Penjual',
-            onPressed: _isLoading ? null : _handleDelete,
+            onPressed: _isProcessing ? null : _handleDelete,
           ),
           const SizedBox(width: 8),
         ],

@@ -22,6 +22,7 @@ class PekerjaDetailScreen extends StatefulWidget {
 class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
   late Pekerja _currentPekerja;
   bool _isLoading = true;
+  bool _isProcessing = false;
 
   @override
   void initState() {
@@ -83,7 +84,7 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
     );
 
     if (confirmed == true && mounted) {
-      setState(() => _isLoading = true);
+      setState(() => _isProcessing = true);
       try {
         final success = await context.read<ResourceProvider>().updateResourceStatus(
               'pekerja',
@@ -92,7 +93,7 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
             );
 
         if (mounted) {
-          setState(() => _isLoading = false);
+          setState(() => _isProcessing = false);
           if (success) {
             SuccessDialog.show(
               context,
@@ -110,7 +111,7 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
         }
       } catch (e) {
         if (mounted) {
-          setState(() => _isLoading = false);
+          setState(() => _isProcessing = false);
           ErrorDialog.show(
             context,
             title: 'Error',
@@ -168,11 +169,11 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
     );
 
     if (confirmed == true && mounted) {
-      setState(() => _isLoading = true);
+      setState(() => _isProcessing = true);
       try {
         final success = await context.read<ResourceProvider>().deleteResource('pekerja', _currentPekerja.id);
         if (mounted) {
-          setState(() => _isLoading = false);
+          setState(() => _isProcessing = false);
           if (success) {
             SuccessDialog.show(context, title: 'Berhasil', message: 'Data Pekerja berhasil dihapus.');
             Navigator.pop(context);
@@ -204,7 +205,7 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
         }
       } catch (e) {
         if (mounted) {
-          setState(() => _isLoading = false);
+          setState(() => _isProcessing = false);
           ErrorDialog.show(context, title: 'Error', message: e.toString());
         }
       }
@@ -323,12 +324,12 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
               color: _currentPekerja.isActive ? Colors.red : Colors.green,
             ),
             tooltip: _currentPekerja.isActive ? 'Nonaktifkan' : 'Aktifkan',
-            onPressed: _isLoading ? null : _handleToggleStatus,
+            onPressed: _isProcessing ? null : _handleToggleStatus,
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
             tooltip: 'Hapus Pekerja',
-            onPressed: _isLoading ? null : _handleDelete,
+            onPressed: _isProcessing ? null : _handleDelete,
           ),
           const SizedBox(width: 8),
         ],
