@@ -38,6 +38,7 @@ class ApiClient {
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         final prefs = await SharedPreferences.getInstance();
+        await prefs.reload(); // Pastikan memory isolate ini sinkron dengan disk/main isolate
         final token = prefs.getString('auth_token');
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
@@ -50,20 +51,30 @@ class ApiClient {
       onError: (DioException e, handler) async {
         if (e.response?.statusCode == 401) {
           final prefs = await SharedPreferences.getInstance();
+          await prefs.reload(); // Pastikan kita mendapat data terbaru dari memory/disk di semua isolate
           final currentToken = prefs.getString('auth_token');
           
-          if (currentToken != null && !_isRedirecting) {
+          // Token yang digunakan di request ini
+          final requestToken = e.requestOptions.headers['Authorization']?.toString().replaceAll('Bearer ', '');
+          
+          // Hanya hapus token dan redirect JIKA token yang ditolak ADALAH token yang saat ini aktif
+          // Jika tidak sama, berarti ini adalah request kadaluarsa (misal dari isolate background)
+          if (currentToken != null && requestToken == currentToken && !_isRedirecting) {
             _isRedirecting = true;
             await prefs.remove('auth_token');
             await prefs.remove('cached_user');
             
-            // Redirect ke Login jika tidak di halaman login
-            NavigationService.navigatorKey.currentState?.pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => const LoginScreen()),
-              (route) => false,
-            ).then((_) {
+            // Redirect ke Login jika navigator tersedia (berarti kita di UI isolate)
+            if (NavigationService.navigatorKey.currentState != null) {
+              NavigationService.navigatorKey.currentState?.pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+                (route) => false,
+              ).then((_) {
+                _isRedirecting = false;
+              });
+            } else {
               _isRedirecting = false;
-            });
+            }
           }
         }
         return handler.next(e);
