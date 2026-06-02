@@ -71,9 +71,11 @@ class TransaksiDoPdfPreviewScreen extends StatelessWidget {
                     ScaffoldMessenger.of(context).hideCurrentSnackBar();
                   }
                   
-                  await Share.shareXFiles(
-                    [XFile(file.path, mimeType: 'image/jpeg')],
-                    text: 'Bukti Transaksi DO ${transaction.nomor}',
+                  await SharePlus.instance.share(
+                    ShareParams(
+                      files: [XFile(file.path, mimeType: 'image/jpeg')],
+                      text: 'Bukti Transaksi DO ${transaction.nomor}',
+                    ),
                   );
                   break; // Hanya halaman pertama
                 }

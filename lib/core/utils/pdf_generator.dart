@@ -205,6 +205,21 @@ class PdfGenerator {
     final monthFormat = DateFormat('MMMM yyyy', 'id_ID');
     final numberFormat = NumberFormat.decimalPattern('id');
 
+    // Mengambil data perusahaan & kasir
+    String kasirName = '-';
+    String perusahaanName = 'Semua Perusahaan';
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userStr = prefs.getString('cached_user');
+      if (userStr != null) {
+        final Map<String, dynamic> userMap = jsonDecode(userStr);
+        kasirName = userMap['name'] ?? '-';
+        if (userMap['perusahaan'] != null) {
+          perusahaanName = userMap['perusahaan']['nama'] ?? 'Semua Perusahaan';
+        }
+      }
+    } catch (_) {}
+
     final pageFormat = PdfPageFormat.a4;
 
     pdf.addPage(
@@ -212,17 +227,32 @@ class PdfGenerator {
         pageTheme: pw.PageTheme(
           pageFormat: pageFormat,
           theme: theme,
-          margin: const pw.EdgeInsets.all(30),
+          margin: const pw.EdgeInsets.symmetric(horizontal: 30, vertical: 20),
         ),
         header: (pw.Context context) {
-          return pw.Container(
-            alignment: pw.Alignment.center,
-            margin: const pw.EdgeInsets.only(bottom: 20),
-            child: pw.Text(
-              'LAPORAN TONASE BULANAN\n${monthFormat.format(DateTime(year, month)).toUpperCase()}',
-              textAlign: pw.TextAlign.center,
-              style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
-            ),
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Container(
+                margin: const pw.EdgeInsets.only(bottom: 10),
+                child: pw.Column(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Text('Perusahaan: $perusahaanName', style: const pw.TextStyle(fontSize: 10)),
+                    pw.Text('Kasir: $kasirName', style: const pw.TextStyle(fontSize: 10)),
+                  ],
+                ),
+              ),
+              pw.Container(
+                alignment: pw.Alignment.center,
+                margin: const pw.EdgeInsets.only(bottom: 15),
+                child: pw.Text(
+                  'LAPORAN TONASE BULANAN\n${monthFormat.format(DateTime(year, month)).toUpperCase()}',
+                  textAlign: pw.TextAlign.center,
+                  style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+                ),
+              ),
+            ],
           );
         },
         footer: (pw.Context context) {
@@ -298,14 +328,14 @@ class PdfGenerator {
 
   static pw.Widget _buildCell(String text, {bool isBold = false, pw.TextAlign align = pw.TextAlign.left, PdfColor color = PdfColors.black}) {
     return pw.Padding(
-      padding: const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+      padding: const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 3), // Diperkecil agar tabel tidak overflow
       child: pw.Text(
         text,
         textAlign: align,
         style: pw.TextStyle(
           fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal,
           color: color,
-          fontSize: 10,
+          fontSize: 9, // Font sedikit lebih kecil agar lebih fit
         ),
       ),
     );
