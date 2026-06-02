@@ -4,6 +4,7 @@ import 'package:sawitappmobile/features/transaksi_do/models/transaksi_do_model.d
 import 'package:sawitappmobile/core/utils/pdf_generator.dart';
 
 import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -42,7 +43,25 @@ class TransaksiDoPdfPreviewScreen extends StatelessWidget {
                 
                 // Render halaman pertama PDF menjadi gambar
                 await for (final page in Printing.raster(pdfBytes, dpi: 300)) {
-                  final imageBytes = await page.toPng();
+                  final ui.Image image = await page.toImage();
+                  
+                  // Buat canvas dengan background putih (menghindari background hitam di WA/sosmed)
+                  final recorder = ui.PictureRecorder();
+                  final canvas = ui.Canvas(recorder);
+                  final bgPaint = ui.Paint()..color = const ui.Color(0xFFFFFFFF);
+                  
+                  canvas.drawRect(
+                    ui.Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+                    bgPaint,
+                  );
+                  
+                  // Gambar hasil PDF di atas background putih
+                  canvas.drawImage(image, ui.Offset.zero, ui.Paint());
+                  
+                  final picture = recorder.endRecording();
+                  final imgWithBg = await picture.toImage(image.width, image.height);
+                  final byteData = await imgWithBg.toByteData(format: ui.ImageByteFormat.png);
+                  final imageBytes = byteData!.buffer.asUint8List();
                   
                   final dir = await getTemporaryDirectory();
                   final file = File('${dir.path}/DO_${transaction.nomor}.jpg');
