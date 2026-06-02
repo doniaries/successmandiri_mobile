@@ -28,6 +28,7 @@ import 'package:sawitappmobile/shared/widgets/skeleton_loader.dart';
 import 'package:sawitappmobile/features/operasional/screens/operasional_screen.dart';
 import 'package:sawitappmobile/features/operasional/screens/operasional_detail_screen.dart';
 import 'package:sawitappmobile/features/operasional/screens/finance_journal_screen.dart';
+import 'package:sawitappmobile/features/laporan_tonase/screens/laporan_tonase_screen.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/features/operasional/models/operasional_model.dart';
 import 'package:sawitappmobile/features/penjual/models/penjual_model.dart';
@@ -2529,8 +2530,8 @@ class _MenuGrid extends StatelessWidget {
               c.select<ResourceProvider, int>((p) => p.pekerjaCount),
         ),
         _MenuItem(
-          label: 'Laporan',
-          icon: Icons.auto_stories_rounded,
+          label: 'Jurnal Keuangan',
+          icon: Icons.account_balance_wallet_rounded,
           color: const Color(0xFF2980B9),
           onTap: () async {
             await Navigator.push(
@@ -2545,6 +2546,18 @@ class _MenuGrid extends StatelessWidget {
           badgeSelector: (c) => c.select<DashboardProvider, int>(
             (p) => p.summary?.jurnalTodayCount ?? 0,
           ),
+        ),
+        _MenuItem(
+          label: 'Lap. Tonase',
+          icon: Icons.assessment_rounded,
+          color: const Color(0xFF8E44AD),
+          onTap: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const LaporanTonaseScreen()),
+            );
+          },
+          badgeSelector: (c) => 0,
         ),
         if (user.isSuperAdmin)
           _MenuItem(
