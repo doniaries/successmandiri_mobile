@@ -22,6 +22,8 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
   final _namaController = TextEditingController();
   final _teleponController = TextEditingController();
   final _alamatController = TextEditingController();
+  final _namaBankController = TextEditingController();
+  final _nomorRekeningController = TextEditingController();
   final _keteranganController = TextEditingController();
   final _hutangController = TextEditingController();
   bool _isLoading = false;
@@ -39,6 +41,8 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
     _namaController.dispose();
     _teleponController.dispose();
     _alamatController.dispose();
+    _namaBankController.dispose();
+    _nomorRekeningController.dispose();
     _keteranganController.dispose();
     _hutangController.dispose();
     super.dispose();
@@ -77,6 +81,8 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
       final penjual = await provider.addPenjual({
         'nama': _namaController.text,
         'telepon': _teleponController.text,
+        'nama_bank': _namaBankController.text,
+        'nomor_rekening': _nomorRekeningController.text,
         'alamat': _alamatController.text,
         'keterangan': _keteranganController.text,
         'hutang': hutangValue > 0 ? hutangValue : 0,
@@ -150,6 +156,46 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
                   keyboardType: TextInputType.phone,
                 ),
                 const SizedBox(height: 20),
+                Autocomplete<String>(
+                  optionsBuilder: (TextEditingValue textEditingValue) {
+                    const defaultBanks = ['BCA', 'BRI', 'Mandiri', 'BNI', 'BSI', 'CIMB Niaga', 'BJB'];
+                    final provider = context.read<ResourceProvider>();
+                    final existingBanks = provider.penjuals
+                        .map((p) => p.namaBank)
+                        .where((b) => b != null && b.isNotEmpty)
+                        .map((b) => b!)
+                        .toSet();
+                    final allBanks = {...defaultBanks, ...existingBanks}.toList();
+                    
+                    if (textEditingValue.text.isEmpty) {
+                      return allBanks;
+                    }
+                    return allBanks.where((bank) => 
+                        bank.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                  },
+                  onSelected: (String selection) {
+                    _namaBankController.text = selection;
+                  },
+                  fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
+                    textEditingController.addListener(() {
+                      _namaBankController.text = textEditingController.text;
+                    });
+                    return _buildTextField(
+                      controller: textEditingController,
+                      focusNode: focusNode,
+                      label: 'Nama Bank (Opsional)',
+                      icon: Icons.account_balance_outlined,
+                      placeholder: 'Pilih atau ketik nama bank baru...',
+                    );
+                  },
+                ),
+                const SizedBox(height: 20),
+                _buildTextField(
+                  controller: _nomorRekeningController,
+                  label: 'Nomor Rekening (Opsional)',
+                  icon: Icons.credit_card_outlined,
+                ),
+                const SizedBox(height: 20),
                 _buildTextField(
                   controller: _alamatController,
                   label: 'Alamat',
@@ -203,15 +249,19 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
     List<TextInputFormatter>? inputFormatters,
     String? prefixText,
     String? helperText,
+    String? placeholder,
+    FocusNode? focusNode,
   }) {
     return TextFormField(
       controller: controller,
+      focusNode: focusNode,
       keyboardType: keyboardType,
       maxLines: maxLines,
       validator: validator,
       inputFormatters: inputFormatters,
       decoration: InputDecoration(
         labelText: label,
+        hintText: placeholder,
         helperText: helperText,
         helperMaxLines: 2,
         helperStyle: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),

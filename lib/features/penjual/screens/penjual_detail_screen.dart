@@ -457,6 +457,8 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
                   ) : null,
                 ),
                 _buildInfoRow(Icons.location_on_rounded, 'Alamat', _currentPenjual.alamat ?? '-', isMultiLine: true),
+                _buildInfoRow(Icons.account_balance_rounded, 'Nama Bank', _currentPenjual.namaBank ?? '-'),
+                _buildInfoRow(Icons.credit_card_rounded, 'Nomor Rekening', _currentPenjual.nomorRekening ?? '-'),
                 
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 10),
@@ -744,6 +746,8 @@ class _PenjualEditBottomSheetState extends State<_PenjualEditBottomSheet> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _namaController;
   late TextEditingController _teleponController;
+  late TextEditingController _namaBankController;
+  late TextEditingController _nomorRekeningController;
   late TextEditingController _alamatController;
   bool _isLoading = false;
 
@@ -752,6 +756,8 @@ class _PenjualEditBottomSheetState extends State<_PenjualEditBottomSheet> {
     super.initState();
     _namaController = TextEditingController(text: widget.penjual.nama);
     _teleponController = TextEditingController(text: widget.penjual.telepon);
+    _namaBankController = TextEditingController(text: widget.penjual.namaBank);
+    _nomorRekeningController = TextEditingController(text: widget.penjual.nomorRekening);
     _alamatController = TextEditingController(text: widget.penjual.alamat);
   }
 
@@ -759,6 +765,8 @@ class _PenjualEditBottomSheetState extends State<_PenjualEditBottomSheet> {
   void dispose() {
     _namaController.dispose();
     _teleponController.dispose();
+    _namaBankController.dispose();
+    _nomorRekeningController.dispose();
     _alamatController.dispose();
     super.dispose();
   }
@@ -773,6 +781,8 @@ class _PenjualEditBottomSheetState extends State<_PenjualEditBottomSheet> {
       final success = await provider.updatePenjual(widget.penjual.id, {
         'nama': _namaController.text,
         'telepon': _teleponController.text,
+        'nama_bank': _namaBankController.text,
+        'nomor_rekening': _nomorRekeningController.text,
         'alamat': _alamatController.text,
       });
 
@@ -858,6 +868,47 @@ class _PenjualEditBottomSheetState extends State<_PenjualEditBottomSheet> {
                 keyboardType: TextInputType.phone,
               ),
               const SizedBox(height: 16),
+              Autocomplete<String>(
+                initialValue: TextEditingValue(text: _namaBankController.text),
+                optionsBuilder: (TextEditingValue textEditingValue) {
+                  const defaultBanks = ['BCA', 'BRI', 'Mandiri', 'BNI', 'BSI', 'CIMB Niaga', 'BJB'];
+                  final provider = context.read<ResourceProvider>();
+                  final existingBanks = provider.penjuals
+                      .map((p) => p.namaBank)
+                      .where((b) => b != null && b.isNotEmpty)
+                      .map((b) => b!)
+                      .toSet();
+                  final allBanks = {...defaultBanks, ...existingBanks}.toList();
+                  
+                  if (textEditingValue.text.isEmpty) {
+                    return allBanks;
+                  }
+                  return allBanks.where((bank) => 
+                      bank.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                },
+                onSelected: (String selection) {
+                  _namaBankController.text = selection;
+                },
+                fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
+                  textEditingController.addListener(() {
+                    _namaBankController.text = textEditingController.text;
+                  });
+                  return _buildTextField(
+                    controller: textEditingController,
+                    focusNode: focusNode,
+                    label: 'Nama Bank',
+                    icon: Icons.account_balance_outlined,
+                    placeholder: 'Pilih atau ketik nama bank baru...',
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                controller: _nomorRekeningController,
+                label: 'Nomor Rekening',
+                icon: Icons.credit_card_outlined,
+              ),
+              const SizedBox(height: 16),
               _buildTextField(
                 controller: _alamatController,
                 label: 'Alamat',
@@ -892,14 +943,18 @@ class _PenjualEditBottomSheetState extends State<_PenjualEditBottomSheet> {
     TextInputType? keyboardType,
     int maxLines = 1,
     String? Function(String?)? validator,
+    String? placeholder,
+    FocusNode? focusNode,
   }) {
     return TextFormField(
       controller: controller,
+      focusNode: focusNode,
       keyboardType: keyboardType,
       maxLines: maxLines,
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
+        hintText: placeholder,
         prefixIcon: Icon(icon, color: const Color(0xFF27AE60)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(

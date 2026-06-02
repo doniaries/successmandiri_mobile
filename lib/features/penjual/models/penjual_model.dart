@@ -5,6 +5,8 @@ class Penjual {
   final String nama;
   final String? alamat;
   final String? telepon;
+  final String? namaBank;
+  final String? nomorRekening;
   final double? hutang;
   final double? sisaHutang;
   final bool isActive;
@@ -17,6 +19,8 @@ class Penjual {
     required this.nama,
     this.alamat,
     this.telepon,
+    this.namaBank,
+    this.nomorRekening,
     this.hutang,
     this.sisaHutang,
     required this.isActive,
@@ -38,6 +42,8 @@ class Penjual {
       nama: json['nama'],
       alamat: json['alamat'],
       telepon: json['telepon'],
+      namaBank: json['nama_bank'],
+      nomorRekening: json['nomor_rekening'],
       hutang: _parseDouble(json['hutang']),
       sisaHutang: _parseDouble(json['sisa_hutang']),
       isActive: json['is_active'] == true || json['is_active'] == 1 || json['is_active'] == '1',
