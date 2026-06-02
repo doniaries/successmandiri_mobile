@@ -10,8 +10,12 @@ echo.
 :: Ambil versi saat ini dari pubspec.yaml
 for /f "tokens=2" %%v in ('findstr /b "version:" pubspec.yaml') do set CURRENT_VER=%%v
 
-:: Pisahkan dari build number jika ada (hilangkan tanda +)
-for /f "tokens=1 delims=+" %%a in ("%CURRENT_VER%") do set BASE_VER=%%a
+:: Pisahkan dari build number jika ada (tanda +)
+for /f "tokens=1* delims=+" %%a in ("%CURRENT_VER%") do (
+    set BASE_VER=%%a
+    set CUR_BUILD_NUM=%%b
+)
+if "%CUR_BUILD_NUM%"=="" set CUR_BUILD_NUM=0
 
 :: Pisahkan menjadi Major, Minor, Patch
 for /f "tokens=1,2,3 delims=." %%a in ("%BASE_VER%") do (
@@ -24,20 +28,18 @@ for /f "tokens=1,2,3 delims=." %%a in ("%BASE_VER%") do (
 set /a NEW_PAT=V_PAT+1
 set DEFAULT_VER=%V_MAJ%.%V_MIN%.%NEW_PAT%
 
+:: Tambah build number otomatis
+set /a NEW_BUILD_NUM=CUR_BUILD_NUM+1
+
 set BUILD_NAME=
 set /p BUILD_NAME="1. Masukkan Versi Aplikasi (Tekan Enter untuk otomatis versi %DEFAULT_VER%): "
 if "%BUILD_NAME%"=="" set BUILD_NAME=%DEFAULT_VER%
 
-for /f "tokens=1,2,3 delims=." %%a in ("%BUILD_NAME%") do (
-    set BUILD_NUMBER=%%c
-)
-if "%BUILD_NUMBER%"=="" (
-    echo [ERROR] Format versi harus memiliki 3 angka, dipisahkan titik ^(contoh: 1.0.5^)
-    goto END
-)
-echo 2. Build Number otomatis: %BUILD_NUMBER%
-echo.
+set BUILD_NUMBER=
+set /p BUILD_NUMBER="2. Masukkan Build Number (Tekan Enter untuk otomatis build %NEW_BUILD_NUM%): "
+if "%BUILD_NUMBER%"=="" set BUILD_NUMBER=%NEW_BUILD_NUM%
 
+echo.
 echo 3. Memperbarui versi di pubspec.yaml ke %BUILD_NAME%+%BUILD_NUMBER%...
 powershell -Command "(Get-Content pubspec.yaml) -replace '^version:.*', 'version: %BUILD_NAME%+%BUILD_NUMBER%' | Set-Content pubspec.yaml"
 echo.
