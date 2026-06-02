@@ -406,8 +406,9 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
             'Ubah Transaksi DO',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          backgroundColor: const Color(0xFF01579B),
-          foregroundColor: Colors.white,
+          elevation: 0,
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
         ),
         body: SingleChildScrollView(
                 padding: const EdgeInsets.all(16.0),

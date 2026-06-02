@@ -23,9 +23,9 @@ class ApiClient {
   ApiClient() {
     _dio = Dio(BaseOptions(
       baseUrl: ApiConstants.baseUrl,
-      connectTimeout: const Duration(seconds: 30),  // Responsif di sinyal buruk
-      receiveTimeout: const Duration(seconds: 30),  // Cukup untuk response besar
-      sendTimeout: const Duration(seconds: 30),     // Batas kirim data
+      connectTimeout: const Duration(seconds: 5),  // Fast connection timeout for offline fallback
+      receiveTimeout: const Duration(seconds: 15), // Cukup untuk response besar
+      sendTimeout: const Duration(seconds: 5),     // Fast send timeout for mutations
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',

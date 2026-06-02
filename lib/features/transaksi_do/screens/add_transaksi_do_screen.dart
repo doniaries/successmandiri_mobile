@@ -301,8 +301,9 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
             'Tambah Transaksi DO',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          backgroundColor: const Color(0xFF01579B),
-          foregroundColor: Colors.white,
+          elevation: 0,
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
         ),
         bottomNavigationBar: Padding(
           padding: EdgeInsets.fromLTRB(16, 8, 16, MediaQuery.of(context).padding.bottom + 8),

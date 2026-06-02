@@ -874,7 +874,7 @@ class ResourceProvider with ChangeNotifier {
 
       // ✅ PANGGIL REFRESH DI SINI (DI LUAR ELSE)
       // Ini akan memicu pengambilan data (cache + queue offline terbaru)
-      await fetchResources('penjual', refresh: true);
+      fetchResources('penjual', refresh: true);
 
       if (result is Map && result['offline'] == true) {
         _errorMessage = 'offline';
@@ -894,7 +894,7 @@ class ResourceProvider with ChangeNotifier {
 
       // ✅ PANGGIL REFRESH DI SINI (DI LUAR ELSE)
       // Ini akan memicu pengambilan data (cache + queue offline terbaru)
-      await fetchResources('supir', refresh: true);
+      fetchResources('supir', refresh: true);
 
       if (result is Map && result['offline'] == true) {
         _errorMessage = 'offline';
@@ -910,7 +910,7 @@ class ResourceProvider with ChangeNotifier {
   Future<bool> updatePenjual(int id, Map<String, dynamic> data) async {
     try {
       await _repository.updatePenjual(id, data);
-      await fetchResources('penjual', refresh: true);
+      fetchResources('penjual', refresh: true);
       return true;
     } catch (e) {
       debugPrint('Error updating penjual: $e');
@@ -921,7 +921,7 @@ class ResourceProvider with ChangeNotifier {
   Future<bool> updateSupir(int id, Map<String, dynamic> data) async {
     try {
       await _repository.updateSupir(id, data);
-      await fetchResources('supir', refresh: true);
+      fetchResources('supir', refresh: true);
       return true;
     } catch (e) {
       debugPrint('Error updating supir: $e');
@@ -936,7 +936,7 @@ class ResourceProvider with ChangeNotifier {
 
       // ✅ PANGGIL REFRESH DI SINI (DI LUAR ELSE)
       // Ini akan memicu pengambilan data (cache + queue offline terbaru)
-      await fetchResources('pekerja', refresh: true);
+      fetchResources('pekerja', refresh: true);
 
       if (result is Map && result['offline'] == true) {
         _errorMessage = 'offline';
@@ -967,7 +967,7 @@ class ResourceProvider with ChangeNotifier {
 
       // ✅ PANGGIL REFRESH DI SINI (DI LUAR ELSE)
       // Ini akan memicu pengambilan data (cache + queue offline terbaru)
-      await fetchResources('kendaraan', refresh: true);
+      fetchResources('kendaraan', refresh: true);
 
       if (result is Map && result['offline'] == true) {
         _errorMessage = 'offline';
@@ -986,7 +986,7 @@ class ResourceProvider with ChangeNotifier {
       final result = await _repository.storeOperasional(data);
 
       // ✅ SELALU refresh data agar data dari offline_queue langsung muncul
-      await fetchResources('operasional', refresh: true);
+      fetchResources('operasional', refresh: true);
 
       if (result is Map && result['offline'] == true) {
         _errorMessage = 'offline';
@@ -1120,7 +1120,7 @@ class ResourceProvider with ChangeNotifier {
         default:
           return false;
       }
-      await fetchResources(type, refresh: true);
+      fetchResources(type, refresh: true);
       return true;
     } catch (e) {
       debugPrint('Error deleting $type: $e');
@@ -1163,7 +1163,7 @@ class ResourceProvider with ChangeNotifier {
         'keterangan': keterangan,
       });
       // Refresh the resource details
-      await fetchResources(type, refresh: true);
+      fetchResources(type, refresh: true);
       return true;
     } catch (e) {
       debugPrint('Error tambahHutang $type: $e');
@@ -1240,7 +1240,7 @@ class ResourceProvider with ChangeNotifier {
       }
 
       // Refresh list
-      await fetchResources(type, refresh: true);
+      fetchResources(type, refresh: true);
       return true;
     } catch (e) {
       debugPrint('Error updating $type status: $e');
