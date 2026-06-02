@@ -278,9 +278,6 @@ class ResourceProvider with ChangeNotifier {
 
     try {
       int page = _currentPage[type] ?? 1;
-      List<dynamic> allRawData = [];
-      bool hasMore = true;
-      dynamic lastResponse; // Store last response for summary
 
       // --- FAST CACHE LOAD (Cache-First) ---
       if (page == 1 && _listIsEmpty(type)) {
@@ -338,19 +335,19 @@ class ResourceProvider with ChangeNotifier {
           _pekerjas.clear();
           _pekerjas.addAll(items);
           _totalPekerja = _pekerjas.length;
-          _totalHutangPekerja = _pekerjas.fold(0.0, (sum, item) => sum + (double.tryParse(item.sisaHutang?.toString() ?? '0') ?? 0.0));
+          _totalHutangPekerja = _pekerjas.fold(0.0, (sum, item) => sum + (double.tryParse(item.sisaHutang.toString()) ?? 0.0));
         } else if (type == 'penjual') {
           final items = await _repository.getPenjuals();
           _penjuals.clear();
           _penjuals.addAll(items);
           _totalPenjual = _penjuals.length;
-          _totalHutangPenjual = _penjuals.fold(0.0, (sum, item) => sum + (double.tryParse(item.sisaHutang?.toString() ?? '0') ?? 0.0));
+          _totalHutangPenjual = _penjuals.fold(0.0, (sum, item) => sum + (double.tryParse(item.sisaHutang.toString()) ?? 0.0));
         } else if (type == 'supir') {
           final items = await _repository.getSupirs();
           _supirs.clear();
           _supirs.addAll(items);
           _totalSupir = _supirs.length;
-          _totalHutangSupir = _supirs.fold(0.0, (sum, item) => sum + (double.tryParse(item.sisaHutang?.toString() ?? '0') ?? 0.0));
+          _totalHutangSupir = _supirs.fold(0.0, (sum, item) => sum + (double.tryParse(item.sisaHutang.toString()) ?? 0.0));
         }
         
         await _checkNewDataFor(type);
