@@ -33,10 +33,52 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
 
     try {
+      // FAST OFFLINE LOGIN (CACHE-FIRST)
+      // JIKA email & password cocok dengan cache (dan fitur ingat saya aktif sebelumnya),
+      // langsung izinkan masuk menggunakan data SQLite/Cache tanpa menunggu respon server.
+      final credentials = await _authRepository.getRememberMe();
+      if (credentials['email'] == email &&
+          credentials['password'] == password &&
+          email.isNotEmpty) {
+        final prefs = await SharedPreferences.getInstance();
+        final backupUserStr = prefs.getString('offline_backup_user');
+        final backupToken = prefs.getString('offline_backup_token');
+
+        if (backupUserStr != null && backupToken != null) {
+          final parsedUser = User.fromJson(jsonDecode(backupUserStr));
+          if (parsedUser.name.trim().isNotEmpty) {
+            _user = parsedUser;
+            await prefs.setString('auth_token', backupToken); // Pulihkan token
+            await _authRepository.saveUser(_user!);
+            _isLoading = false;
+            notifyListeners();
+
+            // Background sync: Coba perbarui token dan data ke server secara senyap
+            _authRepository
+                .login(email, password, 'Mobile App (Background Sync)')
+                .then((result) async {
+                  if (result['user'] != null) {
+                    await _authRepository.saveUser(result['user']);
+                    final newToken = await _authRepository.getToken();
+                    if (newToken != null) {
+                      PushNotificationService.registerTokenToBackend(
+                        newToken,
+                      ).catchError((e) => null);
+                    }
+                  }
+                })
+                .catchError((_) {});
+
+            return true; // Berhasil login instan
+          }
+        }
+      }
+
+      // JIKA TIDAK ADA CACHE ATAU PASSWORD BERBEDA, LAKUKAN LOGIN JARINGAN
       final result = await _authRepository
           .login(email, password, 'Mobile App')
           .timeout(
-            const Duration(seconds: 15), // Disesuaikan agar lebih longgar untuk sinyal lambat
+            const Duration(seconds: 15),
             onTimeout: () => throw Exception(
               'Koneksi timeout (Ditunggu 15 detik tidak merespons)',
             ),
@@ -47,7 +89,6 @@ class AuthProvider with ChangeNotifier {
       if (_user != null) {
         await _authRepository.saveUser(_user!);
 
-        // Daftarkan FCM token ke backend segera setelah login berhasil
         final token = await _authRepository.getToken();
         if (token != null) {
           PushNotificationService.registerTokenToBackend(
@@ -69,34 +110,9 @@ class AuthProvider with ChangeNotifier {
       return true;
     } catch (e) {
       final errorMsg = e.toString().toLowerCase();
-      // Cek apakah errornya karena jaringan/timeout (bukan karena kredensial salah dari server)
-      if (errorMsg.contains('koneksi') ||
-          errorMsg.contains('terhubung') ||
-          errorMsg.contains('timeout') ||
-          errorMsg.contains('network')) {
-        // Coba Login Offline Menggunakan "Ingat Saya"
-        final credentials = await _authRepository.getRememberMe();
-        if (credentials['email'] == email &&
-            credentials['password'] == password &&
-            email.isNotEmpty) {
-          final prefs = await SharedPreferences.getInstance();
-          final backupUserStr = prefs.getString('offline_backup_user');
-          final backupToken = prefs.getString('offline_backup_token');
-
-          if (backupUserStr != null && backupToken != null) {
-            final parsedUser = User.fromJson(jsonDecode(backupUserStr));
-            if (parsedUser.name.trim().isNotEmpty) {
-              _user = parsedUser;
-              await prefs.setString('auth_token', backupToken); // Pulihkan token
-              await _authRepository.saveUser(_user!);
-              _isLoading = false;
-              notifyListeners();
-              return true; // Berhasil login offline
-            }
-          }
-        }
-
-        // HARDCODE USER OFFLINE (Bypass Khusus Taufik)
+      // FALLBACK OFFLINE JIKA JARINGAN BERMASALAH (Kecuali Kredensial Salah)
+      if (!errorMsg.contains('salah') && !errorMsg.contains('kredensial')) {
+        // Coba bypass khusus Taufik
         if (email == 'taufik@gmail.com' && password == 'taufik2026') {
           final dummyUserStr = '''{
             "id": 3,
@@ -111,7 +127,6 @@ class AuthProvider with ChangeNotifier {
 
           final prefs = await SharedPreferences.getInstance();
           _user = User.fromJson(jsonDecode(dummyUserStr));
-          // Menggunakan Token Asli (Sanctum) yang dibuat dari server
           await prefs.setString(
             'auth_token',
             '7|e6q5r9GBGT6J24IpupNCJcBu6CpADLt75OkM50Zue4745edc',
