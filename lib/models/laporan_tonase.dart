@@ -45,12 +45,16 @@ class LaporanTonaseResponse {
   final double totalTonase;
   final int month;
   final int year;
+  final String? perusahaanName;
+  final String? perusahaanPabrik;
 
   LaporanTonaseResponse({
     required this.report,
     required this.totalTonase,
     required this.month,
     required this.year,
+    this.perusahaanName,
+    this.perusahaanPabrik,
   });
 
   factory LaporanTonaseResponse.fromJson(Map<String, dynamic> json) {
@@ -62,6 +66,8 @@ class LaporanTonaseResponse {
       totalTonase: LaporanTonase._parseDouble(json['total_tonase']),
       month: LaporanTonase._parseInt(json['month']),
       year: LaporanTonase._parseInt(json['year']),
+      perusahaanName: json['perusahaan_name']?.toString(),
+      perusahaanPabrik: json['perusahaan_pabrik']?.toString(),
     );
   }
 }

@@ -207,22 +207,21 @@ class PdfGenerator {
 
     // Mengambil data perusahaan & kasir
     String kasirName = '-';
-    String perusahaanName = 'Semua Perusahaan';
     try {
       final prefs = await SharedPreferences.getInstance();
       final userStr = prefs.getString('cached_user');
       if (userStr != null) {
         final Map<String, dynamic> userMap = jsonDecode(userStr);
         kasirName = userMap['name'] ?? '-';
-        if (userMap['perusahaan_pabrik'] != null && userMap['perusahaan_pabrik'].toString().trim().isNotEmpty) {
-          perusahaanName = userMap['perusahaan_pabrik'];
-        } else if (userMap['perusahaan'] != null) {
-          perusahaanName = userMap['perusahaan']['nama'] ?? userMap['perusahaan_name'] ?? 'Semua Perusahaan';
-        } else {
-          perusahaanName = userMap['perusahaan_name'] ?? 'Semua Perusahaan';
-        }
       }
     } catch (_) {}
+
+    String perusahaanName = 'Semua Perusahaan';
+    if (data.perusahaanPabrik != null && data.perusahaanPabrik!.trim().isNotEmpty) {
+      perusahaanName = data.perusahaanPabrik!;
+    } else if (data.perusahaanName != null && data.perusahaanName!.trim().isNotEmpty) {
+      perusahaanName = data.perusahaanName!;
+    }
 
     final pageFormat = PdfPageFormat.a4;
 
