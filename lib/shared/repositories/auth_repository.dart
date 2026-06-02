@@ -47,6 +47,11 @@ class AuthRepository {
         } else {
           throw Exception('Format data user tidak sesuai.');
         }
+
+        final parsedUser = User.fromJson(userData);
+        if (parsedUser.name.trim().isEmpty) {
+           throw Exception('Data user tidak lengkap (nama kosong).');
+        }
         
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('auth_token', token);
@@ -60,7 +65,7 @@ class AuthRepository {
             .catchError((e) => null); // Non-blocking
 
         return {
-          'user': User.fromJson(userData),
+          'user': parsedUser,
           'token': token,
         };
       }
@@ -126,7 +131,11 @@ class AuthRepository {
           return null;
         }
 
-        return User.fromJson(data);
+        final user = User.fromJson(data);
+        if (user.name.trim().isEmpty) {
+          return null;
+        }
+        return user;
       }
       return null;
     } catch (e) {

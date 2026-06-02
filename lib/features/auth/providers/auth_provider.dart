@@ -84,12 +84,15 @@ class AuthProvider with ChangeNotifier {
           final backupToken = prefs.getString('offline_backup_token');
 
           if (backupUserStr != null && backupToken != null) {
-            _user = User.fromJson(jsonDecode(backupUserStr));
-            await prefs.setString('auth_token', backupToken); // Pulihkan token
-            await _authRepository.saveUser(_user!);
-            _isLoading = false;
-            notifyListeners();
-            return true; // Berhasil login offline
+            final parsedUser = User.fromJson(jsonDecode(backupUserStr));
+            if (parsedUser.name.trim().isNotEmpty) {
+              _user = parsedUser;
+              await prefs.setString('auth_token', backupToken); // Pulihkan token
+              await _authRepository.saveUser(_user!);
+              _isLoading = false;
+              notifyListeners();
+              return true; // Berhasil login offline
+            }
           }
         }
 
@@ -184,7 +187,12 @@ class AuthProvider with ChangeNotifier {
         notifyListeners();
 
         // Coba ambil dari cache dulu agar cepat
-        _user = await _authRepository.getCachedUser();
+        final cachedUser = await _authRepository.getCachedUser();
+        if (cachedUser != null && cachedUser.name.trim().isNotEmpty) {
+          _user = cachedUser;
+        } else {
+          _user = null;
+        }
         notifyListeners();
 
         // Daftarkan FCM token ke backend agar selalu sinkron jika database dibersihkan
