@@ -577,7 +577,10 @@ class SyncService {
       }
     }
 
-    if (list.isEmpty) return;
+    if (list.isEmpty) {
+      await setLastSyncTimestamp(table, DateTime.now().toUtc().subtract(const Duration(minutes: 2)).toIso8601String());
+      return;
+    }
 
     final mappedList = await compute(_mapDataForDb, {'table': table, 'list': list});
     
@@ -592,8 +595,8 @@ class SyncService {
       await batch.commit(noResult: true);
     }
     
-    // Set last sync timestamp to current time (UTC)
-    await setLastSyncTimestamp(table, DateTime.now().toUtc().toIso8601String());
+    // Set last sync timestamp to current time (UTC) minus a 2-minute buffer for clock skew
+    await setLastSyncTimestamp(table, DateTime.now().toUtc().subtract(const Duration(minutes: 2)).toIso8601String());
   }
 
   Future<void> cacheData(

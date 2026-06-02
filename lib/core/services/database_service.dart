@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class DatabaseService {
   static final DatabaseService _instance = DatabaseService._internal();
@@ -117,6 +118,17 @@ class DatabaseService {
     for (var table in tables) {
       await db!.delete(table);
     }
+    
+    // Hapus juga cache last_sync dari SharedPreferences
+    // Agar saat fetch lagi, akan mengunduh full data karena tabel sudah kosong
+    final prefs = await SharedPreferences.getInstance();
+    final keys = prefs.getKeys();
+    for (String key in keys) {
+      if (key.startsWith('last_sync_')) {
+        await prefs.remove(key);
+      }
+    }
+    
     // We intentionally keep offline_queue
   }
 
