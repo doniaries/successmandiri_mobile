@@ -26,11 +26,27 @@ class AuthRepository {
       );
 
       if (response.statusCode == 200) {
+        if (response.data is! Map) {
+          throw Exception('Format respon tidak valid dari server.');
+        }
+        
         final token = response.data['token'];
-        final dynamic rawUserData = response.data['user'];
-        final Map<String, dynamic> userData = (rawUserData is Map && rawUserData.containsKey('data'))
-            ? Map<String, dynamic>.from(rawUserData['data'])
-            : Map<String, dynamic>.from(rawUserData);
+        final dynamic rawUserData = response.data['user'] ?? response.data['data'];
+        
+        if (rawUserData == null) {
+          throw Exception('Data user tidak ditemukan dalam respon server.');
+        }
+
+        Map<String, dynamic> userData;
+        if (rawUserData is Map) {
+          if (rawUserData.containsKey('data') && rawUserData['data'] != null) {
+            userData = Map<String, dynamic>.from(rawUserData['data']);
+          } else {
+            userData = Map<String, dynamic>.from(rawUserData);
+          }
+        } else {
+          throw Exception('Format data user tidak sesuai.');
+        }
         
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('auth_token', token);
@@ -93,11 +109,23 @@ class AuthRepository {
     try {
       final response = await _apiClient.dio.get(ApiConstants.user);
       if (response.statusCode == 200) {
+        if (response.data is! Map) return null;
+        
         // Laravel UserResource wraps in 'data' key by default
         final dynamic baseData = response.data;
-        final Map<String, dynamic> data = (baseData is Map && baseData.containsKey('data')) 
-          ? Map<String, dynamic>.from(baseData['data']) 
-          : Map<String, dynamic>.from(baseData);
+        if (baseData == null) return null;
+
+        Map<String, dynamic> data;
+        if (baseData is Map) {
+          if (baseData.containsKey('data') && baseData['data'] != null) {
+            data = Map<String, dynamic>.from(baseData['data']);
+          } else {
+            data = Map<String, dynamic>.from(baseData);
+          }
+        } else {
+          return null;
+        }
+
         return User.fromJson(data);
       }
       return null;
@@ -241,12 +269,25 @@ class AuthRepository {
       );
 
       if (response.statusCode == 200) {
-        final dynamic rawUserData = response.data['user'];
-        final Map<String, dynamic> userData = (rawUserData is Map && rawUserData.containsKey('data'))
-            ? Map<String, dynamic>.from(rawUserData['data'])
-            : (rawUserData is Map 
-                ? Map<String, dynamic>.from(rawUserData) 
-                : Map<String, dynamic>.from(response.data));
+        if (response.data is! Map) {
+          throw Exception('Format respon tidak valid.');
+        }
+
+        final dynamic rawUserData = response.data['user'] ?? response.data['data'];
+        if (rawUserData == null) {
+          throw Exception('Data user tidak ditemukan dari server.');
+        }
+
+        Map<String, dynamic> userData;
+        if (rawUserData is Map) {
+          if (rawUserData.containsKey('data') && rawUserData['data'] != null) {
+            userData = Map<String, dynamic>.from(rawUserData['data']);
+          } else {
+            userData = Map<String, dynamic>.from(rawUserData);
+          }
+        } else {
+          throw Exception('Format data user tidak sesuai.');
+        }
                 
         return User.fromJson(userData);
       }
@@ -270,10 +311,25 @@ class AuthRepository {
 
       if (response.statusCode == 200) {
         _cachedPerusahaans = null; // Invalidate cache after logo update
-        final dynamic rawUserData = response.data['user'];
-        final Map<String, dynamic> userData = (rawUserData is Map && rawUserData.containsKey('data'))
-            ? Map<String, dynamic>.from(rawUserData['data'])
-            : Map<String, dynamic>.from(rawUserData);
+        if (response.data is! Map) {
+          throw Exception('Format respon tidak valid.');
+        }
+
+        final dynamic rawUserData = response.data['user'] ?? response.data['data'];
+        if (rawUserData == null) {
+          throw Exception('Data user tidak ditemukan dari server.');
+        }
+
+        Map<String, dynamic> userData;
+        if (rawUserData is Map) {
+          if (rawUserData.containsKey('data') && rawUserData['data'] != null) {
+            userData = Map<String, dynamic>.from(rawUserData['data']);
+          } else {
+            userData = Map<String, dynamic>.from(rawUserData);
+          }
+        } else {
+          throw Exception('Format data user tidak sesuai.');
+        }
                 
         return User.fromJson(userData);
       }
