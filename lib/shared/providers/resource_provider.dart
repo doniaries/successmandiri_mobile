@@ -330,101 +330,29 @@ class ResourceProvider with ChangeNotifier {
         } catch (_) {}
       }
       
-      // For master data ('pekerja', 'penjual', 'supir'), fetch ALL data instead of paginating
+      // For master data ('pekerja', 'penjual', 'supir'), fetch ALL data efficiently using repository methods
+      // This avoids slow sequential pagination and prevents duplicate data from shifting pages
       if ((type == 'pekerja' || type == 'penjual' || type == 'supir') && page == 1) {
-        while (hasMore) {
-          dynamic response;
-          if (type == 'pekerja') {
-            response = await _repository.getPekerjaPaginated(page: page);
-          } else if (type == 'penjual') {
-            response = await _repository.getPenjualPaginated(page: page);
-          } else if (type == 'supir') {
-            response = await _repository.getSupirPaginated(page: page);
-          }
-          
-          lastResponse = response; // Store last response
-          List<dynamic> rawData = [];
-
-          if (response is Map) {
-            rawData = response['data'] ?? [];
-            hasMore = response['next_page_url'] != null;
-          } else if (response is List) {
-            rawData = response;
-            hasMore = false;
-          }
-
-          allRawData.addAll(rawData);
-          if (!hasMore) break;
-          page++;
-        }
-
         if (type == 'pekerja') {
-          final items = allRawData.map((e) => Pekerja.fromJson(e)).toList();
+          final items = await _repository.getPekerjas();
           _pekerjas.clear();
           _pekerjas.addAll(items);
-          _pekerjas.sort((a, b) {
-            if (a.id < 0 && b.id >= 0) return -1;
-            if (b.id < 0 && a.id >= 0) return 1;
-            if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
-            return b.id.compareTo(a.id);
-          });
+          _totalPekerja = _pekerjas.length;
+          _totalHutangPekerja = _pekerjas.fold(0.0, (sum, item) => sum + (double.tryParse(item.sisaHutang?.toString() ?? '0') ?? 0.0));
         } else if (type == 'penjual') {
-          final items = allRawData.map((e) => Penjual.fromJson(e)).toList();
+          final items = await _repository.getPenjuals();
           _penjuals.clear();
           _penjuals.addAll(items);
-          _penjuals.sort((a, b) {
-            if (a.id < 0 && b.id >= 0) return -1;
-            if (b.id < 0 && a.id >= 0) return 1;
-            if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
-            return b.id.compareTo(a.id);
-          });
+          _totalPenjual = _penjuals.length;
+          _totalHutangPenjual = _penjuals.fold(0.0, (sum, item) => sum + (double.tryParse(item.sisaHutang?.toString() ?? '0') ?? 0.0));
         } else if (type == 'supir') {
-          final items = allRawData.map((e) => Supir.fromJson(e)).toList();
+          final items = await _repository.getSupirs();
           _supirs.clear();
           _supirs.addAll(items);
-          _supirs.sort((a, b) {
-            if (a.id < 0 && b.id >= 0) return -1;
-            if (b.id < 0 && a.id >= 0) return 1;
-            if (a.id < 0 && b.id < 0) return a.id.compareTo(b.id);
-            return b.id.compareTo(a.id);
-          });
+          _totalSupir = _supirs.length;
+          _totalHutangSupir = _supirs.fold(0.0, (sum, item) => sum + (double.tryParse(item.sisaHutang?.toString() ?? '0') ?? 0.0));
         }
-
-        // Update counts
-        if (lastResponse is Map && lastResponse['total'] != null) {
-          int totalNum = int.tryParse(lastResponse['total'].toString()) ?? 0;
-          if (type == 'pekerja') {
-            _totalPekerja = totalNum;
-          } else if (type == 'penjual') {
-            _totalPenjual = totalNum;
-          } else if (type == 'supir') {
-            _totalSupir = totalNum;
-          }
-        } else {
-          int totalNum = allRawData.length;
-          if (type == 'pekerja') {
-            _totalPekerja = totalNum;
-          } else if (type == 'penjual') {
-            _totalPenjual = totalNum;
-          } else if (type == 'supir') {
-            _totalSupir = totalNum;
-          }
-        }
-
-        // Capture summary if present
-        if (lastResponse is Map && lastResponse['summary'] != null) {
-          double totalHutang = double.tryParse(
-            lastResponse['summary']['total_hutang']?.toString() ?? '0.0',
-          ) ?? 0.0;
-          if (type == 'pekerja') {
-            _totalHutangPekerja = totalHutang;
-          } else if (type == 'penjual') {
-            _totalHutangPenjual = totalHutang;
-          } else if (type == 'supir') {
-            _totalHutangSupir = totalHutang;
-          }
-        }
-
+        
         await _checkNewDataFor(type);
       } else {
         // Original pagination logic for other types
