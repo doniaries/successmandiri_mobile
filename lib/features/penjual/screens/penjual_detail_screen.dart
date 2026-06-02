@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -458,7 +459,20 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
                 ),
                 _buildInfoRow(Icons.location_on_rounded, 'Alamat', _currentPenjual.alamat ?? '-', isMultiLine: true),
                 _buildInfoRow(Icons.account_balance_rounded, 'Nama Bank', _currentPenjual.namaBank ?? '-'),
-                _buildInfoRow(Icons.credit_card_rounded, 'Nomor Rekening', _currentPenjual.nomorRekening ?? '-'),
+                _buildInfoRow(
+                  Icons.credit_card_rounded, 
+                  'Nomor Rekening', 
+                  _currentPenjual.nomorRekening ?? '-',
+                  trailing: _currentPenjual.nomorRekening != null && _currentPenjual.nomorRekening!.isNotEmpty ? IconButton(
+                    icon: const Icon(Icons.copy_rounded, color: Color(0xFF27AE60)),
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: _currentPenjual.nomorRekening!));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Nomor Rekening disalin ke clipboard')),
+                      );
+                    },
+                  ) : null,
+                ),
                 
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 10),
@@ -824,9 +838,10 @@ class _PenjualEditBottomSheetState extends State<_PenjualEditBottomSheet> {
         padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
         child: Form(
           key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Center(
                 child: Container(
@@ -930,6 +945,7 @@ class _PenjualEditBottomSheetState extends State<_PenjualEditBottomSheet> {
                   : const Text('SIMPAN PERUBAHAN', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
               ),
             ],
+          ),
           ),
         ),
       ),

@@ -711,7 +711,11 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
 
     if (item is Penjual) {
       name = item.nama.toUpperCase();
-      subtitle = item.telepon;
+      final phone = item.telepon ?? '-';
+      final bank = item.namaBank != null && item.namaBank!.isNotEmpty ? item.namaBank! : '';
+      final rek = item.nomorRekening != null && item.nomorRekening!.isNotEmpty ? item.nomorRekening! : '';
+      final bankInfo = bank.isNotEmpty || rek.isNotEmpty ? ' | $bank $rek'.trimRight() : '';
+      subtitle = '$phone$bankInfo';
       hutang = item.sisaHutang;
       icon = Icons.store_rounded;
       iconColor = const Color(0xFF27AE60);
