@@ -97,8 +97,8 @@ class SyncService {
       final response = await _apiClient.dio.get(
         '/ping',
         options: Options(
-          sendTimeout: const Duration(seconds: 5),
-          receiveTimeout: const Duration(seconds: 5),
+          sendTimeout: const Duration(seconds: 30),
+          receiveTimeout: const Duration(seconds: 30),
         ),
       );
       return response.statusCode != null;
@@ -108,8 +108,8 @@ class SyncService {
         await _apiClient.dio.head(
           '/',
           options: Options(
-            sendTimeout: const Duration(seconds: 5),
-            receiveTimeout: const Duration(seconds: 5),
+            sendTimeout: const Duration(seconds: 30),
+            receiveTimeout: const Duration(seconds: 30),
             validateStatus: (_) => true, // terima status apapun
           ),
         );

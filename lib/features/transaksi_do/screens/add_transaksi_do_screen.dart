@@ -366,7 +366,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                     await SearchableSelectionModal.show(
                                       context: context,
                                       title: 'Pilih Penjual',
-                                      items: provider.penjuals.where((p) => p['is_active'] == 1 || p['is_active'] == true || p['is_active'] == '1').toList(),
+                                      items: provider.penjuals.where((p) => p['is_active'] == null || p['is_active'] == 1 || p['is_active'] == true || p['is_active'] == '1').toList(),
                                       selectedId: _selectedPenjualId,
                                       labelKey: 'nama',
                                       subLabelKey: 'sisa_hutang',
@@ -519,7 +519,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                                       await SearchableSelectionModal.show(
                                         context: context,
                                         title: 'Pilih Supir',
-                                        items: provider.supirs.where((s) => s['is_active'] == 1 || s['is_active'] == true || s['is_active'] == '1').toList(),
+                                        items: provider.supirs.where((p) => p['is_active'] == null || p['is_active'] == 1 || p['is_active'] == true || p['is_active'] == '1').toList(),
                                         selectedId: _selectedSupirId,
                                         labelKey: 'nama',
                                         subLabelKey: 'sisa_hutang',

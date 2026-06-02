@@ -46,7 +46,7 @@ class Penjual {
       nomorRekening: json['nomor_rekening'],
       hutang: _parseDouble(json['hutang']),
       sisaHutang: _parseDouble(json['sisa_hutang']),
-      isActive: json['is_active'] == true || json['is_active'] == 1 || json['is_active'] == '1',
+      isActive: json['is_active'] == null || json['is_active'] == true || json['is_active'] == 1 || json['is_active'] == '1',
       transaksiDo: json['transaksi_do'],
       mutasiHutang: (json['mutasi_hutang'] as List?)
           ?.map((m) => MutasiHutang.fromJson(m))

@@ -35,7 +35,7 @@ class TransaksiDoRepository {
             ApiConstants.penjual,
             queryParameters: {'all': true, 'per_page': 9999},
           )
-          .timeout(const Duration(seconds: 5));
+          .timeout(const Duration(seconds: 30));
           
       final serverData = _extractListData(response.data);
       final List<dynamic>? activeIds = response.data is Map ? response.data['active_ids'] : null;
@@ -68,7 +68,7 @@ class TransaksiDoRepository {
             ApiConstants.supir,
             queryParameters: {'all': true, 'per_page': 9999},
           )
-          .timeout(const Duration(seconds: 5));
+          .timeout(const Duration(seconds: 30));
           
       final serverData = _extractListData(response.data);
       final List<dynamic>? activeIds = response.data is Map ? response.data['active_ids'] : null;
@@ -101,7 +101,7 @@ class TransaksiDoRepository {
             ApiConstants.kendaraan,
             queryParameters: {'all': true, 'per_page': 9999},
           )
-          .timeout(const Duration(seconds: 5));
+          .timeout(const Duration(seconds: 30));
           
       final serverData = _extractListData(response.data);
       final List<dynamic>? activeIds = response.data is Map ? response.data['active_ids'] : null;

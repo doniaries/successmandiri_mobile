@@ -40,7 +40,7 @@ class ResourceRepository {
             ApiConstants.penjual,
             queryParameters: {'page': page, 'per_page': 10},
           )
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 30));
 
       if (page == 1) {
         final List<dynamic> serverData = _extractListData(response.data);
@@ -118,7 +118,7 @@ class ResourceRepository {
 
       final response = await _apiClient.dio
           .get(ApiConstants.penjual, queryParameters: queryParams)
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 30));
           
       final List<dynamic> data = _extractListData(response.data);
       final List<dynamic>? activeIds = response.data is Map ? response.data['active_ids'] : null;
@@ -219,7 +219,7 @@ class ResourceRepository {
             ApiConstants.supir,
             queryParameters: {'page': page, 'per_page': 10},
           )
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 30));
 
       if (page == 1) {
         final List<dynamic> serverData = _extractListData(response.data);
@@ -297,7 +297,7 @@ class ResourceRepository {
 
       final response = await _apiClient.dio
           .get(ApiConstants.supir, queryParameters: queryParams)
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 30));
           
       final List<dynamic> data = _extractListData(response.data);
       final List<dynamic>? activeIds = response.data is Map ? response.data['active_ids'] : null;
@@ -388,7 +388,7 @@ class ResourceRepository {
             ApiConstants.pekerja,
             queryParameters: {'page': page, 'per_page': 10},
           )
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 30));
       if (page == 1) {
         final List<dynamic> serverData = _extractListData(response.data);
         final pendingQueue = await syncService.getOfflineQueueForEndpoint(ApiConstants.pekerja);
@@ -465,7 +465,7 @@ class ResourceRepository {
 
       final response = await _apiClient.dio
           .get(ApiConstants.pekerja, queryParameters: queryParams)
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 30));
           
       final List<dynamic> data = _extractListData(response.data);
       final List<dynamic>? activeIds = response.data is Map ? response.data['active_ids'] : null;
@@ -560,7 +560,7 @@ class ResourceRepository {
             ApiConstants.kendaraan,
             queryParameters: {'page': page, 'per_page': 10},
           )
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 30));
 
       if (page == 1) {
         final List<dynamic> serverData = _extractListData(response.data);
@@ -632,7 +632,7 @@ class ResourceRepository {
 
       final response = await _apiClient.dio
           .get(ApiConstants.kendaraan, queryParameters: queryParams)
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 30));
           
       final List<dynamic> data = _extractListData(response.data);
       final List<dynamic>? activeIds = response.data is Map ? response.data['active_ids'] : null;
@@ -688,7 +688,7 @@ class ResourceRepository {
             ApiConstants.operasional,
             queryParameters: params,
           )
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 30));
 
       if (page == 1) {
         final List<dynamic> serverData = _extractListData(response.data);
@@ -846,7 +846,7 @@ class ResourceRepository {
 
       final response = await _apiClient.dio
           .get(ApiConstants.jurnalKeuangan, queryParameters: params)
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 30));
 
       if (page == 1) {
         final cacheKey =
