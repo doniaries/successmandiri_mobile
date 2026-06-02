@@ -419,27 +419,27 @@ class TransaksiDoDetailScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 24, color: Colors.grey[400]),
+          Icon(icon, size: 22, color: Colors.grey[400]),
           const SizedBox(width: 12),
-          Expanded(
+          Container(
+            padding: const EdgeInsets.only(top: 2),
             child: Text(
               label, 
-              style: TextStyle(color: Colors.grey[600], fontSize: 14, fontWeight: FontWeight.w500),
-              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: Colors.grey[500], fontSize: 13, fontWeight: FontWeight.w500),
             ),
           ),
-          const SizedBox(width: 8),
-          Flexible(
+          const SizedBox(width: 12),
+          Expanded(
             child: Text(
               value,
               textAlign: TextAlign.right,
               style: GoogleFonts.inter(
-                fontSize: fontSize ?? 14,
-                fontWeight: FontWeight.bold,
-                color: color ?? Colors.black,
+                fontSize: fontSize ?? 15,
+                fontWeight: isBold ? FontWeight.w900 : FontWeight.w700,
+                color: color ?? Colors.black87,
               ),
-              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
