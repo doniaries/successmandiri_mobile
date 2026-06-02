@@ -214,8 +214,12 @@ class PdfGenerator {
       if (userStr != null) {
         final Map<String, dynamic> userMap = jsonDecode(userStr);
         kasirName = userMap['name'] ?? '-';
-        if (userMap['perusahaan'] != null) {
-          perusahaanName = userMap['perusahaan']['nama'] ?? 'Semua Perusahaan';
+        if (userMap['perusahaan_pabrik'] != null && userMap['perusahaan_pabrik'].toString().trim().isNotEmpty) {
+          perusahaanName = userMap['perusahaan_pabrik'];
+        } else if (userMap['perusahaan'] != null) {
+          perusahaanName = userMap['perusahaan']['nama'] ?? userMap['perusahaan_name'] ?? 'Semua Perusahaan';
+        } else {
+          perusahaanName = userMap['perusahaan_name'] ?? 'Semua Perusahaan';
         }
       }
     } catch (_) {}
@@ -235,21 +239,25 @@ class PdfGenerator {
             children: [
               pw.Container(
                 margin: const pw.EdgeInsets.only(bottom: 10),
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text('Perusahaan: $perusahaanName', style: const pw.TextStyle(fontSize: 10)),
-                    pw.Text('Kasir: $kasirName', style: const pw.TextStyle(fontSize: 10)),
-                  ],
-                ),
+                child: pw.Text('Kasir: $kasirName', style: const pw.TextStyle(fontSize: 10)),
               ),
               pw.Container(
                 alignment: pw.Alignment.center,
                 margin: const pw.EdgeInsets.only(bottom: 15),
-                child: pw.Text(
-                  'LAPORAN TONASE BULANAN\n${monthFormat.format(DateTime(year, month)).toUpperCase()}',
-                  textAlign: pw.TextAlign.center,
-                  style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+                child: pw.Column(
+                  children: [
+                    pw.Text(
+                      perusahaanName.toUpperCase(),
+                      textAlign: pw.TextAlign.center,
+                      style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+                    ),
+                    pw.SizedBox(height: 4),
+                    pw.Text(
+                      'LAPORAN TONASE BULANAN\n${monthFormat.format(DateTime(year, month)).toUpperCase()}',
+                      textAlign: pw.TextAlign.center,
+                      style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+                    ),
+                  ]
                 ),
               ),
             ],
