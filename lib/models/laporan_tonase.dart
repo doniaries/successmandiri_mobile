@@ -47,6 +47,9 @@ class LaporanTonaseResponse {
   final int year;
   final String? perusahaanName;
   final String? perusahaanPabrik;
+  final String? perusahaanAlamat;
+  final String? perusahaanNoIzin;
+  final String? perusahaanLogo;
 
   LaporanTonaseResponse({
     required this.report,
@@ -55,6 +58,9 @@ class LaporanTonaseResponse {
     required this.year,
     this.perusahaanName,
     this.perusahaanPabrik,
+    this.perusahaanAlamat,
+    this.perusahaanNoIzin,
+    this.perusahaanLogo,
   });
 
   factory LaporanTonaseResponse.fromJson(Map<String, dynamic> json) {
@@ -68,6 +74,9 @@ class LaporanTonaseResponse {
       year: LaporanTonase._parseInt(json['year']),
       perusahaanName: json['perusahaan_name']?.toString(),
       perusahaanPabrik: json['perusahaan_pabrik']?.toString(),
+      perusahaanAlamat: json['perusahaan_alamat']?.toString(),
+      perusahaanNoIzin: json['perusahaan_no_izin']?.toString(),
+      perusahaanLogo: json['perusahaan_logo']?.toString(),
     );
   }
 }

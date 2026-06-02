@@ -217,10 +217,15 @@ class PdfGenerator {
     } catch (_) {}
 
     String perusahaanName = 'Semua Perusahaan';
-    if (data.perusahaanPabrik != null && data.perusahaanPabrik!.trim().isNotEmpty) {
-      perusahaanName = data.perusahaanPabrik!;
-    } else if (data.perusahaanName != null && data.perusahaanName!.trim().isNotEmpty) {
+    if (data.perusahaanName != null && data.perusahaanName!.trim().isNotEmpty) {
       perusahaanName = data.perusahaanName!;
+    }
+
+    pw.ImageProvider? logoImage;
+    if (data.perusahaanLogo != null && data.perusahaanLogo!.trim().isNotEmpty) {
+      try {
+        logoImage = await networkImage(data.perusahaanLogo!);
+      } catch (_) {}
     }
 
     final pageFormat = PdfPageFormat.a4;
@@ -234,10 +239,42 @@ class PdfGenerator {
         ),
         header: (pw.Context context) {
           return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            crossAxisAlignment: pw.CrossAxisAlignment.stretch,
             children: [
               pw.Container(
-                margin: const pw.EdgeInsets.only(bottom: 10),
+                alignment: pw.Alignment.center,
+                margin: const pw.EdgeInsets.only(bottom: 5),
+                child: pw.Column(
+                  children: [
+                    if (logoImage != null)
+                      pw.Container(
+                        margin: const pw.EdgeInsets.only(bottom: 10),
+                        height: 60,
+                        child: pw.Image(logoImage),
+                      ),
+                    pw.Text(
+                      perusahaanName.toUpperCase(),
+                      textAlign: pw.TextAlign.center,
+                      style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+                    ),
+                    if (data.perusahaanNoIzin != null)
+                      pw.Text(
+                        'Badan Hukum Nomor: ${data.perusahaanNoIzin}',
+                        style: pw.TextStyle(fontSize: 10, fontStyle: pw.FontStyle.italic),
+                      ),
+                    if (data.perusahaanAlamat != null)
+                      pw.Text(
+                        data.perusahaanAlamat!,
+                        style: const pw.TextStyle(fontSize: 10),
+                        textAlign: pw.TextAlign.center,
+                      ),
+                  ]
+                ),
+              ),
+              pw.Divider(thickness: 1, color: PdfColors.black),
+              pw.Container(
+                alignment: pw.Alignment.centerRight,
+                margin: const pw.EdgeInsets.only(top: 5, bottom: 5),
                 child: pw.Text('Kasir: $kasirName', style: const pw.TextStyle(fontSize: 10)),
               ),
               pw.Container(
@@ -246,15 +283,15 @@ class PdfGenerator {
                 child: pw.Column(
                   children: [
                     pw.Text(
-                      perusahaanName.toUpperCase(),
+                      'DAFTAR TONASE ${data.perusahaanPabrik ?? ""}'.trim(),
                       textAlign: pw.TextAlign.center,
-                      style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+                      style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
                     ),
                     pw.SizedBox(height: 4),
                     pw.Text(
-                      'LAPORAN TONASE BULANAN\n${monthFormat.format(DateTime(year, month)).toUpperCase()}',
+                      'Periode: ${monthFormat.format(DateTime(year, month))}',
                       textAlign: pw.TextAlign.center,
-                      style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+                      style: pw.TextStyle(fontSize: 11),
                     ),
                   ]
                 ),
