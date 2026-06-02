@@ -312,9 +312,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
             isLoading: provider.isLoading || provider.isSaving,
           ),
         ),
-        body: provider.isLoading && provider.penjuals.isEmpty
-            ? const Center(child: AppLoadingIndicator())
-            : SingleChildScrollView(
+        body: SingleChildScrollView(
                 padding: const EdgeInsets.all(16.0),
                 child: Form(
                   key: _formKey,

@@ -409,9 +409,7 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
           backgroundColor: const Color(0xFF01579B),
           foregroundColor: Colors.white,
         ),
-        body: provider.isLoading && provider.penjuals.isEmpty
-            ? const Center(child: AppLoadingIndicator())
-            : SingleChildScrollView(
+        body: SingleChildScrollView(
                 padding: const EdgeInsets.all(16.0),
                 child: Form(
                   key: _formKey,
