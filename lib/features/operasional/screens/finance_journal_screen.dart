@@ -2,18 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
-import 'package:sawitappmobile/features/auth/providers/auth_provider.dart';
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:sawitappmobile/features/jurnal_keuangan/models/jurnal_keuangan_model.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/features/jurnal_keuangan/screens/jurnal_keuangan_detail_screen.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:shimmer/shimmer.dart';
-import 'package:sawitappmobile/core/constants/api_constants.dart';
-
-import 'package:sawitappmobile/core/services/sync_service.dart';
+import 'package:sawitappmobile/features/jurnal_keuangan/screens/jurnal_keuangan_pdf_preview_screen.dart';
 import 'package:sawitappmobile/shared/providers/navigation_provider.dart';
 import 'package:sawitappmobile/shared/providers/global_filter_provider.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:sawitappmobile/core/services/sync_service.dart';
 
 class FinanceJournalScreen extends StatefulWidget {
   const FinanceJournalScreen({super.key});
@@ -546,35 +543,19 @@ class _FinanceJournalScreenState extends State<FinanceJournalScreen> {
   }
 
   Future<void> _handleDownloadPdf() async {
-    final authProvider = context.read<AuthProvider>();
     final globalFilter = context.read<GlobalFilterProvider>();
-    final token = await authProvider.getAuthToken();
-    if (token == null) return;
-    if (!mounted) return;
     final targetDate = globalFilter.selectedDate ?? _getSystemActiveDate();
-    final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
-    final startDateStr = dateStr;
-    final endDateStr = dateStr;
-    const rentang = 'hari_ini';
-
-    final url = Uri.parse(
-      '${ApiConstants.baseUrl.replaceAll('/api', '')}/jurnal-keuangan/rekap?'
-      'token=${Uri.encodeComponent(token)}'
-      '&start_date=$startDateStr'
-      '&end_date=$endDateStr'
-      '&rentang=$rentang'
-      '&download=1',
+    
+    if (!mounted) return;
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => JurnalKeuanganPdfPreviewScreen(
+          targetDate: targetDate,
+        ),
+      ),
     );
-
-    try {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal mengunduh laporan PDF')),
-        );
-      }
-    }
   }
 
   Widget _buildSkeletonHeader() {

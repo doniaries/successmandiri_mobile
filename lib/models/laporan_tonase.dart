@@ -13,11 +13,27 @@ class LaporanTonase {
     required this.isHoliday,
   });
 
+  static double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
+  static int _parseInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? 0;
+    if (value is double) return value.toInt();
+    return 0;
+  }
+
   factory LaporanTonase.fromJson(Map<String, dynamic> json) {
     return LaporanTonase(
       tanggal: json['tanggal'] ?? '',
-      tonase: (json['tonase'] ?? 0).toDouble(),
-      harga: (json['harga'] ?? 0).toDouble(),
+      tonase: _parseDouble(json['tonase']),
+      harga: _parseDouble(json['harga']),
       keterangan: json['keterangan'] ?? '',
       isHoliday: json['is_holiday'] ?? false,
     );
@@ -43,9 +59,9 @@ class LaporanTonaseResponse {
               ?.map((e) => LaporanTonase.fromJson(e))
               .toList() ??
           [],
-      totalTonase: (json['total_tonase'] ?? 0).toDouble(),
-      month: json['month'] ?? 1,
-      year: json['year'] ?? 2026,
+      totalTonase: LaporanTonase._parseDouble(json['total_tonase']),
+      month: LaporanTonase._parseInt(json['month']),
+      year: LaporanTonase._parseInt(json['year']),
     );
   }
 }

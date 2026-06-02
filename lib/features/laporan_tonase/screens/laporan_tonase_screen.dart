@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../../models/laporan_tonase.dart';
 import '../providers/laporan_tonase_provider.dart';
+import 'laporan_tonase_pdf_preview_screen.dart';
 
 class LaporanTonaseScreen extends StatefulWidget {
   const LaporanTonaseScreen({super.key});
@@ -43,6 +44,31 @@ class _LaporanTonaseScreenState extends State<LaporanTonaseScreen> {
         title: const Text('Laporan Tonase Bulanan'),
         backgroundColor: const Color(0xFF27AE60),
         foregroundColor: Colors.white,
+        actions: [
+          Consumer<LaporanTonaseProvider>(
+            builder: (context, provider, child) {
+              if (provider.data == null || provider.isLoading) {
+                return const SizedBox.shrink();
+              }
+              return IconButton(
+                icon: const Icon(Icons.picture_as_pdf_rounded),
+                tooltip: 'Print / Cetak',
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LaporanTonasePdfPreviewScreen(
+                        data: provider.data!,
+                        month: _selectedMonth,
+                        year: _selectedYear,
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [

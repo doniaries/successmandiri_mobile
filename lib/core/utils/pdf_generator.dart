@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:sawitappmobile/features/transaksi_do/models/transaksi_do_model.dart';
+import 'package:sawitappmobile/models/laporan_tonase.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -189,6 +190,125 @@ class PdfGenerator {
     );
 
     return await pdf.save();
+  }
+
+  static Future<Uint8List> generateLaporanTonasePdf(LaporanTonaseResponse data, int month, int year) async {
+    final pdf = pw.Document();
+
+    final theme = pw.ThemeData.withFont(
+      base: pw.Font.helvetica(),
+      bold: pw.Font.helveticaBold(),
+      italic: pw.Font.helveticaOblique(),
+    );
+
+    final dateFormat = DateFormat('dd/MM/yyyy HH:mm');
+    final monthFormat = DateFormat('MMMM yyyy', 'id_ID');
+    final numberFormat = NumberFormat.decimalPattern('id');
+
+    final pageFormat = PdfPageFormat.a4;
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageTheme: pw.PageTheme(
+          pageFormat: pageFormat,
+          theme: theme,
+          margin: const pw.EdgeInsets.all(30),
+        ),
+        header: (pw.Context context) {
+          return pw.Container(
+            alignment: pw.Alignment.center,
+            margin: const pw.EdgeInsets.only(bottom: 20),
+            child: pw.Text(
+              'LAPORAN TONASE BULANAN\n${monthFormat.format(DateTime(year, month)).toUpperCase()}',
+              textAlign: pw.TextAlign.center,
+              style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+            ),
+          );
+        },
+        footer: (pw.Context context) {
+          return pw.Container(
+            alignment: pw.Alignment.centerRight,
+            margin: const pw.EdgeInsets.only(top: 10),
+            child: pw.Text(
+              'Dicetak pada: ${dateFormat.format(DateTime.now())} - Halaman ${context.pageNumber} dari ${context.pagesCount}',
+              style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey),
+            ),
+          );
+        },
+        build: (pw.Context context) {
+          return [
+            pw.Table(
+              border: pw.TableBorder.all(width: 1, color: PdfColors.black),
+              columnWidths: {
+                0: const pw.FixedColumnWidth(30),
+                1: const pw.FixedColumnWidth(80),
+                2: const pw.FlexColumnWidth(1),
+                3: const pw.FlexColumnWidth(1),
+                4: const pw.FlexColumnWidth(1.5),
+              },
+              children: [
+                // Table Header
+                pw.TableRow(
+                  decoration: const pw.BoxDecoration(color: PdfColors.grey200),
+                  children: [
+                    _buildCell('No', isBold: true, align: pw.TextAlign.center),
+                    _buildCell('Tanggal', isBold: true, align: pw.TextAlign.center),
+                    _buildCell('Tonase (Kg)', isBold: true, align: pw.TextAlign.right),
+                    _buildCell('Harga (Rp)', isBold: true, align: pw.TextAlign.right),
+                    _buildCell('Keterangan', isBold: true, align: pw.TextAlign.left),
+                  ],
+                ),
+                // Table Body
+                ...data.report.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final row = entry.value;
+                  final textColor = row.isHoliday ? PdfColors.red : PdfColors.black;
+
+                  return pw.TableRow(
+                    decoration: pw.BoxDecoration(color: row.isHoliday ? PdfColors.red50 : PdfColors.white),
+                    children: [
+                      _buildCell('${index + 1}', align: pw.TextAlign.center, color: textColor),
+                      _buildCell(row.tanggal, align: pw.TextAlign.center, color: textColor),
+                      _buildCell(row.tonase > 0 ? numberFormat.format(row.tonase) : '-', align: pw.TextAlign.right, color: textColor),
+                      _buildCell(row.harga > 0 ? numberFormat.format(row.harga) : '-', align: pw.TextAlign.right, color: textColor),
+                      _buildCell(row.keterangan, align: pw.TextAlign.left, color: textColor),
+                    ],
+                  );
+                }),
+                // Total Row
+                pw.TableRow(
+                  decoration: const pw.BoxDecoration(color: PdfColors.grey200),
+                  children: [
+                    _buildCell('', align: pw.TextAlign.center),
+                    _buildCell('TOTAL', isBold: true, align: pw.TextAlign.center),
+                    _buildCell(numberFormat.format(data.totalTonase), isBold: true, align: pw.TextAlign.right),
+                    _buildCell('', align: pw.TextAlign.center),
+                    _buildCell('', align: pw.TextAlign.center),
+                  ],
+                ),
+              ],
+            ),
+          ];
+        },
+      ),
+    );
+
+    return await pdf.save();
+  }
+
+  static pw.Widget _buildCell(String text, {bool isBold = false, pw.TextAlign align = pw.TextAlign.left, PdfColor color = PdfColors.black}) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+      child: pw.Text(
+        text,
+        textAlign: align,
+        style: pw.TextStyle(
+          fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal,
+          color: color,
+          fontSize: 10,
+        ),
+      ),
+    );
   }
 
   static pw.TableRow _buildTableRow(String label, String value, {bool isBoldRight = false}) {
