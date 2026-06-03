@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -9,6 +10,9 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PdfGenerator {
+  static pw.ImageProvider? _cachedLogoImage;
+  static String? _cachedLogoUrl;
+
   static Future<Uint8List> generateTransaksiDoPdf(TransaksiDo transaction) async {
     final pdf = pw.Document();
 
@@ -24,7 +28,7 @@ class PdfGenerator {
     // Custom Page Size: 165mm x 210mm
     final pageFormat = PdfPageFormat(165 * PdfPageFormat.mm, 210 * PdfPageFormat.mm, marginAll: 8 * PdfPageFormat.mm);
 
-    // Get Kasir Name and Printed By
+    pw.ImageProvider? logoImage;
     String kasirName = 'Kasir';
     String dicetakOleh = 'Admin';
     try {
@@ -34,12 +38,36 @@ class PdfGenerator {
         final Map<String, dynamic> userMap = jsonDecode(userStr);
         kasirName = userMap['perusahaan_kasir'] ?? userMap['nama_kasir'] ?? 'Kasir';
         dicetakOleh = userMap['name'] ?? 'Admin';
+        String? logoUrl = userMap['perusahaan_logo_url'];
+        if (logoUrl != null && logoUrl.trim().isNotEmpty) {
+          if (_cachedLogoUrl == logoUrl && _cachedLogoImage != null) {
+            logoImage = _cachedLogoImage;
+          } else {
+            try {
+              logoImage = await networkImage(logoUrl);
+              _cachedLogoUrl = logoUrl;
+              _cachedLogoImage = logoImage;
+            } catch (_) {}
+          }
+        }
       }
     } catch (_) {}
 
     final pageTheme = pw.PageTheme(
       pageFormat: pageFormat,
       theme: theme,
+      buildBackground: (pw.Context context) {
+        return pw.Watermark(
+          child: pw.Text(
+            transaction.perusahaanNama ?? 'SUCCESS MANDIRI',
+            style: pw.TextStyle(
+              fontSize: 40,
+              fontWeight: pw.FontWeight.bold,
+              color: PdfColors.grey300,
+            ),
+          ),
+        );
+      },
     );
 
     pdf.addPage(
@@ -49,7 +77,9 @@ class PdfGenerator {
           return pw.DefaultTextStyle(
             style: const pw.TextStyle(fontSize: 9),
             child: pw.Column(
+              mainAxisSize: pw.MainAxisSize.min,
               crossAxisAlignment: pw.CrossAxisAlignment.start,
+              mainAxisAlignment: pw.MainAxisAlignment.start,
               children: [
                 // Header Container
                 pw.Container(
@@ -65,6 +95,12 @@ class PdfGenerator {
                         child: pw.Column(
                           crossAxisAlignment: pw.CrossAxisAlignment.center,
                           children: [
+                            if (logoImage != null)
+                              pw.Container(
+                                margin: const pw.EdgeInsets.only(bottom: 5),
+                                height: 65,
+                                child: pw.Image(logoImage),
+                              ),
                             pw.Container(
                               padding: const pw.EdgeInsets.only(bottom: 5),
                               decoration: const pw.BoxDecoration(
@@ -106,16 +142,28 @@ class PdfGenerator {
                 // Title
                 pw.Container(
                   alignment: pw.Alignment.center,
-                  margin: const pw.EdgeInsets.symmetric(vertical: 8),
+                  margin: const pw.EdgeInsets.only(top: 2, bottom: 4),
                   child: pw.Text(
                     'BUKTI TRANSAKSI DO',
                     style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
                   ),
                 ),
 
+                // Nomor DO & Tanggal
+                pw.Container(
+                  alignment: pw.Alignment.center,
+                  margin: const pw.EdgeInsets.only(bottom: 8),
+                  child: pw.Column(
+                    children: [
+                      pw.Text('No: ${transaction.nomor}', style: const pw.TextStyle(fontSize: 9)),
+                      pw.Text('Tanggal: ${dateFormat.format(transaction.tanggal.toLocal())}', style: const pw.TextStyle(fontSize: 9)),
+                    ],
+                  ),
+                ),
+
                 // Table
                 pw.Container(
-                  margin: const pw.EdgeInsets.only(bottom: 30),
+                  margin: const pw.EdgeInsets.only(bottom: 8),
                   child: pw.Table(
                     border: pw.TableBorder.all(width: 1, color: PdfColors.black),
                     columnWidths: {
@@ -123,8 +171,6 @@ class PdfGenerator {
                       1: const pw.FlexColumnWidth(),
                     },
                     children: [
-                      _buildTableRow('Nomor DO', transaction.nomor, isBoldRight: true),
-                      _buildTableRow('Tanggal & Waktu', dateFormat.format(transaction.tanggal.toLocal())),
                       _buildTableRow('Nama Penjual', transaction.penjualNama ?? 'N/A'),
                       _buildTableRow('Nama Supir', transaction.displaySupirNama),
                       _buildTableRow('Nomor Polisi', transaction.noPolisi ?? 'N/A'),
@@ -157,8 +203,8 @@ class PdfGenerator {
 
                 // Footer
                 pw.Container(
-                  margin: const pw.EdgeInsets.only(top: 10),
-                  padding: const pw.EdgeInsets.only(top: 5),
+                  margin: const pw.EdgeInsets.only(top: 5),
+                  padding: const pw.EdgeInsets.only(top: 0),
                   child: pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: pw.CrossAxisAlignment.end,
