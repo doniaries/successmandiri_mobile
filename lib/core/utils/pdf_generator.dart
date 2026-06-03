@@ -58,12 +58,15 @@ class PdfGenerator {
       theme: theme,
       buildBackground: (pw.Context context) {
         return pw.Watermark(
-          child: pw.Text(
-            transaction.perusahaanNama ?? 'SUCCESS MANDIRI',
-            style: pw.TextStyle(
-              fontSize: 40,
-              fontWeight: pw.FontWeight.bold,
-              color: PdfColors.grey300,
+          child: pw.Transform.rotateBox(
+            angle: math.pi / 4,
+            child: pw.Text(
+              transaction.perusahaanNama ?? 'SUCCESS MANDIRI',
+              style: pw.TextStyle(
+                fontSize: 40,
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.grey300,
+              ),
             ),
           ),
         );
