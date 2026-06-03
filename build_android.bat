@@ -28,8 +28,8 @@ for /f "tokens=1,2,3 delims=." %%a in ("%BASE_VER%") do (
 set /a NEW_PAT=V_PAT+1
 set DEFAULT_VER=%V_MAJ%.%V_MIN%.%NEW_PAT%
 
-:: Tambah build number otomatis
-set /a NEW_BUILD_NUM=CUR_BUILD_NUM+1
+:: Gunakan Unix Timestamp untuk Build Number agar selalu lebih besar dari versi sebelumnya
+for /f "usebackq" %%i in (`powershell -Command "[int][datetimeoffset]::Now.ToUnixTimeSeconds()"`) do set NEW_BUILD_NUM=%%i
 
 set BUILD_NAME=
 set /p BUILD_NAME="1. Masukkan Versi Aplikasi (3 digit, contoh: 1.5.4) [Tekan Enter untuk %DEFAULT_VER%]: "
