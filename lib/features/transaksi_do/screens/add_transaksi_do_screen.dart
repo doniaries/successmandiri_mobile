@@ -724,6 +724,19 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                           textInputAction: TextInputAction.next,
                           onFieldSubmitted: (_) => _caraBayarFocus.requestFocus(),
                           inputFormatters: [CurrencyInputFormatter()],
+                          validator: (val) {
+                            if (val == null || val.isEmpty) return null;
+                            final potong = CurrencyInputFormatter.parse(val);
+                            if (potong > _currentSellerDebt) {
+                              return 'Melebihi sisa hutang penjual';
+                            }
+                            final totalBiaya = CurrencyInputFormatter.parse(_upahBongkarController.text) + CurrencyInputFormatter.parse(_biayaLainController.text);
+                            final sisaHasil = max(0.0, _subTotal - totalBiaya);
+                            if (potong > sisaHasil) {
+                              return 'Melebihi sisa hasil transaksi';
+                            }
+                            return null;
+                          },
                         ),
                         const SizedBox(height: 16),
                       ],
