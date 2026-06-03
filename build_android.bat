@@ -24,19 +24,15 @@ for /f "tokens=1,2,3 delims=." %%a in ("%BASE_VER%") do (
     set V_PAT=%%c
 )
 
-:: Tambah angka ketiga (Patch) otomatis
-set /a NEW_PAT=V_PAT+1
-set DEFAULT_VER=%V_MAJ%.%V_MIN%.%NEW_PAT%
-
-:: Gunakan Unix Timestamp untuk Build Number agar selalu lebih besar dari versi sebelumnya
-for /f "usebackq" %%i in (`powershell -Command "[int][datetimeoffset]::Now.ToUnixTimeSeconds()"`) do set NEW_BUILD_NUM=%%i
+:: Tambah angka Build Number (versionCode) otomatis agar aman diinstal
+set /a NEW_BUILD_NUM=CUR_BUILD_NUM+1
 
 set BUILD_NAME=
-set /p BUILD_NAME="1. Masukkan Versi Aplikasi (3 digit, contoh: 1.5.4) [Tekan Enter untuk %DEFAULT_VER%]: "
-if "%BUILD_NAME%"=="" set BUILD_NAME=%DEFAULT_VER%
+set /p BUILD_NAME="1. Masukkan Versi Aplikasi (3 digit, contoh: 1.5.4) [Tekan Enter untuk %BASE_VER%]: "
+if "%BUILD_NAME%"=="" set BUILD_NAME=%BASE_VER%
 
 set BUILD_NUMBER=
-set /p BUILD_NUMBER="2. Masukkan Build Number (angka, contoh: 1) [Tekan Enter untuk %NEW_BUILD_NUM%]: "
+set /p BUILD_NUMBER="2. Masukkan Build Number (wajib naik agar bisa diinstal) [Tekan Enter untuk %NEW_BUILD_NUM%]: "
 if "%BUILD_NUMBER%"=="" set BUILD_NUMBER=%NEW_BUILD_NUM%
 
 echo.
