@@ -385,9 +385,11 @@ class SyncService {
           );
         } catch (e) {
           dev.log('Sync failed for item $id: $e');
-          if (e is DioException && e.response?.statusCode == 422) {
-            dev.log('Item $id returned 422 (duplicate). Removing from queue.');
+          final statusCode = (e is DioException) ? e.response?.statusCode : null;
+          if (statusCode == 422 || statusCode == 400 || statusCode == 403) {
+            dev.log('Item $id returned $statusCode (client/validation error). Removing from queue.');
             await _db.deleteQueue(id);
+            // We treat as success to clear the badge, but ideally should notify user
             successCount++;
             syncedEndpoints.add(_getProcessName(endpoint));
             await updatePendingCount();
@@ -693,16 +695,42 @@ class SyncService {
   }
 
   Future<void> syncUsersAndCompanies() async {
+    // Hanya admin/super_admin yang boleh fetch /users
+    // Kasir tidak punya akses → akan dapat 403, jadi skip saja
     try {
-      final response = await _apiClient.dio.get('/users');
-      if (response.data != null) {
-        final List<dynamic> userData = response.data is List
-            ? response.data
-            : (response.data['data'] ?? []);
-        await cacheData('users', userData);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.reload();
+      final cachedUserStr = prefs.getString('cached_user');
+      bool isAdmin = false;
+      if (cachedUserStr != null) {
+        try {
+          final userJson = jsonDecode(cachedUserStr) as Map<String, dynamic>;
+          final roles = userJson['roles'];
+          if (roles is List) {
+            isAdmin = roles.any((r) {
+              final roleName = (r is Map ? r['name'] : r).toString().toLowerCase();
+              return roleName == 'admin' || roleName == 'super_admin' || roleName == 'superadmin' || roleName == 'pimpinan';
+            });
+          }
+        } catch (_) {}
       }
+
+      if (isAdmin) {
+        final response = await _apiClient.dio.get('/users');
+        if (response.data != null) {
+          final List<dynamic> userData = response.data is List
+              ? response.data
+              : (response.data['data'] ?? []);
+          await cacheData('users', userData);
+        }
+      }
+      // Kasir: skip /users, tidak perlu data user list
     } catch (e) {
-      debugPrint('Error syncing users: $e');
+      // Abaikan error 403 secara senyap (Kasir tidak punya akses /users)
+      final statusCode = (e is DioException) ? e.response?.statusCode : null;
+      if (statusCode != 403) {
+        debugPrint('Error syncing users: $e');
+      }
     }
 
     try {

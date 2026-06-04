@@ -64,6 +64,8 @@ class DashboardRepository {
         int countOfflinePengeluaran = 0;
         double totalOfflinePemasukan = 0;
         int countOfflinePemasukan = 0;
+        double totalOfflineDoTonase = 0;
+        int countOfflineDo = 0;
 
         // 1. Pending Operasional
         final pendingOperasional = await syncService.getMergedOfflineData(
@@ -109,6 +111,8 @@ class DashboardRepository {
           final dos = offlineDo.map((e) => TransaksiDo.fromJson(e)).toList();
 
           for (var d in dos) {
+            countOfflineDo++;
+            totalOfflineDoTonase += d.tonase;
             if (d.caraBayar == 'tunai') {
               totalOfflinePengeluaran += d.sisaBayar;
               countOfflinePengeluaran++;
@@ -174,6 +178,7 @@ class DashboardRepository {
         // Update saldo dan stats HANYA jika ada offline data
         if (countOfflinePemasukan > 0 ||
             countOfflinePengeluaran > 0 ||
+            countOfflineDo > 0 ||
             offlineTambahSaldo.isNotEmpty ||
             pendingTsDeletes > 0) {
           double newSaldo =
@@ -204,7 +209,21 @@ class DashboardRepository {
                     oldStats.pengeluaran.month.count + countOfflinePengeluaran,
               ),
             ),
-            transaksi: oldStats.transaksi, // retain other stats
+            transaksi: TransaksiStats(
+              today: StatDetail(
+                total: oldStats.transaksi.today.total,
+                count: oldStats.transaksi.today.count + countOfflineDo,
+                tonase: oldStats.transaksi.today.tonase + totalOfflineDoTonase,
+              ),
+              yesterday: oldStats.transaksi.yesterday,
+              month: StatDetail(
+                total: oldStats.transaksi.month.total,
+                count: oldStats.transaksi.month.count + countOfflineDo,
+                tonase: oldStats.transaksi.month.tonase + totalOfflineDoTonase,
+              ),
+              periodeAwal: oldStats.transaksi.periodeAwal,
+              periodeAkhir: oldStats.transaksi.periodeAkhir,
+            ),
           );
 
           summary = summary.copyWith(
