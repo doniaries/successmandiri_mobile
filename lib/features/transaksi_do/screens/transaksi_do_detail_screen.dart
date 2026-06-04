@@ -164,11 +164,11 @@ class TransaksiDoDetailScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildHeaderInfo('Tonase', '${NumberFormat.decimalPattern('id').format(transaction.tonase)} kg'),
                       _buildHeaderInfo(
                         'Harga',
                         CurrencyFormatter.formatRupiah(transaction.hargaSatuan),
                       ),
+                      _buildHeaderInfo('Tonase', '${NumberFormat.decimalPattern('id').format(transaction.tonase)} kg'),
                     ],
                   ),
                 ],

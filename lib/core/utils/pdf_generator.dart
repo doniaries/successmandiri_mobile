@@ -177,8 +177,8 @@ class PdfGenerator {
                       _buildTableRow('Nama Penjual', transaction.penjualNama ?? 'N/A'),
                       _buildTableRow('Nama Supir', transaction.displaySupirNama),
                       _buildTableRow('Nomor Polisi', transaction.noPolisi ?? 'N/A'),
-                      _buildTableRow('Tonase (Kg)', numberFormat.format(transaction.tonase)),
                       _buildTableRow('Harga Satuan', 'Rp${numberFormat.format(transaction.hargaSatuan)}'),
+                      _buildTableRow('Tonase (Kg)', '${numberFormat.format(transaction.tonase)} Kg'),
                       _buildTableRow('Sub Total', 'Rp${numberFormat.format(transaction.subTotal)}'),
                       _buildTableRow('Upah Bongkar', 'Rp${numberFormat.format(transaction.upahBongkar)}'),
                       _buildTableRow('Biaya Lain', 'Rp${numberFormat.format(transaction.biayaLain)}'),
@@ -377,8 +377,8 @@ class PdfGenerator {
                   children: [
                     _buildCell('No', isBold: true, align: pw.TextAlign.center),
                     _buildCell('Tanggal', isBold: true, align: pw.TextAlign.center),
-                    _buildCell('Tonase (Kg)', isBold: true, align: pw.TextAlign.right),
                     _buildCell('Harga (Rp)', isBold: true, align: pw.TextAlign.right),
+                    _buildCell('Tonase (Kg)', isBold: true, align: pw.TextAlign.right),
                     _buildCell('Keterangan', isBold: true, align: pw.TextAlign.left),
                   ],
                 ),
@@ -393,8 +393,8 @@ class PdfGenerator {
                     children: [
                       _buildCell('${index + 1}', align: pw.TextAlign.center, color: textColor),
                       _buildCell(row.tanggal, align: pw.TextAlign.center, color: textColor),
-                      _buildCell(row.tonase > 0 ? numberFormat.format(row.tonase) : '-', align: pw.TextAlign.right, color: textColor),
                       _buildCell(row.harga > 0 ? numberFormat.format(row.harga) : '-', align: pw.TextAlign.right, color: textColor),
+                      _buildCell(row.tonase > 0 ? numberFormat.format(row.tonase) : '-', align: pw.TextAlign.right, color: textColor),
                       _buildCell(row.keterangan, align: pw.TextAlign.left, color: textColor),
                     ],
                   );
@@ -405,8 +405,8 @@ class PdfGenerator {
                   children: [
                     _buildCell('', align: pw.TextAlign.center),
                     _buildCell('TOTAL', isBold: true, align: pw.TextAlign.center),
-                    _buildCell(numberFormat.format(data.totalTonase), isBold: true, align: pw.TextAlign.right),
                     _buildCell('', align: pw.TextAlign.center),
+                    _buildCell(numberFormat.format(data.totalTonase), isBold: true, align: pw.TextAlign.right),
                     _buildCell('', align: pw.TextAlign.center),
                   ],
                 ),
