@@ -623,7 +623,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
             if (db != null) {
               await db.delete('offline_queue');
               if (!mounted) return;
-              context.read<SyncService>().updatePendingCount();
+              SyncService().updatePendingCount();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Semua antrean offline berhasil dihapus secara paksa.')),
               );
