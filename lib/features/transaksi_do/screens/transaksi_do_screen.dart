@@ -614,30 +614,7 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   }
 
   Widget _buildPendingSyncBanner() {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: ElevatedButton.icon(
-          onPressed: () async {
-            final db = await DatabaseService().database;
-            if (db != null) {
-              await db.delete('offline_queue');
-              if (!mounted) return;
-              SyncService().updatePendingCount();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Semua antrean offline berhasil dihapus secara paksa.')),
-              );
-            }
-          },
-          icon: const Icon(Icons.delete_forever),
-          label: const Text('Hapus Paksa Antrean Nyangkut (Dev)'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red[900],
-            foregroundColor: Colors.white,
-          ),
-        ),
-      ),
-    );
+    return const SliverToBoxAdapter(child: SizedBox.shrink());
   }
 
   Widget _buildTransactionCard(dynamic tx) {

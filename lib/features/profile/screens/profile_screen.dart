@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sawitappmobile/core/services/push_notification_service.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
 import 'package:sawitappmobile/core/services/backup_service.dart';
+import 'package:sawitappmobile/core/services/database_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -417,6 +418,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 const AppVersionSettingScreen(),
                           ),
                         ),
+                      ),
+                      _buildRoleMenuTile(
+                        'Hapus Antrean Error (Dev)',
+                        'Menghapus semua antrean offline yang nyangkut',
+                        onTap: () async {
+                          final db = await DatabaseService().database;
+                          if (db != null) {
+                            await db.delete('offline_queue');
+                            if (!context.mounted) return;
+                            SyncService().updatePendingCount();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Semua antrean offline berhasil dihapus secara paksa.')),
+                            );
+                          }
+                        },
                       ),
                     ],
 
