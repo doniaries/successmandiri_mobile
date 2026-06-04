@@ -2177,64 +2177,9 @@ class _StatCardsState extends State<_StatCards> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Consumer<DashboardProvider>(
-              builder: (context, provider, _) {
-                final activeDateStr = provider.summary?.systemActiveDate;
-                if (activeDateStr != null) {
-                  final activeDate = DateTime.parse(activeDateStr);
-                  final formatted = DateFormat(
-                    'dd MMM yyyy',
-                    'id_ID',
-                  ).format(activeDate);
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(
-                            255,
-                            255,
-                            255,
-                            255,
-                          ).withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: Colors.amber.withValues(alpha: 0.5),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.event_available,
-                              color: Color.fromARGB(255, 255, 255, 255),
-                              size: 14,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              formatted,
-                              style: const TextStyle(
-                                color: Color.fromARGB(255, 237, 240, 240),
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  );
-                }
-                return const SizedBox.shrink();
-              },
-            ),
-            _buildPeriodToggle(filterDate),
+            _buildPeriodToggle(filterDate, summary.systemActiveDate),
           ],
         ),
         const SizedBox(height: 10),
@@ -2351,8 +2296,15 @@ class _StatCardsState extends State<_StatCards> {
     );
   }
 
-  Widget _buildPeriodToggle(DateTime? currentFilterDate) {
+  Widget _buildPeriodToggle(DateTime? currentFilterDate, String? systemActiveDateStr) {
     final bool isToday = currentFilterDate == null;
+    String todayStr = 'Hari Ini';
+    if (systemActiveDateStr != null) {
+      final activeDate = DateTime.parse(systemActiveDateStr);
+      final formatted = DateFormat('dd MMM yyyy', 'id_ID').format(activeDate);
+      todayStr = 'Hari Ini - $formatted';
+    }
+
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
@@ -2362,7 +2314,7 @@ class _StatCardsState extends State<_StatCards> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _toggleItem(0, 'Hari Ini', isToday, currentFilterDate),
+          _toggleItem(0, todayStr, isToday, currentFilterDate),
           _toggleItem(
             1,
             !isToday
