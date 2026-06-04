@@ -2268,8 +2268,16 @@ class _StatCardsState extends State<_StatCards> {
                 children: [
                   Expanded(
                     child: _buildGridItem(
-                      onTap: () =>
-                          context.read<MainNavigationProvider>().setIndex(1),
+                      onTap: () {
+                        final dashProv = context.read<DashboardProvider>();
+                        final globalFilter = context.read<GlobalFilterProvider>();
+                        final targetDate = globalFilter.selectedDate ?? 
+                            (dashProv.summary?.systemActiveDate != null ? DateTime.parse(dashProv.summary!.systemActiveDate) : DateTime.now());
+                        final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
+                        
+                        context.read<TransaksiDoProvider>().fetchTransactions(tanggal: dateStr);
+                        context.read<MainNavigationProvider>().setIndex(1);
+                      },
                       icon: Icons.local_shipping_rounded,
                       color: const Color(0xFF01579B),
                       title: 'Jumlah Transaksi',
@@ -2280,8 +2288,16 @@ class _StatCardsState extends State<_StatCards> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: _buildGridItem(
-                      onTap: () =>
-                          context.read<MainNavigationProvider>().setIndex(1),
+                      onTap: () {
+                        final dashProv = context.read<DashboardProvider>();
+                        final globalFilter = context.read<GlobalFilterProvider>();
+                        final targetDate = globalFilter.selectedDate ?? 
+                            (dashProv.summary?.systemActiveDate != null ? DateTime.parse(dashProv.summary!.systemActiveDate) : DateTime.now());
+                        final dateStr = DateFormat('yyyy-MM-dd').format(targetDate);
+                        
+                        context.read<TransaksiDoProvider>().fetchTransactions(tanggal: dateStr);
+                        context.read<MainNavigationProvider>().setIndex(1);
+                      },
                       icon: Icons.scale_rounded,
                       color: const Color(0xFFE67E22),
                       title: 'Total Tonase',
@@ -2298,9 +2314,10 @@ class _StatCardsState extends State<_StatCards> {
                 children: [
                   Expanded(
                     child: _buildGridItem(
-                      onTap: () => context
-                          .read<MainNavigationProvider>()
-                          .setIndex(3, journalFilter: 'Pemasukan'),
+                      onTap: () {
+                        // Tidak perlu fetch operasional di sini karena FinanceJournalScreen akan merespon GlobalFilterProvider atau refetch di initState
+                        context.read<MainNavigationProvider>().setIndex(3, journalFilter: 'Pemasukan');
+                      },
                       icon: Icons.trending_up_rounded,
                       color: const Color(0xFF2E7D32),
                       title: 'Uang Masuk',
@@ -2313,9 +2330,9 @@ class _StatCardsState extends State<_StatCards> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: _buildGridItem(
-                      onTap: () => context
-                          .read<MainNavigationProvider>()
-                          .setIndex(3, journalFilter: 'Pengeluaran'),
+                      onTap: () {
+                        context.read<MainNavigationProvider>().setIndex(3, journalFilter: 'Pengeluaran');
+                      },
                       icon: Icons.trending_down_rounded,
                       color: const Color(0xFFC62828),
                       title: 'Pengeluaran',
