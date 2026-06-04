@@ -23,14 +23,24 @@ class LaporanTonasePdfPreviewScreen extends StatelessWidget {
         backgroundColor: const Color(0xFF27AE60),
         foregroundColor: Colors.white,
       ),
-      body: PdfPreview(
-        build: (format) => PdfGenerator.generateLaporanTonasePdf(data, month, year),
-        canChangeOrientation: false,
-        canChangePageFormat: false,
-        canDebug: false,
-        maxPageWidth: 2000,
-        pdfFileName: 'Laporan_Tonase_${year}_$month.pdf',
-        previewPageMargin: const EdgeInsets.all(8),
+      body: LayoutBuilder(
+        builder: (context, constraints) => InteractiveViewer(
+          panEnabled: true,
+          minScale: 1.0,
+          maxScale: 5.0,
+          child: SizedBox(
+            width: constraints.maxWidth,
+            height: constraints.maxHeight,
+            child: PdfPreview(
+              build: (format) => PdfGenerator.generateLaporanTonasePdf(data, month, year),
+              canChangeOrientation: false,
+              canChangePageFormat: false,
+              canDebug: false,
+              pdfFileName: 'Laporan_Tonase_${year}_$month.pdf',
+              previewPageMargin: const EdgeInsets.all(8),
+            ),
+          ),
+        ),
       ),
     );
   }

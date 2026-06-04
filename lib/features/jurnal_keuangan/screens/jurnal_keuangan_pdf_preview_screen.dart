@@ -49,14 +49,24 @@ class _JurnalKeuanganPdfPreviewScreenState extends State<JurnalKeuanganPdfPrevie
         backgroundColor: const Color(0xFF01579B),
         foregroundColor: Colors.white,
       ),
-      body: PdfPreview(
-        build: (format) => _fetchPdf(context),
-        canChangeOrientation: false,
-        canChangePageFormat: false,
-        canDebug: false,
-        maxPageWidth: 2000,
-        pdfFileName: 'Laporan_Keuangan_${DateFormat('yyyyMMdd').format(widget.targetDate)}.pdf',
-        previewPageMargin: const EdgeInsets.all(8),
+      body: LayoutBuilder(
+        builder: (context, constraints) => InteractiveViewer(
+          panEnabled: true,
+          minScale: 1.0,
+          maxScale: 5.0,
+          child: SizedBox(
+            width: constraints.maxWidth,
+            height: constraints.maxHeight,
+            child: PdfPreview(
+              build: (format) => _fetchPdf(context),
+              canChangeOrientation: false,
+              canChangePageFormat: false,
+              canDebug: false,
+              pdfFileName: 'Laporan_Keuangan_${DateFormat('yyyyMMdd').format(widget.targetDate)}.pdf',
+              previewPageMargin: const EdgeInsets.all(8),
+            ),
+          ),
+        ),
       ),
     );
   }
