@@ -298,24 +298,58 @@ class TransaksiDoDetailScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    '${ApiConstants.storageUrl}/${transaction.buktiTransfer}',
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      padding: const EdgeInsets.all(20),
-                      color: Colors.grey[200],
-                      child: const Column(
-                        children: [
-                          Icon(Icons.broken_image_outlined, color: Colors.grey),
-                          SizedBox(height: 8),
-                          Text(
-                            'Gambar tidak dapat dimuat',
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        ],
+                GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => Dialog(
+                        backgroundColor: Colors.transparent,
+                        insetPadding: const EdgeInsets.all(10),
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          alignment: Alignment.center,
+                          children: [
+                            InteractiveViewer(
+                              panEnabled: true,
+                              minScale: 1.0,
+                              maxScale: 4.0,
+                              child: Image.network(
+                                '${ApiConstants.storageUrl}/${transaction.buktiTransfer}',
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                            Positioned(
+                              top: -15,
+                              right: -15,
+                              child: IconButton(
+                                icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                                onPressed: () => Navigator.pop(context),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      '${ApiConstants.storageUrl}/${transaction.buktiTransfer}',
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        padding: const EdgeInsets.all(20),
+                        color: Colors.grey[200],
+                        child: const Column(
+                          children: [
+                            Icon(Icons.broken_image_outlined, color: Colors.grey),
+                            SizedBox(height: 8),
+                            Text(
+                              'Gambar tidak dapat dimuat',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),

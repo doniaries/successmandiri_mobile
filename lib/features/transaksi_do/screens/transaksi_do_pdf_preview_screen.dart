@@ -26,6 +26,7 @@ class TransaksiDoPdfPreviewScreen extends StatelessWidget {
         canChangeOrientation: false,
         canChangePageFormat: false,
         canDebug: false,
+        maxPageWidth: 2000,
         allowSharing: false, // Disable default PDF sharing
         pdfFileName: 'DO_${transaction.nomor}.pdf',
         previewPageMargin: const EdgeInsets.all(8),

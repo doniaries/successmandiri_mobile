@@ -54,6 +54,7 @@ class _JurnalKeuanganPdfPreviewScreenState extends State<JurnalKeuanganPdfPrevie
         canChangeOrientation: false,
         canChangePageFormat: false,
         canDebug: false,
+        maxPageWidth: 2000,
         pdfFileName: 'Laporan_Keuangan_${DateFormat('yyyyMMdd').format(widget.targetDate)}.pdf',
         previewPageMargin: const EdgeInsets.all(8),
       ),

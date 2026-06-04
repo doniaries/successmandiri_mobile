@@ -28,6 +28,7 @@ class LaporanTonasePdfPreviewScreen extends StatelessWidget {
         canChangeOrientation: false,
         canChangePageFormat: false,
         canDebug: false,
+        maxPageWidth: 2000,
         pdfFileName: 'Laporan_Tonase_${year}_$month.pdf',
         previewPageMargin: const EdgeInsets.all(8),
       ),
