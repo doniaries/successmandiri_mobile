@@ -386,7 +386,7 @@ class SyncService {
         } catch (e) {
           dev.log('Sync failed for item $id: $e');
           final statusCode = (e is DioException) ? e.response?.statusCode : null;
-          if (statusCode == 422 || statusCode == 400 || statusCode == 403) {
+          if (statusCode == 422 || statusCode == 400 || statusCode == 403 || statusCode == 404 || statusCode == 405) {
             dev.log('Item $id returned $statusCode (client/validation error). Removing from queue.');
             await _db.deleteQueue(id);
             // We treat as success to clear the badge, but ideally should notify user

@@ -8,6 +8,7 @@ import 'package:sawitappmobile/features/transaksi_do/providers/transaksi_do_prov
 import 'package:sawitappmobile/features/dashboard/providers/dashboard_provider.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
+import 'package:sawitappmobile/core/services/database_service.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/add_transaksi_do_screen.dart';
 import 'package:sawitappmobile/features/transaksi_do/screens/transaksi_do_detail_screen.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
@@ -613,7 +614,30 @@ class _TransaksiDoScreenState extends State<TransaksiDoScreen> {
   }
 
   Widget _buildPendingSyncBanner() {
-    return const SliverToBoxAdapter(child: SizedBox.shrink());
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: ElevatedButton.icon(
+          onPressed: () async {
+            final db = await DatabaseService().database;
+            if (db != null) {
+              await db.delete('offline_queue');
+              if (!mounted) return;
+              context.read<SyncService>().updatePendingCount();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Semua antrean offline berhasil dihapus secara paksa.')),
+              );
+            }
+          },
+          icon: const Icon(Icons.delete_forever),
+          label: const Text('Hapus Paksa Antrean Nyangkut (Dev)'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red[900],
+            foregroundColor: Colors.white,
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildTransactionCard(dynamic tx) {

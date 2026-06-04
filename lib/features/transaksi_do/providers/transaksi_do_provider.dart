@@ -358,18 +358,26 @@ class TransaksiDoProvider with ChangeNotifier {
   }
 
   Future<bool> deleteTransaction(int id) async {
-    _isLoading = true;
     _errorMessage = null;
-    notifyListeners();
+    
+    // Simpan data lama & hapus secara sinkron untuk mencegah error Dismissible Flutter
+    final index = _transactions.indexWhere((element) => element.id == id);
+    TransaksiDo? backupTx;
+    if (index != -1) {
+      backupTx = _transactions[index];
+      _transactions.removeAt(index);
+      notifyListeners();
+    }
 
     try {
       await _repository.deleteTransaksiDo(id);
-      _transactions.removeWhere((element) => element.id == id);
-      _isLoading = false;
-      notifyListeners();
       return true;
     } catch (e) {
-      _isLoading = false;
+      // Kembalikan data jika gagal
+      if (index != -1 && backupTx != null) {
+        _transactions.insert(index, backupTx);
+      }
+      
       if (e is DioException) {
         final serverMessage = e.response?.data['message'];
         _errorMessage = serverMessage ?? 'Gagal menghubungi server.';
