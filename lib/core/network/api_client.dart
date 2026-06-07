@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sawitappmobile/core/constants/api_constants.dart';
 import 'package:sawitappmobile/core/navigation/navigation_service.dart';
 import 'package:sawitappmobile/features/auth/screens/login_screen.dart';
+import 'package:dio_smart_retry/dio_smart_retry.dart';
 
 // Top-level functions untuk mencegah ANR saat jsonDecode string yang sangat besar
 dynamic _parseAndDecode(String response) {
@@ -80,6 +81,20 @@ class ApiClient {
         return handler.next(e);
       },
     ));
+
+    // Menambahkan RetryInterceptor untuk mencoba ulang otomatis saat timeout / gagal koneksi
+    _dio.interceptors.add(
+      RetryInterceptor(
+        dio: _dio,
+        logPrint: print, // Tampilkan log retry
+        retries: 3, // Coba ulang maksimal 3 kali
+        retryDelays: const [
+          Duration(seconds: 1), // Tunggu 1 detik sebelum percobaan kedua
+          Duration(seconds: 2), // Tunggu 2 detik sebelum percobaan ketiga
+          Duration(seconds: 3), // Tunggu 3 detik sebelum percobaan keempat
+        ],
+      ),
+    );
   }
 
   Dio get dio => _dio;

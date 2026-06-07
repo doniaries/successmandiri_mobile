@@ -71,6 +71,12 @@ class AuthRepository {
       }
       throw Exception('Gagal login');
     } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionTimeout || 
+          e.type == DioExceptionType.receiveTimeout || 
+          e.type == DioExceptionType.sendTimeout) {
+        throw Exception('Koneksi ke server terputus (Timeout). Silakan periksa koneksi internet Anda dan coba lagi.');
+      }
+      
       if (e.response != null) {
         final dynamic responseData = e.response?.data;
         if (responseData is Map && responseData.containsKey('message')) {
