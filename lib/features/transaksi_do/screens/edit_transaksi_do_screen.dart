@@ -344,7 +344,7 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
           : null,
       suffixIcon: suffixIcon,
       filled: true,
-      fillColor: fillColor ?? Colors.grey[50],
+      fillColor: fillColor ?? Colors.blue[50],
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
@@ -360,7 +360,7 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Colors.orangeAccent, width: 1),
+        borderSide: const BorderSide(color: Colors.redAccent, width: 1),
       ),
       labelStyle: TextStyle(
         color: Colors.grey[700],
@@ -389,7 +389,7 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
             color: Color(0xFF01579B),
             fontWeight: FontWeight.bold,
           ),
-      errorStyle: const TextStyle(color: Colors.orangeAccent),
+      errorStyle: const TextStyle(color: Colors.redAccent),
     );
   }
 

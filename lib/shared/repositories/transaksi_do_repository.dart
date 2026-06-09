@@ -423,7 +423,7 @@ class TransaksiDoRepository {
       final response = await _apiClient.dio.get(
         ApiConstants.generateDoNumber,
         queryParameters: queryParams,
-      );
+      ).timeout(const Duration(seconds: 3));
 
       return response.data['data'] ?? 'OTOMATIS (SISTEM)';
     } catch (e) {

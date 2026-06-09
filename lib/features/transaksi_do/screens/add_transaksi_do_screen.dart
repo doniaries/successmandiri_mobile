@@ -269,7 +269,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
           : null,
       suffixIcon: suffixIcon,
       filled: true,
-      fillColor: fillColor ?? Colors.grey[50],
+      fillColor: fillColor ?? Colors.blue[50],
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
@@ -285,7 +285,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Colors.orangeAccent, width: 1),
+        borderSide: const BorderSide(color: Colors.redAccent, width: 1),
       ),
       labelStyle: TextStyle(
         color: Colors.grey[700],
@@ -314,7 +314,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
             color: Color(0xFF01579B),
             fontWeight: FontWeight.bold,
           ),
-      errorStyle: const TextStyle(color: Colors.orangeAccent),
+      errorStyle: const TextStyle(color: Colors.redAccent),
     );
   }
 
@@ -643,8 +643,29 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
 
 
 
-                      // Checkbox: Gunakan harga sama hari ini
-                      if (_savedHargaHariIni != null && _savedHargaHariIni! > 0) ...[  
+                      TextFormField(
+                        controller: _hargaSatuanController,
+                        focusNode: _hargaSatuanFocus,
+                        decoration: _getInputDecoration(
+                          label: 'Harga Satuan',
+                          icon: Icons.payments_outlined,
+                          hint: '0',
+                        ).copyWith(prefixText: 'Rp '),
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [CurrencyInputFormatter()],
+                        textInputAction: TextInputAction.next,
+                        onFieldSubmitted: (_) => _tonaseFocus.requestFocus(),
+                        validator: (val) =>
+                            val == null || val.isEmpty ? 'Isi harga' : null,
+                        onChanged: (val) {
+                          _onFieldChanged();
+                        },
+                      ),
+                      const SizedBox(height: 10),
+
+                      // Checkbox: Gunakan harga sama hari ini (Moved here)
+                      if (_savedHargaHariIni != null && _savedHargaHariIni! > 0 && !_nomorDoController.text.endsWith('001') && (_gunakanHargaSama || _hargaSatuanController.text.isEmpty)) ...[  
                         InkWell(
                           onTap: () {
                             setState(() {
@@ -667,7 +688,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                             decoration: BoxDecoration(
                               color: _gunakanHargaSama
                                   ? const Color(0xFF01579B).withValues(alpha: 0.08)
-                                  : Colors.grey[100],
+                                  : Colors.blue[50],
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
                                 color: _gunakanHargaSama
@@ -739,24 +760,7 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                         ),
                         const SizedBox(height: 10),
                       ],
-
-                      TextFormField(
-                        controller: _hargaSatuanController,
-                        focusNode: _hargaSatuanFocus,
-                        decoration: _getInputDecoration(
-                          label: 'Harga Satuan',
-                          icon: Icons.payments_outlined,
-                          hint: '0',
-                        ).copyWith(prefixText: 'Rp '),
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [CurrencyInputFormatter()],
-                        textInputAction: TextInputAction.next,
-                        onFieldSubmitted: (_) => _tonaseFocus.requestFocus(),
-                        validator: (val) =>
-                            val == null || val.isEmpty ? 'Isi harga' : null,
-                      ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 6),
                       TextFormField(
                         controller: _tonaseController,
                         focusNode: _tonaseFocus,
