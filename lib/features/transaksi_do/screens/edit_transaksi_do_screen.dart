@@ -1158,20 +1158,28 @@ class _EditTransaksiDoScreenState extends State<EditTransaksiDoScreen> {
 
       if (mounted) {
         if (success) {
-          SuccessDialog.show(
-            context,
-            title: 'Berhasil Diubah!',
-            message:
-                'Data Transaksi DO dengan nomor ${_nomorDoController.text} berhasil diperbarui.',
-            onConfirm: () {
-              // Pop edit screen
-              Navigator.of(context).pop();
-              // Pop detail screen jika popParent bernilai true
-              if (widget.popParent) {
-                Navigator.of(context).pop();
-              }
-            },
+          final bool isOffline =
+              context.read<TransaksiDoProvider>().errorMessage?.contains('offline') ?? false;
+              
+          context.read<TransaksiDoProvider>().clearErrorMessage();
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                isOffline 
+                    ? 'Koneksi lambat. Perubahan disimpan offline.'
+                    : 'DO ${_nomorDoController.text} berhasil diperbarui.',
+              ),
+              backgroundColor: isOffline ? Colors.orange[800] : Colors.green[600],
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 2),
+            ),
           );
+          
+          Navigator.of(context).pop();
+          if (widget.popParent) {
+            Navigator.of(context).pop();
+          }
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

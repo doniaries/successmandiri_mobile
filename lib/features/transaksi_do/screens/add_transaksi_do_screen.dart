@@ -1101,17 +1101,23 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
                 'offline',
               ) ??
               false;
-          SuccessDialog.show(
-            context,
-            title: 'Transaksi Berhasil!',
-            message: isOffline
-                ? 'Koneksi internet tidak stabil. Data transaksi DO nomor ${_nomorDoController.text} telah disimpan di antrean perangkat dan akan otomatis dikirim saat sinyal pulih.'
-                : 'Data Transaksi DO dengan nomor ${_nomorDoController.text} berhasil disimpan ke sistem.',
-            isOffline: isOffline,
-            onConfirm: () {
-              Navigator.of(context).pop();
-            },
+          
+          context.read<TransaksiDoProvider>().clearErrorMessage();
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                isOffline
+                    ? 'Disimpan offline. Akan disinkronkan saat sinyal pulih.'
+                    : 'DO ${_nomorDoController.text} berhasil disimpan.',
+              ),
+              backgroundColor: isOffline ? Colors.orange[800] : Colors.green[600],
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 2),
+            ),
           );
+          
+          Navigator.of(context).pop(true);
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

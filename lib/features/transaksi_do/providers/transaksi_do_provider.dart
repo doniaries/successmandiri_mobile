@@ -54,6 +54,13 @@ class TransaksiDoProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void clearErrorMessage() {
+    if (_errorMessage != null) {
+      _errorMessage = null;
+      notifyListeners();
+    }
+  }
+
   Future<void> fetchTransactions({String? tanggal}) async {
     if (_isRefreshing) return;
     
@@ -323,6 +330,7 @@ class TransaksiDoProvider with ChangeNotifier {
 
       if (result is Map && result['offline'] == true) {
         _errorMessage = 'Koneksi bermasalah. Transaksi disimpan di antrean offline.';
+        _refreshInBackground();
         // Tetap return true karena dianggap "berhasil disimpan" di lokal
       } else {
         if (result is Map && result['data'] != null) {
@@ -395,6 +403,7 @@ class TransaksiDoProvider with ChangeNotifier {
 
       if (result is Map && result['offline'] == true) {
         _errorMessage = 'Koneksi bermasalah. Perubahan disimpan di antrean offline.';
+        _refreshInBackground();
       } else {
         if (result is Map && result['data'] != null) {
           try {
