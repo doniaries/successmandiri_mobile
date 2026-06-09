@@ -237,18 +237,20 @@ class _LoginScreenState extends State<LoginScreen> {
                                           color: Colors.grey,
                                         ),
                                         onSelected: (String selectedEmail) {
-                                          // Set email
-                                          _emailController.text = selectedEmail;
+                                          setState(() {
+                                            // Set email
+                                            _emailController.text = selectedEmail;
 
-                                          // Auto-fill password berdasarkan email yang dipilih
-                                          final savedPwd = _credentialsMap[selectedEmail];
-                                          if (savedPwd != null && savedPwd.isNotEmpty) {
-                                            _passwordController.text = savedPwd;
-                                          } else {
-                                            // Jika tidak ada di map, kosongkan password
-                                            // agar user tidak menggunakan password user lain
-                                            _passwordController.clear();
-                                          }
+                                            // Auto-fill password berdasarkan email yang dipilih
+                                            final savedPwd = _credentialsMap[selectedEmail];
+                                            if (savedPwd != null && savedPwd.isNotEmpty) {
+                                              _passwordController.text = savedPwd;
+                                            } else {
+                                              // Jika tidak ada di map, kosongkan password
+                                              // agar user tidak menggunakan password user lain
+                                              _passwordController.clear();
+                                            }
+                                          });
                                         },
                                         itemBuilder: (BuildContext context) {
                                           return _savedEmailsList.map((

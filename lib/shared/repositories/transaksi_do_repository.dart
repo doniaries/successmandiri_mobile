@@ -5,6 +5,7 @@ import 'package:sawitappmobile/core/constants/api_constants.dart';
 import 'package:sawitappmobile/core/network/api_client.dart';
 import 'package:sawitappmobile/features/transaksi_do/models/transaksi_do_model.dart';
 import 'package:sawitappmobile/core/services/sync_service.dart';
+import 'package:sawitappmobile/core/services/database_service.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:developer' as dev;
@@ -599,10 +600,12 @@ class TransaksiDoRepository {
           'DELETE',
           {},
         );
+        try { await DatabaseService().delete('transaksi_do', where: 'id = ?', whereArgs: [id]); } catch (_) {}
         return;
       }
 
       await _apiClient.dio.delete('${ApiConstants.transaksiDo}/$id');
+      try { await DatabaseService().delete('transaksi_do', where: 'id = ?', whereArgs: [id]); } catch (_) {}
     } on DioException catch (e) {
       if (e.response != null && e.response!.statusCode != null) {
         if (e.response!.statusCode! >= 400 && e.response!.statusCode! < 500) {

@@ -153,4 +153,10 @@ class DatabaseService {
       await Future.delayed(const Duration(milliseconds: 15));
     }
   }
+
+  Future<int> delete(String table, {String? where, List<dynamic>? whereArgs}) async {
+    if (kIsWeb) return 0;
+    final db = await database;
+    return await db!.delete(table, where: where, whereArgs: whereArgs);
+  }
 }
