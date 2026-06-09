@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:sawitappmobile/features/transaksi_do/models/transaksi_do_model.dart';
 import 'package:sawitappmobile/shared/repositories/transaksi_do_repository.dart';
 import 'package:sawitappmobile/core/services/seen_state_service.dart';
@@ -210,6 +211,42 @@ class TransaksiDoProvider with ChangeNotifier {
     }
   }
 
+  /// Refresh transaksi di background tanpa memblokir UI (tidak set _isLoading)
+  void _refreshInBackground() {
+    Future.microtask(() async {
+      try {
+        // Local first
+        final localData = await _repository.getLocalTransaksiDo(tanggal: _currentTanggal);
+        _transactions = localData.map((json) => TransaksiDo.fromJson(json)).toList();
+        notifyListeners();
+
+        // Lalu sync dari server diam-diam
+        List<TransaksiDo> allTransactions = [];
+        int page = 1;
+        bool hasMoreData = true;
+        while (hasMoreData) {
+          final dynamic response = await _repository.getTransaksiDo(
+            tanggal: _currentTanggal,
+            page: page,
+          );
+          List<dynamic> rawData = [];
+          if (response is Map) {
+            rawData = response['data'] ?? [];
+            hasMoreData = response['next_page_url'] != null;
+          } else if (response is List) {
+            rawData = response;
+            hasMoreData = false;
+          }
+          allTransactions.addAll(rawData.map((json) => TransaksiDo.fromJson(json)));
+          if (!hasMoreData) break;
+          page++;
+        }
+        _transactions = allTransactions;
+        notifyListeners();
+      } catch (_) {}
+    });
+  }
+
   /// Simpan harga satuan terakhir berdasarkan tanggal
   Future<void> saveLastHargaSatuan(String tanggal, double harga) async {
     final prefs = await SharedPreferences.getInstance();
@@ -217,14 +254,29 @@ class TransaksiDoProvider with ChangeNotifier {
     await prefs.setString('last_harga_satuan_tanggal', tanggal);
   }
 
-  /// Ambil harga satuan terakhir — hanya valid jika tanggal sama
+  /// Ambil harga satuan terakhir:
+  /// 1. Cek dari transaksi yang sudah ada di memori (paling akurat)
+  /// 2. Fallback ke SharedPreferences jika memori kosong
   Future<double?> getLastHargaSatuan(String tanggal) async {
+    // Prioritas 1: ambil dari transaksi yang sudah ada di memori untuk tanggal ini
+    if (_transactions.isNotEmpty) {
+      final txHariIni = _transactions.where((t) {
+        final tgl = DateFormat('yyyy-MM-dd').format(t.tanggal.toLocal());
+        return tgl == tanggal;
+      }).toList();
+      if (txHariIni.isNotEmpty) {
+        // Ambil harga dari transaksi paling baru
+        return txHariIni.first.hargaSatuan;
+      }
+    }
+
+    // Prioritas 2: fallback ke SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     final savedTanggal = prefs.getString('last_harga_satuan_tanggal');
     if (savedTanggal == tanggal) {
       return prefs.getDouble('last_harga_satuan_value');
     }
-    return null; // Tanggal berbeda → tidak ada harga tersimpan
+    return null;
   }
 
   Future<bool> createTransaction({
@@ -278,10 +330,12 @@ class TransaksiDoProvider with ChangeNotifier {
             final newDo = TransaksiDo.fromJson(result['data']);
             _transactions.insert(0, newDo);
           } catch (e) {
-            await fetchTransactions();
+            // Parsing gagal — refresh di background tanpa set _isLoading
+            _refreshInBackground();
           }
         } else {
-          await fetchTransactions();
+          // Refresh di background tanpa set _isLoading
+          _refreshInBackground();
         }
       }
 

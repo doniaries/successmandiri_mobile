@@ -105,6 +105,8 @@ class DashboardScreenState extends State<DashboardScreen> {
             !SyncService().isOffline &&
             defaultScrollNotificationPredicate(notification),
         onRefresh: () async {
+          if (!mounted) return;
+          // Capture semua referensi sebelum await agar tidak ada BuildContext across async gap
           final scaffoldMessenger = ScaffoldMessenger.of(context);
           final dashboardProvider = context.read<DashboardProvider>();
           final resourceProvider = context.read<ResourceProvider>();
@@ -152,14 +154,13 @@ class DashboardScreenState extends State<DashboardScreen> {
               ),
             );
           } catch (e) {
-            if (mounted) {
-              scaffoldMessenger.showSnackBar(
-                SnackBar(
-                  content: Text('Gagal sinkronisasi: $e'),
-                  backgroundColor: Colors.redAccent,
-                ),
-              );
-            }
+            if (!mounted) return;
+            scaffoldMessenger.showSnackBar(
+              SnackBar(
+                content: Text('Gagal sinkronisasi: $e'),
+                backgroundColor: Colors.redAccent,
+              ),
+            );
           }
         },
         child: CustomScrollView(
