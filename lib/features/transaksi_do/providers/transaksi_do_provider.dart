@@ -151,8 +151,8 @@ class TransaksiDoProvider with ChangeNotifier {
   }
 
   Future<void> fetchFormData() async {
-    _isLoading = true;
-    notifyListeners();
+    // JANGAN set _isLoading=true di sini agar form langsung tampil
+    // Data lokal di-load diam-diam, lalu UI di-refresh setelah server merespons
     
     void sortData(List<dynamic> list) {
       list.sort((a, b) {
@@ -183,12 +183,11 @@ class TransaksiDoProvider with ChangeNotifier {
         _kendaraans = List.from(localResults[2]);
         sortData(_kendaraans);
         
-        _isLoading = false; // Langsung hilangkan loading
         notifyListeners();
       }
     } catch (_) {}
 
-    // 2. Fetch data terbaru dari server di background
+    // 2. Fetch data terbaru dari server di background (diam-diam)
     try {
       final results = await Future.wait([
         _repository.getPenjuals(),
@@ -207,9 +206,25 @@ class TransaksiDoProvider with ChangeNotifier {
     } catch (e) {
       _errorMessage = 'Gagal memuat data form terbaru';
     } finally {
-      _isLoading = false;
       notifyListeners();
     }
+  }
+
+  /// Simpan harga satuan terakhir berdasarkan tanggal
+  Future<void> saveLastHargaSatuan(String tanggal, double harga) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('last_harga_satuan_value', harga);
+    await prefs.setString('last_harga_satuan_tanggal', tanggal);
+  }
+
+  /// Ambil harga satuan terakhir — hanya valid jika tanggal sama
+  Future<double?> getLastHargaSatuan(String tanggal) async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedTanggal = prefs.getString('last_harga_satuan_tanggal');
+    if (savedTanggal == tanggal) {
+      return prefs.getDouble('last_harga_satuan_value');
+    }
+    return null; // Tanggal berbeda → tidak ada harga tersimpan
   }
 
   Future<bool> createTransaction({

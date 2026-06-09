@@ -51,6 +51,10 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
   final _sisaHutangController = TextEditingController();
   final _sisaBayarController = TextEditingController();
 
+  // Harga satuan tersimpan untuk hari ini (dari transaksi sebelumnya)
+  double? _savedHargaHariIni;
+  bool _gunakanHargaSama = false;
+
   List<String> get _currentCaraBayarOptions {
     final double saldoPerusahaan =
         context.read<DashboardProvider>().summary?.saldo ?? 0;
@@ -77,9 +81,19 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
       _selectedDate = DateTime.parse(activeDateStr);
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       context.read<TransaksiDoProvider>().fetchFormData();
       _updateNomorDo();
+
+      // Load harga tersimpan (tanpa auto-fill — user yang memutuskan pakai atau tidak)
+      final tanggalStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
+      final provider = context.read<TransaksiDoProvider>();
+      final savedHarga = await provider.getLastHargaSatuan(tanggalStr);
+      if (mounted && savedHarga != null && savedHarga > 0) {
+        setState(() {
+          _savedHargaHariIni = savedHarga;
+        });
+      }
     });
   }
 
@@ -203,6 +217,9 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
   );
 
   Future<void> _selectDate(BuildContext context) async {
+    // Simpan provider sebelum await agar tidak ada BuildContext across async gap
+    final provider = context.read<TransaksiDoProvider>();
+
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
@@ -212,8 +229,21 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
+        // Reset checkbox dan harga tersimpan saat tanggal berubah
+        _gunakanHargaSama = false;
+        _savedHargaHariIni = null;
+        _hargaSatuanController.clear();
       });
       _updateNomorDo();
+
+      // Load harga tersimpan untuk tanggal baru
+      final tanggalStr = DateFormat('yyyy-MM-dd').format(picked);
+      final savedHarga = await provider.getLastHargaSatuan(tanggalStr);
+      if (mounted && savedHarga != null && savedHarga > 0) {
+        setState(() {
+          _savedHargaHariIni = savedHarga;
+        });
+      }
     }
   }
 
@@ -613,6 +643,103 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
 
 
 
+                      // Checkbox: Gunakan harga sama hari ini
+                      if (_savedHargaHariIni != null && _savedHargaHariIni! > 0) ...[  
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              _gunakanHargaSama = !_gunakanHargaSama;
+                              if (_gunakanHargaSama) {
+                                final formatted = NumberFormat.currency(
+                                  locale: 'id_ID',
+                                  symbol: '',
+                                  decimalDigits: 0,
+                                ).format(_savedHargaHariIni).trim();
+                                _hargaSatuanController.text = formatted;
+                              } else {
+                                _hargaSatuanController.clear();
+                              }
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: _gunakanHargaSama
+                                  ? const Color(0xFF01579B).withValues(alpha: 0.08)
+                                  : Colors.grey[100],
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: _gunakanHargaSama
+                                    ? const Color(0xFF01579B).withValues(alpha: 0.4)
+                                    : Colors.grey[300]!,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: Checkbox(
+                                    value: _gunakanHargaSama,
+                                    activeColor: const Color(0xFF01579B),
+                                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    visualDensity: VisualDensity.compact,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    onChanged: (val) {
+                                      setState(() {
+                                        _gunakanHargaSama = val ?? false;
+                                        if (_gunakanHargaSama) {
+                                          final formatted = NumberFormat.currency(
+                                            locale: 'id_ID',
+                                            symbol: '',
+                                            decimalDigits: 0,
+                                          ).format(_savedHargaHariIni).trim();
+                                          _hargaSatuanController.text = formatted;
+                                        } else {
+                                          _hargaSatuanController.clear();
+                                        }
+                                      });
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Gunakan harga satuan sama hari ini',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF37474F),
+                                        ),
+                                      ),
+                                      Text(
+                                        NumberFormat.currency(
+                                          locale: 'id_ID',
+                                          symbol: 'Rp ',
+                                          decimalDigits: 0,
+                                        ).format(_savedHargaHariIni),
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w800,
+                                          color: Color(0xFF01579B),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+
                       TextFormField(
                         controller: _hargaSatuanController,
                         focusNode: _hargaSatuanFocus,
@@ -962,6 +1089,13 @@ class _AddTransaksiDoScreenState extends State<AddTransaksiDoScreen> {
 
       if (mounted) {
         if (success) {
+          // Simpan harga satuan hari ini agar tidak perlu input ulang
+          final tanggalStr = DateFormat('yyyy-MM-dd').format(_selectedDate);
+          final hargaSatuan = CurrencyInputFormatter.parse(_hargaSatuanController.text);
+          if (hargaSatuan > 0) {
+            context.read<TransaksiDoProvider>().saveLastHargaSatuan(tanggalStr, hargaSatuan);
+          }
+
           final bool isOffline =
               context.read<TransaksiDoProvider>().errorMessage?.contains(
                 'offline',
