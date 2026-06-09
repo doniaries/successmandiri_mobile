@@ -181,7 +181,46 @@ class AuthRepository {
     await prefs.remove('is_remember_me');
   }
 
-  Future<void> saveLastEmail(String email) async {
+  /// Simpan peta credentials: { email -> password } untuk semua akun yang pernah login
+  Future<void> saveCredentialsMap(String email, String password) async {
+    final prefs = await SharedPreferences.getInstance();
+    final existingStr = prefs.getString('credentials_map');
+    Map<String, String> credMap = {};
+    if (existingStr != null) {
+      try {
+        credMap = Map<String, String>.from(jsonDecode(existingStr));
+      } catch (_) {}
+    }
+    credMap[email] = password;
+    await prefs.setString('credentials_map', jsonEncode(credMap));
+  }
+
+  /// Ambil password untuk email tertentu dari peta credentials
+  Future<String?> getPasswordForEmail(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    final existingStr = prefs.getString('credentials_map');
+    if (existingStr != null) {
+      try {
+        final Map<String, dynamic> credMap = jsonDecode(existingStr);
+        return credMap[email] as String?;
+      } catch (_) {}
+    }
+    return null;
+  }
+
+  /// Ambil seluruh peta credentials { email -> password }
+  Future<Map<String, String>> getCredentialsMap() async {
+    final prefs = await SharedPreferences.getInstance();
+    final existingStr = prefs.getString('credentials_map');
+    if (existingStr != null) {
+      try {
+        return Map<String, String>.from(jsonDecode(existingStr));
+      } catch (_) {}
+    }
+    return {};
+  }
+
+  Future<void> saveLastEmail(String email, {String? password}) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('last_email', email);
     
@@ -200,6 +239,11 @@ class AuthRepository {
       emails.insert(0, email); // Masukkan ke paling atas
       if (emails.length > 5) emails = emails.sublist(0, 5); // Batasi 5 riwayat
       await prefs.setString('saved_emails', jsonEncode(emails));
+    }
+
+    // Simpan password ke credentials map jika tersedia
+    if (password != null && password.isNotEmpty) {
+      await saveCredentialsMap(email, password);
     }
   }
 

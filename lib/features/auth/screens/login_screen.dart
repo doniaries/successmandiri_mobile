@@ -24,6 +24,8 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _savedEmail;
   String? _savedPassword;
   List<String> _savedEmailsList = [];
+  // Peta: email -> password untuk semua akun yang pernah tersimpan
+  Map<String, String> _credentialsMap = {};
 
   @override
   void initState() {
@@ -45,12 +47,16 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      // Load remembered credentials if any
+      // Load remembered credentials dan credentials map
       final credentials = await authProvider.getRememberedCredentials();
       final savedEmails = await authProvider.getSavedEmails();
+      final credentialsMap = await authProvider.getCredentialsMap();
+
       if (mounted) {
         setState(() {
           _savedEmailsList = savedEmails;
+          _credentialsMap = credentialsMap;
+
           if (credentials['email'] != null && credentials['email']!.isNotEmpty) {
             _savedEmail = credentials['email'];
             _emailController.text = _savedEmail!;
@@ -62,21 +68,6 @@ class _LoginScreenState extends State<LoginScreen> {
           // Default to Remember Me true
           _isRememberMe = true;
         });
-      }
-    });
-
-    // Auto-fill password untuk taufik atau user yang tersimpan
-    _emailController.addListener(() {
-      final currentEmail = _emailController.text.trim().toLowerCase();
-      
-      if (currentEmail == 'taufik@gmail.com') {
-        if (_passwordController.text != 'taufik2026') {
-          _passwordController.text = 'taufik2026';
-        }
-      } else if (_savedEmail != null && currentEmail == _savedEmail!.toLowerCase()) {
-        if (_savedPassword != null && _passwordController.text != _savedPassword) {
-          _passwordController.text = _savedPassword!;
-        }
       }
     });
   }
@@ -245,8 +236,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                           Icons.arrow_drop_down_circle_outlined,
                                           color: Colors.grey,
                                         ),
-                                        onSelected: (String value) {
-                                          _emailController.text = value;
+                                        onSelected: (String selectedEmail) {
+                                          // Set email
+                                          _emailController.text = selectedEmail;
+
+                                          // Auto-fill password berdasarkan email yang dipilih
+                                          final savedPwd = _credentialsMap[selectedEmail];
+                                          if (savedPwd != null && savedPwd.isNotEmpty) {
+                                            _passwordController.text = savedPwd;
+                                          } else {
+                                            // Jika tidak ada di map, kosongkan password
+                                            // agar user tidak menggunakan password user lain
+                                            _passwordController.clear();
+                                          }
                                         },
                                         itemBuilder: (BuildContext context) {
                                           return _savedEmailsList.map((
@@ -254,7 +256,21 @@ class _LoginScreenState extends State<LoginScreen> {
                                           ) {
                                             return PopupMenuItem<String>(
                                               value: email,
-                                              child: Text(email),
+                                              child: Row(
+                                                children: [
+                                                  Icon(
+                                                    _credentialsMap.containsKey(email)
+                                                        ? Icons.lock_outline_rounded
+                                                        : Icons.lock_open_outlined,
+                                                    size: 16,
+                                                    color: _credentialsMap.containsKey(email)
+                                                        ? const Color(0xFF01579B)
+                                                        : Colors.grey,
+                                                  ),
+                                                  const SizedBox(width: 8),
+                                                  Text(email),
+                                                ],
+                                              ),
                                             );
                                           }).toList();
                                         },

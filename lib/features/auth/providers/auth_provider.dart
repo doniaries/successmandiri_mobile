@@ -103,7 +103,7 @@ class AuthProvider with ChangeNotifier {
         await _authRepository.clearRememberMe();
       }
 
-      await _authRepository.saveLastEmail(email);
+      await _authRepository.saveLastEmail(email, password: password);
 
       _isLoading = false;
       notifyListeners();
@@ -137,7 +137,7 @@ class AuthProvider with ChangeNotifier {
           } else {
             await _authRepository.clearRememberMe();
           }
-          await _authRepository.saveLastEmail(email);
+          await _authRepository.saveLastEmail(email, password: password);
 
           _isLoading = false;
           notifyListeners();
@@ -166,6 +166,16 @@ class AuthProvider with ChangeNotifier {
 
   Future<List<String>> getSavedEmails() async {
     return await _authRepository.getSavedEmails();
+  }
+
+  /// Ambil password yang tersimpan untuk email tertentu
+  Future<String?> getPasswordForEmail(String email) async {
+    return await _authRepository.getPasswordForEmail(email);
+  }
+
+  /// Ambil seluruh peta credentials { email -> password }
+  Future<Map<String, String>> getCredentialsMap() async {
+    return await _authRepository.getCredentialsMap();
   }
 
   Future<void> logout() async {
