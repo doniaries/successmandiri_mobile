@@ -234,7 +234,9 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
     String? helperText,
     String? Function(String?)? validator,
   }) {
-    return Autocomplete<String>(
+    return RawAutocomplete<String>(
+      textEditingController: controller,
+      focusNode: FocusNode(),
       optionsBuilder: (TextEditingValue textEditingValue) {
         if (textEditingValue.text.isEmpty) {
           return options;
@@ -246,16 +248,10 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
       onSelected: (String selection) {
         controller.text = selection;
       },
-      fieldViewBuilder: (BuildContext context, TextEditingController fieldTextEditingController, FocusNode fieldFocusNode, VoidCallback onFieldSubmitted) {
-        // Sync our controller with Autocomplete's controller
-        fieldTextEditingController.text = controller.text;
-        fieldTextEditingController.addListener(() {
-          controller.text = fieldTextEditingController.text;
-        });
-
+      fieldViewBuilder: (BuildContext context, TextEditingController textEditingController, FocusNode focusNode, VoidCallback onFieldSubmitted) {
         return TextFormField(
-          controller: fieldTextEditingController,
-          focusNode: fieldFocusNode,
+          controller: textEditingController,
+          focusNode: focusNode,
           validator: validator,
           decoration: InputDecoration(
             labelText: label,
@@ -274,6 +270,32 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
             ),
             filled: true,
             fillColor: Colors.grey[50],
+          ),
+        );
+      },
+      optionsViewBuilder: (BuildContext context, AutocompleteOnSelected<String> onSelected, Iterable<String> options) {
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            elevation: 4.0,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width - 48,
+              height: 200.0,
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                itemCount: options.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final String option = options.elementAt(index);
+                  return ListTile(
+                    title: Text(option),
+                    onTap: () {
+                      onSelected(option);
+                    },
+                  );
+                },
+              ),
+            ),
           ),
         );
       },

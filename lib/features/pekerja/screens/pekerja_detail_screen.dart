@@ -970,8 +970,9 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
-      child: Container(
-        decoration: const BoxDecoration(
+      child: SafeArea(
+        child: Container(
+          decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
@@ -1075,7 +1076,8 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
               ),
             ],
           ),
-          ),
+        ),
+      ),
         ),
       ),
     );
@@ -1120,7 +1122,9 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
     String? helperText,
     String? Function(String?)? validator,
   }) {
-    return Autocomplete<String>(
+    return RawAutocomplete<String>(
+      textEditingController: controller,
+      focusNode: FocusNode(),
       optionsBuilder: (TextEditingValue textEditingValue) {
         if (textEditingValue.text.isEmpty) {
           return options;
@@ -1133,11 +1137,6 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
         controller.text = selection;
       },
       fieldViewBuilder: (BuildContext context, TextEditingController fieldTextEditingController, FocusNode fieldFocusNode, VoidCallback onFieldSubmitted) {
-        // Sync our controller with Autocomplete's controller
-        fieldTextEditingController.text = controller.text;
-        fieldTextEditingController.addListener(() {
-          controller.text = fieldTextEditingController.text;
-        });
 
         return TextFormField(
           controller: fieldTextEditingController,
@@ -1160,6 +1159,32 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
             ),
             filled: true,
             fillColor: Colors.grey[50],
+          ),
+        );
+      },
+      optionsViewBuilder: (BuildContext context, AutocompleteOnSelected<String> onSelected, Iterable<String> options) {
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            elevation: 4.0,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width - 48,
+              height: 200.0,
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                itemCount: options.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final String option = options.elementAt(index);
+                  return ListTile(
+                    title: Text(option),
+                    onTap: () {
+                      onSelected(option);
+                    },
+                  );
+                },
+              ),
+            ),
           ),
         );
       },
