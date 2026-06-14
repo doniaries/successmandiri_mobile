@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/features/penjual/models/penjual_model.dart';
 import 'package:sawitappmobile/features/supir/models/supir_model.dart';
@@ -836,17 +837,36 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
                 ),
               )
             : null,
-        trailing: Container(
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: Colors.grey[50],
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            Icons.chevron_right_rounded,
-            color: Colors.grey[400],
-            size: 20,
-          ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if ((item is Penjual && item.telepon != null && item.telepon!.isNotEmpty) || (item is Supir && item.telepon != null && item.telepon!.isNotEmpty))
+              IconButton(
+                icon: const Icon(Icons.chat_bubble_rounded, color: Color(0xFF25D366)),
+                onPressed: () async {
+                  String? phone = item is Penjual ? item.telepon : (item is Supir ? item.telepon : null);
+                  if (phone != null) {
+                    final cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
+                    final url = Uri.parse('https://wa.me/$cleanPhone');
+                    if (await canLaunchUrl(url)) {
+                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                    }
+                  }
+                },
+              ),
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.chevron_right_rounded,
+                color: Colors.grey[400],
+                size: 20,
+              ),
+            ),
+          ],
         ),
         onTap: () {
           if (item is Operasional) {

@@ -47,10 +47,17 @@ class _EditPenjualScreenState extends State<EditPenjualScreen> {
     setState(() => _isLoading = true);
     
     try {
+      String phone = _teleponController.text.replaceAll(RegExp(r'\D'), '');
+      if (phone.startsWith('0')) {
+          phone = '62${phone.substring(1)}';
+      } else if (phone.startsWith('8')) {
+          phone = '62$phone';
+      }
+
       final provider = context.read<ResourceProvider>();
       final success = await provider.updatePenjual(widget.penjual.id, {
         'nama': _namaController.text,
-        'telepon': _teleponController.text,
+        'telepon': phone,
         'nama_bank': _namaBankController.text,
         'nomor_rekening': _nomorRekeningController.text,
         'alamat': _alamatController.text,
@@ -107,13 +114,19 @@ class _EditPenjualScreenState extends State<EditPenjualScreen> {
                 validator: (val) => val == null || val.isEmpty ? 'Nama wajib diisi' : null,
               ),
               const SizedBox(height: 20),
-              _buildTextField(
-                controller: _teleponController,
-                label: 'Nomor Telepon',
-                icon: Icons.phone_outlined,
-                keyboardType: TextInputType.phone,
-                validator: (val) => val == null || val.isEmpty ? 'Nomor telepon wajib diisi' : null,
-              ),
+                _buildTextField(
+                  controller: _teleponController,
+                  label: 'Nomor Telepon',
+                  icon: Icons.phone_outlined,
+                  keyboardType: TextInputType.phone,
+                  validator: (val) {
+                    if (val == null || val.isEmpty) return 'Nomor telepon wajib diisi';
+                    final digits = val.replaceAll(RegExp(r'\D'), '');
+                    if (digits.length < 10) return 'Minimal 10 digit';
+                    if (digits.length > 15) return 'Maksimal 15 digit';
+                    return null;
+                  },
+                ),
               const SizedBox(height: 20),
               Autocomplete<String>(
                 initialValue: TextEditingValue(text: _namaBankController.text),

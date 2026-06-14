@@ -67,9 +67,16 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
 
     final double hutangValue = CurrencyInputFormatter.parse(_hutangController.text);
 
+    String phone = _teleponController.text.replaceAll(RegExp(r'\D'), '');
+    if (phone.startsWith('0')) {
+        phone = '62${phone.substring(1)}';
+    } else if (phone.startsWith('8')) {
+        phone = '62$phone';
+    }
+
     final result = await provider.addSupir({
       'nama': _namaController.text,
-      'telepon': _teleponController.text,
+      'telepon': phone,
       'keterangan': _keteranganController.text,
       'hutang': hutangValue > 0 ? hutangValue : 0,
     });
@@ -135,7 +142,13 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
                   label: 'Nomor Telepon',
                   icon: Icons.phone_outlined,
                   keyboardType: TextInputType.phone,
-                  validator: (val) => val == null || val.isEmpty ? 'Nomor telepon wajib diisi' : null,
+                  validator: (val) {
+                    if (val == null || val.isEmpty) return 'Nomor telepon wajib diisi';
+                    final digits = val.replaceAll(RegExp(r'\D'), '');
+                    if (digits.length < 10) return 'Minimal 10 digit';
+                    if (digits.length > 15) return 'Maksimal 15 digit';
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 20),
                 _buildTextField(
