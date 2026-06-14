@@ -7,6 +7,7 @@ import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:sawitappmobile/shared/widgets/app_loading_indicator.dart';
 import 'package:sawitappmobile/shared/widgets/app_primary_button.dart';
 import 'package:sawitappmobile/shared/widgets/error_dialog.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class AddSupirScreen extends StatefulWidget {
   final String? initialName;
@@ -140,14 +141,13 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
                 const SizedBox(height: 20),
                 _buildTextField(
                   controller: _teleponController,
-                  label: 'Nomor Telepon *',
+                  label: 'Nomor Telepon (WhatsApp) *',
                   hintText: '08xxx',
-                  icon: Icons.phone_outlined,
+                  icon: FontAwesomeIcons.whatsapp,
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.next,
                   inputFormatters: [
                     FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(13),
                   ],
                   validator: (val) {
                     if (val == null || val.isEmpty) return 'Nomor telepon wajib diisi';

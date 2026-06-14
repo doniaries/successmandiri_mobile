@@ -285,8 +285,9 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
                       ),
                       validator: (val) {
                         if (val == null || val.isEmpty) return 'Wajib diisi';
-                        if (double.tryParse(val) == null)
+                        if (double.tryParse(val) == null) {
                           return 'Angka tidak valid';
+                        }
                         return null;
                       },
                     ),
@@ -965,14 +966,23 @@ class _SupirEditBottomSheetState extends State<_SupirEditBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: MediaQuery.of(context).viewInsets,
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
-        padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-                  width: 40,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+        child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
                   height: 4,
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
@@ -1074,7 +1084,7 @@ class _SupirEditBottomSheetState extends State<_SupirEditBottomSheet> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildTextField({

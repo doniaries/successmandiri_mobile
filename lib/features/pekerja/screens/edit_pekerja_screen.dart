@@ -30,7 +30,7 @@ class _EditPekerjaScreenState extends State<EditPekerjaScreen> {
     _alamatController = TextEditingController(text: widget.pekerja.alamat);
     _posisi = widget.pekerja.posisi.toUpperCase();
     if (!_posisiOptions.contains(_posisi)) {
-       _posisi = 'AKTIF';
+      _posisi = 'AKTIF';
     }
   }
 
@@ -46,7 +46,7 @@ class _EditPekerjaScreenState extends State<EditPekerjaScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
-    
+
     try {
       final provider = context.read<ResourceProvider>();
       final success = await provider.updatePekerja(widget.pekerja.id, {
@@ -61,7 +61,8 @@ class _EditPekerjaScreenState extends State<EditPekerjaScreen> {
           SuccessDialog.show(
             context,
             title: 'Data Diperbarui!',
-            message: 'Informasi Pekerja ${_namaController.text} telah berhasil diperbarui.',
+            message:
+                'Informasi Pekerja ${_namaController.text} telah berhasil diperbarui.',
             onConfirm: () {
               Navigator.pop(context); // Close dialog
               Navigator.pop(context); // Return to detail
@@ -75,9 +76,9 @@ class _EditPekerjaScreenState extends State<EditPekerjaScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -88,7 +89,10 @@ class _EditPekerjaScreenState extends State<EditPekerjaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Pekerja', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Edit Pekerja',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -104,12 +108,13 @@ class _EditPekerjaScreenState extends State<EditPekerjaScreen> {
                 controller: _namaController,
                 label: 'Nama Pekerja',
                 icon: Icons.person_outline,
-                validator: (val) => val == null || val.isEmpty ? 'Nama wajib diisi' : null,
+                validator: (val) =>
+                    val == null || val.isEmpty ? 'Nama wajib diisi' : null,
               ),
               const SizedBox(height: 20),
               _buildTextField(
                 controller: _teleponController,
-                label: 'Nomor Telepon',
+                label: 'Nomor Telepon/Whatsapp',
                 icon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
               ),
@@ -118,8 +123,13 @@ class _EditPekerjaScreenState extends State<EditPekerjaScreen> {
                 initialValue: _posisi,
                 decoration: InputDecoration(
                   labelText: 'Posisi Pekerja',
-                  prefixIcon: const Icon(Icons.info_outline, color: Color(0xFF8E44AD)),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(
+                    Icons.info_outline,
+                    color: Color(0xFF8E44AD),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(color: Colors.grey[300]!),
@@ -127,7 +137,9 @@ class _EditPekerjaScreenState extends State<EditPekerjaScreen> {
                   filled: true,
                   fillColor: Colors.grey[50],
                 ),
-                items: _posisiOptions.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                items: _posisiOptions
+                    .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                    .toList(),
                 onChanged: (val) => setState(() => _posisi = val),
               ),
               const SizedBox(height: 20),
@@ -144,12 +156,27 @@ class _EditPekerjaScreenState extends State<EditPekerjaScreen> {
                   backgroundColor: const Color(0xFF8E44AD),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 0,
                 ),
-                child: _isLoading 
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Text('SIMPAN PERUBAHAN', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'SIMPAN PERUBAHAN',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
+                        ),
+                      ),
               ),
             ],
           ),
@@ -189,4 +216,3 @@ class _EditPekerjaScreenState extends State<EditPekerjaScreen> {
     );
   }
 }
-
