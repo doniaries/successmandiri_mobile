@@ -64,6 +64,7 @@ dependencies:
   google_fonts: ^8.1.0
   package_info_plus: ^10.1.0
   dio_smart_retry: ^7.0.1
+  font_awesome_flutter: ^11.0.0
 
 dev_dependencies:
   flutter_test:

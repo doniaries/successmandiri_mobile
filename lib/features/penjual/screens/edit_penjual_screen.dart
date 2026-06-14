@@ -123,7 +123,10 @@ class _EditPenjualScreenState extends State<EditPenjualScreen> {
                   icon: Icons.phone_outlined,
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.next,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(13),
+                  ],
                   validator: (val) {
                     if (val == null || val.isEmpty) return 'Nomor telepon wajib diisi';
                     final digits = val.replaceAll(RegExp(r'\D'), '');
@@ -231,6 +234,7 @@ class _EditPenjualScreenState extends State<EditPenjualScreen> {
       decoration: InputDecoration(
         labelText: label,
         hintText: hintText ?? placeholder,
+        errorMaxLines: 3,
         prefixIcon: Icon(icon, color: const Color(0xFF27AE60)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(

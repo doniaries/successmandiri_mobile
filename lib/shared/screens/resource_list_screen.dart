@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/features/penjual/models/penjual_model.dart';
 import 'package:sawitappmobile/features/supir/models/supir_model.dart';
@@ -722,7 +723,7 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
       iconColor = const Color(0xFF27AE60);
     } else if (item is Supir) {
       name = item.nama.toUpperCase();
-      subtitle = item.status;
+      subtitle = item.telepon ?? '-';
       hutang = item.sisaHutang;
       icon = Icons.person_rounded;
       iconColor = const Color(0xFFE67E22);
@@ -842,14 +843,19 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
           children: [
             if ((item is Penjual && item.telepon != null && item.telepon!.isNotEmpty) || (item is Supir && item.telepon != null && item.telepon!.isNotEmpty))
               IconButton(
-                icon: const Icon(Icons.chat_bubble_rounded, color: Color(0xFF25D366)),
+                icon: const FaIcon(FontAwesomeIcons.whatsapp, color: Color(0xFF25D366)),
                 onPressed: () async {
                   String? phone = item is Penjual ? item.telepon : (item is Supir ? item.telepon : null);
                   if (phone != null) {
-                    final cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
+                    String cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
+                    if (cleanPhone.startsWith('0')) {
+                      cleanPhone = '62${cleanPhone.substring(1)}';
+                    }
                     final url = Uri.parse('https://wa.me/$cleanPhone');
                     if (await canLaunchUrl(url)) {
                       await launchUrl(url, mode: LaunchMode.externalApplication);
+                    } else {
+                      await launchUrl(url);
                     }
                   }
                 },

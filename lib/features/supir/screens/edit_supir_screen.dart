@@ -123,7 +123,10 @@ class _EditSupirScreenState extends State<EditSupirScreen> {
                   icon: Icons.phone_outlined,
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.next,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(13),
+                  ],
                   validator: (val) {
                     if (val == null || val.isEmpty) return 'Nomor telepon wajib diisi';
                     final digits = val.replaceAll(RegExp(r'\D'), '');
@@ -204,6 +207,7 @@ class _EditSupirScreenState extends State<EditSupirScreen> {
         labelText: label,
         hintText: hintText,
         helperText: helperText,
+        errorMaxLines: 3,
         prefixIcon: Icon(icon, color: const Color(0xFFE67E22)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(

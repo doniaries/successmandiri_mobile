@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:sawitappmobile/features/penjual/models/penjual_model.dart';
 import 'package:sawitappmobile/shared/models/mutasi_hutang_model.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
@@ -48,13 +49,16 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
     }
   }
 
-  Future<void> _makePhoneCall(String phoneNumber) async {
-    final Uri launchUri = Uri(
-      scheme: 'tel',
-      path: phoneNumber,
-    );
-    if (await canLaunchUrl(launchUri)) {
-      await launchUrl(launchUri);
+  Future<void> _openWhatsApp(String phoneNumber) async {
+    String cleanPhone = phoneNumber.replaceAll(RegExp(r'\D'), '');
+    if (cleanPhone.startsWith('0')) {
+      cleanPhone = '62${cleanPhone.substring(1)}';
+    }
+    final Uri url = Uri.parse('https://wa.me/$cleanPhone');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      await launchUrl(url);
     }
   }
 
@@ -454,8 +458,8 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
                   'Telepon', 
                   _currentPenjual.telepon ?? '-',
                   trailing: _currentPenjual.telepon != null ? IconButton(
-                    icon: const Icon(Icons.call, color: Color(0xFF27AE60)),
-                    onPressed: () => _makePhoneCall(_currentPenjual.telepon!),
+                    icon: const FaIcon(FontAwesomeIcons.whatsapp, color: Color(0xFF25D366)),
+                    onPressed: () => _openWhatsApp(_currentPenjual.telepon!),
                   ) : null,
                 ),
                 _buildInfoRow(Icons.location_on_rounded, 'Alamat', _currentPenjual.alamat ?? '-', isMultiLine: true),
