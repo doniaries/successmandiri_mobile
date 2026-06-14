@@ -841,24 +841,41 @@ class _ResourceListScreenState extends State<ResourceListScreen> {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if ((item is Penjual && item.telepon != null && item.telepon!.isNotEmpty) || (item is Supir && item.telepon != null && item.telepon!.isNotEmpty))
-              IconButton(
-                icon: const FaIcon(FontAwesomeIcons.whatsapp, color: Color(0xFF25D366)),
-                onPressed: () async {
-                  String? phone = item is Penjual ? item.telepon : (item is Supir ? item.telepon : null);
-                  if (phone != null) {
-                    String cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
-                    if (cleanPhone.startsWith('0')) {
-                      cleanPhone = '62${cleanPhone.substring(1)}';
-                    }
-                    final url = Uri.parse('https://wa.me/$cleanPhone');
-                    if (await canLaunchUrl(url)) {
-                      await launchUrl(url, mode: LaunchMode.externalApplication);
-                    } else {
-                      await launchUrl(url);
-                    }
-                  }
-                },
+            if ((item is Penjual && item.telepon != null && item.telepon!.isNotEmpty) || (item is Supir && item.telepon != null && item.telepon!.isNotEmpty) || (item is Pekerja && item.telepon != null && item.telepon!.isNotEmpty))
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const FaIcon(FontAwesomeIcons.whatsapp, color: Color(0xFF25D366)),
+                    onPressed: () async {
+                      String? phone = item is Penjual ? item.telepon : (item is Supir ? item.telepon : (item is Pekerja ? item.telepon : null));
+                      if (phone != null) {
+                        String cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
+                        if (cleanPhone.startsWith('0')) {
+                          cleanPhone = '62${cleanPhone.substring(1)}';
+                        }
+                        final url = Uri.parse('https://wa.me/$cleanPhone');
+                        if (await canLaunchUrl(url)) {
+                          await launchUrl(url, mode: LaunchMode.externalApplication);
+                        } else {
+                          await launchUrl(url);
+                        }
+                      }
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.call, color: Color(0xFF8E44AD)),
+                    onPressed: () async {
+                      String? phone = item is Penjual ? item.telepon : (item is Supir ? item.telepon : (item is Pekerja ? item.telepon : null));
+                      if (phone != null) {
+                        final url = Uri.parse('tel:$phone');
+                        if (await canLaunchUrl(url)) {
+                          await launchUrl(url);
+                        }
+                      }
+                    },
+                  ),
+                ],
               ),
             Container(
               padding: const EdgeInsets.all(4),
