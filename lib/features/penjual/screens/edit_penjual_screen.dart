@@ -28,7 +28,9 @@ class _EditPenjualScreenState extends State<EditPenjualScreen> {
     _namaController = TextEditingController(text: widget.penjual.nama);
     _teleponController = TextEditingController(text: widget.penjual.telepon);
     _namaBankController = TextEditingController(text: widget.penjual.namaBank);
-    _nomorRekeningController = TextEditingController(text: widget.penjual.nomorRekening);
+    _nomorRekeningController = TextEditingController(
+      text: widget.penjual.nomorRekening,
+    );
     _alamatController = TextEditingController(text: widget.penjual.alamat);
   }
 
@@ -46,13 +48,13 @@ class _EditPenjualScreenState extends State<EditPenjualScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
-    
+
     try {
       String phone = _teleponController.text.replaceAll(RegExp(r'\D'), '');
       if (phone.startsWith('0')) {
-          phone = '62${phone.substring(1)}';
+        phone = '62${phone.substring(1)}';
       } else if (phone.startsWith('8')) {
-          phone = '62$phone';
+        phone = '62$phone';
       }
 
       final provider = context.read<ResourceProvider>();
@@ -69,7 +71,8 @@ class _EditPenjualScreenState extends State<EditPenjualScreen> {
           SuccessDialog.show(
             context,
             title: 'Data Diperbarui!',
-            message: 'Informasi penjual ${_namaController.text} telah berhasil diperbarui.',
+            message:
+                'Informasi penjual ${_namaController.text} telah berhasil diperbarui.',
             onConfirm: () {
               Navigator.pop(context); // Close dialog
               Navigator.pop(context); // Return to detail
@@ -83,9 +86,9 @@ class _EditPenjualScreenState extends State<EditPenjualScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -96,7 +99,10 @@ class _EditPenjualScreenState extends State<EditPenjualScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Penjual', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Edit Penjual',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -113,36 +119,49 @@ class _EditPenjualScreenState extends State<EditPenjualScreen> {
                 label: 'Nama *',
                 icon: Icons.person_outline,
                 textInputAction: TextInputAction.next,
-                validator: (val) => val == null || val.isEmpty ? 'Nama wajib diisi' : null,
+                validator: (val) =>
+                    val == null || val.isEmpty ? 'Nama wajib diisi' : null,
               ),
               const SizedBox(height: 20),
-                _buildTextField(
-                  controller: _teleponController,
-                  label: 'Nomor Telepon *',
-                  hintText: '08xxx',
-                  icon: Icons.phone_outlined,
-                  keyboardType: TextInputType.phone,
-                  textInputAction: TextInputAction.next,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(13),
-                  ],
-                  validator: (val) {
-                    if (val == null || val.isEmpty) return 'Nomor telepon wajib diisi';
-                    final digits = val.replaceAll(RegExp(r'\D'), '');
-                    if (!digits.startsWith('08') && !digits.startsWith('628') && !digits.startsWith('8')) {
-                      return 'Nomor harus diawali 08, 8, atau 628';
-                    }
-                    if (digits.length < 10) return 'Minimal 10 digit';
-                    if (digits.length > 15) return 'Maksimal 15 digit';
-                    return null;
-                  },
-                ),
+              _buildTextField(
+                controller: _teleponController,
+                label: 'Nomor Telepon/Whatsapp*',
+                hintText: '08xxx',
+                icon: Icons.phone_outlined,
+                keyboardType: TextInputType.phone,
+                textInputAction: TextInputAction.next,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(13),
+                ],
+                validator: (val) {
+                  if (val == null || val.isEmpty) {
+                    return 'Nomor telepon wajib diisi';
+                  }
+                  final digits = val.replaceAll(RegExp(r'\D'), '');
+                  if (!digits.startsWith('08') &&
+                      !digits.startsWith('628') &&
+                      !digits.startsWith('8')) {
+                    return 'Nomor harus diawali 08, 8, atau 628';
+                  }
+                  if (digits.length < 10) return 'Minimal 10 digit';
+                  if (digits.length > 15) return 'Maksimal 15 digit';
+                  return null;
+                },
+              ),
               const SizedBox(height: 20),
               Autocomplete<String>(
                 initialValue: TextEditingValue(text: _namaBankController.text),
                 optionsBuilder: (TextEditingValue textEditingValue) {
-                  const defaultBanks = ['BCA', 'BRI', 'Mandiri', 'BNI', 'BSI', 'CIMB Niaga', 'BJB'];
+                  const defaultBanks = [
+                    'BCA',
+                    'BRI',
+                    'Mandiri',
+                    'BNI',
+                    'BSI',
+                    'CIMB Niaga',
+                    'BJB',
+                  ];
                   final provider = context.read<ResourceProvider>();
                   final existingBanks = provider.penjuals
                       .map((p) => p.namaBank)
@@ -150,29 +169,38 @@ class _EditPenjualScreenState extends State<EditPenjualScreen> {
                       .map((b) => b!)
                       .toSet();
                   final allBanks = {...defaultBanks, ...existingBanks}.toList();
-                  
+
                   if (textEditingValue.text.isEmpty) {
                     return allBanks;
                   }
-                  return allBanks.where((bank) => 
-                      bank.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                  return allBanks.where(
+                    (bank) => bank.toLowerCase().contains(
+                      textEditingValue.text.toLowerCase(),
+                    ),
+                  );
                 },
                 onSelected: (String selection) {
                   _namaBankController.text = selection;
                 },
-                fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
-                  textEditingController.addListener(() {
-                    _namaBankController.text = textEditingController.text;
-                  });
-                  return _buildTextField(
-                    controller: textEditingController,
-                    focusNode: focusNode,
-                    label: 'Nama Bank',
-                    icon: Icons.account_balance_outlined,
-                    placeholder: 'Pilih atau ketik nama bank baru...',
-                    hintText: 'Pilih atau ketik nama bank baru...',
-                  );
-                },
+                fieldViewBuilder:
+                    (
+                      context,
+                      textEditingController,
+                      focusNode,
+                      onFieldSubmitted,
+                    ) {
+                      textEditingController.addListener(() {
+                        _namaBankController.text = textEditingController.text;
+                      });
+                      return _buildTextField(
+                        controller: textEditingController,
+                        focusNode: focusNode,
+                        label: 'Nama Bank',
+                        icon: Icons.account_balance_outlined,
+                        placeholder: 'Pilih atau ketik nama bank baru...',
+                        hintText: 'Pilih atau ketik nama bank baru...',
+                      );
+                    },
               ),
               const SizedBox(height: 20),
               _buildTextField(
@@ -196,12 +224,27 @@ class _EditPenjualScreenState extends State<EditPenjualScreen> {
                   backgroundColor: const Color(0xFF27AE60),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 0,
                 ),
-                child: _isLoading 
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Text('SIMPAN PERUBAHAN', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'SIMPAN PERUBAHAN',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
+                        ),
+                      ),
               ),
             ],
           ),
@@ -251,4 +294,3 @@ class _EditPenjualScreenState extends State<EditPenjualScreen> {
     );
   }
 }
-

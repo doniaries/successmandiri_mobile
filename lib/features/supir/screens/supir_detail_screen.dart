@@ -966,7 +966,9 @@ class _SupirEditBottomSheetState extends State<_SupirEditBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Container(
         decoration: const BoxDecoration(
           color: Colors.white,
@@ -974,7 +976,7 @@ class _SupirEditBottomSheetState extends State<_SupirEditBottomSheet> {
         ),
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-        child: Form(
+          child: Form(
             key: _formKey,
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -983,108 +985,109 @@ class _SupirEditBottomSheetState extends State<_SupirEditBottomSheet> {
                 Center(
                   child: Container(
                     width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Row(
-                children: [
-                  Icon(Icons.edit_outlined, color: Color(0xFFE67E22)),
-                  SizedBox(width: 8),
-                  Text(
-                    'Edit Informasi Kontak',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                      color: Color(0xFF2C3E50),
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              _buildTextField(
-                controller: _namaController,
-                label: 'Nama Supir',
-                icon: Icons.person_outline,
-                validator: (val) =>
-                    val == null || val.isEmpty ? 'Nama wajib diisi' : null,
-              ),
-              const SizedBox(height: 16),
-              _buildTextField(
-                controller: _teleponController,
-                label: 'Nomor Telepon',
-                icon: Icons.phone_outlined,
-                keyboardType: TextInputType.phone,
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                initialValue: _status,
-                decoration: InputDecoration(
-                  labelText: 'Status Supir',
-                  prefixIcon: const Icon(
-                    Icons.info_outline,
-                    color: Color(0xFFE67E22),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey[300]!),
-                  ),
-                  filled: true,
-                  fillColor: Colors.grey[50],
                 ),
-                items: _statusOptions
-                    .map((s) => DropdownMenuItem(value: s, child: Text(s)))
-                    .toList(),
-                onChanged: (val) => setState(() => _status = val),
-              ),
-              const SizedBox(height: 16),
-              _buildTextField(
-                controller: _alamatController,
-                label: 'Alamat',
-                icon: Icons.location_on_outlined,
-                maxLines: 3,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE67E22),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
-                ),
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : const Text(
-                        'SIMPAN PERUBAHAN',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1,
-                        ),
+                const SizedBox(height: 16),
+                const Row(
+                  children: [
+                    Icon(Icons.edit_outlined, color: Color(0xFFE67E22)),
+                    SizedBox(width: 8),
+                    Text(
+                      'Edit Informasi Kontak',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF2C3E50),
                       ),
-              ),
-            ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                _buildTextField(
+                  controller: _namaController,
+                  label: 'Nama Supir',
+                  icon: Icons.person_outline,
+                  validator: (val) =>
+                      val == null || val.isEmpty ? 'Nama wajib diisi' : null,
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: _teleponController,
+                  label: 'Nomor Telepon/Whatsapp',
+                  icon: Icons.phone_outlined,
+                  keyboardType: TextInputType.phone,
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  initialValue: _status,
+                  decoration: InputDecoration(
+                    labelText: 'Status Supir',
+                    prefixIcon: const Icon(
+                      Icons.info_outline,
+                      color: Color(0xFFE67E22),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey[300]!),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[50],
+                  ),
+                  items: _statusOptions
+                      .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                      .toList(),
+                  onChanged: (val) => setState(() => _status = val),
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: _alamatController,
+                  label: 'Alamat',
+                  icon: Icons.location_on_outlined,
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFE67E22),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'SIMPAN PERUBAHAN',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ));
+    );
   }
 
   Widget _buildTextField({

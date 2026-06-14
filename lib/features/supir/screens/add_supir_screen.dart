@@ -202,7 +202,7 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
-    required IconData icon,
+    required dynamic icon,
     TextInputType? keyboardType,
     int maxLines = 1,
     String? Function(String?)? validator,
@@ -226,7 +226,13 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
         helperMaxLines: 2,
         errorMaxLines: 3,
         helperStyle: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-        prefixIcon: Icon(icon, color: const Color(0xFFE67E22), size: 20),
+        prefixIcon: Container(
+          width: 48,
+          alignment: Alignment.center,
+          child: icon.runtimeType.toString().contains('FaIcon') || icon.runtimeType.toString().contains('IconData') 
+              ? (icon.runtimeType.toString().contains('FaIcon') || icon.runtimeType.toString().contains('Brands') ? FaIcon(icon, color: const Color(0xFFE67E22), size: 20) : Icon(icon, color: const Color(0xFFE67E22), size: 20))
+              : Icon(icon, color: const Color(0xFFE67E22), size: 20),
+        ),
         prefixText: prefixText,
         prefixStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),

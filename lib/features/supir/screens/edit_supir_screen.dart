@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/features/supir/models/supir_model.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
-import 'package:sawitappmobile/shared/providers/resource_provider.dart';
 import 'package:sawitappmobile/shared/widgets/success_dialog.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 class EditSupirScreen extends StatefulWidget {
@@ -187,7 +186,7 @@ class _EditSupirScreenState extends State<EditSupirScreen> {
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
-    required IconData icon,
+    required dynamic icon,
     TextInputType? keyboardType,
     int maxLines = 1,
     String? Function(String?)? validator,
@@ -208,7 +207,13 @@ class _EditSupirScreenState extends State<EditSupirScreen> {
         hintText: hintText,
         helperText: helperText,
         errorMaxLines: 3,
-        prefixIcon: Icon(icon, color: const Color(0xFFE67E22)),
+        prefixIcon: Container(
+          width: 48,
+          alignment: Alignment.center,
+          child: icon.runtimeType.toString().contains('FaIcon') || icon.runtimeType.toString().contains('IconData') 
+              ? (icon.runtimeType.toString().contains('FaIcon') || icon.runtimeType.toString().contains('Brands') ? FaIcon(icon, color: const Color(0xFFE67E22), size: 20) : Icon(icon, color: const Color(0xFFE67E22), size: 20))
+              : Icon(icon, color: const Color(0xFFE67E22), size: 20),
+        ),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

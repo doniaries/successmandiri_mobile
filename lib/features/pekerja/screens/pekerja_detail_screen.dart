@@ -33,7 +33,9 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
 
   Future<void> _fetchDetail() async {
     try {
-      final detail = await context.read<ResourceProvider>().getPekerjaDetail(widget.pekerja.id);
+      final detail = await context.read<ResourceProvider>().getPekerjaDetail(
+        widget.pekerja.id,
+      );
       if (mounted) {
         setState(() {
           _currentPekerja = detail;
@@ -48,10 +50,7 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
   }
 
   Future<void> _makePhoneCall(String phoneNumber) async {
-    final Uri launchUri = Uri(
-      scheme: 'tel',
-      path: phoneNumber,
-    );
+    final Uri launchUri = Uri(scheme: 'tel', path: phoneNumber);
     if (await canLaunchUrl(launchUri)) {
       await launchUrl(launchUri);
     }
@@ -59,14 +58,20 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
 
   Future<void> _handleToggleStatus() async {
     final bool isCurrentlyActive = _currentPekerja.isActive;
-    final String actionText = isCurrentlyActive ? 'menonaktifkan' : 'mengaktifkan';
-    final String titleText = isCurrentlyActive ? 'Nonaktifkan Pekerja' : 'Aktifkan Pekerja';
+    final String actionText = isCurrentlyActive
+        ? 'menonaktifkan'
+        : 'mengaktifkan';
+    final String titleText = isCurrentlyActive
+        ? 'Nonaktifkan Pekerja'
+        : 'Aktifkan Pekerja';
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(titleText),
-        content: Text('Apakah Anda yakin ingin $actionText pekerja ${_currentPekerja.nama}?'),
+        content: Text(
+          'Apakah Anda yakin ingin $actionText pekerja ${_currentPekerja.nama}?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -86,7 +91,9 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
     if (confirmed == true && mounted) {
       setState(() => _isProcessing = true);
       try {
-        final success = await context.read<ResourceProvider>().updateResourceStatus(
+        final success = await context
+            .read<ResourceProvider>()
+            .updateResourceStatus(
               'pekerja',
               _currentPekerja.id,
               !isCurrentlyActive,
@@ -105,18 +112,16 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
             ErrorDialog.show(
               context,
               title: 'Gagal',
-              message: context.read<ResourceProvider>().errorMessage ?? 'Gagal memperbarui status.',
+              message:
+                  context.read<ResourceProvider>().errorMessage ??
+                  'Gagal memperbarui status.',
             );
           }
         }
       } catch (e) {
         if (mounted) {
           setState(() => _isProcessing = false);
-          ErrorDialog.show(
-            context,
-            title: 'Error',
-            message: e.toString(),
-          );
+          ErrorDialog.show(context, title: 'Error', message: e.toString());
         }
       }
     }
@@ -129,7 +134,9 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Tidak Bisa Dihapus'),
-          content: Text('Data ${_currentPekerja.nama} tidak bisa dihapus karena masih memiliki sisa hutang. Anda hanya dapat menonaktifkannya.\n\nIngin menonaktifkan sekarang?'),
+          content: Text(
+            'Data ${_currentPekerja.nama} tidak bisa dihapus karena masih memiliki sisa hutang. Anda hanya dapat menonaktifkannya.\n\nIngin menonaktifkan sekarang?',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
@@ -153,7 +160,9 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Hapus Pekerja'),
-        content: Text('Apakah Anda yakin ingin menghapus ${_currentPekerja.nama} secara permanen?'),
+        content: Text(
+          'Apakah Anda yakin ingin menghapus ${_currentPekerja.nama} secara permanen?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -171,20 +180,31 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
     if (confirmed == true && mounted) {
       setState(() => _isProcessing = true);
       try {
-        final success = await context.read<ResourceProvider>().deleteResource('pekerja', _currentPekerja.id);
+        final success = await context.read<ResourceProvider>().deleteResource(
+          'pekerja',
+          _currentPekerja.id,
+        );
         if (mounted) {
           setState(() => _isProcessing = false);
           if (success) {
-            SuccessDialog.show(context, title: 'Berhasil', message: 'Data Pekerja berhasil dihapus.');
+            SuccessDialog.show(
+              context,
+              title: 'Berhasil',
+              message: 'Data Pekerja berhasil dihapus.',
+            );
             Navigator.pop(context);
           } else {
             // Server menolak (ada transaksi terhubung) — tawarkan nonaktif
-            final errMsg = context.read<ResourceProvider>().errorMessage ?? 'Gagal menghapus data.';
+            final errMsg =
+                context.read<ResourceProvider>().errorMessage ??
+                'Gagal menghapus data.';
             final offerDeactivate = await showDialog<bool>(
               context: context,
               builder: (context) => AlertDialog(
                 title: const Text('Hapus Gagal'),
-                content: Text('$errMsg\n\nApakah Anda ingin menonaktifkan data ini sebagai gantinya?'),
+                content: Text(
+                  '$errMsg\n\nApakah Anda ingin menonaktifkan data ini sebagai gantinya?',
+                ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context, false),
@@ -244,7 +264,9 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('Masukkan nominal hutang awal yang terlewat atau baru untuk pekerja ini.'),
+                    const Text(
+                      'Masukkan nominal hutang awal yang terlewat atau baru untuk pekerja ini.',
+                    ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: nominalController,
@@ -256,7 +278,8 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
                       ),
                       validator: (val) {
                         if (val == null || val.isEmpty) return 'Wajib diisi';
-                        if (double.tryParse(val) == null) return 'Angka tidak valid';
+                        if (double.tryParse(val) == null)
+                          return 'Angka tidak valid';
                         return null;
                       },
                     ),
@@ -269,38 +292,62 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
                   child: const Text('Batal'),
                 ),
                 ElevatedButton(
-                  onPressed: isSubmitting ? null : () async {
-                    if (!formKey.currentState!.validate()) return;
-                    setStateDialog(() => isSubmitting = true);
-                    
-                    final success = await context.read<ResourceProvider>().tambahHutang(
-                      type, 
-                      id, 
-                      double.parse(nominalController.text), 
-                      'Penambahan hutang awal manual'
-                    );
+                  onPressed: isSubmitting
+                      ? null
+                      : () async {
+                          if (!formKey.currentState!.validate()) return;
+                          setStateDialog(() => isSubmitting = true);
 
-                    if (!context.mounted) return;
-                    setStateDialog(() => isSubmitting = false);
-                    if (success) {
-                      Navigator.pop(context);
-                      _fetchDetail();
-                      SuccessDialog.show(context, title: 'Berhasil', message: 'Hutang awal berhasil ditambahkan.');
-                    } else {
-                      final err = context.read<ResourceProvider>().errorMessage ?? 'Gagal menambahkan hutang.';
-                      ErrorDialog.show(context, title: 'Gagal', message: err);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.orange[800], foregroundColor: Colors.white),
-                  child: isSubmitting 
-                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Text('Simpan'),
+                          final success = await context
+                              .read<ResourceProvider>()
+                              .tambahHutang(
+                                type,
+                                id,
+                                double.parse(nominalController.text),
+                                'Penambahan hutang awal manual',
+                              );
+
+                          if (!context.mounted) return;
+                          setStateDialog(() => isSubmitting = false);
+                          if (success) {
+                            Navigator.pop(context);
+                            _fetchDetail();
+                            SuccessDialog.show(
+                              context,
+                              title: 'Berhasil',
+                              message: 'Hutang awal berhasil ditambahkan.',
+                            );
+                          } else {
+                            final err =
+                                context.read<ResourceProvider>().errorMessage ??
+                                'Gagal menambahkan hutang.';
+                            ErrorDialog.show(
+                              context,
+                              title: 'Gagal',
+                              message: err,
+                            );
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange[800],
+                    foregroundColor: Colors.white,
+                  ),
+                  child: isSubmitting
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text('Simpan'),
                 ),
               ],
             );
-          }
+          },
         );
-      }
+      },
     );
   }
 
@@ -309,7 +356,10 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Detail Pekerja', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Detail Pekerja',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -320,7 +370,9 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
           ),
           IconButton(
             icon: Icon(
-              _currentPekerja.isActive ? Icons.power_settings_new_rounded : Icons.power_rounded,
+              _currentPekerja.isActive
+                  ? Icons.power_settings_new_rounded
+                  : Icons.power_rounded,
               color: _currentPekerja.isActive ? Colors.red : Colors.green,
             ),
             tooltip: _currentPekerja.isActive ? 'Nonaktifkan' : 'Aktifkan',
@@ -362,7 +414,11 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
                   CircleAvatar(
                     radius: 40,
                     backgroundColor: Colors.white.withValues(alpha: 0.2),
-                    child: const Icon(Icons.person_rounded, size: 40, color: Colors.white),
+                    child: const Icon(
+                      Icons.person_rounded,
+                      size: 40,
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -377,7 +433,10 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
                   ),
                   const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
@@ -389,7 +448,9 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
                           width: 6,
                           height: 6,
                           decoration: BoxDecoration(
-                            color: _currentPekerja.isActive ? Colors.greenAccent : Colors.redAccent,
+                            color: _currentPekerja.isActive
+                                ? Colors.greenAccent
+                                : Colors.redAccent,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -418,20 +479,33 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
                   if (_currentPekerja.sisaHutang > 0) ...[
                     const SizedBox(height: 12),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.orange.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.orange.withValues(alpha: 0.5)),
+                        border: Border.all(
+                          color: Colors.orange.withValues(alpha: 0.5),
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 14),
+                          const Icon(
+                            Icons.warning_amber_rounded,
+                            color: Colors.orange,
+                            size: 14,
+                          ),
                           const SizedBox(width: 6),
                           Text(
                             'MEMILIKI HUTANG',
-                            style: TextStyle(color: Colors.orange[100], fontSize: 10, fontWeight: FontWeight.w900),
+                            style: TextStyle(
+                              color: Colors.orange[100],
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                            ),
                           ),
                         ],
                       ),
@@ -441,84 +515,114 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Info Sections
             // Info Sections
-            _buildInfoSection(
-              'Informasi Lengkap',
-              [
-                const Text('Informasi Kontak & Posisi', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
-                const SizedBox(height: 10),
-                _buildInfoRow(
-                  Icons.phone_android_rounded, 
-                  'Telepon', 
-                  _currentPekerja.telepon ?? '-',
-                  trailing: _currentPekerja.telepon != null ? IconButton(
-                    icon: const Icon(Icons.call, color: Color(0xFF8E44AD)),
-                    onPressed: () => _makePhoneCall(_currentPekerja.telepon!),
-                  ) : null,
+            _buildInfoSection('Informasi Lengkap', [
+              const Text(
+                'Informasi Kontak & Posisi',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black54,
                 ),
-                _buildInfoRow(Icons.info_outline_rounded, 'Posisi', _currentPekerja.posisi),
-                _buildInfoRow(Icons.location_on_rounded, 'Alamat', _currentPekerja.alamat ?? '-', isMultiLine: true),
-                
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  child: Divider(),
+              ),
+              const SizedBox(height: 10),
+              _buildInfoRow(
+                Icons.phone_android_rounded,
+                'Telepon',
+                _currentPekerja.telepon ?? '-',
+                trailing: _currentPekerja.telepon != null
+                    ? IconButton(
+                        icon: const Icon(Icons.call, color: Color(0xFF8E44AD)),
+                        onPressed: () =>
+                            _makePhoneCall(_currentPekerja.telepon!),
+                      )
+                    : null,
+              ),
+              _buildInfoRow(
+                Icons.info_outline_rounded,
+                'Posisi',
+                _currentPekerja.posisi,
+              ),
+              _buildInfoRow(
+                Icons.location_on_rounded,
+                'Alamat',
+                _currentPekerja.alamat ?? '-',
+                isMultiLine: true,
+              ),
+
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 10),
+                child: Divider(),
+              ),
+
+              const Text(
+                'Posisi Keuangan',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black54,
                 ),
-                
-                const Text('Posisi Keuangan', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
-                const SizedBox(height: 10),
-                _buildInfoRow(
-                  Icons.account_balance_wallet_rounded, 
-                  'Total Hutang', 
-                  CurrencyFormatter.formatRupiah(_currentPekerja.sisaHutang),
-                  textColor: _currentPekerja.sisaHutang > 0 ? Colors.orange[800] : Colors.green[700],
-                ),
-                const SizedBox(height: 12),
-                if (_currentPekerja.sisaHutang > 0)
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () async {
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PayDebtScreen(
-                              pihakType: 'App\\Models\\Pekerja',
-                              pihakId: _currentPekerja.id,
-                            ),
+              ),
+              const SizedBox(height: 10),
+              _buildInfoRow(
+                Icons.account_balance_wallet_rounded,
+                'Total Hutang',
+                CurrencyFormatter.formatRupiah(_currentPekerja.sisaHutang),
+                textColor: _currentPekerja.sisaHutang > 0
+                    ? Colors.orange[800]
+                    : Colors.green[700],
+              ),
+              const SizedBox(height: 12),
+              if (_currentPekerja.sisaHutang > 0)
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PayDebtScreen(
+                            pihakType: 'App\\Models\\Pekerja',
+                            pihakId: _currentPekerja.id,
                           ),
-                        );
-                        _fetchDetail();
-                      },
-                      icon: const Icon(Icons.payment_rounded, size: 20),
-                      label: const Text('Bayar Hutang'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF8E44AD),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
-                  )
-                else
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () => _showTambahHutangDialog('pekerja', _currentPekerja.id),
-                      icon: const Icon(Icons.add_circle_outline_rounded, size: 20),
-                      label: const Text('Tambah Hutang Awal'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.orange[800],
-                        side: BorderSide(color: Colors.orange[800]!),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      );
+                      _fetchDetail();
+                    },
+                    icon: const Icon(Icons.payment_rounded, size: 20),
+                    label: const Text('Bayar Hutang'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF8E44AD),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                   ),
-              ],
-              onTap: _showEditBottomSheet,
-            ),
+                )
+              else
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () =>
+                        _showTambahHutangDialog('pekerja', _currentPekerja.id),
+                    icon: const Icon(
+                      Icons.add_circle_outline_rounded,
+                      size: 20,
+                    ),
+                    label: const Text('Tambah Hutang Awal'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.orange[800],
+                      side: BorderSide(color: Colors.orange[800]!),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+            ], onTap: _showEditBottomSheet),
 
             const SizedBox(height: 24),
             _buildHistorySection(),
@@ -530,20 +634,27 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
 
   Widget _buildHistorySection() {
     if (_isLoading) {
-      return const Center(child: Padding(
-        padding: EdgeInsets.all(20),
-        child: CircularProgressIndicator(),
-      ));
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: CircularProgressIndicator(),
+        ),
+      );
     }
 
     final List<MutasiHutang> history = _currentPekerja.mutasiHutang ?? [];
 
     return _buildInfoSection('Riwayat Hutang & Pembayaran', [
       if (history.isEmpty)
-        const Center(child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text('Belum ada riwayat transaksi.', style: TextStyle(color: Colors.grey)),
-        ))
+        const Center(
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Belum ada riwayat transaksi.',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ),
+        )
       else
         ...history.map((item) => _buildMutasiRow(item)),
     ]);
@@ -552,7 +663,7 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
   Widget _buildMutasiRow(MutasiHutang item) {
     final DateTime tanggal = DateTime.parse(item.createdAt);
     final bool isPayment = item.isKeluar;
-    
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Row(
@@ -568,11 +679,7 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
                   shape: BoxShape.circle,
                 ),
               ),
-              Container(
-                width: 2,
-                height: 40,
-                color: Colors.grey[200],
-              ),
+              Container(width: 2, height: 40, color: Colors.grey[200]),
             ],
           ),
           const SizedBox(width: 16),
@@ -586,10 +693,10 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
                     Text(
                       isPayment ? 'PENGURANGAN' : 'PENAMBAHAN',
                       style: TextStyle(
-                        fontWeight: FontWeight.bold, 
+                        fontWeight: FontWeight.bold,
                         fontSize: 10,
                         color: isPayment ? Colors.green : Colors.orange,
-                        letterSpacing: 1.1
+                        letterSpacing: 1.1,
                       ),
                     ),
                     Text(
@@ -601,7 +708,10 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
                 const SizedBox(height: 4),
                 Text(
                   item.keterangan ?? '-',
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Row(
@@ -610,14 +720,20 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
                     Text(
                       '${isPayment ? '- ' : '+ '}${CurrencyFormatter.formatRupiah(item.nominal)}',
                       style: TextStyle(
-                        color: isPayment ? Colors.green[700] : Colors.orange[800],
+                        color: isPayment
+                            ? Colors.green[700]
+                            : Colors.orange[800],
                         fontWeight: FontWeight.w800,
                         fontSize: 15,
                       ),
                     ),
                     Text(
                       'Saldo: ${CurrencyFormatter.formatRupiah(item.saldoAkhir)}',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 11, fontStyle: FontStyle.italic),
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 11,
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
                   ],
                 ),
@@ -629,7 +745,11 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
     );
   }
 
-  Widget _buildInfoSection(String title, List<Widget> children, {VoidCallback? onTap}) {
+  Widget _buildInfoSection(
+    String title,
+    List<Widget> children, {
+    VoidCallback? onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -640,18 +760,20 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: onTap != null 
-              ? const Color(0xFF8E44AD).withValues(alpha: 0.3) 
-              : Colors.grey[200]!,
+            color: onTap != null
+                ? const Color(0xFF8E44AD).withValues(alpha: 0.3)
+                : Colors.grey[200]!,
             width: onTap != null ? 1.5 : 1,
           ),
-          boxShadow: onTap != null ? [
-            BoxShadow(
-              color: const Color(0xFF8E44AD).withValues(alpha: 0.05),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            )
-          ] : null,
+          boxShadow: onTap != null
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF8E44AD).withValues(alpha: 0.05),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -672,12 +794,20 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
                     const SizedBox(width: 8),
                     Text(
                       title,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF2C3E50)),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF2C3E50),
+                      ),
                     ),
                   ],
                 ),
                 if (onTap != null)
-                  const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF8E44AD)),
+                  const Icon(
+                    Icons.edit_outlined,
+                    size: 18,
+                    color: Color(0xFF8E44AD),
+                  ),
               ],
             ),
             const SizedBox(height: 20),
@@ -688,11 +818,20 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value, {bool isMultiLine = false, Widget? trailing, Color? textColor}) {
+  Widget _buildInfoRow(
+    IconData icon,
+    String label,
+    String value, {
+    bool isMultiLine = false,
+    Widget? trailing,
+    Color? textColor,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
-        crossAxisAlignment: isMultiLine ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+        crossAxisAlignment: isMultiLine
+            ? CrossAxisAlignment.start
+            : CrossAxisAlignment.center,
         children: [
           Container(
             padding: const EdgeInsets.all(10),
@@ -707,7 +846,14 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: TextStyle(color: Colors.grey[500], fontSize: 12, fontWeight: FontWeight.w600)),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.grey[500],
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 4),
                 Text(
                   value,
@@ -737,7 +883,8 @@ class _PekerjaEditBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<_PekerjaEditBottomSheet> createState() => _PekerjaEditBottomSheetState();
+  State<_PekerjaEditBottomSheet> createState() =>
+      _PekerjaEditBottomSheetState();
 }
 
 class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
@@ -791,7 +938,8 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
           SuccessDialog.show(
             context,
             title: 'Data Diperbarui!',
-            message: 'Informasi Pekerja ${_namaController.text} telah berhasil diperbarui.',
+            message:
+                'Informasi Pekerja ${_namaController.text} telah berhasil diperbarui.',
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -801,9 +949,9 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -856,12 +1004,13 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
                 controller: _namaController,
                 label: 'Nama Pekerja',
                 icon: Icons.person_outline,
-                validator: (val) => val == null || val.isEmpty ? 'Nama wajib diisi' : null,
+                validator: (val) =>
+                    val == null || val.isEmpty ? 'Nama wajib diisi' : null,
               ),
               const SizedBox(height: 16),
               _buildTextField(
                 controller: _teleponController,
-                label: 'Nomor Telepon',
+                label: 'Nomor Telepon (WhatsApp)',
                 icon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
               ),
@@ -870,8 +1019,13 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
                 initialValue: _posisi,
                 decoration: InputDecoration(
                   labelText: 'Posisi Pekerja',
-                  prefixIcon: const Icon(Icons.info_outline, color: Color(0xFF8E44AD)),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: const Icon(
+                    Icons.info_outline,
+                    color: Color(0xFF8E44AD),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(color: Colors.grey[300]!),
@@ -879,7 +1033,9 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
                   filled: true,
                   fillColor: Colors.grey[50],
                 ),
-                items: _posisiOptions.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                items: _posisiOptions
+                    .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                    .toList(),
                 onChanged: (val) => setState(() => _posisi = val),
               ),
               const SizedBox(height: 16),
@@ -896,12 +1052,27 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
                   backgroundColor: const Color(0xFF8E44AD),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 0,
                 ),
-                child: _isLoading 
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Text('SIMPAN PERUBAHAN', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'SIMPAN PERUBAHAN',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
+                        ),
+                      ),
               ),
             ],
           ),
@@ -941,4 +1112,3 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
     );
   }
 }
-

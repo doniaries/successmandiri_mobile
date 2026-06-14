@@ -76,13 +76,15 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
         return;
       }
 
-      final double hutangValue = CurrencyInputFormatter.parse(_hutangController.text);
+      final double hutangValue = CurrencyInputFormatter.parse(
+        _hutangController.text,
+      );
 
       String phone = _teleponController.text.replaceAll(RegExp(r'\D'), '');
       if (phone.startsWith('0')) {
-          phone = '62${phone.substring(1)}';
+        phone = '62${phone.substring(1)}';
       } else if (phone.startsWith('8')) {
-          phone = '62$phone';
+        phone = '62$phone';
       }
 
       final penjual = await provider.addPenjual({
@@ -159,7 +161,7 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
                 const SizedBox(height: 20),
                 _buildTextField(
                   controller: _teleponController,
-                  label: 'Nomor Telepon *',
+                  label: 'Nomor Telepon/Whatsapp *',
                   placeholder: '08xxx',
                   icon: Icons.phone_outlined,
                   keyboardType: TextInputType.phone,
@@ -169,9 +171,13 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
                     LengthLimitingTextInputFormatter(13),
                   ],
                   validator: (val) {
-                    if (val == null || val.isEmpty) return 'Nomor telepon wajib diisi';
+                    if (val == null || val.isEmpty) {
+                      return 'Nomor telepon wajib diisi';
+                    }
                     final digits = val.replaceAll(RegExp(r'\D'), '');
-                    if (!digits.startsWith('08') && !digits.startsWith('628') && !digits.startsWith('8')) {
+                    if (!digits.startsWith('08') &&
+                        !digits.startsWith('628') &&
+                        !digits.startsWith('8')) {
                       return 'Nomor harus diawali 08, 8, atau 628';
                     }
                     if (digits.length < 10) return 'Minimal 10 digit';
@@ -182,62 +188,83 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
                 const SizedBox(height: 20),
                 Autocomplete<String>(
                   optionsBuilder: (TextEditingValue textEditingValue) {
-                    const defaultBanks = ['BCA', 'BRI', 'Mandiri', 'BNI', 'BSI', 'CIMB Niaga', 'BJB'];
+                    const defaultBanks = [
+                      'BCA',
+                      'BRI',
+                      'Mandiri',
+                      'BNI',
+                      'BSI',
+                      'CIMB Niaga',
+                      'BJB',
+                    ];
                     final provider = context.read<ResourceProvider>();
                     final existingBanks = provider.penjuals
                         .map((p) => p.namaBank)
                         .where((b) => b != null && b.isNotEmpty)
                         .map((b) => b!)
                         .toSet();
-                    final allBanks = {...defaultBanks, ...existingBanks}.toList();
-                    
+                    final allBanks = {
+                      ...defaultBanks,
+                      ...existingBanks,
+                    }.toList();
+
                     if (textEditingValue.text.isEmpty) {
                       return allBanks;
                     }
-                    return allBanks.where((bank) => 
-                        bank.toLowerCase().contains(textEditingValue.text.toLowerCase()));
+                    return allBanks.where(
+                      (bank) => bank.toLowerCase().contains(
+                        textEditingValue.text.toLowerCase(),
+                      ),
+                    );
                   },
                   onSelected: (String selection) {
                     _namaBankController.text = selection;
                   },
-                  fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
-                    textEditingController.addListener(() {
-                      _namaBankController.text = textEditingController.text;
-                    });
-                    return _buildTextField(
-                      controller: textEditingController,
-                      focusNode: focusNode,
-                      label: 'Nama Bank (Opsional)',
-                      icon: Icons.account_balance_outlined,
-                      placeholder: 'Pilih atau ketik nama bank baru...',
-                    );
-                  },
+                  fieldViewBuilder:
+                      (
+                        context,
+                        textEditingController,
+                        focusNode,
+                        onFieldSubmitted,
+                      ) {
+                        textEditingController.addListener(() {
+                          _namaBankController.text = textEditingController.text;
+                        });
+                        return _buildTextField(
+                          controller: textEditingController,
+                          focusNode: focusNode,
+                          label: 'Nama Bank (Opsional)',
+                          icon: Icons.account_balance_outlined,
+                          placeholder: 'Pilih atau ketik nama bank baru...',
+                        );
+                      },
                 ),
                 const SizedBox(height: 20),
-                  _buildTextField(
-                    controller: _nomorRekeningController,
-                    label: 'Nomor Rekening (Opsional)',
-                    icon: Icons.credit_card_outlined,
-                    textInputAction: TextInputAction.next,
-                  ),
-                  const SizedBox(height: 20),
-                  _buildTextField(
-                    controller: _alamatController,
-                    label: 'Alamat',
-                    icon: Icons.location_on_outlined,
-                    textInputAction: TextInputAction.next,
-                    maxLines: 3,
-                  ),
+                _buildTextField(
+                  controller: _nomorRekeningController,
+                  label: 'Nomor Rekening (Opsional)',
+                  icon: Icons.credit_card_outlined,
+                  textInputAction: TextInputAction.next,
+                ),
                 const SizedBox(height: 20),
-                  _buildTextField(
-                    controller: _hutangController,
-                    label: 'Hutang Awal (Wajib diisi, ketik 0 jika tidak ada)',
-                    icon: Icons.account_balance_wallet_outlined,
-                    keyboardType: TextInputType.number,
-                    textInputAction: TextInputAction.next,
-                    inputFormatters: [CurrencyInputFormatter()],
+                _buildTextField(
+                  controller: _alamatController,
+                  label: 'Alamat',
+                  icon: Icons.location_on_outlined,
+                  textInputAction: TextInputAction.next,
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 20),
+                _buildTextField(
+                  controller: _hutangController,
+                  label: 'Hutang Awal (Wajib diisi, ketik 0 jika tidak ada)',
+                  icon: Icons.account_balance_wallet_outlined,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.next,
+                  inputFormatters: [CurrencyInputFormatter()],
                   prefixText: 'Rp ',
-                  helperText: '⚠️ Wajib diisi jika ada hutang awal. Jika tidak ada, isi 0.',
+                  helperText:
+                      '⚠️ Wajib diisi jika ada hutang awal. Jika tidak ada, isi 0.',
                   validator: (val) {
                     if (val == null || val.isEmpty) {
                       return 'Hutang awal wajib diisi (ketik 0 jika tidak ada)';
@@ -246,13 +273,13 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
                   },
                 ),
                 const SizedBox(height: 20),
-                  _buildTextField(
-                    controller: _keteranganController,
-                    label: 'Keterangan',
-                    icon: Icons.note_outlined,
-                    textInputAction: TextInputAction.done,
-                    maxLines: 2,
-                  ),
+                _buildTextField(
+                  controller: _keteranganController,
+                  label: 'Keterangan',
+                  icon: Icons.note_outlined,
+                  textInputAction: TextInputAction.done,
+                  maxLines: 2,
+                ),
                 const SizedBox(height: 40),
                 AppPrimaryButton(
                   text: 'SIMPAN PENJUAL',
@@ -295,10 +322,16 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
         helperText: helperText,
         helperMaxLines: 2,
         errorMaxLines: 3,
-        helperStyle: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+        helperStyle: const TextStyle(
+          color: Colors.red,
+          fontWeight: FontWeight.bold,
+        ),
         prefixIcon: Icon(icon, color: const Color(0xFF27AE60)),
         prefixText: prefixText,
-        prefixStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+        prefixStyle: const TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Colors.black87,
+        ),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
