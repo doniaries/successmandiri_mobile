@@ -964,19 +964,22 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: MediaQuery.of(context).viewInsets,
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Container(
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
         ),
-        padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
         child: Form(
           key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
               Center(
                 child: Container(
                   width: 40,
@@ -1078,6 +1081,7 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
                       ),
               ),
             ],
+          ),
           ),
         ),
       ),
