@@ -22,6 +22,14 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
   final _namaController = TextEditingController();
   final _hutangController = TextEditingController();
   final _keteranganController = TextEditingController();
+  final _posisiController = TextEditingController();
+
+  static const List<String> _posisiOptions = [
+    'Staff',
+    'Kasir',
+    'Supir Lansir',
+    'Anggota Lansir',
+  ];
 
   @override
   void initState() {
@@ -36,6 +44,7 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
     _namaController.dispose();
     _hutangController.dispose();
     _keteranganController.dispose();
+    _posisiController.dispose();
     super.dispose();
   }
 
@@ -69,7 +78,7 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
       'nama': _namaController.text,
       'keterangan': _keteranganController.text,
       'hutang': hutangValue > 0 ? hutangValue : 0,
-      'posisi': 'Staff', // Default Posisi
+      'posisi': _posisiController.text.isNotEmpty ? _posisiController.text : 'Staff',
     });
 
     if (mounted) {
@@ -143,6 +152,20 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
                   },
                 ),
                 const SizedBox(height: 20),
+                _buildAutocompleteField(
+                  controller: _posisiController,
+                  label: 'Posisi / Jabatan',
+                  icon: Icons.work_outline,
+                  helperText: 'Contoh: Supir Lansir, Anggota, Kasir',
+                  options: _posisiOptions,
+                  validator: (val) {
+                    if (val == null || val.isEmpty) {
+                      return 'Posisi wajib diisi';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
                 _buildTextField(
                   controller: _keteranganController,
                   label: 'Keterangan / Catatan',
@@ -200,6 +223,60 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
         filled: true,
         fillColor: Colors.grey[50],
       ),
+    );
+  }
+
+  Widget _buildAutocompleteField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required List<String> options,
+    String? helperText,
+    String? Function(String?)? validator,
+  }) {
+    return Autocomplete<String>(
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        if (textEditingValue.text.isEmpty) {
+          return options;
+        }
+        return options.where((String option) {
+          return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+        });
+      },
+      onSelected: (String selection) {
+        controller.text = selection;
+      },
+      fieldViewBuilder: (BuildContext context, TextEditingController fieldTextEditingController, FocusNode fieldFocusNode, VoidCallback onFieldSubmitted) {
+        // Sync our controller with Autocomplete's controller
+        fieldTextEditingController.text = controller.text;
+        fieldTextEditingController.addListener(() {
+          controller.text = fieldTextEditingController.text;
+        });
+
+        return TextFormField(
+          controller: fieldTextEditingController,
+          focusNode: fieldFocusNode,
+          validator: validator,
+          decoration: InputDecoration(
+            labelText: label,
+            helperText: helperText,
+            helperMaxLines: 2,
+            helperStyle: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            prefixIcon: Icon(icon, color: const Color(0xFF8E44AD), size: 20),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF8E44AD), width: 2),
+            ),
+            filled: true,
+            fillColor: Colors.grey[50],
+          ),
+        );
+      },
     );
   }
 }

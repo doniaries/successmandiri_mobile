@@ -895,10 +895,15 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
   late TextEditingController _namaController;
   late TextEditingController _teleponController;
   late TextEditingController _alamatController;
-  String? _posisi;
+  late TextEditingController _posisiController;
   bool _isLoading = false;
 
-  final List<String> _posisiOptions = ['AKTIF', 'NONAKTIF', 'CUTI'];
+  static const List<String> _posisiOptions = [
+    'Staff',
+    'Kasir',
+    'Supir Lansir',
+    'Anggota Lansir',
+  ];
 
   @override
   void initState() {
@@ -906,10 +911,7 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
     _namaController = TextEditingController(text: widget.pekerja.nama);
     _teleponController = TextEditingController(text: widget.pekerja.telepon);
     _alamatController = TextEditingController(text: widget.pekerja.alamat);
-    _posisi = widget.pekerja.posisi.toUpperCase();
-    if (!_posisiOptions.contains(_posisi)) {
-      _posisi = 'AKTIF';
-    }
+    _posisiController = TextEditingController(text: widget.pekerja.posisi);
   }
 
   @override
@@ -917,6 +919,7 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
     _namaController.dispose();
     _teleponController.dispose();
     _alamatController.dispose();
+    _posisiController.dispose();
     super.dispose();
   }
 
@@ -931,7 +934,7 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
         'nama': _namaController.text,
         'telepon': _teleponController.text,
         'alamat': _alamatController.text,
-        'posisi': _posisi,
+        'posisi': _posisiController.text.isNotEmpty ? _posisiController.text : 'Staff',
       });
 
       if (mounted) {
@@ -1021,28 +1024,18 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
                 keyboardType: TextInputType.phone,
               ),
               const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                initialValue: _posisi,
-                decoration: InputDecoration(
-                  labelText: 'Posisi Pekerja',
-                  prefixIcon: const Icon(
-                    Icons.info_outline,
-                    color: Color(0xFF8E44AD),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey[300]!),
-                  ),
-                  filled: true,
-                  fillColor: Colors.grey[50],
-                ),
-                items: _posisiOptions
-                    .map((s) => DropdownMenuItem(value: s, child: Text(s)))
-                    .toList(),
-                onChanged: (val) => setState(() => _posisi = val),
+              _buildAutocompleteField(
+                controller: _posisiController,
+                label: 'Posisi Pekerja',
+                icon: Icons.work_outline,
+                options: _posisiOptions,
+                helperText: 'Contoh: Supir Lansir, Anggota, Kasir',
+                validator: (val) {
+                  if (val == null || val.isEmpty) {
+                    return 'Posisi wajib diisi';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
               _buildTextField(
@@ -1116,6 +1109,60 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
         filled: true,
         fillColor: Colors.grey[50],
       ),
+    );
+  }
+
+  Widget _buildAutocompleteField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required List<String> options,
+    String? helperText,
+    String? Function(String?)? validator,
+  }) {
+    return Autocomplete<String>(
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        if (textEditingValue.text.isEmpty) {
+          return options;
+        }
+        return options.where((String option) {
+          return option.toLowerCase().contains(textEditingValue.text.toLowerCase());
+        });
+      },
+      onSelected: (String selection) {
+        controller.text = selection;
+      },
+      fieldViewBuilder: (BuildContext context, TextEditingController fieldTextEditingController, FocusNode fieldFocusNode, VoidCallback onFieldSubmitted) {
+        // Sync our controller with Autocomplete's controller
+        fieldTextEditingController.text = controller.text;
+        fieldTextEditingController.addListener(() {
+          controller.text = fieldTextEditingController.text;
+        });
+
+        return TextFormField(
+          controller: fieldTextEditingController,
+          focusNode: fieldFocusNode,
+          validator: validator,
+          decoration: InputDecoration(
+            labelText: label,
+            helperText: helperText,
+            helperMaxLines: 2,
+            helperStyle: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            prefixIcon: Icon(icon, color: const Color(0xFF8E44AD), size: 20),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF8E44AD), width: 2),
+            ),
+            filled: true,
+            fillColor: Colors.grey[50],
+          ),
+        );
+      },
     );
   }
 }
