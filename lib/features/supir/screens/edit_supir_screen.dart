@@ -112,6 +112,7 @@ class _EditSupirScreenState extends State<EditSupirScreen> {
                 label: 'Nomor Telepon',
                 icon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
+                validator: (val) => val == null || val.isEmpty ? 'Nomor telepon wajib diisi' : null,
               ),
               const SizedBox(height: 20),
               DropdownButtonFormField<String>(

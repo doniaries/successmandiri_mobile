@@ -154,6 +154,7 @@ class _AddPenjualScreenState extends State<AddPenjualScreen> {
                   label: 'Nomor Telepon',
                   icon: Icons.phone_outlined,
                   keyboardType: TextInputType.phone,
+                  validator: (val) => val == null || val.isEmpty ? 'Nomor telepon wajib diisi' : null,
                 ),
                 const SizedBox(height: 20),
                 Autocomplete<String>(

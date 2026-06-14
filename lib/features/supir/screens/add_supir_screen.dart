@@ -20,6 +20,7 @@ class AddSupirScreen extends StatefulWidget {
 class _AddSupirScreenState extends State<AddSupirScreen> {
   final _formKey = GlobalKey<FormState>();
   final _namaController = TextEditingController();
+  final _teleponController = TextEditingController();
   final _hutangController = TextEditingController();
   final _keteranganController = TextEditingController();
 
@@ -34,6 +35,7 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
   @override
   void dispose() {
     _namaController.dispose();
+    _teleponController.dispose();
     _hutangController.dispose();
     _keteranganController.dispose();
     super.dispose();
@@ -67,6 +69,7 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
 
     final result = await provider.addSupir({
       'nama': _namaController.text,
+      'telepon': _teleponController.text,
       'keterangan': _keteranganController.text,
       'hutang': hutangValue > 0 ? hutangValue : 0,
     });
@@ -125,6 +128,14 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
                   icon: Icons.person_rounded,
                   validator: (val) =>
                       val == null || val.isEmpty ? 'Nama wajib diisi' : null,
+                ),
+                const SizedBox(height: 20),
+                _buildTextField(
+                  controller: _teleponController,
+                  label: 'Nomor Telepon',
+                  icon: Icons.phone_outlined,
+                  keyboardType: TextInputType.phone,
+                  validator: (val) => val == null || val.isEmpty ? 'Nomor telepon wajib diisi' : null,
                 ),
                 const SizedBox(height: 20),
                 _buildTextField(
