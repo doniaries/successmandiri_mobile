@@ -189,7 +189,6 @@ class _EditSupirScreenState extends State<EditSupirScreen> {
     int maxLines = 1,
     String? Function(String?)? validator,
     List<TextInputFormatter>? inputFormatters,
-    String? prefixText,
     String? helperText,
     String? hintText,
     TextInputAction? textInputAction,
