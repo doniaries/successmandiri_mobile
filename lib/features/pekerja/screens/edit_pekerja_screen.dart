@@ -114,7 +114,7 @@ class _EditPekerjaScreenState extends State<EditPekerjaScreen> {
               const SizedBox(height: 20),
               _buildTextField(
                 controller: _teleponController,
-                label: 'Nomor Telepon(WhatsApp)',
+                label: 'Nomor Telepon (WhatsApp)',
                 icon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
               ),

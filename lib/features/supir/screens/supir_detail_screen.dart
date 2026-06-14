@@ -1018,7 +1018,7 @@ class _SupirEditBottomSheetState extends State<_SupirEditBottomSheet> {
                 const SizedBox(height: 16),
                 _buildTextField(
                   controller: _teleponController,
-                  label: 'Nomor Telepon/Whatsapp',
+                  label: 'Nomor Telepon (WhatsApp)',
                   icon: Icons.phone_outlined,
                   keyboardType: TextInputType.phone,
                 ),

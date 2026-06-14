@@ -277,9 +277,12 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
                         prefixText: 'Rp ',
                       ),
                       validator: (val) {
-                        if (val == null || val.isEmpty) return 'Wajib diisi';
-                        if (double.tryParse(val) == null)
+                        if (val == null || val.isEmpty) {
+                          return 'Wajib diisi';
+                        }
+                        if (double.tryParse(val) == null) {
                           return 'Angka tidak valid';
+                        }
                         return null;
                       },
                     ),

@@ -35,7 +35,9 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
 
   Future<void> _fetchDetail() async {
     try {
-      final detail = await context.read<ResourceProvider>().getPenjualDetail(widget.penjual.id);
+      final detail = await context.read<ResourceProvider>().getPenjualDetail(
+        widget.penjual.id,
+      );
       if (mounted) {
         setState(() {
           _currentPenjual = detail;
@@ -64,14 +66,20 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
 
   Future<void> _handleToggleStatus() async {
     final bool isCurrentlyActive = _currentPenjual.isActive;
-    final String actionText = isCurrentlyActive ? 'menonaktifkan' : 'mengaktifkan';
-    final String titleText = isCurrentlyActive ? 'Nonaktifkan Penjual' : 'Aktifkan Penjual';
+    final String actionText = isCurrentlyActive
+        ? 'menonaktifkan'
+        : 'mengaktifkan';
+    final String titleText = isCurrentlyActive
+        ? 'Nonaktifkan Penjual'
+        : 'Aktifkan Penjual';
 
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(titleText),
-        content: Text('Apakah Anda yakin ingin $actionText penjual ${_currentPenjual.nama}?'),
+        content: Text(
+          'Apakah Anda yakin ingin $actionText penjual ${_currentPenjual.nama}?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -91,7 +99,9 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
     if (confirmed == true && mounted) {
       setState(() => _isProcessing = true);
       try {
-        final success = await context.read<ResourceProvider>().updateResourceStatus(
+        final success = await context
+            .read<ResourceProvider>()
+            .updateResourceStatus(
               'penjual',
               _currentPenjual.id,
               !isCurrentlyActive,
@@ -110,18 +120,16 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
             ErrorDialog.show(
               context,
               title: 'Gagal',
-              message: context.read<ResourceProvider>().errorMessage ?? 'Gagal memperbarui status.',
+              message:
+                  context.read<ResourceProvider>().errorMessage ??
+                  'Gagal memperbarui status.',
             );
           }
         }
       } catch (e) {
         if (mounted) {
           setState(() => _isProcessing = false);
-          ErrorDialog.show(
-            context,
-            title: 'Error',
-            message: e.toString(),
-          );
+          ErrorDialog.show(context, title: 'Error', message: e.toString());
         }
       }
     }
@@ -134,7 +142,9 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Tidak Bisa Dihapus'),
-          content: Text('Data ${_currentPenjual.nama} tidak bisa dihapus karena masih memiliki sisa hutang. Anda hanya dapat menonaktifkannya.\n\nIngin menonaktifkan sekarang?'),
+          content: Text(
+            'Data ${_currentPenjual.nama} tidak bisa dihapus karena masih memiliki sisa hutang. Anda hanya dapat menonaktifkannya.\n\nIngin menonaktifkan sekarang?',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
@@ -158,7 +168,9 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Hapus Penjual'),
-        content: Text('Apakah Anda yakin ingin menghapus ${_currentPenjual.nama} secara permanen?'),
+        content: Text(
+          'Apakah Anda yakin ingin menghapus ${_currentPenjual.nama} secara permanen?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -176,20 +188,31 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
     if (confirmed == true && mounted) {
       setState(() => _isProcessing = true);
       try {
-        final success = await context.read<ResourceProvider>().deleteResource('penjual', _currentPenjual.id);
+        final success = await context.read<ResourceProvider>().deleteResource(
+          'penjual',
+          _currentPenjual.id,
+        );
         if (mounted) {
           setState(() => _isProcessing = false);
           if (success) {
-            SuccessDialog.show(context, title: 'Berhasil', message: 'Data Penjual berhasil dihapus.');
+            SuccessDialog.show(
+              context,
+              title: 'Berhasil',
+              message: 'Data Penjual berhasil dihapus.',
+            );
             Navigator.pop(context); // Go back after delete
           } else {
             // Server menolak (ada transaksi terhubung) — tawarkan nonaktif
-            final errMsg = context.read<ResourceProvider>().errorMessage ?? 'Gagal menghapus data.';
+            final errMsg =
+                context.read<ResourceProvider>().errorMessage ??
+                'Gagal menghapus data.';
             final offerDeactivate = await showDialog<bool>(
               context: context,
               builder: (context) => AlertDialog(
                 title: const Text('Hapus Gagal'),
-                content: Text('$errMsg\n\nApakah Anda ingin menonaktifkan data ini sebagai gantinya?'),
+                content: Text(
+                  '$errMsg\n\nApakah Anda ingin menonaktifkan data ini sebagai gantinya?',
+                ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context, false),
@@ -249,7 +272,9 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('Masukkan nominal hutang awal yang terlewat atau baru untuk penjual ini.'),
+                    const Text(
+                      'Masukkan nominal hutang awal yang terlewat atau baru untuk penjual ini.',
+                    ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: nominalController,
@@ -260,8 +285,12 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
                         prefixText: 'Rp ',
                       ),
                       validator: (val) {
-                        if (val == null || val.isEmpty) return 'Wajib diisi';
-                        if (double.tryParse(val) == null) return 'Angka tidak valid';
+                        if (val == null || val.isEmpty) {
+                          return 'Wajib diisi';
+                        }
+                        if (double.tryParse(val) == null) {
+                          return 'Angka tidak valid';
+                        }
                         return null;
                       },
                     ),
@@ -274,38 +303,62 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
                   child: const Text('Batal'),
                 ),
                 ElevatedButton(
-                  onPressed: isSubmitting ? null : () async {
-                    if (!formKey.currentState!.validate()) return;
-                    setStateDialog(() => isSubmitting = true);
-                    
-                    final success = await context.read<ResourceProvider>().tambahHutang(
-                      type, 
-                      id, 
-                      double.parse(nominalController.text), 
-                      'Penambahan hutang awal manual'
-                    );
+                  onPressed: isSubmitting
+                      ? null
+                      : () async {
+                          if (!formKey.currentState!.validate()) return;
+                          setStateDialog(() => isSubmitting = true);
 
-                    if (!context.mounted) return;
-                    setStateDialog(() => isSubmitting = false);
-                    if (success) {
-                      Navigator.pop(context);
-                      _fetchDetail();
-                      SuccessDialog.show(context, title: 'Berhasil', message: 'Hutang awal berhasil ditambahkan.');
-                    } else {
-                      final err = context.read<ResourceProvider>().errorMessage ?? 'Gagal menambahkan hutang.';
-                      ErrorDialog.show(context, title: 'Gagal', message: err);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.orange[800], foregroundColor: Colors.white),
-                  child: isSubmitting 
-                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Text('Simpan'),
+                          final success = await context
+                              .read<ResourceProvider>()
+                              .tambahHutang(
+                                type,
+                                id,
+                                double.parse(nominalController.text),
+                                'Penambahan hutang awal manual',
+                              );
+
+                          if (!context.mounted) return;
+                          setStateDialog(() => isSubmitting = false);
+                          if (success) {
+                            Navigator.pop(context);
+                            _fetchDetail();
+                            SuccessDialog.show(
+                              context,
+                              title: 'Berhasil',
+                              message: 'Hutang awal berhasil ditambahkan.',
+                            );
+                          } else {
+                            final err =
+                                context.read<ResourceProvider>().errorMessage ??
+                                'Gagal menambahkan hutang.';
+                            ErrorDialog.show(
+                              context,
+                              title: 'Gagal',
+                              message: err,
+                            );
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange[800],
+                    foregroundColor: Colors.white,
+                  ),
+                  child: isSubmitting
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text('Simpan'),
                 ),
               ],
             );
-          }
+          },
         );
-      }
+      },
     );
   }
 
@@ -314,7 +367,10 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Detail Penjual', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'Detail Penjual',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -325,7 +381,9 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
           ),
           IconButton(
             icon: Icon(
-              _currentPenjual.isActive ? Icons.power_settings_new_rounded : Icons.power_rounded,
+              _currentPenjual.isActive
+                  ? Icons.power_settings_new_rounded
+                  : Icons.power_rounded,
               color: _currentPenjual.isActive ? Colors.red : Colors.green,
             ),
             tooltip: _currentPenjual.isActive ? 'Nonaktifkan' : 'Aktifkan',
@@ -367,7 +425,11 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
                   CircleAvatar(
                     radius: 40,
                     backgroundColor: Colors.white.withValues(alpha: 0.2),
-                    child: const Icon(Icons.store_rounded, size: 40, color: Colors.white),
+                    child: const Icon(
+                      Icons.store_rounded,
+                      size: 40,
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -382,7 +444,10 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
                   ),
                   const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
@@ -394,7 +459,9 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
                           width: 6,
                           height: 6,
                           decoration: BoxDecoration(
-                            color: _currentPenjual.isActive ? Colors.greenAccent : Colors.redAccent,
+                            color: _currentPenjual.isActive
+                                ? Colors.greenAccent
+                                : Colors.redAccent,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -420,23 +487,37 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
                       letterSpacing: 1,
                     ),
                   ),
-                  if (_currentPenjual.sisaHutang != null && _currentPenjual.sisaHutang! > 0) ...[
+                  if (_currentPenjual.sisaHutang != null &&
+                      _currentPenjual.sisaHutang! > 0) ...[
                     const SizedBox(height: 12),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.orange.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.orange.withValues(alpha: 0.5)),
+                        border: Border.all(
+                          color: Colors.orange.withValues(alpha: 0.5),
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 14),
+                          const Icon(
+                            Icons.warning_amber_rounded,
+                            color: Colors.orange,
+                            size: 14,
+                          ),
                           const SizedBox(width: 6),
                           Text(
                             'MEMILIKI HUTANG',
-                            style: TextStyle(color: Colors.orange[100], fontSize: 10, fontWeight: FontWeight.w900),
+                            style: TextStyle(
+                              color: Colors.orange[100],
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                            ),
                           ),
                         ],
                       ),
@@ -446,97 +527,143 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Info Sections
-            _buildInfoSection(
-              'Informasi Lengkap',
-              [
-                const Text('Informasi Kontak', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
-                const SizedBox(height: 10),
-                _buildInfoRow(
-                  Icons.phone_android_rounded, 
-                  'Telepon', 
-                  _currentPenjual.telepon ?? '-',
-                  trailing: _currentPenjual.telepon != null ? IconButton(
-                    icon: const FaIcon(FontAwesomeIcons.whatsapp, color: Color(0xFF25D366)),
-                    onPressed: () => _openWhatsApp(_currentPenjual.telepon!),
-                  ) : null,
+            _buildInfoSection('Informasi Lengkap', [
+              const Text(
+                'Informasi Kontak',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black54,
                 ),
-                _buildInfoRow(Icons.location_on_rounded, 'Alamat', _currentPenjual.alamat ?? '-', isMultiLine: true),
-                _buildInfoRow(Icons.account_balance_rounded, 'Nama Bank', _currentPenjual.namaBank ?? '-'),
-                _buildInfoRow(
-                  Icons.credit_card_rounded, 
-                  'Nomor Rekening', 
-                  _currentPenjual.nomorRekening ?? '-',
-                  trailing: _currentPenjual.nomorRekening != null && _currentPenjual.nomorRekening!.isNotEmpty ? IconButton(
-                    icon: const Icon(Icons.copy_rounded, color: Color(0xFF27AE60)),
-                    onPressed: () {
-                      Clipboard.setData(ClipboardData(text: _currentPenjual.nomorRekening!));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Nomor Rekening disalin ke clipboard')),
-                      );
-                    },
-                  ) : null,
-                ),
-                
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                  child: Divider(),
-                ),
-                
-                const Text('Status Keuangan', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54)),
-                const SizedBox(height: 10),
-                _buildInfoRow(
-                  Icons.account_balance_wallet_rounded, 
-                  'Total Hutang', 
-                  CurrencyFormatter.formatRupiah(_currentPenjual.sisaHutang ?? 0),
-                  textColor: (_currentPenjual.sisaHutang ?? 0) > 0 ? Colors.orange[800] : Colors.green[700],
-                ),
-                const SizedBox(height: 12),
-                if ((_currentPenjual.sisaHutang ?? 0) > 0)
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () async {
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PayDebtScreen(
-                              pihakType: 'App\\Models\\Penjual',
-                              pihakId: _currentPenjual.id,
+              ),
+              const SizedBox(height: 10),
+              _buildInfoRow(
+                Icons.phone_android_rounded,
+                'Telepon',
+                _currentPenjual.telepon ?? '-',
+                trailing: _currentPenjual.telepon != null
+                    ? IconButton(
+                        icon: const FaIcon(
+                          FontAwesomeIcons.whatsapp,
+                          color: Color(0xFF25D366),
+                        ),
+                        onPressed: () =>
+                            _openWhatsApp(_currentPenjual.telepon!),
+                      )
+                    : null,
+              ),
+              _buildInfoRow(
+                Icons.location_on_rounded,
+                'Alamat',
+                _currentPenjual.alamat ?? '-',
+                isMultiLine: true,
+              ),
+              _buildInfoRow(
+                Icons.account_balance_rounded,
+                'Nama Bank',
+                _currentPenjual.namaBank ?? '-',
+              ),
+              _buildInfoRow(
+                Icons.credit_card_rounded,
+                'Nomor Rekening',
+                _currentPenjual.nomorRekening ?? '-',
+                trailing:
+                    _currentPenjual.nomorRekening != null &&
+                        _currentPenjual.nomorRekening!.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(
+                          Icons.copy_rounded,
+                          color: Color(0xFF27AE60),
+                        ),
+                        onPressed: () {
+                          Clipboard.setData(
+                            ClipboardData(text: _currentPenjual.nomorRekening!),
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Nomor Rekening disalin ke clipboard',
+                              ),
                             ),
+                          );
+                        },
+                      )
+                    : null,
+              ),
+
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 10),
+                child: Divider(),
+              ),
+
+              const Text(
+                'Status Keuangan',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black54,
+                ),
+              ),
+              const SizedBox(height: 10),
+              _buildInfoRow(
+                Icons.account_balance_wallet_rounded,
+                'Total Hutang',
+                CurrencyFormatter.formatRupiah(_currentPenjual.sisaHutang ?? 0),
+                textColor: (_currentPenjual.sisaHutang ?? 0) > 0
+                    ? Colors.orange[800]
+                    : Colors.green[700],
+              ),
+              const SizedBox(height: 12),
+              if ((_currentPenjual.sisaHutang ?? 0) > 0)
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PayDebtScreen(
+                            pihakType: 'App\\Models\\Penjual',
+                            pihakId: _currentPenjual.id,
                           ),
-                        );
-                        _fetchDetail();
-                      },
-                      icon: const Icon(Icons.payment_rounded, size: 20),
-                      label: const Text('Bayar Hutang'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF27AE60),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
-                  )
-                else
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () => _showTambahHutangDialog('penjual', _currentPenjual.id),
-                      icon: const Icon(Icons.add_circle_outline_rounded, size: 20),
-                      label: const Text('Tambah Hutang Awal'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.orange[800],
-                        side: BorderSide(color: Colors.orange[800]!),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      );
+                      _fetchDetail();
+                    },
+                    icon: const Icon(Icons.payment_rounded, size: 20),
+                    label: const Text('Bayar Hutang'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF27AE60),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                   ),
-              ],
-              onTap: _showEditBottomSheet,
-            ),
+                )
+              else
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () =>
+                        _showTambahHutangDialog('penjual', _currentPenjual.id),
+                    icon: const Icon(
+                      Icons.add_circle_outline_rounded,
+                      size: 20,
+                    ),
+                    label: const Text('Tambah Hutang Awal'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.orange[800],
+                      side: BorderSide(color: Colors.orange[800]!),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+            ], onTap: _showEditBottomSheet),
 
             const SizedBox(height: 24),
             _buildHistorySection(),
@@ -548,10 +675,12 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
 
   Widget _buildHistorySection() {
     if (_isLoading) {
-      return const Center(child: Padding(
-        padding: EdgeInsets.all(20),
-        child: CircularProgressIndicator(),
-      ));
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: CircularProgressIndicator(),
+        ),
+      );
     }
 
     final List<MutasiHutang> history = _currentPenjual.mutasiHutang ?? [];
@@ -561,10 +690,15 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
 
     return _buildInfoSection('Riwayat Hutang & Pembayaran', [
       if (history.isEmpty)
-        const Center(child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text('Belum ada riwayat transaksi.', style: TextStyle(color: Colors.grey)),
-        ))
+        const Center(
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Text(
+              'Belum ada riwayat transaksi.',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ),
+        )
       else
         ...history.map((item) => _buildMutasiRow(item)),
     ]);
@@ -573,7 +707,7 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
   Widget _buildMutasiRow(MutasiHutang item) {
     final DateTime tanggal = DateTime.parse(item.createdAt);
     final bool isPayment = item.isKeluar;
-    
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Row(
@@ -589,11 +723,7 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
                   shape: BoxShape.circle,
                 ),
               ),
-              Container(
-                width: 2,
-                height: 40,
-                color: Colors.grey[200],
-              ),
+              Container(width: 2, height: 40, color: Colors.grey[200]),
             ],
           ),
           const SizedBox(width: 16),
@@ -607,10 +737,10 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
                     Text(
                       isPayment ? 'PENGURANGAN' : 'PENAMBAHAN',
                       style: TextStyle(
-                        fontWeight: FontWeight.bold, 
+                        fontWeight: FontWeight.bold,
                         fontSize: 10,
                         color: isPayment ? Colors.green : Colors.orange,
-                        letterSpacing: 1.1
+                        letterSpacing: 1.1,
                       ),
                     ),
                     Text(
@@ -622,7 +752,10 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
                 const SizedBox(height: 4),
                 Text(
                   item.keterangan ?? '-',
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Row(
@@ -631,14 +764,20 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
                     Text(
                       '${isPayment ? '- ' : '+ '}${CurrencyFormatter.formatRupiah(item.nominal)}',
                       style: TextStyle(
-                        color: isPayment ? Colors.green[700] : Colors.orange[800],
+                        color: isPayment
+                            ? Colors.green[700]
+                            : Colors.orange[800],
                         fontWeight: FontWeight.w800,
                         fontSize: 15,
                       ),
                     ),
                     Text(
                       'Saldo: ${CurrencyFormatter.formatRupiah(item.saldoAkhir)}',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 11, fontStyle: FontStyle.italic),
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 11,
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
                   ],
                 ),
@@ -650,7 +789,11 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
     );
   }
 
-  Widget _buildInfoSection(String title, List<Widget> children, {VoidCallback? onTap}) {
+  Widget _buildInfoSection(
+    String title,
+    List<Widget> children, {
+    VoidCallback? onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -661,18 +804,20 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: onTap != null 
-              ? const Color(0xFF27AE60).withValues(alpha: 0.3) 
-              : Colors.grey[200]!,
+            color: onTap != null
+                ? const Color(0xFF27AE60).withValues(alpha: 0.3)
+                : Colors.grey[200]!,
             width: onTap != null ? 1.5 : 1,
           ),
-          boxShadow: onTap != null ? [
-            BoxShadow(
-              color: const Color(0xFF27AE60).withValues(alpha: 0.05),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            )
-          ] : null,
+          boxShadow: onTap != null
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF27AE60).withValues(alpha: 0.05),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -693,12 +838,20 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
                     const SizedBox(width: 8),
                     Text(
                       title,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF2C3E50)),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF2C3E50),
+                      ),
                     ),
                   ],
                 ),
                 if (onTap != null)
-                  const Icon(Icons.edit_outlined, size: 18, color: Color(0xFF27AE60)),
+                  const Icon(
+                    Icons.edit_outlined,
+                    size: 18,
+                    color: Color(0xFF27AE60),
+                  ),
               ],
             ),
             const SizedBox(height: 20),
@@ -709,11 +862,20 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value, {bool isMultiLine = false, Widget? trailing, Color? textColor}) {
+  Widget _buildInfoRow(
+    IconData icon,
+    String label,
+    String value, {
+    bool isMultiLine = false,
+    Widget? trailing,
+    Color? textColor,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
-        crossAxisAlignment: isMultiLine ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+        crossAxisAlignment: isMultiLine
+            ? CrossAxisAlignment.start
+            : CrossAxisAlignment.center,
         children: [
           Container(
             padding: const EdgeInsets.all(10),
@@ -728,7 +890,14 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: TextStyle(color: Colors.grey[500], fontSize: 12, fontWeight: FontWeight.w600)),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.grey[500],
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 4),
                 Text(
                   value,
@@ -758,7 +927,8 @@ class _PenjualEditBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<_PenjualEditBottomSheet> createState() => _PenjualEditBottomSheetState();
+  State<_PenjualEditBottomSheet> createState() =>
+      _PenjualEditBottomSheetState();
 }
 
 class _PenjualEditBottomSheetState extends State<_PenjualEditBottomSheet> {
@@ -776,7 +946,9 @@ class _PenjualEditBottomSheetState extends State<_PenjualEditBottomSheet> {
     _namaController = TextEditingController(text: widget.penjual.nama);
     _teleponController = TextEditingController(text: widget.penjual.telepon);
     _namaBankController = TextEditingController(text: widget.penjual.namaBank);
-    _nomorRekeningController = TextEditingController(text: widget.penjual.nomorRekening);
+    _nomorRekeningController = TextEditingController(
+      text: widget.penjual.nomorRekening,
+    );
     _alamatController = TextEditingController(text: widget.penjual.alamat);
   }
 
@@ -812,7 +984,8 @@ class _PenjualEditBottomSheetState extends State<_PenjualEditBottomSheet> {
           SuccessDialog.show(
             context,
             title: 'Data Diperbarui!',
-            message: 'Informasi Penjual ${_namaController.text} telah berhasil diperbarui.',
+            message:
+                'Informasi Penjual ${_namaController.text} telah berhasil diperbarui.',
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -822,9 +995,9 @@ class _PenjualEditBottomSheetState extends State<_PenjualEditBottomSheet> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -834,7 +1007,9 @@ class _PenjualEditBottomSheetState extends State<_PenjualEditBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
       child: Container(
         decoration: const BoxDecoration(
           color: Colors.white,
@@ -844,115 +1019,153 @@ class _PenjualEditBottomSheetState extends State<_PenjualEditBottomSheet> {
           key: _formKey,
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-          child: Column(
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Row(
-                children: [
-                  Icon(Icons.edit_outlined, color: Color(0xFF27AE60)),
-                  SizedBox(width: 8),
-                  Text(
-                    'Edit Informasi Kontak',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                      color: Color(0xFF2C3E50),
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              _buildTextField(
-                controller: _namaController,
-                label: 'Nama Penjual',
-                icon: Icons.person_outline,
-                validator: (val) => val == null || val.isEmpty ? 'Nama wajib diisi' : null,
-              ),
-              const SizedBox(height: 16),
-              _buildTextField(
-                controller: _teleponController,
-                label: 'Nomor Telepon',
-                icon: Icons.phone_outlined,
-                keyboardType: TextInputType.phone,
-              ),
-              const SizedBox(height: 16),
-              Autocomplete<String>(
-                initialValue: TextEditingValue(text: _namaBankController.text),
-                optionsBuilder: (TextEditingValue textEditingValue) {
-                  const defaultBanks = ['BCA', 'BRI', 'Mandiri', 'BNI', 'BSI', 'CIMB Niaga', 'BJB'];
-                  final provider = context.read<ResourceProvider>();
-                  final existingBanks = provider.penjuals
-                      .map((p) => p.namaBank)
-                      .where((b) => b != null && b.isNotEmpty)
-                      .map((b) => b!)
-                      .toSet();
-                  final allBanks = {...defaultBanks, ...existingBanks}.toList();
-                  
-                  if (textEditingValue.text.isEmpty) {
-                    return allBanks;
-                  }
-                  return allBanks.where((bank) => 
-                      bank.toLowerCase().contains(textEditingValue.text.toLowerCase()));
-                },
-                onSelected: (String selection) {
-                  _namaBankController.text = selection;
-                },
-                fieldViewBuilder: (context, textEditingController, focusNode, onFieldSubmitted) {
-                  textEditingController.addListener(() {
-                    _namaBankController.text = textEditingController.text;
-                  });
-                  return _buildTextField(
-                    controller: textEditingController,
-                    focusNode: focusNode,
-                    label: 'Nama Bank',
-                    icon: Icons.account_balance_outlined,
-                    placeholder: 'Pilih atau ketik nama bank baru...',
-                  );
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildTextField(
-                controller: _nomorRekeningController,
-                label: 'Nomor Rekening',
-                icon: Icons.credit_card_outlined,
-              ),
-              const SizedBox(height: 16),
-              _buildTextField(
-                controller: _alamatController,
-                label: 'Alamat',
-                icon: Icons.location_on_outlined,
-                maxLines: 3,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF27AE60),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 0,
                 ),
-                child: _isLoading 
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Text('SIMPAN PERUBAHAN', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
-              ),
-            ],
-          ),
-        ), // SingleChildScrollView
-      ), // Form
+                const SizedBox(height: 16),
+                const Row(
+                  children: [
+                    Icon(Icons.edit_outlined, color: Color(0xFF27AE60)),
+                    SizedBox(width: 8),
+                    Text(
+                      'Edit Informasi Kontak',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF2C3E50),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                _buildTextField(
+                  controller: _namaController,
+                  label: 'Nama Penjual',
+                  icon: Icons.person_outline,
+                  validator: (val) =>
+                      val == null || val.isEmpty ? 'Nama wajib diisi' : null,
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: _teleponController,
+                  label: 'Nomor Telepon (WhatsApp)',
+                  icon: Icons.phone_outlined,
+                  keyboardType: TextInputType.phone,
+                ),
+                const SizedBox(height: 16),
+                Autocomplete<String>(
+                  initialValue: TextEditingValue(
+                    text: _namaBankController.text,
+                  ),
+                  optionsBuilder: (TextEditingValue textEditingValue) {
+                    const defaultBanks = [
+                      'BCA',
+                      'BRI',
+                      'Mandiri',
+                      'BNI',
+                      'BSI',
+                      'CIMB Niaga',
+                      'BJB',
+                    ];
+                    final provider = context.read<ResourceProvider>();
+                    final existingBanks = provider.penjuals
+                        .map((p) => p.namaBank)
+                        .where((b) => b != null && b.isNotEmpty)
+                        .map((b) => b!)
+                        .toSet();
+                    final allBanks = {
+                      ...defaultBanks,
+                      ...existingBanks,
+                    }.toList();
+
+                    if (textEditingValue.text.isEmpty) {
+                      return allBanks;
+                    }
+                    return allBanks.where(
+                      (bank) => bank.toLowerCase().contains(
+                        textEditingValue.text.toLowerCase(),
+                      ),
+                    );
+                  },
+                  onSelected: (String selection) {
+                    _namaBankController.text = selection;
+                  },
+                  fieldViewBuilder:
+                      (
+                        context,
+                        textEditingController,
+                        focusNode,
+                        onFieldSubmitted,
+                      ) {
+                        textEditingController.addListener(() {
+                          _namaBankController.text = textEditingController.text;
+                        });
+                        return _buildTextField(
+                          controller: textEditingController,
+                          focusNode: focusNode,
+                          label: 'Nama Bank',
+                          icon: Icons.account_balance_outlined,
+                          placeholder: 'Pilih atau ketik nama bank baru...',
+                        );
+                      },
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: _nomorRekeningController,
+                  label: 'Nomor Rekening',
+                  icon: Icons.credit_card_outlined,
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: _alamatController,
+                  label: 'Alamat',
+                  icon: Icons.location_on_outlined,
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF27AE60),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'SIMPAN PERUBAHAN',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                ),
+              ],
+            ),
+          ), // SingleChildScrollView
+        ), // Form
       ), // Container
     ); // Padding
   }
@@ -992,4 +1205,3 @@ class _PenjualEditBottomSheetState extends State<_PenjualEditBottomSheet> {
     );
   }
 }
-
