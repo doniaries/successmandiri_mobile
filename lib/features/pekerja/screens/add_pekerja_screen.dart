@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
@@ -23,6 +24,7 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
   final _hutangController = TextEditingController();
   final _keteranganController = TextEditingController();
   final _posisiController = TextEditingController();
+  final _teleponController = TextEditingController();
 
   static const List<String> _posisiOptions = [
     'Staff',
@@ -45,6 +47,7 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
     _hutangController.dispose();
     _keteranganController.dispose();
     _posisiController.dispose();
+    _teleponController.dispose();
     super.dispose();
   }
 
@@ -77,6 +80,7 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
     final result = await provider.addPekerja({
       'nama': _namaController.text,
       'keterangan': _keteranganController.text,
+      'telepon': _teleponController.text,
       'hutang': hutangValue > 0 ? hutangValue : 0,
       'posisi': _posisiController.text.isNotEmpty ? _posisiController.text : 'Staff',
     });
@@ -137,6 +141,16 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
                 ),
                 const SizedBox(height: 20),
                 _buildTextField(
+                  controller: _teleponController,
+                  label: 'Nomor Telepon (WhatsApp) *',
+                  icon: FontAwesomeIcons.whatsapp,
+                  keyboardType: TextInputType.phone,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  validator: (val) =>
+                      val == null || val.isEmpty ? 'Nomor telepon wajib diisi' : null,
+                ),
+                const SizedBox(height: 20),
+                _buildTextField(
                   controller: _hutangController,
                   label: 'Hutang Awal (Wajib diisi, ketik 0 jika tidak ada)',
                   icon: Icons.account_balance_wallet_outlined,
@@ -189,7 +203,7 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
-    required IconData icon,
+    required dynamic icon,
     TextInputType? keyboardType,
     int maxLines = 1,
     String? Function(String?)? validator,
@@ -208,7 +222,13 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
         helperText: helperText,
         helperMaxLines: 2,
         helperStyle: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-        prefixIcon: Icon(icon, color: const Color(0xFF8E44AD), size: 20),
+        prefixIcon: icon.runtimeType.toString().contains('FaIcon') 
+            ? Container(
+                width: 48,
+                alignment: Alignment.center,
+                child: FaIcon(icon, color: const Color(0xFF8E44AD), size: 20),
+              )
+            : Icon(icon, color: const Color(0xFF8E44AD), size: 20),
         prefixText: prefixText,
         prefixStyle: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
