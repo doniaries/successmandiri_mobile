@@ -131,20 +131,27 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
               children: [
                 _buildTextField(
                   controller: _namaController,
-                  label: 'Nama Supir',
-                  icon: Icons.person_rounded,
+                  label: 'Nama *',
+                  icon: Icons.person_outline,
+                  textInputAction: TextInputAction.next,
                   validator: (val) =>
                       val == null || val.isEmpty ? 'Nama wajib diisi' : null,
                 ),
                 const SizedBox(height: 20),
                 _buildTextField(
                   controller: _teleponController,
-                  label: 'Nomor Telepon',
+                  label: 'Nomor Telepon *',
+                  hintText: '08xxx',
                   icon: Icons.phone_outlined,
                   keyboardType: TextInputType.phone,
+                  textInputAction: TextInputAction.next,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   validator: (val) {
                     if (val == null || val.isEmpty) return 'Nomor telepon wajib diisi';
                     final digits = val.replaceAll(RegExp(r'\D'), '');
+                    if (!digits.startsWith('08') && !digits.startsWith('628') && !digits.startsWith('8')) {
+                      return 'Nomor harus diawali 08, 8, atau 628';
+                    }
                     if (digits.length < 10) return 'Minimal 10 digit';
                     if (digits.length > 15) return 'Maksimal 15 digit';
                     return null;
@@ -156,6 +163,7 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
                   label: 'Hutang Awal (Wajib diisi, ketik 0 jika tidak ada)',
                   icon: Icons.account_balance_wallet_outlined,
                   keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.next,
                   inputFormatters: [CurrencyInputFormatter()],
                   prefixText: 'Rp ',
                   helperText: '⚠️ Wajib diisi jika ada hutang awal. Jika tidak ada, isi 0.',
@@ -171,6 +179,7 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
                   controller: _keteranganController,
                   label: 'Keterangan / Catatan',
                   icon: Icons.note_rounded,
+                  textInputAction: TextInputAction.done,
                   maxLines: 3,
                 ),
                 const SizedBox(height: 40),
@@ -197,15 +206,19 @@ class _AddSupirScreenState extends State<AddSupirScreen> {
     List<TextInputFormatter>? inputFormatters,
     String? prefixText,
     String? helperText,
+    String? hintText,
+    TextInputAction? textInputAction,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
+      textInputAction: textInputAction,
       maxLines: maxLines,
       validator: validator,
       inputFormatters: inputFormatters,
       decoration: InputDecoration(
         labelText: label,
+        hintText: hintText,
         helperText: helperText,
         helperMaxLines: 2,
         helperStyle: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),

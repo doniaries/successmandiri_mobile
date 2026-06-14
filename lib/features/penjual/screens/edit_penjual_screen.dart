@@ -109,19 +109,26 @@ class _EditPenjualScreenState extends State<EditPenjualScreen> {
             children: [
               _buildTextField(
                 controller: _namaController,
-                label: 'Nama Penjual',
+                label: 'Nama *',
                 icon: Icons.person_outline,
+                textInputAction: TextInputAction.next,
                 validator: (val) => val == null || val.isEmpty ? 'Nama wajib diisi' : null,
               ),
               const SizedBox(height: 20),
                 _buildTextField(
                   controller: _teleponController,
-                  label: 'Nomor Telepon',
+                  label: 'Nomor Telepon *',
+                  hintText: '08xxx',
                   icon: Icons.phone_outlined,
                   keyboardType: TextInputType.phone,
+                  textInputAction: TextInputAction.next,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   validator: (val) {
                     if (val == null || val.isEmpty) return 'Nomor telepon wajib diisi';
                     final digits = val.replaceAll(RegExp(r'\D'), '');
+                    if (!digits.startsWith('08') && !digits.startsWith('628') && !digits.startsWith('8')) {
+                      return 'Nomor harus diawali 08, 8, atau 628';
+                    }
                     if (digits.length < 10) return 'Minimal 10 digit';
                     if (digits.length > 15) return 'Maksimal 15 digit';
                     return null;
@@ -159,20 +166,23 @@ class _EditPenjualScreenState extends State<EditPenjualScreen> {
                     label: 'Nama Bank',
                     icon: Icons.account_balance_outlined,
                     placeholder: 'Pilih atau ketik nama bank baru...',
+                    hintText: 'Pilih atau ketik nama bank baru...',
                   );
                 },
               ),
               const SizedBox(height: 20),
               _buildTextField(
                 controller: _nomorRekeningController,
-                label: 'Nomor Rekening',
+                label: 'Nomor Rekening (Opsional)',
                 icon: Icons.credit_card_outlined,
+                textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 20),
               _buildTextField(
                 controller: _alamatController,
                 label: 'Alamat',
                 icon: Icons.location_on_outlined,
+                textInputAction: TextInputAction.done,
                 maxLines: 3,
               ),
               const SizedBox(height: 40),
@@ -203,18 +213,23 @@ class _EditPenjualScreenState extends State<EditPenjualScreen> {
     TextInputType? keyboardType,
     int maxLines = 1,
     String? Function(String?)? validator,
+    List<TextInputFormatter>? inputFormatters,
     String? placeholder,
+    String? hintText,
     FocusNode? focusNode,
+    TextInputAction? textInputAction,
   }) {
     return TextFormField(
       controller: controller,
       focusNode: focusNode,
       keyboardType: keyboardType,
+      textInputAction: textInputAction,
       maxLines: maxLines,
       validator: validator,
+      inputFormatters: inputFormatters,
       decoration: InputDecoration(
         labelText: label,
-        hintText: placeholder,
+        hintText: hintText ?? placeholder,
         prefixIcon: Icon(icon, color: const Color(0xFF27AE60)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
