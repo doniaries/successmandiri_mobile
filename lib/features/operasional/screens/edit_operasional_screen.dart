@@ -502,8 +502,11 @@ class _EditOperasionalScreenState extends State<EditOperasionalScreen> {
                   controller: _keteranganController,
                   maxLines: 3,
                   decoration: _inputDecoration(
-                    'Keterangan',
+                    'Keterangan *',
                     Icons.note_rounded,
+                  ).copyWith(
+                    helperText: 'Wajib diisi dengan detail agar lebih informatif (contoh: Pembelian BBM mobil A)',
+                    helperMaxLines: 2,
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
