@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:sawitappmobile/features/pekerja/models/pekerja_model.dart';
@@ -53,6 +55,20 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
     final Uri launchUri = Uri(scheme: 'tel', path: phoneNumber);
     if (await canLaunchUrl(launchUri)) {
       await launchUrl(launchUri);
+    }
+  }
+
+  Future<void> _openWhatsApp(String phoneNumber) async {
+    // bersihkan prefix dan format menjadi 628...
+    String cleanPhone = phoneNumber.replaceAll(RegExp(r'[^0-9]'), '');
+    if (cleanPhone.startsWith('0')) {
+      cleanPhone = '62${cleanPhone.substring(1)}';
+    } else if (cleanPhone.startsWith('8')) {
+      cleanPhone = '62$cleanPhone';
+    }
+    final Uri waUri = Uri.parse('https://wa.me/$cleanPhone');
+    if (await canLaunchUrl(waUri)) {
+      await launchUrl(waUri, mode: LaunchMode.externalApplication);
     }
   }
 
@@ -534,11 +550,22 @@ class _PekerjaDetailScreenState extends State<PekerjaDetailScreen> {
                 Icons.phone_android_rounded,
                 'Telepon',
                 _currentPekerja.telepon ?? '-',
-                trailing: _currentPekerja.telepon != null
-                    ? IconButton(
-                        icon: const Icon(Icons.call, color: Color(0xFF8E44AD)),
-                        onPressed: () =>
-                            _makePhoneCall(_currentPekerja.telepon!),
+                trailing: _currentPekerja.telepon != null && _currentPekerja.telepon!.isNotEmpty
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const FaIcon(
+                              FontAwesomeIcons.whatsapp,
+                              color: Color(0xFF25D366),
+                            ),
+                            onPressed: () => _openWhatsApp(_currentPekerja.telepon!),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.call, color: Color(0xFF8E44AD)),
+                            onPressed: () => _makePhoneCall(_currentPekerja.telepon!),
+                          ),
+                        ],
                       )
                     : null,
               ),
@@ -1020,9 +1047,12 @@ class _PekerjaEditBottomSheetState extends State<_PekerjaEditBottomSheet> {
               const SizedBox(height: 16),
               _buildTextField(
                 controller: _teleponController,
-                label: 'Nomor Telepon (WhatsApp)',
-                icon: Icons.phone_outlined,
+                label: 'Nomor Telepon (WhatsApp) *',
+                icon: FontAwesomeIcons.whatsapp,
                 keyboardType: TextInputType.phone,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                validator: (val) =>
+                    val == null || val.isEmpty ? 'Nomor telepon wajib diisi' : null,
               ),
               const SizedBox(height: 16),
               _buildAutocompleteField(

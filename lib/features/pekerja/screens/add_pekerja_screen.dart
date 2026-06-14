@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:sawitappmobile/core/utils/currency_formatter.dart';
 import 'package:sawitappmobile/shared/providers/resource_provider.dart';
@@ -23,6 +24,7 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
   final _hutangController = TextEditingController();
   final _keteranganController = TextEditingController();
   final _posisiController = TextEditingController();
+  final _teleponController = TextEditingController();
 
   static const List<String> _posisiOptions = [
     'Staff',
@@ -45,6 +47,7 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
     _hutangController.dispose();
     _keteranganController.dispose();
     _posisiController.dispose();
+    _teleponController.dispose();
     super.dispose();
   }
 
@@ -77,6 +80,7 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
     final result = await provider.addPekerja({
       'nama': _namaController.text,
       'keterangan': _keteranganController.text,
+      'telepon': _teleponController.text,
       'hutang': hutangValue > 0 ? hutangValue : 0,
       'posisi': _posisiController.text.isNotEmpty ? _posisiController.text : 'Staff',
     });
@@ -134,6 +138,16 @@ class _AddPekerjaScreenState extends State<AddPekerjaScreen> {
                   icon: Icons.person_rounded,
                   validator: (val) =>
                       val == null || val.isEmpty ? 'Nama wajib diisi' : null,
+                ),
+                const SizedBox(height: 20),
+                _buildTextField(
+                  controller: _teleponController,
+                  label: 'Nomor Telepon (WhatsApp) *',
+                  icon: FontAwesomeIcons.whatsapp,
+                  keyboardType: TextInputType.phone,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  validator: (val) =>
+                      val == null || val.isEmpty ? 'Nomor telepon wajib diisi' : null,
                 ),
                 const SizedBox(height: 20),
                 _buildTextField(
