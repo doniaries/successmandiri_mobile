@@ -14,31 +14,22 @@ class DashboardProvider with ChangeNotifier {
   String? get error => _error;
 
   Future<void> fetchSummary({DateTime? filterDate}) async {
-    final dateStr = filterDate != null 
+    final dateStr = filterDate != null
         ? "${filterDate.year}-${filterDate.month.toString().padLeft(2, '0')}-${filterDate.day.toString().padLeft(2, '0')}"
         : null;
 
-    if (_summary == null || filterDate != null) {
-      _isLoading = true;
-      notifyListeners();
-      
-      try {
-        final cached = await _repository.getSummary(date: dateStr, forceOfflineFallback: true);
-        if (filterDate != null && _summary?.saldo != null) {
-          _summary = cached.copyWith(saldo: _summary!.saldo);
-        } else {
-          _summary = cached;
-        }
-        _isLoading = false;
-        notifyListeners();
-      } catch (_) {}
-    }
-    
     _error = null;
 
+    // Jika belum ada data sama sekali, tampilkan loading
+    if (_summary == null) {
+      _isLoading = true;
+      notifyListeners();
+    }
+
     try {
+      // Satu kali fetch: repository sudah handle cache → API fallback
       final newSummary = await _repository.getSummary(date: dateStr);
-      
+
       if (filterDate != null && _summary?.saldo != null) {
         _summary = newSummary.copyWith(saldo: _summary!.saldo);
       } else {

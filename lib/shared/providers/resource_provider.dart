@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -525,10 +526,15 @@ class ResourceProvider with ChangeNotifier {
     // Cek role dulu agar bisa digunakan dalam parallel fetch
     final isLeader = await _isUserLeader();
 
-    // Parallel fetch semua resource sekaligus → jauh lebih cepat
-    // syncMasterData dijalankan bersamaan, bukan sebelumnya
+    // Langkah 1: Sync data dari server ke SQLite lokal (background cache update)
+    // Dijalankan tanpa await agar tidak blocking UI — data cache terbaru muncul
+    // saat fetchResources() dipanggil berikutnya (via getMergedOfflineData)
+    unawaited(syncMasterData());
+
+    // Langkah 2: Fetch semua resource ke UI secara paralel
+    // fetchResources() akan membaca dari cache lokal (SQLite) terlebih dahulu
+    // lalu silent-refresh dari API di background
     final futures = <Future>[
-      syncMasterData(),
       fetchResources('penjual', refresh: true),
       fetchResources('supir', refresh: true),
       fetchResources('pekerja', refresh: true),
