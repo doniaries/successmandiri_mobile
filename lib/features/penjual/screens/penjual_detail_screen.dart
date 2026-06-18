@@ -560,6 +560,14 @@ class _PenjualDetailScreenState extends State<PenjualDetailScreen> {
                 isMultiLine: true,
               ),
               _buildInfoRow(
+                Icons.calendar_today_rounded,
+                'Tanggal Ditambahkan',
+                _currentPenjual.createdAt != null
+                    ? DateFormat('dd MMM yyyy, HH:mm').format(_currentPenjual.createdAt!)
+                    : '-',
+              ),
+
+              _buildInfoRow(
                 Icons.account_balance_rounded,
                 'Nama Bank',
                 _currentPenjual.namaBank ?? '-',

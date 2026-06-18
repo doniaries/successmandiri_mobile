@@ -559,6 +559,13 @@ class _SupirDetailScreenState extends State<SupirDetailScreen> {
                 _currentSupir.alamat ?? '-',
                 isMultiLine: true,
               ),
+              _buildInfoRow(
+                Icons.calendar_today_rounded,
+                'Tanggal Ditambahkan',
+                _currentSupir.createdAt != null
+                    ? DateFormat('dd MMM yyyy, HH:mm').format(_currentSupir.createdAt!)
+                    : '-',
+              ),
 
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 10),
