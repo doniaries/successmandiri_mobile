@@ -188,7 +188,7 @@ class ResourceProvider with ChangeNotifier {
   }
 
   Future<void> syncMasterData() async {
-    await _repository.syncService.performFullSync(_repository);
+    await _repository.syncService.performFullSync(_repository, force: true);
     notifyListeners();
   }
 

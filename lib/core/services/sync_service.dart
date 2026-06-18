@@ -523,6 +523,10 @@ class SyncService {
     return 'Data';
   }
 
+  // Interval minimum sync per-table: 5 menit
+  // Jika sync terakhir < 5 menit yang lalu, skip agar tidak redundan
+  static const int _minSyncIntervalMinutes = 5;
+
   Future<String?> getLastSyncTimestamp(String table) async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('last_sync_$table');
@@ -531,6 +535,26 @@ class SyncService {
   Future<void> setLastSyncTimestamp(String table, String timestamp) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('last_sync_$table', timestamp);
+  }
+
+  /// Cek apakah tabel perlu di-sync ulang.
+  /// Return true jika belum pernah sync, atau sudah melewati [_minSyncIntervalMinutes].
+  /// Jika [force] = true, selalu return true (untuk pull-to-refresh manual).
+  Future<bool> _shouldSync(String table, {bool force = false}) async {
+    if (force) return true;
+    final lastSyncStr = await getLastSyncTimestamp(table);
+    if (lastSyncStr == null) return true; // Belum pernah sync
+    try {
+      final lastSync = DateTime.parse(lastSyncStr).toLocal();
+      final diff = DateTime.now().difference(lastSync);
+      final shouldSync = diff.inMinutes >= _minSyncIntervalMinutes;
+      if (!shouldSync) {
+        debugPrint('SyncService._shouldSync: skipping $table (last synced ${diff.inSeconds}s ago, min=${_minSyncIntervalMinutes}m)');
+      }
+      return shouldSync;
+    } catch (_) {
+      return true;
+    }
   }
 
   Future<void> cacheDataIncremental(
@@ -609,70 +633,92 @@ class SyncService {
     }
   }
 
-  Future<void> syncMasterData(dynamic repository) async {
+  Future<void> syncMasterData(dynamic repository, {bool force = false}) async {
+    // Jalankan parallel, tapi setiap tabel skip jika baru saja di-sync
+    await Future.wait([
+      _syncTableIfNeeded('penjual', () => repository.getPenjuals(), force: force),
+      _syncTableIfNeeded('supir', () => repository.getSupirs(), force: force),
+      _syncTableIfNeeded('pekerja', () => repository.getPekerjas(), force: force),
+      _syncTableIfNeeded('kendaraan', () => repository.getKendaraans(), force: force),
+    ], eagerError: false);
+  }
+
+  /// Helper: jalankan [syncFn] hanya jika [_shouldSync] return true
+  Future<void> _syncTableIfNeeded(String table, Future<void> Function() syncFn, {bool force = false}) async {
     try {
-      await repository.getPenjuals();
-      await repository.getSupirs();
-      await repository.getPekerjas();
-      await repository.getKendaraans();
+      if (!await _shouldSync(table, force: force)) return;
+      await syncFn();
     } catch (e) {
-      debugPrint('Error syncing master data tables: $e');
+      debugPrint('Error syncing $table: $e');
     }
   }
 
-  Future<void> syncOperasionalAndSaldo() async {
-    try {
-      final lastSyncOps = await getLastSyncTimestamp('operasional');
-      final queryParamsOps = <String, dynamic>{'all': true};
-      if (lastSyncOps != null) queryParamsOps['updated_since'] = lastSyncOps;
-      
-      final resOps = await _apiClient.dio.get('/operasional', queryParameters: queryParamsOps);
-      final dataOps = resOps.data['data'] ?? [];
-      final activeIdsOps = resOps.data['active_ids'];
-      await cacheDataIncremental('operasional', dataOps, activeIdsOps);
-    } catch(e) {
+  Future<void> syncOperasionalAndSaldo({bool force = false}) async {
+    // Skip jika kedua tabel baru saja di-sync
+    final shouldOps = await _shouldSync('operasional', force: force);
+    final shouldTs = await _shouldSync('tambah_saldo', force: force);
+    if (!shouldOps && !shouldTs) return;
+
+    if (shouldOps) {
+      try {
+        final lastSyncOps = await getLastSyncTimestamp('operasional');
+        final queryParamsOps = <String, dynamic>{'all': true};
+        if (lastSyncOps != null) queryParamsOps['updated_since'] = lastSyncOps;
+        final resOps = await _apiClient.dio.get('/operasional', queryParameters: queryParamsOps);
+        final dataOps = resOps.data['data'] ?? [];
+        final activeIdsOps = resOps.data['active_ids'];
+        await cacheDataIncremental('operasional', dataOps, activeIdsOps);
+      } catch (e) {
         debugPrint('Error syncing operasional incremental: $e');
+      }
     }
 
-    try {
-      final lastSyncTs = await getLastSyncTimestamp('tambah_saldo');
-      final queryParamsTs = <String, dynamic>{'all': true};
-      if (lastSyncTs != null) queryParamsTs['updated_since'] = lastSyncTs;
-      
-      final resTs = await _apiClient.dio.get('/tambah-saldo', queryParameters: queryParamsTs);
-      final dataTs = resTs.data['data'] ?? [];
-      final activeIdsTs = resTs.data['active_ids'];
-      await cacheDataIncremental('tambah_saldo', dataTs, activeIdsTs);
-    } catch(e) {
+    if (shouldTs) {
+      try {
+        final lastSyncTs = await getLastSyncTimestamp('tambah_saldo');
+        final queryParamsTs = <String, dynamic>{'all': true};
+        if (lastSyncTs != null) queryParamsTs['updated_since'] = lastSyncTs;
+        final resTs = await _apiClient.dio.get('/tambah-saldo', queryParameters: queryParamsTs);
+        final dataTs = resTs.data['data'] ?? [];
+        final activeIdsTs = resTs.data['active_ids'];
+        await cacheDataIncremental('tambah_saldo', dataTs, activeIdsTs);
+      } catch (e) {
         debugPrint('Error syncing tambah_saldo incremental: $e');
+      }
     }
   }
 
-  Future<void> syncTransactionsAndJurnal() async {
-    try {
-      final lastSyncDo = await getLastSyncTimestamp('transaksi_do');
-      final queryParamsDo = <String, dynamic>{'all': true};
-      if (lastSyncDo != null) queryParamsDo['updated_since'] = lastSyncDo;
-      
-      final resDo = await _apiClient.dio.get('/transaksi-do', queryParameters: queryParamsDo);
-      final dataDo = resDo.data['data'] ?? [];
-      final activeIdsDo = resDo.data['active_ids'];
-      await cacheDataIncremental('transaksi_do', dataDo, activeIdsDo);
-    } catch(e) {
+  Future<void> syncTransactionsAndJurnal({bool force = false}) async {
+    final shouldDo = await _shouldSync('transaksi_do', force: force);
+    final shouldJurnal = await _shouldSync('jurnal_keuangan', force: force);
+    if (!shouldDo && !shouldJurnal) return;
+
+    if (shouldDo) {
+      try {
+        final lastSyncDo = await getLastSyncTimestamp('transaksi_do');
+        final queryParamsDo = <String, dynamic>{'all': true};
+        if (lastSyncDo != null) queryParamsDo['updated_since'] = lastSyncDo;
+        final resDo = await _apiClient.dio.get('/transaksi-do', queryParameters: queryParamsDo);
+        final dataDo = resDo.data['data'] ?? [];
+        final activeIdsDo = resDo.data['active_ids'];
+        await cacheDataIncremental('transaksi_do', dataDo, activeIdsDo);
+      } catch (e) {
         debugPrint('Error syncing transaksi_do incremental: $e');
+      }
     }
 
-    try {
-      final lastSyncJurnal = await getLastSyncTimestamp('jurnal_keuangan');
-      final queryParamsJurnal = <String, dynamic>{'all': true};
-      if (lastSyncJurnal != null) queryParamsJurnal['updated_since'] = lastSyncJurnal;
-      
-      final resJurnal = await _apiClient.dio.get('/jurnal-keuangan', queryParameters: queryParamsJurnal);
-      final dataJurnal = resJurnal.data['data'] ?? [];
-      final activeIdsJurnal = resJurnal.data['active_ids'];
-      await cacheDataIncremental('jurnal_keuangan', dataJurnal, activeIdsJurnal);
-    } catch(e) {
+    if (shouldJurnal) {
+      try {
+        final lastSyncJurnal = await getLastSyncTimestamp('jurnal_keuangan');
+        final queryParamsJurnal = <String, dynamic>{'all': true};
+        if (lastSyncJurnal != null) queryParamsJurnal['updated_since'] = lastSyncJurnal;
+        final resJurnal = await _apiClient.dio.get('/jurnal-keuangan', queryParameters: queryParamsJurnal);
+        final dataJurnal = resJurnal.data['data'] ?? [];
+        final activeIdsJurnal = resJurnal.data['active_ids'];
+        await cacheDataIncremental('jurnal_keuangan', dataJurnal, activeIdsJurnal);
+      } catch (e) {
         debugPrint('Error syncing jurnal_keuangan incremental: $e');
+      }
     }
   }
 
@@ -729,23 +775,26 @@ class SyncService {
   }
 
   // Method to sync all master data from web to local DB
-  Future<void> performFullSync(dynamic repository) async {
+  // [force] = true → abaikan throttle (digunakan saat pull-to-refresh manual)
+  // [force] = false → skip tabel yang baru saja di-sync (auto background sync)
+  Future<void> performFullSync(dynamic repository, {bool force = false}) async {
     final connectivity = await Connectivity().checkConnectivity();
     if (connectivity.contains(ConnectivityResult.none)) return;
 
     try {
-      // Jalankan semua sync secara paralel: master data + transaksi + users sekaligus
+      // Jalankan semua sync secara paralel, masing-masing dengan throttle sendiri
       await Future.wait([
-        syncMasterData(repository),
-        syncOperasionalAndSaldo(),
-        syncTransactionsAndJurnal(),
-        syncUsersAndCompanies(),
+        syncMasterData(repository, force: force),
+        syncOperasionalAndSaldo(force: force),
+        syncTransactionsAndJurnal(force: force),
+        // Users & companies: cukup sync 1x per session, jarang berubah
+        if (await _shouldSync('users', force: force)) syncUsersAndCompanies(),
       ], eagerError: false);
 
       // Beri waktu Main Thread untuk bernapas kembali setelah sinkronisasi panjang
       await Future.delayed(const Duration(milliseconds: 50));
 
-      debugPrint('Full sync completed successfully');
+      debugPrint('Full sync completed successfully${force ? " (forced)" : " (throttled)"}');
     } catch (e) {
       debugPrint('Full sync failed: $e');
     }
