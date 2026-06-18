@@ -522,18 +522,25 @@ class ResourceProvider with ChangeNotifier {
   }
 
   Future<void> fetchAllResources() async {
-    // Sequential fetching to prevent local dev server request queuing timeout
-    syncMasterData();
-    await fetchResources('penjual', refresh: true);
-    await fetchResources('supir', refresh: true);
-    await fetchResources('pekerja', refresh: true);
-    await fetchResources('kendaraan', refresh: true);
-    await fetchResources('operasional', refresh: true);
-
+    // Cek role dulu agar bisa digunakan dalam parallel fetch
     final isLeader = await _isUserLeader();
+
+    // Parallel fetch semua resource sekaligus → jauh lebih cepat
+    // syncMasterData dijalankan bersamaan, bukan sebelumnya
+    final futures = <Future>[
+      syncMasterData(),
+      fetchResources('penjual', refresh: true),
+      fetchResources('supir', refresh: true),
+      fetchResources('pekerja', refresh: true),
+      fetchResources('kendaraan', refresh: true),
+      fetchResources('operasional', refresh: true),
+    ];
+
     if (isLeader) {
-      await fetchResources('jurnal_keuangan', refresh: true);
+      futures.add(fetchResources('jurnal_keuangan', refresh: true));
     }
+
+    await Future.wait(futures, eagerError: false);
   }
 
   Future<void> markAsSeen(String type) async {

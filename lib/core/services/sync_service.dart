@@ -93,12 +93,14 @@ class SyncService {
 
   /// Cek apakah internet benar-benar bisa dijangkau (bukan hanya ada sinyal)
   Future<bool> isInternetReachable() async {
+    // Timeout singkat agar tidak blocking sync terlalu lama
+    const timeoutDuration = Duration(seconds: 5);
     try {
       final response = await _apiClient.dio.get(
         '/ping',
         options: Options(
-          sendTimeout: const Duration(seconds: 30),
-          receiveTimeout: const Duration(seconds: 30),
+          sendTimeout: timeoutDuration,
+          receiveTimeout: timeoutDuration,
         ),
       );
       return response.statusCode != null;
@@ -108,8 +110,8 @@ class SyncService {
         await _apiClient.dio.head(
           '/',
           options: Options(
-            sendTimeout: const Duration(seconds: 30),
-            receiveTimeout: const Duration(seconds: 30),
+            sendTimeout: timeoutDuration,
+            receiveTimeout: timeoutDuration,
             validateStatus: (_) => true, // terima status apapun
           ),
         );
@@ -435,37 +437,17 @@ class SyncService {
               listen: false,
             );
 
-            // Prefer sequential refresh to reduce race conditions
-            debugPrint(
-              'SyncService.syncNow: calling ResourceProvider.fetchAllResources',
-            );
-            await rp.fetchAllResources();
-            // Ensure jurnal_keuangan is refreshed for ALL users (not only leaders)
-            try {
-              debugPrint(
-                'SyncService.syncNow: forcing jurnal_keuangan refresh',
-              );
-              await rp.fetchResources('jurnal_keuangan', refresh: true);
-              debugPrint(
-                'SyncService.syncNow: jurnal_keuangan refresh completed',
-              );
-            } catch (e) {
-              debugPrint(
-                'SyncService.syncNow: jurnal_keuangan refresh failed: $e',
-              );
-            }
-            debugPrint(
-              'SyncService.syncNow: calling DashboardProvider.fetchSummary',
-            );
-            await dp.fetchSummary();
-            debugPrint(
-              'SyncService.syncNow: calling TambahSaldoProvider.fetchData',
-            );
-            await tp.fetchData(isRefresh: true, useCache: false);
-            debugPrint(
-              'SyncService.syncNow: calling TransaksiDoProvider.fetchTransactions',
-            );
-            await doProv.fetchTransactions();
+            debugPrint('SyncService.syncNow: refreshing all providers in parallel');
+
+            // Parallel refresh: jauh lebih cepat daripada sequential await
+            await Future.wait([
+              rp.fetchAllResources(),
+              dp.fetchSummary(),
+              tp.fetchData(isRefresh: true, useCache: false),
+              doProv.fetchTransactions(),
+            ], eagerError: false);
+
+            debugPrint('SyncService.syncNow: all providers refreshed');
           }
         } catch (_) {}
 
@@ -752,17 +734,13 @@ class SyncService {
     if (connectivity.contains(ConnectivityResult.none)) return;
 
     try {
-      // 1. Sinkronisasi Data Master
-      await syncMasterData(repository);
-      
-      // 2. Sinkronisasi Operasional & Tambah Saldo
-      await syncOperasionalAndSaldo();
-      
-      // 3. Sinkronisasi Transaksi & Jurnal
-      await syncTransactionsAndJurnal();
-
-      // 4. Sinkronisasi User & Perusahaan
-      await syncUsersAndCompanies();
+      // Jalankan semua sync secara paralel: master data + transaksi + users sekaligus
+      await Future.wait([
+        syncMasterData(repository),
+        syncOperasionalAndSaldo(),
+        syncTransactionsAndJurnal(),
+        syncUsersAndCompanies(),
+      ], eagerError: false);
 
       // Beri waktu Main Thread untuk bernapas kembali setelah sinkronisasi panjang
       await Future.delayed(const Duration(milliseconds: 50));

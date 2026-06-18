@@ -38,8 +38,8 @@ class ApiClient {
 
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
+        // Tidak perlu prefs.reload() setiap request — token hanya berubah saat login/logout
         final prefs = await SharedPreferences.getInstance();
-        await prefs.reload(); // Pastikan memory isolate ini sinkron dengan disk/main isolate
         final token = prefs.getString('auth_token');
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
@@ -82,16 +82,15 @@ class ApiClient {
       },
     ));
 
-    // Menambahkan RetryInterceptor untuk mencoba ulang otomatis saat timeout / gagal koneksi
+    // RetryInterceptor: delay lebih singkat agar recovery lebih cepat
     _dio.interceptors.add(
       RetryInterceptor(
         dio: _dio,
-        logPrint: print, // Tampilkan log retry
-        retries: 3, // Coba ulang maksimal 3 kali
+        logPrint: debugPrint,
+        retries: 2, // 2 retry sudah cukup untuk network transient error
         retryDelays: const [
-          Duration(seconds: 1), // Tunggu 1 detik sebelum percobaan kedua
-          Duration(seconds: 2), // Tunggu 2 detik sebelum percobaan ketiga
-          Duration(seconds: 3), // Tunggu 3 detik sebelum percobaan keempat
+          Duration(milliseconds: 500), // Retry cepat pertama
+          Duration(seconds: 1),        // Retry kedua dengan jeda 1 detik
         ],
       ),
     );
