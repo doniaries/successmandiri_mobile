@@ -29,6 +29,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sawitappmobile/features/auth/screens/login_screen.dart';
 import 'package:sawitappmobile/shared/screens/main_navigation_screen.dart';
 
+
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {

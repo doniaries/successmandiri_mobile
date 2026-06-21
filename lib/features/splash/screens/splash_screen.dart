@@ -77,6 +77,9 @@ class _SplashScreenState extends State<SplashScreen> {
           // Trigger fetch settings di background (non-blocking)
           resourceProvider.fetchAppSettings().catchError((_) => null);
 
+          // Berikan waktu jeda sedikit agar animasi splash screen terlihat penuh
+          await Future.delayed(const Duration(milliseconds: 2000));
+
           if (mounted) {
             _navigateTo(const MainNavigationScreen());
             return;
@@ -129,8 +132,8 @@ class _SplashScreenState extends State<SplashScreen> {
       debugPrint('[Splash] Step 4: Loading app settings in background...');
       resourceProvider.fetchAppSettings().catchError((_) => null);
 
-      // Berikan waktu jeda sedikit agar UI tidak kedip (terlalu cepat)
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Berikan waktu jeda sedikit agar UI tidak kedip dan animasi selesai
+      await Future.delayed(const Duration(milliseconds: 2000));
 
       if (mounted) {
         _navigateTo(
@@ -152,9 +155,15 @@ class _SplashScreenState extends State<SplashScreen> {
   void _navigateTo(Widget screen) {
     if (!mounted) return;
     setState(() => _isLoading = false);
-    Navigator.of(
-      context,
-    ).pushReplacement(MaterialPageRoute(builder: (context) => screen));
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => screen,
+        transitionDuration: const Duration(milliseconds: 800),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+      ),
+    );
   }
 
   @override
@@ -180,65 +189,84 @@ class _SplashScreenState extends State<SplashScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Spacer(flex: 3),
-                  // Static Logo (No Animation, No Shimmer)
-                  Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
+                  // Animated Logo (Scale, Fade, and Bounce)
+                  TweenAnimationBuilder<double>(
+                    tween: Tween<double>(begin: 0.0, end: 1.0),
+                    duration: const Duration(milliseconds: 1800),
+                    curve: Curves.elasticOut,
+                    builder: (context, value, child) {
+                      // Terbang masuk dari atas (luar layar) ke posisi awal
+                      return Transform.translate(
+                        offset: Offset(
+                          0,
+                          -MediaQuery.of(context).size.height * (1 - value),
                         ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Image.asset(
-                            'assets/images/logo.png',
-                            height: 180,
-                            width: 180,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const Icon(
-                                  Icons.business_rounded,
-                                  size: 200,
-                                  color: Color(0xFF01579B),
-                                ),
+                        child: Opacity(
+                          // Agar saat awal di luar layar, tampil pelan-pelan
+                          opacity: value.clamp(0.0, 1.0),
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Image.asset(
+                              'assets/images/logo.png',
+                              height: 180,
+                              width: 180,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                    Icons.business_rounded,
+                                    size: 200,
+                                    color: Color(0xFF01579B),
+                                  ),
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        "SUCCESS MOBILE",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.5,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black26,
-                              blurRadius: 10,
-                              offset: Offset(0, 4),
-                            ),
-                          ],
+                        const SizedBox(height: 12),
+                        const Text(
+                          "SUCCESS MOBILE",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.5,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black26,
+                                blurRadius: 10,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const Text(
-                        "Aplikasi Transaksi Sawit",
-                        style: TextStyle(
-                          color: Color(0xFFB3E5FC),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 1.5,
+                        const Text(
+                          "Aplikasi Transaksi Sawit",
+                          style: TextStyle(
+                            color: Color(0xFFB3E5FC),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 1.5,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const Spacer(flex: 2),
 
