@@ -1,6 +1,6 @@
 @echo off
 cd /d "%~dp0"
-title Sukses Mandiri - Build Android APK
+title Success Mobile - Build Android APK
 echo =============================================================
 echo =============================================================
 echo               MEMULAI PROSES BUILD ANDROID APK
@@ -24,10 +24,9 @@ for /f "tokens=1,2,3 delims=." %%a in ("%BASE_VER%") do (
     set V_PAT=%%c
 )
 
-:: Generate Build Number otomatis dari Tanggal dan Jam (Format: YYMMDDHH)
-:: Contoh hasil: 26062201 (Tahun 26, Bulan 06, Tanggal 22, Jam 01)
-:: Format ini dijamin unik, selalu naik (karena waktu berjalan maju), dan aman dari batas maksimal Android (2.1 milyar)
-for /f "usebackq" %%i in (`powershell -NoProfile -Command "Get-Date -Format 'yyMMddHH'"`) do set NEW_BUILD_NUM=%%i
+:: Generate Build Number otomatis berdasarkan total menit sejak Epoch (Unix Timestamp)
+:: Menjamin angka unik yang selalu naik setiap menitnya, dan tetap di bawah batas maksimal Android (2.1 milyar)
+for /f "usebackq" %%i in (`powershell -NoProfile -Command "[math]::Floor([DateTimeOffset]::Now.ToUnixTimeSeconds() / 60)"`) do set NEW_BUILD_NUM=%%i
 
 set BUILD_NAME=
 set /p BUILD_NAME="1. Masukkan Versi Aplikasi (3 digit, contoh: 1.5.4) [Tekan Enter untuk %BASE_VER%]: "
@@ -58,9 +57,9 @@ if %ERRORLEVEL% NEQ 0 goto GAGAL
 echo.
 echo 6. Menyalin dan mengubah nama APK...
 if exist "build\app\outputs\flutter-apk\app-release.apk" (
-    copy "build\app\outputs\flutter-apk\app-release.apk" "mysawit_v%BUILD_NAME%_%BUILD_NUMBER%.apk" /Y
+    copy "build\app\outputs\flutter-apk\app-release.apk" "successmobile_v%BUILD_NAME%_%BUILD_NUMBER%.apk" /Y
 ) else if exist "build\app\outputs\apk\release\app-release.apk" (
-    copy "build\app\outputs\apk\release\app-release.apk" "mysawit_v%BUILD_NAME%_%BUILD_NUMBER%.apk" /Y
+    copy "build\app\outputs\apk\release\app-release.apk" "successmobile_v%BUILD_NAME%_%BUILD_NUMBER%.apk" /Y
 ) else (
     echo [ERROR] File APK tidak ditemukan di folder build!
     goto GAGAL
@@ -72,7 +71,7 @@ echo.
 echo =============================================================
 echo [SUKSES] Build berhasil!
 echo File APK kustom Anda kini berada di folder utama proyek:
-echo -^> mysawit_v%BUILD_NAME%_%BUILD_NUMBER%.apk
+echo -^> successmobile_v%BUILD_NAME%_%BUILD_NUMBER%.apk
 echo =============================================================
 goto END
 
