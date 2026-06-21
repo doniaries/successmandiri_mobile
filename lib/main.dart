@@ -36,7 +36,7 @@ void callbackDispatcher() {
       debugPrint('Workmanager: Executing background task $task');
       final syncService = SyncService();
       await syncService.syncNow();
-      
+
       // Lakukan auto backup tiap kali task background jalan
       final backupService = BackupService();
       await backupService.automaticSilentBackup();
@@ -50,14 +50,14 @@ void callbackDispatcher() {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // 1. Inisialisasi cepat di level main
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('auth_token');
   final wizardCompleted = prefs.getBool('permission_wizard_completed') ?? false;
-  
+
   Widget initialScreen;
-  
+
   // 2. Tentukan halaman awal secara cerdas
   if (token != null && wizardCompleted) {
     initialScreen = const MainNavigationScreen();
@@ -78,23 +78,23 @@ void main() async {
   runApp(MyApp(initialScreen: initialScreen));
 
   // 4. Inisialisasi Firebase & FCM di background agar tidak menahan layar putih
-  Firebase.initializeApp().then((_) {
-    PushNotificationService.initialize();
-  }).catchError((e) {
-    debugPrint('Firebase init error: $e');
-  });
+  Firebase.initializeApp()
+      .then((_) {
+        PushNotificationService.initialize();
+      })
+      .catchError((e) {
+        debugPrint('Firebase init error: $e');
+      });
 
   // 4. Lakukan inisialisasi non-kritis di latar belakang
   Future.delayed(const Duration(milliseconds: 100), () async {
     try {
-      SyncService(); 
+      SyncService();
       await NotificationService().init();
-      
+
       // Initialize Workmanager
-      await Workmanager().initialize(
-        callbackDispatcher,
-      );
-      
+      await Workmanager().initialize(callbackDispatcher);
+
       // Daftarkan background task untuk sinkronisasi antrean offline
       Workmanager().registerPeriodicTask(
         "offlineSyncTask",
@@ -133,9 +133,15 @@ class MyApp extends StatelessWidget {
             return provider;
           },
         ),
-        ChangeNotifierProvider(create: (_) => TransaksiDoProvider(transaksiRepository)),
-        ChangeNotifierProvider(create: (_) => TambahSaldoProvider(tambahSaldoRepository)),
-        ChangeNotifierProvider(create: (_) => ResourceProvider(resourceRepository)),
+        ChangeNotifierProvider(
+          create: (_) => TransaksiDoProvider(transaksiRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => TambahSaldoProvider(tambahSaldoRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ResourceProvider(resourceRepository),
+        ),
         ChangeNotifierProvider(create: (_) => LaporanTonaseProvider(apiClient)),
         ChangeNotifierProvider(create: (_) => DashboardProvider()),
         ChangeNotifierProvider(create: (_) => MainNavigationProvider()),
@@ -143,17 +149,14 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         navigatorKey: NavigationService.navigatorKey,
-        title: 'Sawit App',
+        title: 'Success Mobile',
         debugShowCheckedModeBanner: false,
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        supportedLocales: const [
-          Locale('id', 'ID'),
-          Locale('en', 'US'),
-        ],
+        supportedLocales: const [Locale('id', 'ID'), Locale('en', 'US')],
         locale: const Locale('id', 'ID'),
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
@@ -176,4 +179,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
