@@ -88,20 +88,35 @@ class BalanceValidationModal extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                 decoration: BoxDecoration(
-                  color: Colors.grey[50],
+                  color: Colors.red.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey[200]!),
+                  border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
                 ),
                 child: Column(
                   children: [
-                    _buildRow('Saldo Saat Ini', CurrencyFormatter.formatRupiah(currentBalance)),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8),
-                      child: Divider(height: 1),
+                    Text(
+                      'Saldo Perusahaan',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[700],
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    _buildRow('Kekurangan', CurrencyFormatter.formatRupiah(requiredAmount - currentBalance), isNegative: true),
+                    const SizedBox(height: 8),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        CurrencyFormatter.formatRupiah(currentBalance),
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.red[700],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -147,31 +162,6 @@ class BalanceValidationModal extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildRow(String label, String value, {bool isNegative = false}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 13, color: Colors.grey[600], fontWeight: FontWeight.w500),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            value,
-            textAlign: TextAlign.right,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: isNegative ? Colors.red[700] : const Color(0xFF2C3E50),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
