@@ -118,10 +118,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     Column(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(24),
+                            borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withValues(alpha: 0.1),
@@ -134,13 +134,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             borderRadius: BorderRadius.circular(16),
                             child: Image.asset(
                               'assets/images/logo.png',
-                              height: 160,
-                              width: 160,
-                              fit: BoxFit.contain,
+                              height: 120,
+                              width: 120,
+                              fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) =>
                                   const Icon(
                                     Icons.business_rounded,
-                                    size: 160,
+                                    size: 120,
                                     color: Color(0xFF01579B),
                                   ),
                             ),
