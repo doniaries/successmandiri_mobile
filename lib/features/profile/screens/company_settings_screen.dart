@@ -154,7 +154,7 @@ class _CompanySettingsScreenState extends State<CompanySettingsScreen> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         prefixIcon: const Icon(
-                          Icons.business_rounded,
+                          Icons.image_not_supported_rounded,
                           color: Color(0xFF01579B),
                         ),
                       ),

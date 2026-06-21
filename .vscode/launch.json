@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "My Sawit (Mobile)",
+            "name": "Success (Mobile)",
             "request": "launch",
             "type": "dart",
             "program": "lib/main.dart",

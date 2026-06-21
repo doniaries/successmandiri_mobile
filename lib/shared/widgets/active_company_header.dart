@@ -40,7 +40,7 @@ class ActiveCompanyHeader extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: const Icon(
-              Icons.business_rounded,
+              Icons.image_not_supported_rounded,
               color: Colors.white,
               size: 20,
             ),

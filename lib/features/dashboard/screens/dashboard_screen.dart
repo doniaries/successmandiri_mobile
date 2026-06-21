@@ -792,7 +792,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                                   fit: BoxFit.contain,
                                 )
                               : Icon(
-                                  Icons.business_rounded,
+                                  Icons.image_not_supported_rounded,
                                   color: isSelected
                                       ? const Color(0xFF01579B)
                                       : Colors.grey[400],
@@ -1258,7 +1258,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const Icon(
-                              Icons.business_rounded,
+                              Icons.image_not_supported_rounded,
                               size: 10,
                               color: Color(0xFF2E7D32),
                             ),
@@ -1939,7 +1939,7 @@ class _CompanySelector extends StatelessWidget {
               )
             else
               const Icon(
-                Icons.business_rounded,
+                Icons.image_not_supported_rounded,
                 color: Colors.amberAccent,
                 size: 20,
               ),

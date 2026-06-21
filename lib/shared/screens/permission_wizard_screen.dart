@@ -199,7 +199,7 @@ class _PermissionWizardScreenState extends State<PermissionWizardScreen> {
                             ),
                             const SizedBox(height: 20),
                             Text(
-                              'Pengaturan izin selesai. Anda sekarang dapat mulai menggunakan layanan My Sawit.',
+                              'Pengaturan izin selesai. Anda sekarang dapat mulai menggunakan layanan Success Mobile.',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 16,

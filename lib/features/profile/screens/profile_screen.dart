@@ -282,13 +282,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   fit: BoxFit.contain,
                                   errorBuilder: (context, error, stackTrace) =>
                                       const Icon(
-                                        Icons.business_rounded,
+                                        Icons.image_not_supported_rounded,
                                         color: Color(0xFF01579B),
                                       ),
                                 ),
                               )
                             : const Icon(
-                                Icons.business_rounded,
+                                Icons.image_not_supported_rounded,
                                 color: Color(0xFF01579B),
                               ),
                         'Perusahaan',

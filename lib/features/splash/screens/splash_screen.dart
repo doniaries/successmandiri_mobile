@@ -184,7 +184,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   Column(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(24),
@@ -197,12 +197,12 @@ class _SplashScreenState extends State<SplashScreen> {
                           ],
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(20),
                           child: Image.asset(
                             'assets/images/logo.png',
-                            height: 200,
-                            width: 200,
-                            fit: BoxFit.contain,
+                            height: 180,
+                            width: 180,
+                            fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) =>
                                 const Icon(
                                   Icons.business_rounded,
