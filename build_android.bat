@@ -24,8 +24,10 @@ for /f "tokens=1,2,3 delims=." %%a in ("%BASE_VER%") do (
     set V_PAT=%%c
 )
 
-:: Tambah angka Build Number (versionCode) otomatis agar aman diinstal
-set /a NEW_BUILD_NUM=CUR_BUILD_NUM+1
+:: Generate Build Number otomatis dari Tanggal dan Jam (Format: YYMMDDHH)
+:: Contoh hasil: 26062201 (Tahun 26, Bulan 06, Tanggal 22, Jam 01)
+:: Format ini dijamin unik, selalu naik (karena waktu berjalan maju), dan aman dari batas maksimal Android (2.1 milyar)
+for /f "usebackq" %%i in (`powershell -NoProfile -Command "Get-Date -Format 'yyMMddHH'"`) do set NEW_BUILD_NUM=%%i
 
 set BUILD_NAME=
 set /p BUILD_NAME="1. Masukkan Versi Aplikasi (3 digit, contoh: 1.5.4) [Tekan Enter untuk %BASE_VER%]: "
