@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -38,9 +38,11 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _startTimers() {
-    // Safety timeout total 15 detik
-    Future.delayed(const Duration(seconds: 15), () {
+    // Safety timeout: 5 detik di debug, 15 detik di production
+    final timeout = kDebugMode ? 5 : 15;
+    Future.delayed(Duration(seconds: timeout), () {
       if (mounted && _isLoading) {
+        debugPrint('[Splash] Safety timeout! Navigating to LoginScreen.');
         _navigateTo(const LoginScreen());
       }
     });
@@ -56,8 +58,14 @@ class _SplashScreenState extends State<SplashScreen> {
     try {
       if (!mounted) return;
 
-      // 1. Cek status auth SANGAT CEPAT (menggunakan cache)
-      await authProvider.checkAuthStatus();
+      // 1. Cek status auth dengan timeout agar tidak hang jika token lama invalid
+      debugPrint('[Splash] Step 1: Checking auth status...');
+      await authProvider.checkAuthStatus().timeout(
+        const Duration(seconds: 3),
+        onTimeout: () {
+          debugPrint('[Splash] checkAuthStatus timeout! Skipping...');
+        },
+      );
 
       // 2. Jika sudah login, coba langsung gas ke Dashboard
       if (authProvider.isAuthenticated) {
@@ -76,7 +84,10 @@ class _SplashScreenState extends State<SplashScreen> {
         }
       }
 
+      debugPrint('[Splash] isAuthenticated: ${authProvider.isAuthenticated}');
+
       // 3. Alur normal untuk user baru/belum login
+      debugPrint('[Splash] Step 3: Loading prefs...');
       setState(
         () => _statusMessage = 'Memeriksa lokasi database & preferensi...',
       );
@@ -102,7 +113,11 @@ class _SplashScreenState extends State<SplashScreen> {
         }
       }
 
-      if (!kIsWeb && (!wizardCompleted || !storageGranted)) {
+      // Di mode DEBUG: langsung lewati wizard izin untuk mempercepat development
+      if (kDebugMode) {
+        debugPrint('[Splash] DEBUG mode: skipping permission wizard.');
+        await prefs.setBool('permission_wizard_completed', true);
+      } else if (!kIsWeb && (!wizardCompleted || !storageGranted)) {
         setState(() => _statusMessage = 'Mengarahkan ke Wizard Izin...');
         await prefs.setBool('permission_wizard_completed', false);
         _navigateTo(const PermissionWizardScreen());
@@ -111,15 +126,11 @@ class _SplashScreenState extends State<SplashScreen> {
 
       setState(() => _statusMessage = 'Terhubung ke server...');
 
-      // Ambil pengaturan aplikasi (versi & pembuat)
-      try {
-        await resourceProvider.fetchAppSettings();
-      } catch (_) {
-        // Abaikan jika gagal, gunakan default
-      }
+      debugPrint('[Splash] Step 4: Loading app settings in background...');
+      resourceProvider.fetchAppSettings().catchError((_) => null);
 
-      // Berikan waktu jeda sedikit sebelum navigasi agar transisi halus
-      await Future.delayed(const Duration(milliseconds: 300));
+      // Berikan waktu jeda sedikit agar UI tidak kedip (terlalu cepat)
+      await Future.delayed(const Duration(milliseconds: 500));
 
       if (mounted) {
         _navigateTo(

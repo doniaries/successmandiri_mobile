@@ -67,17 +67,22 @@ void main() async {
     initialScreen = const LoginScreen();
   }
 
-  // 3. Lakukan inisialisasi WAJIB sebelum UI berjalan
+  // 3. Lakukan inisialisasi lokal yang cepat
   try {
-    await Firebase.initializeApp(); // Init Firebase
     await initializeDateFormatting('id_ID', null);
-    await PushNotificationService.initialize(); // Init FCM
   } catch (e) {
-    debugPrint('Init error: $e');
+    debugPrint('Init date formatting error: $e');
   }
 
-  // Jalankan aplikasi dengan initialScreen
+  // Jalankan aplikasi dengan initialScreen SECEPATNYA
   runApp(MyApp(initialScreen: initialScreen));
+
+  // 4. Inisialisasi Firebase & FCM di background agar tidak menahan layar putih
+  Firebase.initializeApp().then((_) {
+    PushNotificationService.initialize();
+  }).catchError((e) {
+    debugPrint('Firebase init error: $e');
+  });
 
   // 4. Lakukan inisialisasi non-kritis di latar belakang
   Future.delayed(const Duration(milliseconds: 100), () async {

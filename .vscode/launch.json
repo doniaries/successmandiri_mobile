@@ -5,7 +5,10 @@
             "name": "My Sawit (Mobile)",
             "request": "launch",
             "type": "dart",
-            "program": "lib/main.dart"
+            "program": "lib/main.dart",
+            "args": [
+                "--no-enable-impeller"
+            ]
         }
     ]
 }

@@ -1,13 +1,13 @@
 import 'package:flutter/foundation.dart';
 
 class ApiConstants {
-  static const bool useLocalInDebug =
-      false; // true = IP lokal, false = produksi
+  static const bool useLocalInDebug = true; // true = IP lokal, false = produksi
+  // static const bool useLocalInDebug = false; //false = produksi
 
   static String get baseUrl {
     if (kDebugMode && useLocalInDebug) {
       if (kIsWeb) return 'http://127.0.0.1:8000/api';
-      return 'http://192.168.1.2:8000/api'; // IP Lokal Wi-Fi Laptop/PC
+      return 'http://192.168.1.8:8000/api'; // IP Lokal Wi-Fi Laptop/PC
     }
     // Selalu gunakan Produksi (Online) agar data sinkron dengan sawit.successmandiri.com
     return 'https://sawit.successmandiri.com/api';
