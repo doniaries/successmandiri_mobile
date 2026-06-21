@@ -153,17 +153,22 @@ class BalanceValidationModal extends StatelessWidget {
   Widget _buildRow(String label, String value, {bool isNegative = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: TextStyle(fontSize: 13, color: Colors.grey[600], fontWeight: FontWeight.w500),
         ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: isNegative ? Colors.red[700] : const Color(0xFF2C3E50),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: isNegative ? Colors.red[700] : const Color(0xFF2C3E50),
+            ),
           ),
         ),
       ],
