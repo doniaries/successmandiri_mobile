@@ -1,4 +1,4 @@
-package com.mysawit.app
+package com.success.mobile
 
 import io.flutter.embedding.android.FlutterActivity
 import android.app.NotificationChannel

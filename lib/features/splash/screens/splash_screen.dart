@@ -169,6 +169,7 @@ class _SplashScreenState extends State<SplashScreen> {
             colors: [
               Color(0xFF01579B), // Bank Blue Primary
               Color(0xFF0D47A1), // Navy Blue
+              Color(0xFF002F6C), // Deep Navy
             ],
           ),
         ),
@@ -199,13 +200,13 @@ class _SplashScreenState extends State<SplashScreen> {
                           borderRadius: BorderRadius.circular(16),
                           child: Image.asset(
                             'assets/images/logo.png',
-                            height: 110,
-                            width: 110,
+                            height: 200,
+                            width: 200,
                             fit: BoxFit.contain,
                             errorBuilder: (context, error, stackTrace) =>
                                 const Icon(
                                   Icons.business_rounded,
-                                  size: 110,
+                                  size: 200,
                                   color: Color(0xFF01579B),
                                 ),
                           ),
@@ -213,7 +214,7 @@ class _SplashScreenState extends State<SplashScreen> {
                       ),
                       const SizedBox(height: 12),
                       const Text(
-                        "My Sawit",
+                        "SUCCESS MOBILE",
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 28,

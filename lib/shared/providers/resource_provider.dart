@@ -130,10 +130,7 @@ class ResourceProvider with ChangeNotifier {
       try {
         final packageInfo = await PackageInfo.fromPlatform();
         if (packageInfo.version.isNotEmpty) {
-          final versionParts = packageInfo.version.split('.');
-          final major = versionParts.isNotEmpty ? versionParts[0] : '1';
-          final minor = versionParts.length > 1 ? versionParts[1] : '0';
-          _appVersion = '$major.$minor.${packageInfo.buildNumber}';
+          _appVersion = '${packageInfo.version} (Build ${packageInfo.buildNumber})';
         }
       } catch (_) {}
     } catch (e) {
@@ -148,10 +145,7 @@ class ResourceProvider with ChangeNotifier {
       try {
         final packageInfo = await PackageInfo.fromPlatform();
         if (packageInfo.version.isNotEmpty) {
-          final versionParts = packageInfo.version.split('.');
-          final major = versionParts.isNotEmpty ? versionParts[0] : '1';
-          final minor = versionParts.length > 1 ? versionParts[1] : '0';
-          _appVersion = '$major.$minor.${packageInfo.buildNumber}';
+          _appVersion = '${packageInfo.version} (Build ${packageInfo.buildNumber})';
         }
       } catch (_) {}
     } finally {
